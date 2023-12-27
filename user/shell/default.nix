@@ -8,6 +8,7 @@ let
     cls = "clear";
     vim = "nvim";
     o = "xdg-open";
+    man = "batman";
 
     ls = "eza -a --icons --color=auto --group-directories-first";
     ll = "ls -lh";

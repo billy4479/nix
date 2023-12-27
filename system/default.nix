@@ -21,7 +21,6 @@
 
   # Enable unfree
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.allowUnfreePredicate = _: true;
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -51,6 +50,7 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     neovim
+    file
   ];
 
   programs.zsh.enable = true;

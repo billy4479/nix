@@ -1,8 +1,11 @@
-{ config, pkgs, user, ... }:
+{ config, pkgs, user, nixpkgs, ... }:
 
 {
   home.username = user.username;
   home.homeDirectory = "/home/${user.username}";
+
+  # Enable unfree - yes, we have to do this here too
+  nixpkgs.config.allowUnfree = true;
 
   imports = [
     ./shell
@@ -22,6 +25,10 @@
     zathura = {
       enable = true;
       catppuccin.enable = true;
+      options = {
+        recolor = "true";
+        guioptions = "none";
+      };
     };
   };
 
@@ -31,6 +38,11 @@
     ripgrep
     p7zip
     license-cli
+    bat-extras.batman
+
+    telegram-desktop
+    spotify
+    discord
   ];
 
   home.file = { };
