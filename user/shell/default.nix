@@ -21,7 +21,7 @@ let
     gl = "git log";
     gs = "git status";
 
-    mkcd = ''mkdir -p "$1" && cd "$1"'';
+    license = "license text --author 'Giacomo Ellero'";
   };
 in
 {
@@ -86,6 +86,11 @@ in
       bindkey "^[OB" down-line-or-beginning-search
 
       setopt rmstarsilent
+
+      # Functions
+      function mkcd(){
+        mkdir -p "$1" && cd "$1"
+      }
     '';
   };
 

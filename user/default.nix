@@ -30,6 +30,7 @@
     fd
     ripgrep
     p7zip
+    license-cli
   ];
 
   home.file = { };
