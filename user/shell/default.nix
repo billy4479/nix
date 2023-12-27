@@ -12,6 +12,15 @@ let
     ls = "eza -a --icons --color=auto --group-directories-first";
     ll = "ls -lh";
 
+    gaa = "git add -A";
+    gc = "git commit";
+    gap = "git add --patch";
+    gps = "git push origin `git branch --show-current`";
+    gpl = "git pull origin `git branch --show-current` --recurse";
+    gd = "git diff";
+    gl = "git log";
+    gs = "git status";
+
     mkcd = ''mkdir -p "$1" && cd "$1"'';
   };
 in
@@ -90,6 +99,7 @@ in
     enable = true;
     enableZshIntegration = true;
     settings = pkgs.lib.importTOML ./starship.toml;
+    catppuccin.enable = true;
   };
 
   programs.fzf = {

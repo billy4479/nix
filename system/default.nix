@@ -19,6 +19,10 @@
   # Enable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
+  # Enable unfree
+  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.allowUnfreePredicate = _: true;
+
   # Enable networking
   networking.networkmanager.enable = true;
 
@@ -42,8 +46,6 @@
     userName = user.username;
     fullName = user.fullName;
   };
-
-  nixpkgs.config.allowUnfree = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
