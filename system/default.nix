@@ -37,6 +37,12 @@
   services.xserver.displayManager.defaultSession = "plasmawayland";
   services.xserver.desktopManager.plasma5.enable = true;
 
+  xdg.portal = {
+    enable = true;
+    config.common.default = "kde";
+    # extraPortals = with pkgs; [ xdg-desktop-portal-gtk ];
+  };
+
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 

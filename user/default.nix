@@ -12,6 +12,7 @@
     ./git.nix
     ./browser
     ./fonts
+    ./vscodium
   ];
 
   home.stateVersion = "23.11";
@@ -44,6 +45,11 @@
     spotify
     discord
     joplin-desktop
+
+    lightly-qt
+
+    texliveMedium # This contains `latexmk`, the small version doesn't
+    llvmPackages_latest.clang-unwrapped
   ];
 
   xdg.mimeApps = {

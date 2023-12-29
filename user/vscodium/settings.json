@@ -1,0 +1,186 @@
+{
+  "todo-tree.tree.showScanModeButton": false,
+  "workbench.iconTheme": "catppuccin-frappe",
+  "go.useLanguageServer": true,
+  "editor.fontFamily": "FiraCode Nerd Font, JetbrainsMono Nerd Font, Fira Code, Comic Mono",
+  "editor.fontLigatures": true,
+  "editor.suggestSelection": "first",
+  "workbench.startupEditor": "newUntitledFile",
+  "eslint.packageManager": "pnpm",
+  "eslint.format.enable": true,
+  "eslint.alwaysShowStatus": true,
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "html",
+    "vue",
+    "markdown",
+    "typescrypt",
+    "svelte"
+  ],
+  "editor.formatOnSave": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "html",
+    "typescript",
+    "svelte"
+  ],
+  "python.languageServer": "Default",
+  "editor.fontWeight": 550,
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp"
+  },
+  "omnisharp.enableImportCompletion": true,
+  "omnisharp.enableRoslynAnalyzers": true,
+  "csharp.referencesCodeLens.enabled": false,
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "cSpell.userWords": [
+    "bindgen",
+    "ccache",
+    "cmake",
+    "egui",
+    "fyne",
+    "gorm",
+    "hasher",
+    "HWND",
+    "keypair",
+    "lzma",
+    "Minecraft",
+    "minmax",
+    "postgres",
+    "precompiled",
+    "prefetch",
+    "Scriptable",
+    "submodules",
+    "sveltekit",
+    "vite",
+    "wgpu",
+    "windicss",
+    "winit",
+    "Wireframe",
+    "youtube",
+    "zstd"
+  ],
+  "sync.gist": "afff5cddf59660d6c6f909bf140cc05d",
+  "editor.maxTokenizationLineLength": 200000,
+  "cmake.configureOnOpen": false,
+  "clangd.onConfigChanged": "restart",
+  "C_Cpp.intelliSenseEngine": "Disabled",
+  "go.toolsManagement.autoUpdate": true,
+  "go.lintTool": "golangci-lint",
+  "todo-tree.general.tags": [
+    "BUG",
+    "HACK",
+    "FIXME",
+    "TODO",
+    "XXX",
+    "[ ]",
+    "[x]"
+  ],
+  "todo-tree.regex.regex": "(//|#|<!--|;|/\\*|^|^\\s*(-|\\d+.))\\s*($TAGS)",
+  "editor.showFoldingControls": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "emmet.includeLanguages": {
+    "postcss": "css",
+    "jinja-html": "html"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode"
+  },
+  "cSpell.enableFiletypes": [
+    "svelte"
+  ],
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "workbench.editorAssociations": {
+    "*.ipynb": "jupyter.notebook.ipynb"
+  },
+  "clangd.path": "/usr/bin/clangd",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "[c]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "explorer.confirmDragAndDrop": false,
+  "C_Cpp.default.cppStandard": "c++20",
+  "C_Cpp.default.cStandard": "c11",
+  "omnisharp.useGlobalMono": "always",
+  "cmake.generator": "Ninja",
+  "cSpell.ignoreWords": [],
+  "editor.bracketPairColorization.enabled": true,
+  "svelte.enable-ts-plugin": true,
+  "tabnine.experimentalAutoImports": true,
+  "vsicons.dontShowNewVersionMessage": true,
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "css.validate": false,
+  "go.formatFlags": [
+    "-s"
+  ],
+  "clangd.arguments": [
+    "-header-insertion=never"
+  ],
+  "redhat.telemetry.enabled": false,
+  "customizeUI.font.regular": "JetbrainsMono Nerd Font",
+  "customizeUI.font.monospace": "JetbrainsMono Nerd Font",
+  "editor.fontSize": 16,
+  "Lua.telemetry.enable": false,
+  "svelte.plugin.svelte.note-new-transformation": false,
+  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.inlayHints.parameterHints.enable": false,
+  "catppuccin.accentColor": "green",
+  "java.import.gradle.java.home": "/usr/lib/jvm/java-17-openjdk",
+  "[java]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "cSpell.ignorePaths": [
+    "package-lock.json",
+    "node_modules",
+    "vscode-extension",
+    ".git/objects",
+    ".vscode",
+    ".vscode-insiders",
+    "joplin-desktop"
+  ],
+  "eslint.lintTask.enable": true,
+  "terminal.integrated.persistentSessionReviveProcess": "never",
+  "svelte.plugin.svelte.compilerWarnings": {
+    "a11y-click-events-have-key-events": "ignore"
+  },
+  "window.zoomLevel": 2,
+  "java.format.settings.url": "",
+  "java.format.settings.profile": "",
+  "java.format.enabled": false,
+  "diffEditor.ignoreTrimWhitespace": false,
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "files.associations": {
+    "*.css": "css"
+  },
+  "workbench.colorTheme": "Catppuccin Frappé",
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  "lldb.suppressUpdateNotifications": true
+}
