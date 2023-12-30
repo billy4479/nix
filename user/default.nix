@@ -12,11 +12,12 @@
   nixpkgs.config.allowUnfree = true;
 
   imports = [
-    ./shell
     ./git.nix
+    ./xdg-open.nix
+    ./shell
     ./browser
     ./fonts
-    ./vscodium
+    ./editor/vscodium
     ./terminal/konsole
   ];
 
@@ -65,18 +66,6 @@
     cargo
     rustc
   ];
-
-  xdg.mimeApps = {
-    enable = true;
-    associations.added = {
-      "x-scheme-handler/tg" = "org.telegram.desktop.desktop";
-      "application/pdf" = "org.pwmt.zathura.desktop";
-    };
-    defaultApplications = {
-      "x-scheme-handler/tg" = "org.telegram.desktop.desktop";
-      "application/pdf" = "org.pwmt.zathura.desktop";
-    };
-  };
 
   programs.plasma.enable = true;
 
