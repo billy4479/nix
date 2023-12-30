@@ -15,6 +15,14 @@
       url = "github:kamadorueda/alejandra/3.0.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    plasma-manager = {
+      url = "github:pjones/plasma-manager";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
   };
 
   outputs = {
@@ -24,6 +32,7 @@
     catppuccin,
     nix-vscode-extensions,
     alejandra,
+    plasma-manager,
     ...
   }: let
     system = "x86_64-linux";
@@ -64,6 +73,7 @@
         extraSpecialArgs = extraArgs;
         modules = [
           catppuccin.homeManagerModules.catppuccin
+          plasma-manager.homeManagerModules.plasma-manager
           ./user
         ];
       };

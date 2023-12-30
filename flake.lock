@@ -117,11 +117,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1703527373,
-        "narHash": "sha256-AjypRssRtS6F3xkf7rE3/bXkIF2WJOZLbTIspjcE1zM=",
+        "lastModified": 1703838268,
+        "narHash": "sha256-SRg5nXcdPnrsQR2MTAp7en0NyJnQ2wB1ivmsgEbvN+o=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "80679ea5074ab7190c4cce478c600057cfb5edae",
+        "rev": "2aff324cf65f5f98f89d878c056b779466b17db8",
         "type": "github"
       },
       "original": {
@@ -137,11 +137,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1703639874,
-        "narHash": "sha256-54bkJbvGRb9Wq4re5tbtbHaFSPg7wnQfgAjCvggEDZ4=",
+        "lastModified": 1703898959,
+        "narHash": "sha256-vBevlls+e3lS1hUlTVyp1SDIo0HBfYQljywP6qpHCpo=",
         "owner": "nix-community",
         "repo": "nix-vscode-extensions",
-        "rev": "52061beda00305b26445dc84ca7ab8a6036685c4",
+        "rev": "b67907fb7e477aceb16f87058df6daa53db1449c",
         "type": "github"
       },
       "original": {
@@ -168,11 +168,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1703255338,
-        "narHash": "sha256-Z6wfYJQKmDN9xciTwU3cOiOk+NElxdZwy/FiHctCzjU=",
+        "lastModified": 1703637592,
+        "narHash": "sha256-8MXjxU0RfFfzl57Zy3OfXCITS0qWDNLzlBAdwxGZwfY=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "6df37dc6a77654682fe9f071c62b4242b5342e04",
+        "rev": "cfc3698c31b1fb9cdcf10f36c9643460264d0ca8",
         "type": "github"
       },
       "original": {
@@ -182,13 +182,37 @@
         "type": "github"
       }
     },
+    "plasma-manager": {
+      "inputs": {
+        "home-manager": [
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1703264118,
+        "narHash": "sha256-YzwzOqSDNLFcG2HulMw0k5reDhBPysq9AT1D8Y0Rky8=",
+        "owner": "pjones",
+        "repo": "plasma-manager",
+        "rev": "8e8f0852a49f9f776cbaf2156ebe8b4a8d4bf720",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pjones",
+        "repo": "plasma-manager",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "alejandra": "alejandra",
         "catppuccin": "catppuccin",
         "home-manager": "home-manager",
         "nix-vscode-extensions": "nix-vscode-extensions",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "plasma-manager": "plasma-manager"
       }
     },
     "rust-analyzer-src": {

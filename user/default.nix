@@ -52,6 +52,7 @@
     joplin-desktop
 
     lightly-qt
+    kate
 
     # Coding
     texliveMedium # This contains `latexmk`, the small version doesn't
@@ -76,6 +77,8 @@
       "application/pdf" = "org.pwmt.zathura.desktop";
     };
   };
+
+  programs.plasma.enable = true;
 
   home.file = {};
 
