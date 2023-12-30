@@ -17,6 +17,7 @@
     ./browser
     ./fonts
     ./vscodium
+    ./terminal/konsole
   ];
 
   home.stateVersion = "23.11";
