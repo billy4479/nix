@@ -17,6 +17,7 @@
     ./shell
     ./browser
     ./fonts
+    ./editor/nvim
     ./editor/vscodium
     ./terminal/konsole
   ];
