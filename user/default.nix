@@ -14,6 +14,7 @@
   imports = [
     ./git.nix
     ./xdg-open.nix
+    ./zathura.nix
     ./shell
     ./browser
     ./fonts
@@ -27,17 +28,6 @@
   catppuccin = {
     flavour = "frappe";
     accent = "green";
-  };
-
-  programs = {
-    zathura = {
-      enable = true;
-      catppuccin.enable = true;
-      options = {
-        recolor = "true";
-        guioptions = "none";
-      };
-    };
   };
 
   home.packages = with pkgs; [
