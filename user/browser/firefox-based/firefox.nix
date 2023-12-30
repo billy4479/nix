@@ -1,5 +1,8 @@
-{ aboutConfig, user, ... }:
 {
+  aboutConfig,
+  user,
+  ...
+}: {
   programs.firefox = {
     enable = true;
     profiles.${user.username} = {
@@ -8,7 +11,7 @@
         default = "Brave Search";
         engines = {
           "Brave Search" = {
-            urls = [{ template = "https://search.brave.com/search?q={searchTerms}"; }];
+            urls = [{template = "https://search.brave.com/search?q={searchTerms}";}];
             iconUpdateURL = "https://brave.com/static-assets/images/brave-logo-sans-text.svg";
             updateInterval = 24 * 60 * 60 * 1000; # every day
           };

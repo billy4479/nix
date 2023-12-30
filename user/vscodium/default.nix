@@ -1,5 +1,9 @@
-{ pkgs, lib, vscode-extensions, ... }:
 {
+  pkgs,
+  lib,
+  vscode-extensions,
+  ...
+}: {
   programs.vscode = {
     enable = true;
     package = pkgs.vscodium;
@@ -58,6 +62,8 @@
         ];
       };
     };
-    userSettings = lib.importJSON ./settings.json;
+    userSettings =
+      lib.importJSON ./settings.json
+      // {"clangd.path" = "${pkgs.llvmPackages_latest.clang-unwrapped}/bin/clangd";};
   };
 }

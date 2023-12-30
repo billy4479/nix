@@ -1,6 +1,8 @@
-{ pkgs, user, ... }:
-
 {
+  pkgs,
+  user,
+  ...
+}: {
   programs.git = {
     enable = true;
     delta = {
@@ -18,8 +20,14 @@
 
     extraConfig.color.ui = true;
 
-    userEmail = if user.username == "billy" then "giachi.ellero@gmail.com" else throw "you should probably change this";
-    userName = if user.username == "billy" then "billy4479" else throw "you should probably change this";
+    userEmail =
+      if user.username == "billy"
+      then "giachi.ellero@gmail.com"
+      else throw "you should probably change this";
+    userName =
+      if user.username == "billy"
+      then "billy4479"
+      else throw "you should probably change this";
   };
 
   home.packages = with pkgs; [

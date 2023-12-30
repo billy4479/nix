@@ -1,6 +1,8 @@
-{ pkgs, config, ... }:
-
-let
+{
+  pkgs,
+  config,
+  ...
+}: let
   aliases = {
     rebuild-nix = "sudo nixos-rebuild switch --flake $HOME/nix";
     rebuild-hm = "home-manager switch --flake $HOME/nix";
@@ -23,9 +25,9 @@ let
     gs = "git status";
 
     license = "license text --author 'Giacomo Ellero'";
+    c = "codium";
   };
-in
-{
+in {
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -79,7 +81,7 @@ in
       zle -N up-line-or-beginning-search
       bindkey "^[[A" up-line-or-beginning-search
       bindkey "^[OA" up-line-or-beginning-search
-      
+
       # Arrow Down
       autoload -U down-line-or-beginning-search
       zle -N down-line-or-beginning-search

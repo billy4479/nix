@@ -1,5 +1,4 @@
-{ ... }@args:
-let
+{...} @ args: let
   aboutConfig = {
     # Lets be honest, this is more annoying than useful
     "webgl.disabled" = false;
@@ -35,10 +34,9 @@ let
     "browser.uiCustomization.state" = builtins.readFile ./ui-state.json;
     "services.sync.engine.passwords" = false;
   };
-in
-{
+in {
   imports = [
-    (import ./firefox.nix (args // { inherit aboutConfig; }))
+    (import ./firefox.nix (args // {inherit aboutConfig;}))
     # (import ./librewolf.nix (args // {inherit aboutConfig;}))
   ];
 }

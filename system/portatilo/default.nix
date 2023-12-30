@@ -1,8 +1,11 @@
-{ pkgs, ... }:
-
 {
+  pkgs,
+  user,
+  ...
+}: {
   imports = [
     ./hardware-configuration.nix
+    ../bluetooth.nix
   ];
 
   networking.hostName = "portatilo";
@@ -16,6 +19,6 @@
 
   services.xserver.displayManager.autoLogin = {
     enable = true;
-    user = "billy";
+    user = user.username;
   };
 }

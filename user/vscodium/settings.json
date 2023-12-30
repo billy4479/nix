@@ -83,6 +83,7 @@
     "[x]"
   ],
   "todo-tree.regex.regex": "(//|#|<!--|;|/\\*|^|^\\s*(-|\\d+.))\\s*($TAGS)",
+  "todo-tree.highlights.enabled": false,
   "editor.showFoldingControls": "always",
   "typescript.updateImportsOnFileMove.enabled": "always",
   "emmet.includeLanguages": {

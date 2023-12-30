@@ -1,4 +1,3 @@
-{ ... }:
-{
-  imports = [ ./firefox-based ];
+{...}: {
+  imports = [./firefox-based];
 }

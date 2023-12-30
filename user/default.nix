@@ -1,6 +1,10 @@
-{ config, pkgs, user, nixpkgs, ... }:
-
 {
+  config,
+  pkgs,
+  user,
+  nixpkgs,
+  ...
+}: {
   home.username = user.username;
   home.homeDirectory = "/home/${user.username}";
 
@@ -48,8 +52,16 @@
 
     lightly-qt
 
+    # Coding
     texliveMedium # This contains `latexmk`, the small version doesn't
+
+    gcc
     llvmPackages_latest.clang-unwrapped
+    cmake
+    ninja
+
+    cargo
+    rustc
   ];
 
   xdg.mimeApps = {
@@ -64,10 +76,11 @@
     };
   };
 
-  home.file = { };
+  home.file = {};
 
   home.sessionVariables = {
     EDITOR = "nvim";
+    CMAKE_GENERATOR = "Ninja";
   };
 
   programs.home-manager.enable = true;

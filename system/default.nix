@@ -1,23 +1,25 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, user, wayland, ... }:
-
 {
-  imports =
-    [
-      ./main-user.nix
-      ./locale.nix
-      ./sound.nix
-    ];
+  config,
+  pkgs,
+  user,
+  wayland,
+  ...
+}: {
+  imports = [
+    ./main-user.nix
+    ./locale.nix
+    ./sound.nix
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Enable flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
 
   # Enable unfree
   nixpkgs.config.allowUnfree = true;
@@ -61,7 +63,7 @@
 
   programs.zsh.enable = true;
   # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.zsh.enableCompletion
-  environment.pathsToLink = [ "/share/zsh" ];
+  environment.pathsToLink = ["/share/zsh"];
 
   services.openssh.enable = true;
 
