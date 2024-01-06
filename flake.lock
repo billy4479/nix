@@ -38,6 +38,26 @@
         "type": "github"
       }
     },
+    "catppuccin-vsc": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1704479967,
+        "narHash": "sha256-YcbqMvphGDiAXX+zvEPci4LmBr1zQhGlwT/or9g7gHs=",
+        "owner": "catppuccin",
+        "repo": "vscode",
+        "rev": "80122d60e2d3a169d0f640cfa347d91b78f814d5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "catppuccin",
+        "repo": "vscode",
+        "type": "github"
+      }
+    },
     "fenix": {
       "inputs": {
         "nixpkgs": [
@@ -209,6 +229,7 @@
       "inputs": {
         "alejandra": "alejandra",
         "catppuccin": "catppuccin",
+        "catppuccin-vsc": "catppuccin-vsc",
         "home-manager": "home-manager",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs_2",

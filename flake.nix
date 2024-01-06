@@ -6,6 +6,11 @@
     catppuccin.url = "github:Stonks3141/ctp-nix";
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
 
+    catppuccin-vsc = {
+      url = "github:catppuccin/vscode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -31,6 +36,7 @@
     home-manager,
     catppuccin,
     nix-vscode-extensions,
+    catppuccin-vsc,
     alejandra,
     plasma-manager,
     ...
@@ -46,6 +52,7 @@
         fullName = "Billy Panciotto";
       };
       vscode-extensions = nix-vscode-extensions.extensions.${system};
+      inherit catppuccin-vsc;
     };
   in {
     formatter.${system} = alejandra.defaultPackage.${system};
