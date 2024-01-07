@@ -2,7 +2,7 @@
   # https://nixos.wiki/wiki/Bluetooth
   hardware.bluetooth = {
     enable = true;
-    powerOnBoot = true;
+    powerOnBoot = false;
     settings = {
       General = {
         Enable = "Source,Sink,Media,Socket";

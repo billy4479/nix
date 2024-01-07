@@ -53,9 +53,6 @@
     llvmPackages_latest.clang-unwrapped
     cmake
     ninja
-
-    cargo
-    rustc
   ];
 
   programs.plasma.enable = true;
