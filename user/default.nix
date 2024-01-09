@@ -47,6 +47,8 @@
     lightly-qt
     kate
 
+    qbittorrent
+
     # Coding
     # TODO: these should be in a dev shell
     texliveMedium # This contains `latexmk`, the small version doesn't
@@ -58,6 +60,7 @@
   ];
 
   programs.plasma.enable = true;
+  programs.mpv.enable = true; # TODO: there are some interesting configs here
 
   home.file = {};
 
