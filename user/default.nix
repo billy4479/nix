@@ -13,6 +13,7 @@
 
   imports = [
     ./git.nix
+    ./kde.nix
     ./xdg-open.nix
     ./zathura.nix
     ./shell
@@ -47,6 +48,7 @@
     kate
 
     # Coding
+    # TODO: these should be in a dev shell
     texliveMedium # This contains `latexmk`, the small version doesn't
 
     gcc
