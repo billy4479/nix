@@ -8,6 +8,12 @@
     # Keep history
     "privacy.clearOnShutdown.history" = false;
     "privacy.clearOnShutdown.downloads" = false;
+    "services.sync.prefs.sync-seen.privacy.clearOnShutdown.downloads" = false;
+    "services.sync.prefs.sync-seen.privacy.clearOnShutdown.history" = false;
+    "services.sync.prefs.sync-seen.privacy.clearOnShutdown.offlineApps" = false;
+
+    # Disable password manager
+    "services.sync.engine.passwords" = false;
 
     # Firefox Sync
     "identity.fxaccounts.enabled" = true;
@@ -32,7 +38,6 @@
     "browser.bookmarks.addedImportButton" = true;
     "browser.topsites.contile.cachedTiles" = "";
     "browser.uiCustomization.state" = builtins.readFile ./ui-state.json;
-    "services.sync.engine.passwords" = false;
   };
 in {
   imports = [
