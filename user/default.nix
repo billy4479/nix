@@ -12,6 +12,7 @@
   nixpkgs.config.allowUnfree = true;
 
   imports = [
+    ./direnv.nix
     ./git.nix
     ./kde.nix
     ./xdg-open.nix
