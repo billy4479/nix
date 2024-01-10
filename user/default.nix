@@ -47,6 +47,7 @@
     joplin-desktop
     kate
     qbittorrent
+    qalculate-gtk
 
     lightly-qt
   ];
