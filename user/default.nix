@@ -33,41 +33,30 @@
   };
 
   home.packages = with pkgs; [
-    neovim
+    # Shell utilities, not fundamental but still nice
     fd
     ripgrep
     p7zip
     license-cli
     bat-extras.batman
 
+    # GUI stuff
     telegram-desktop
     spotify
     discord
     joplin-desktop
-
-    lightly-qt
     kate
-
     qbittorrent
 
-    # Coding
-    # TODO: these should be in a dev shell
-    texliveMedium # This contains `latexmk`, the small version doesn't
-
-    gcc
-    llvmPackages_latest.clang-unwrapped
-    cmake
-    ninja
+    lightly-qt
   ];
 
-  programs.plasma.enable = true;
   programs.mpv.enable = true; # TODO: there are some interesting configs here
 
   home.file = {};
 
   home.sessionVariables = {
     EDITOR = "nvim";
-    CMAKE_GENERATOR = "Ninja";
   };
 
   programs.home-manager.enable = true;

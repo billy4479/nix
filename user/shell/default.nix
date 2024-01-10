@@ -37,6 +37,7 @@ in {
     dirHashes = {
       c = "$HOME/code";
       s = "$HOME/src";
+      n = "$HOME/nix";
       dl = "$HOME/Downloads";
     };
 
@@ -115,6 +116,7 @@ in {
     enableZshIntegration = true;
   };
 
+  # This is stuff that I assume is installed whenever I use a shell
   home.packages = with pkgs; [
     bat
     eza
