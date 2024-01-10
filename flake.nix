@@ -52,10 +52,11 @@
         fullName = "Billy Panciotto";
       };
       vscode-extensions = nix-vscode-extensions.extensions.${system};
+      alejandra = alejandra.defaultPackage.${system};
       inherit catppuccin-vsc;
     };
   in {
-    formatter.${system} = alejandra.defaultPackage.${system};
+    formatter.${system} = extraArgs.alejandra;
     nixosConfigurations = {
       nixbox = nixos {
         inherit system;

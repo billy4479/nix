@@ -3,20 +3,29 @@
   lib,
   vscode-extensions,
   catppuccin-vsc,
+  alejandra,
   ...
 }: {
   nixpkgs.overlays = [catppuccin-vsc.overlays.default];
 
+  home.packages = with pkgs;
+    [
+      clang-tools
+      nixd
+    ]
+    ++ [alejandra];
+
   programs.vscode = {
     enable = true;
     package = pkgs.vscodium;
+    # TODO: should we install them just in certain dev environments?
     extensions = with vscode-extensions.vscode-marketplace;
       [
         # Theme
         catppuccin.catppuccin-vsc-icons
 
         # Languages
-        bbenoist.nix # Nix
+        jnoortheen.nix-ide # Nix
         rust-lang.rust-analyzer # Rust
         golang.go # Go
         twxs.cmake # CMake
@@ -81,6 +90,6 @@
     };
     userSettings =
       lib.importJSON ./settings.json
-      // {"clangd.path" = "${pkgs.llvmPackages_latest.clang-unwrapped}/bin/clangd";};
+      // {"clangd.path" = "${pkgs.clang-tools}/bin/clangd";}; # TODO: should this be in a devEnvironment?
   };
 }

@@ -183,5 +183,17 @@
   },
   "workbench.colorTheme": "Catppuccin Frappé",
   "terminal.integrated.defaultProfile.linux": "zsh",
-  "lldb.suppressUpdateNotifications": true
+  "lldb.suppressUpdateNotifications": true,
+  "nix.enableLanguageServer": true,
+  "nix.serverPath": "nixd",
+  "nix.serverSettings": {
+    "nixd": {
+      "formatting": {
+        "command": "alejandra --quiet"
+      },
+      "options": {
+        "enable": true
+      }
+    }
+  }
 }
