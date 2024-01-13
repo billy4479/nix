@@ -49,8 +49,17 @@
     qbittorrent
     qalculate-gtk
 
+    libreoffice-qt
+    hunspell
+    hunspellDicts.en_US
+    hunspellDicts.it_IT
+
+    podman
     lightly-qt
+    gcc
   ];
+
+  xsession.numlock.enable = true;
 
   programs.mpv.enable = true; # TODO: there are some interesting configs here
 
