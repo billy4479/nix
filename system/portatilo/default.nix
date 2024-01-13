@@ -6,6 +6,7 @@
   imports = [
     ./hardware-configuration.nix
     ../bluetooth.nix
+    ../containers.nix
   ];
 
   networking.hostName = "portatilo";

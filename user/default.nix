@@ -54,7 +54,6 @@
     hunspellDicts.en_US
     hunspellDicts.it_IT
 
-    podman
     lightly-qt
     gcc
   ];
