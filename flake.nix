@@ -6,6 +6,11 @@
     catppuccin.url = "github:Stonks3141/ctp-nix";
     nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
 
+    spicetify-nix = {
+      url = "github:the-argus/spicetify-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     catppuccin-vsc = {
       url = "github:catppuccin/vscode";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -33,6 +38,7 @@
     nix-vscode-extensions,
     catppuccin-vsc,
     plasma-manager,
+    spicetify-nix,
     ...
   }: let
     system = "x86_64-linux";
@@ -46,6 +52,7 @@
         fullName = "Billy Panciotto";
       };
       vscode-extensions = nix-vscode-extensions.extensions.${system};
+      spicetifyPkgs = spicetify-nix.packages.${system}.default;
       inherit catppuccin-vsc;
     };
   in {
@@ -83,6 +90,7 @@
         modules = [
           catppuccin.homeManagerModules.catppuccin
           plasma-manager.homeManagerModules.plasma-manager
+          spicetify-nix.homeManagerModule
           ./user
         ];
       };

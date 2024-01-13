@@ -15,6 +15,7 @@
     ./direnv.nix
     ./git.nix
     ./kde.nix
+    ./spotify.nix
     ./xdg-open.nix
     ./zathura.nix
     ./shell
@@ -42,7 +43,6 @@
 
     # GUI stuff
     telegram-desktop
-    spotify
     discord
     joplin-desktop
     kate
