@@ -14,6 +14,10 @@
 
     # Disable password manager
     "services.sync.engine.passwords" = false;
+    "signon.rememberSignons" = false;
+    "signon.generation.enabled" = false;
+    "signon.firefoxRelay.feature" = "disabled";
+    "signon.autofillForms" = false;
 
     # Firefox Sync
     "identity.fxaccounts.enabled" = true;
@@ -38,6 +42,7 @@
     "browser.bookmarks.addedImportButton" = true;
     "browser.topsites.contile.cachedTiles" = "";
     "browser.uiCustomization.state" = builtins.readFile ./ui-state.json;
+    "browser.toolbars.bookmarks.visibility" = "always"; # Always show bookmarks
   };
 in {
   imports = [
