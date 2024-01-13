@@ -3,17 +3,15 @@
   lib,
   vscode-extensions,
   catppuccin-vsc,
-  alejandra,
   ...
 }: {
   nixpkgs.overlays = [catppuccin-vsc.overlays.default];
 
-  home.packages = with pkgs;
-    [
-      clang-tools
-      nixd
-    ]
-    ++ [alejandra];
+  home.packages = with pkgs; [
+    clang-tools
+    nixd
+    alejandra
+  ];
 
   programs.vscode = {
     enable = true;

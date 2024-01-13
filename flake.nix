@@ -16,11 +16,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    alejandra = {
-      url = "github:kamadorueda/alejandra/3.0.0";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     plasma-manager = {
       url = "github:pjones/plasma-manager";
       inputs = {
@@ -37,7 +32,6 @@
     catppuccin,
     nix-vscode-extensions,
     catppuccin-vsc,
-    alejandra,
     plasma-manager,
     ...
   }: let
@@ -52,11 +46,10 @@
         fullName = "Billy Panciotto";
       };
       vscode-extensions = nix-vscode-extensions.extensions.${system};
-      alejandra = alejandra.defaultPackage.${system};
       inherit catppuccin-vsc;
     };
   in {
-    formatter.${system} = extraArgs.alejandra;
+    formatter.${system} = pkgs.alejandra;
     nixosConfigurations = {
       nixbox = nixos {
         inherit system;
@@ -64,6 +57,14 @@
         modules = [
           ./system
           ./system/vm
+        ];
+      };
+      computerone = nixos {
+        inherit system;
+        specialArgs = extraArgs;
+        modules = [
+          ./system
+          ./system/computerone
         ];
       };
       portatilo = nixos {
