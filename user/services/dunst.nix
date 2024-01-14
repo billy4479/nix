@@ -1,11 +1,14 @@
 {
   pkgs,
-  catppuccinColors,
+  extraConfig,
   ...
 }: {
   services.dunst = {
     enable = true;
-    iconTheme = import ../icons/papirus.nix {inherit pkgs catppuccinColors;};
+    iconTheme = import ../icons/papirus.nix {
+      inherit pkgs;
+      inherit (extraConfig) catppuccinColors;
+    };
 
     settings = {
       # TODO: should try to upstream colors to ctp-nix

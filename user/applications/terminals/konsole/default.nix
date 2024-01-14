@@ -1,6 +1,6 @@
-{user, ...}: let
-  profileFile = "${user.username}.profile";
-  profileName = "${user.username}'s profile";
+{extraConfig, ...}: let
+  profileFile = "${extraConfig.user.username}.profile";
+  profileName = "${extraConfig.user.username}'s profile";
 in {
   imports = [./catppuccin.nix];
 

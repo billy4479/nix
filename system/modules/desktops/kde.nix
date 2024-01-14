@@ -1,9 +1,9 @@
-{wayland, ...}: {
-  services.xserver.enable = !wayland;
+{extraConfig, ...}: {
+  services.xserver.enable = !extraConfig.wayland;
 
   # Enable the KDE Plasma Desktop Environment.
   services.xserver.displayManager.defaultSession =
-    if wayland
+    if extraConfig.wayland
     then "plasmawayland"
     else "plasma";
   services.xserver.desktopManager.plasma5.enable = true;

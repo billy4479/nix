@@ -1,11 +1,10 @@
 {
   pkgs,
   lib,
-  vscode-extensions,
-  catppuccin-vsc,
+  extraPkgs,
   ...
 }: {
-  nixpkgs.overlays = [catppuccin-vsc.overlays.default];
+  nixpkgs.overlays = [extraPkgs.catppuccin-vsc.overlays.default];
 
   home.packages = with pkgs; [
     clang-tools
@@ -17,7 +16,7 @@
     enable = true;
     package = pkgs.vscodium;
     # TODO: should we install them just in certain dev environments?
-    extensions = with vscode-extensions.vscode-marketplace;
+    extensions = with extraPkgs.vscode-extensions.vscode-marketplace;
       [
         # Theme
         catppuccin.catppuccin-vsc-icons

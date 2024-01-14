@@ -1,4 +1,4 @@
-{desktop, ...}: {
+{extraConfig, ...}: {
   programs.kitty = {
     enable = true;
     font = {
@@ -13,7 +13,7 @@
       window_padding_width = 0;
       confirm_os_window_close = 0;
       background_opacity =
-        if desktop == "kde"
+        if extraConfig.desktop == "kde"
         then "1"
         else "0.7";
       shell = "zsh";

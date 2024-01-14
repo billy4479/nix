@@ -1,9 +1,9 @@
-{desktop, ...}: {
+{extraConfig, ...}: {
   imports = [
     ./hardware-configuration.nix
     ../../modules/autologin.nix
 
-    (import ../../modules/desktops desktop)
+    (import ../../modules/desktops extraConfig.desktop)
   ];
 
   networking.hostName = "nixbox";

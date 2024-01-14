@@ -1,6 +1,6 @@
 {
   pkgs,
-  user,
+  extraConfig,
   ...
 }: {
   programs.git = {
@@ -24,11 +24,11 @@
     };
 
     userEmail =
-      if user.username == "billy"
+      if extraConfig.user.username == "billy"
       then "giachi.ellero@gmail.com"
       else throw "you should probably change this";
     userName =
-      if user.username == "billy"
+      if extraConfig.user.username == "billy"
       then "billy4479"
       else throw "you should probably change this";
   };

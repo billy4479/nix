@@ -1,8 +1,10 @@
 {
   pkgs,
   config,
+  extraConfig,
   ...
-}: let
+}:
+assert !extraConfig.wayland; let
   wallpaperDir = "${config.xdg.userDirs.pictures}/wallpapers";
   bgForMonitor = {
     monitorNum,

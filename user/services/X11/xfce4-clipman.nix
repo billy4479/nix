@@ -1,4 +1,9 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  extraConfig,
+  ...
+}:
+assert !extraConfig.wayland; {
   home.packages = [pkgs.xfce.xfce4-clipman-plugin];
 
   systemd.user.services.xfce4-clipman = {

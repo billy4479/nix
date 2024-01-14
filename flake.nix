@@ -45,31 +45,41 @@
 
     # Shortcuts
     pkgs = nixpkgs.legacyPackages.${system};
+    lib = nixpkgs.lib;
     nixos = nixpkgs.lib.nixosSystem;
+
+    user = {
+      username = "billy";
+      fullName = "Billy Panciotto";
+    };
 
     # specialArgs/extraSpecialArgs for nixos config and home-manager
     extraArgs = {
-      desktop = "kde";
-      wayland = true;
-      bluetooth = true;
-      user = {
-        username = "billy";
-        fullName = "Billy Panciotto";
+      extraConfig = {
+        desktop = "kde";
+        wayland = true;
+        bluetooth = true;
+
+        catppuccinColors = {
+          flavour = "frappe";
+          accent = "green";
+        };
+
+        inherit user;
       };
-      vscode-extensions = nix-vscode-extensions.extensions.${system};
-      spicetifyPkgs = spicetify-nix.packages.${system}.default;
-      catppuccinColors = {
-        flavour = "frappe";
-        accent = "green";
+
+      extraPkgs = {
+        vscode-extensions = nix-vscode-extensions.extensions.${system};
+        spicetifyPkgs = spicetify-nix.packages.${system}.default;
+        inherit catppuccin-vsc;
       };
-      inherit catppuccin-vsc;
     };
 
     # Default home-manager configuration
     hmCfg = args:
       home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = extraArgs // args;
+        extraSpecialArgs = lib.recursiveUpdate extraArgs args;
         modules = [
           catppuccin.homeManagerModules.catppuccin
           plasma-manager.homeManagerModules.plasma-manager
@@ -82,7 +92,7 @@
     nixosConfigurations = {
       nixbox = nixos {
         inherit system;
-        specialArgs = extraArgs // {bluetooth = "false";};
+        specialArgs = lib.recursiveUpdate extraArgs {extraConfig.bluetooth = "false";};
         modules = [
           ./system
           ./system/hosts/vm
@@ -91,10 +101,11 @@
       computerone = nixos {
         inherit system;
         specialArgs =
+          lib.recursiveUpdate
           extraArgs
-          // {
-            desktop = "qtile";
-            wayland = false;
+          {
+            extraConfig.desktop = "qtile";
+            extraConfig.wayland = false;
           };
         modules = [
           ./system
@@ -111,11 +122,11 @@
       };
     };
     homeConfigurations = {
-      "${extraArgs.user.username}@nixbox" = hmCfg {};
-      "${extraArgs.user.username}@portatilo" = hmCfg {};
-      "${extraArgs.user.username}@computerone" = hmCfg {
-        desktop = "qtile";
-        wayland = false;
+      "${user.username}@nixbox" = hmCfg {};
+      "${user.username}@portatilo" = hmCfg {};
+      "${user.username}@computerone" = hmCfg {
+        extraConfig.desktop = "qtile";
+        extraConfig.wayland = false;
       };
     };
   };

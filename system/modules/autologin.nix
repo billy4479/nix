@@ -1,6 +1,6 @@
-{user, ...}: {
+{extraConfig, ...}: {
   services.xserver.displayManager.autoLogin = {
     enable = true;
-    user = user.username;
+    user = extraConfig.user.username;
   };
 }

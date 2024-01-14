@@ -1,11 +1,11 @@
 {
   aboutConfig,
-  user,
+  extraConfig,
   ...
 }: {
   programs.firefox = {
     enable = true;
-    profiles.${user.username} = {
+    profiles.${extraConfig.user.username} = {
       id = 0;
       search = {
         default = "Brave Search";

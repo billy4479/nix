@@ -1,10 +1,10 @@
-{spicetifyPkgs, ...}: {
+{extraPkgs, ...}: {
   programs.spicetify = {
     enable = true;
-    theme = spicetifyPkgs.themes.catppuccin;
+    theme = extraPkgs.spicetifyPkgs.themes.catppuccin;
     colorScheme = "frappe";
 
-    enabledExtensions = with spicetifyPkgs.extensions; [
+    enabledExtensions = with extraPkgs.spicetifyPkgs.extensions; [
       fullAppDisplay
       shuffle
     ];

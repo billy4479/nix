@@ -1,5 +1,5 @@
-{wayland, ...}:
-assert !wayland; {
+{extraConfig, ...}:
+assert !extraConfig.wayland; {
   # https://github.com/billy4479/dotfiles/blob/master/.config/picom/picom.conf
   services.picom = {
     enable = true;

@@ -1,13 +1,8 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
 {
   config,
   pkgs,
-  user,
-  desktop,
   lib,
-  bluetooth,
+  extraConfig,
   ...
 }: {
   imports =
@@ -17,7 +12,7 @@
       ./modules/sddm.nix
       ./modules/sound.nix
     ]
-    ++ lib.optional bluetooth ./modules/bluetooth.nix;
+    ++ lib.optional extraConfig.bluetooth ./modules/bluetooth.nix;
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -34,8 +29,8 @@
 
   main-user = {
     enable = true;
-    userName = user.username;
-    fullName = user.fullName;
+    userName = extraConfig.user.username;
+    fullName = extraConfig.user.fullName;
   };
 
   # List packages installed in system profile. To search, run:

@@ -1,4 +1,9 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  extraConfig,
+  ...
+}:
+assert !extraConfig.wayland; {
   home.packages = [pkgs.lxsession];
 
   systemd.user.services.lxsession = {

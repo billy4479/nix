@@ -1,15 +1,11 @@
 {
   config,
   pkgs,
-  user,
-  catppuccinColors,
-  wayland,
-  nixpkgs,
-  desktop,
+  extraConfig,
   ...
 }: {
-  home.username = user.username;
-  home.homeDirectory = "/home/${user.username}";
+  home.username = extraConfig.user.username;
+  home.homeDirectory = "/home/${extraConfig.user.username}";
 
   # Enable unfree - yes, we have to do this here too
   nixpkgs.config.allowUnfree = true;
@@ -30,12 +26,12 @@
 
     ./wallpapers.nix
 
-    (import ./desktops desktop)
+    (import ./desktops extraConfig.desktop)
   ];
 
   home.stateVersion = "23.11";
 
-  catppuccin = catppuccinColors;
+  catppuccin = extraConfig.catppuccinColors;
 
   home.packages = with pkgs; [
     # Shell utilities, not fundamental but still nice
@@ -64,7 +60,7 @@
     gcc
   ];
 
-  xsession.numlock.enable = !wayland;
+  xsession.numlock.enable = !extraConfig.wayland;
 
   programs.mpv.enable = true; # TODO: there are some interesting configs here
 
