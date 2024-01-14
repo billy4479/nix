@@ -27,6 +27,7 @@ assert !wayland; {
       ../../services/kdeconnect.nix
       ../../services/nm-applet.nix
       ../../services/playerctld.nix
+      ../../services/X11/nitrogen.nix
       ../../services/X11/picom.nix
     ]
     # If bluetooth is enable we want to enable this.
@@ -37,7 +38,7 @@ assert !wayland; {
   #       If I find the time it would be nice to try writing one.
   home.packages = with pkgs; [
     lxsession
-    nitrogen
     xfce.xfce4-clipman-plugin
+    pcmanfm-qt
   ];
 }

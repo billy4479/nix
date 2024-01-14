@@ -28,6 +28,8 @@
     ./fonts
     ./xdg-open.nix
 
+    ./wallpapers.nix
+
     (import ./desktops desktop)
   ];
 
