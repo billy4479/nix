@@ -44,6 +44,10 @@
     "browser.topsites.contile.cachedTiles" = "";
     "browser.uiCustomization.state" = builtins.readFile ./ui-state.json;
     "browser.toolbars.bookmarks.visibility" = "always"; # Always show bookmarks
+
+    # Find bar prefereces
+    "findbar.highlightAll" = true;
+    "accessibility.typeaheadfind.enablesound" = false;
   };
 in {
   imports = [

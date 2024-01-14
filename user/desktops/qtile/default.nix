@@ -21,12 +21,13 @@ assert !wayland; {
 
   imports =
     [
-      ../../services/X11/picom.nix
+      ../../applications/rofi.nix
       ../../services/dunst.nix
       ../../services/gammastep.nix
       ../../services/kdeconnect.nix
       ../../services/nm-applet.nix
       ../../services/playerctld.nix
+      ../../services/X11/picom.nix
     ]
     # If bluetooth is enable we want to enable this.
     # We already know that blueman will be enabled because of /system/modules/bluetooth.nix

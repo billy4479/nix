@@ -50,7 +50,7 @@ keys = [
         desc='Shutdown Qtile'
         ),
     Key([mod], "b",
-        lazy.spawn("librewolf"),
+        lazy.spawn("firefox"),
         desc='Spawn a browser'
         ),
     Key([mod], "v",
