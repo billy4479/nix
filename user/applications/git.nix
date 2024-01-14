@@ -33,7 +33,10 @@
       else throw "you should probably change this";
   };
 
-  home.packages = with pkgs; [
-    gh
-  ];
+  programs.gh = {
+    enable = true;
+    settings = {
+      git_protocol = "ssh";
+    };
+  };
 }
