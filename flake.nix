@@ -42,36 +42,63 @@
     ...
   }: let
     system = "x86_64-linux";
+
+    # Shortcuts
     pkgs = nixpkgs.legacyPackages.${system};
     nixos = nixpkgs.lib.nixosSystem;
-    hmCfg = home-manager.lib.homeManagerConfiguration;
+
+    # specialArgs/extraSpecialArgs for nixos config and home-manager
     extraArgs = {
+      desktop = "kde";
       wayland = true;
+      bluetooth = true;
       user = {
         username = "billy";
         fullName = "Billy Panciotto";
       };
       vscode-extensions = nix-vscode-extensions.extensions.${system};
       spicetifyPkgs = spicetify-nix.packages.${system}.default;
+      catppuccinColors = {
+        flavour = "frappe";
+        accent = "green";
+      };
       inherit catppuccin-vsc;
     };
+
+    # Default home-manager configuration
+    hmCfg = args:
+      home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        extraSpecialArgs = extraArgs // args;
+        modules = [
+          catppuccin.homeManagerModules.catppuccin
+          plasma-manager.homeManagerModules.plasma-manager
+          spicetify-nix.homeManagerModule
+          ./user
+        ];
+      };
   in {
     formatter.${system} = pkgs.alejandra;
     nixosConfigurations = {
       nixbox = nixos {
         inherit system;
-        specialArgs = extraArgs;
+        specialArgs = extraArgs // {bluetooth = "false";};
         modules = [
           ./system
-          ./system/vm
+          ./system/hosts/vm
         ];
       };
       computerone = nixos {
         inherit system;
-        specialArgs = extraArgs;
+        specialArgs =
+          extraArgs
+          // {
+            desktop = "qtile";
+            wayland = false;
+          };
         modules = [
           ./system
-          ./system/computerone
+          ./system/hosts/computerone
         ];
       };
       portatilo = nixos {
@@ -79,20 +106,16 @@
         specialArgs = extraArgs;
         modules = [
           ./system
-          ./system/portatilo
+          ./system/hosts/portatilo
         ];
       };
     };
     homeConfigurations = {
-      billy = hmCfg {
-        inherit pkgs;
-        extraSpecialArgs = extraArgs;
-        modules = [
-          catppuccin.homeManagerModules.catppuccin
-          plasma-manager.homeManagerModules.plasma-manager
-          spicetify-nix.homeManagerModule
-          ./user
-        ];
+      "${extraArgs.user.username}@nixbox" = hmCfg {};
+      "${extraArgs.user.username}@portatilo" = hmCfg {};
+      "${extraArgs.user.username}@computerone" = hmCfg {
+        desktop = "qtile";
+        wayland = false;
       };
     };
   };

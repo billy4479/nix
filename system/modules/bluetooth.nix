@@ -1,4 +1,4 @@
-{...}: {
+{desktop, ...}: {
   # https://nixos.wiki/wiki/Bluetooth
   hardware.bluetooth = {
     enable = true;
@@ -9,5 +9,5 @@
       };
     };
   };
-  services.blueman.enable = false;
+  services.blueman.enable = desktop != "kde"; # It seems like KDE does its own thing
 }

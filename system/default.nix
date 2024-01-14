@@ -5,14 +5,19 @@
   config,
   pkgs,
   user,
-  wayland,
+  desktop,
+  lib,
+  bluetooth,
   ...
 }: {
-  imports = [
-    ./main-user.nix
-    ./locale.nix
-    ./sound.nix
-  ];
+  imports =
+    [
+      ./modules/locale.nix
+      ./modules/main-user.nix
+      ./modules/sddm.nix
+      ./modules/sound.nix
+    ]
+    ++ lib.optional bluetooth ./modules/bluetooth.nix;
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -26,27 +31,6 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
-
-  # Enable the X11 windowing system.
-  services.xserver.enable = true; # Needed for sddm
-
-  # Enable the KDE Plasma Desktop Environment.
-  services.xserver.displayManager.sddm = {
-    enable = true;
-    wayland.enable = wayland;
-  };
-
-  services.xserver.displayManager.defaultSession = "plasmawayland";
-  services.xserver.desktopManager.plasma5.enable = true;
-
-  xdg.portal = {
-    enable = true;
-    config.common.default = "kde";
-    # extraPortals = with pkgs; [ xdg-desktop-portal-gtk ];
-  };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
 
   main-user = {
     enable = true;

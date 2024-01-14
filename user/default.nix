@@ -2,7 +2,10 @@
   config,
   pkgs,
   user,
+  catppuccinColors,
+  wayland,
   nixpkgs,
+  desktop,
   ...
 }: {
   home.username = user.username;
@@ -12,26 +15,25 @@
   nixpkgs.config.allowUnfree = true;
 
   imports = [
-    ./direnv.nix
-    ./git.nix
-    ./kde.nix
-    ./spotify.nix
-    ./xdg-open.nix
-    ./zathura.nix
-    ./shell
-    ./browser
+    ./applications/browser
+    ./applications/direnv.nix
+    ./applications/editor/nvim
+    ./applications/editor/vscodium
+    ./applications/git.nix
+    ./applications/shell
+    ./applications/spotify.nix
+    ./applications/terminals/kitty.nix
+    ./applications/terminals/konsole
+    ./applications/zathura.nix
     ./fonts
-    ./editor/nvim
-    ./editor/vscodium
-    ./terminal/konsole
+    ./xdg-open.nix
+
+    (import ./desktops desktop)
   ];
 
   home.stateVersion = "23.11";
 
-  catppuccin = {
-    flavour = "frappe";
-    accent = "green";
-  };
+  catppuccin = catppuccinColors;
 
   home.packages = with pkgs; [
     # Shell utilities, not fundamental but still nice
@@ -54,11 +56,13 @@
     hunspellDicts.en_US
     hunspellDicts.it_IT
 
+    kitty
+
     lightly-qt
     gcc
   ];
 
-  xsession.numlock.enable = true;
+  xsession.numlock.enable = !wayland;
 
   programs.mpv.enable = true; # TODO: there are some interesting configs here
 

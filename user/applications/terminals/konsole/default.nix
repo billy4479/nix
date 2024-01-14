@@ -5,11 +5,12 @@ in {
   imports = [./catppuccin.nix];
 
   programs.plasma = {
+    enable = true;
     configFile."konsolerc"."Desktop Entry"."DefaultProfile" = profileFile;
     dataFile."konsole/${profileFile}" = {
       "Appearance" = {
         "ColorScheme" = "Catppuccin-Frappe";
-        "Font" = "FiraCode Nerd Font Ret,16,-1,5,53,0,0,0,0,0,Regular";
+        "Font" = "${(import ../../../fonts/names.nix).mono},16,-1,5,53,0,0,0,0,0,Regular";
       };
 
       "General" = {

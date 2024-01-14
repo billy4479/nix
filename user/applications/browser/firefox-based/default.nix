@@ -1,4 +1,5 @@
 {...} @ args: let
+  fonts = import ../../../fonts/names.nix;
   aboutConfig = {
     # Lets be honest, this is more annoying than useful
     "webgl.disabled" = false;
@@ -33,9 +34,9 @@
 
     # Fonts
     "font.default.x-western" = "sans-serif";
-    "font.name.monospace.x-western" = "FiraCode Nerd Font";
-    "font.name.sans-serif.x-western" = "SF Pro Display";
-    "font.name.serif.x-western" = "SF Pro Display"; # Basically disable serif fonts
+    "font.name.monospace.x-western" = fonts.mono;
+    "font.name.sans-serif.x-western" = fonts.sans;
+    "font.name.serif.x-western" = fonts.serif;
     "browser.display.use_document_fonts" = 0; # No custom fonts
 
     "browser.aboutConfig.showWarning" = false;

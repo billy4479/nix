@@ -88,6 +88,9 @@
     };
     userSettings =
       lib.importJSON ./settings.json
-      // {"clangd.path" = "${pkgs.clang-tools}/bin/clangd";}; # TODO: should this be in a devEnvironment?
+      // {
+        "editor.fontFamily" = (import ../../../fonts/names.nix).mono;
+        "clangd.path" = "${pkgs.clang-tools}/bin/clangd"; # TODO: should this be in a devEnvironment?
+      };
   };
 }
