@@ -53,7 +53,11 @@
       fullName = "Billy Panciotto";
     };
 
-    # specialArgs/extraSpecialArgs for nixos config and home-manager
+    # WARNING: the following part might look like a mess but it's actually quite straight forward.
+    #          We have all this code because we want to share the same `specialArgs`/`extraSpecialArgs` between
+    #          the nixos config and the home-manager config.
+
+    # First we define the specialArgs/extraSpecialArgs for nixos config and home-manager
     extraArgs = {
       extraConfig = {
         desktop = "kde";
@@ -75,11 +79,12 @@
       };
     };
 
-    # Default home-manager configuration
+    # This function takes some `args`, merges them with our default `extraArgs`
+    # and creates a "default" home-manager config with `args` added on top.
     hmCfg = args:
       home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = lib.recursiveUpdate extraArgs args;
+        extraSpecialArgs = lib.recursiveUpdate extraArgs {extraConfig = args;};
         modules = [
           catppuccin.homeManagerModules.catppuccin
           plasma-manager.homeManagerModules.plasma-manager
@@ -87,47 +92,61 @@
           ./user
         ];
       };
-  in {
-    formatter.${system} = pkgs.alejandra;
-    nixosConfigurations = {
-      nixbox = nixos {
+
+    # This function does pretty much the same of the above one but with the nixos config:
+    # here we take `args` and `extraSystemModules`. `args` is added to `specialArgs`,
+    # while `extraSystemModules` is a list of modules that gets added to the default ones.
+    nixCfg = {
+      extraSystemModules,
+      args,
+    }:
+      nixos {
         inherit system;
-        specialArgs = lib.recursiveUpdate extraArgs {extraConfig.bluetooth = "false";};
-        modules = [
-          ./system
-          ./system/hosts/vm
-        ];
+        specialArgs = lib.recursiveUpdate extraArgs {extraConfig = args;};
+        modules = [./system] ++ extraSystemModules;
       };
-      computerone = nixos {
-        inherit system;
-        specialArgs =
-          lib.recursiveUpdate
-          extraArgs
-          {
-            extraConfig.desktop = "qtile";
-            extraConfig.wayland = false;
-          };
-        modules = [
-          ./system
-          ./system/hosts/computerone
-        ];
-      };
-      portatilo = nixos {
-        inherit system;
-        specialArgs = extraArgs;
-        modules = [
-          ./system
-          ./system/hosts/portatilo
-        ];
-      };
+
+    # This function creates the flake output for a single host:
+    # we take a `hostname`, `extraSystemModules` (that we pass to `nixCfg`),
+    # and `args` (that we pass to `nixCfg` and `hmCfg`).
+    hostFn = {
+      hostname,
+      extraSystemModules ? [],
+      args ? {},
+    }: {
+      nixosConfigurations.${hostname} = nixCfg {inherit extraSystemModules args;};
+      homeConfigurations."${user.username}@${hostname}" = hmCfg args;
     };
-    homeConfigurations = {
-      "${user.username}@nixbox" = hmCfg {};
-      "${user.username}@portatilo" = hmCfg {};
-      "${user.username}@computerone" = hmCfg {
-        extraConfig.desktop = "qtile";
-        extraConfig.wayland = false;
-      };
-    };
-  };
+
+    # This function is like `lib.recursiveUpdate` but takes a list instead.
+    recursiveMerge = attrList: builtins.foldl' (a: b: lib.recursiveUpdate a b) {} attrList;
+
+    # Now we map `hostProps` to "real" configurations using `hostFn` and we merge them.
+    createAndMergeHosts = hostProps: recursiveMerge (map hostFn hostProps);
+  in
+    {
+      formatter.${system} = pkgs.alejandra;
+    }
+    # Finally we define our `hostProps`:
+    # these are the real configuration changes I want from one host to another.
+    // createAndMergeHosts [
+      {
+        hostname = "nixbox";
+        args = {bluetooth = "false";};
+        extraSystemModules = [./system/hosts/vm];
+      }
+      {
+        hostname = "portatilo";
+        args = {};
+        extraSystemModules = [./system/hosts/portatilo];
+      }
+      {
+        hostname = "computerone";
+        args = {
+          desktop = "qtile";
+          wayland = false;
+        };
+        extraSystemModules = [./system/hosts/computerone];
+      }
+    ];
 }
