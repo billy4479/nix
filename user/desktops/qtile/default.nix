@@ -12,11 +12,6 @@
 assert !wayland; {
   home.file = {
     "${config.xdg.configHome}/qtile/config.py".source = ./config.py;
-    "${config.xdg.configHome}/qtile/autostart.sh" = {
-      # TODO: remove this, we should probably use systemd units
-      source = ./autostart.sh;
-      executable = true;
-    };
   };
 
   imports =
@@ -27,8 +22,10 @@ assert !wayland; {
       ../../services/kdeconnect.nix
       ../../services/nm-applet.nix
       ../../services/playerctld.nix
+      ../../services/X11/lxsession.nix
       ../../services/X11/nitrogen.nix
       ../../services/X11/picom.nix
+      ../../services/X11/xfce4-clipman.nix
     ]
     # If bluetooth is enable we want to enable this.
     # We already know that blueman will be enabled because of /system/modules/bluetooth.nix
@@ -37,7 +34,6 @@ assert !wayland; {
   # TODO: this is stuff for which there is no home-manager module.
   #       If I find the time it would be nice to try writing one.
   home.packages = with pkgs; [
-    lxsession
     xfce.xfce4-clipman-plugin
     pcmanfm-qt
   ];
