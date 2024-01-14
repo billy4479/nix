@@ -1,5 +1,6 @@
 {
   pkgs,
+  lib,
   extraConfig,
   ...
 }:
@@ -16,7 +17,7 @@ assert !extraConfig.wayland; {
     Install = {WantedBy = ["graphical-session.target"];};
 
     Service = {
-      ExecStart = pkgs.lxsession;
+      ExecStart = "${pkgs.lxsession}/bin/lxsession";
       Restart = "always";
       RestartSec = 3;
     };

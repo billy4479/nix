@@ -27,6 +27,13 @@
   # Enable networking
   networking.networkmanager.enable = true;
 
+  # This is a not-so-elegant solution to dump whatever setting we get from DHCP
+  environment.etc = {
+    "resolv.conf".text =
+      lib.concatStrings (map (server: "nameserver ${server}\n")
+        ["1.1.1.1" "1.0.0.1"]);
+  };
+
   main-user = {
     enable = true;
     userName = extraConfig.user.username;

@@ -1,6 +1,7 @@
 {
   pkgs,
   extraConfig,
+  lib,
   ...
 }:
 assert !extraConfig.wayland; {
@@ -16,7 +17,7 @@ assert !extraConfig.wayland; {
     Install = {WantedBy = ["graphical-session.target"];};
 
     Service = {
-      ExecStart = pkgs.xfce.xfce4-clipman-plugin;
+      ExecStart = "${pkgs.xfce.xfce4-clipman-plugin}/bin/xfce4-clipman";
       Restart = "always";
       RestartSec = 3;
     };

@@ -1,6 +1,7 @@
 {
   pkgs,
   config,
+  lib,
   extraConfig,
   ...
 }:
@@ -43,7 +44,7 @@ in {
     Service = {
       Type = "oneshot";
       RemainAfterExit = "yes";
-      ExecStart = "${pkgs.nitrogen} --restore";
+      ExecStart = "${lib.getExe pkgs.nitrogen} --restore";
     };
   };
 }
