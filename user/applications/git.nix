@@ -18,7 +18,10 @@
       };
     };
 
-    extraConfig.color.ui = true;
+    extraConfig = {
+      color.ui = true;
+      init.defaultBranch = "master";
+    };
 
     userEmail =
       if user.username == "billy"
