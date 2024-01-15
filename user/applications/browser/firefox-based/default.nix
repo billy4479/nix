@@ -53,5 +53,8 @@ in {
   imports = [
     (import ./firefox.nix (args // {inherit aboutConfig;}))
     # (import ./librewolf.nix (args // {inherit aboutConfig;}))
+
+    # Add {userchrome,usercontent}.css, disable if you don't like it
+    ./ui-fix.nix
   ];
 }
