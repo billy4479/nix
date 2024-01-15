@@ -22,6 +22,7 @@
       ./applications/terminals/kitty.nix
       ./applications/terminals/konsole
       ./applications/zathura.nix
+      ./cursor.nix
       ./fonts
       ./gtk.nix
       ./xdg-open.nix

@@ -11,11 +11,7 @@
 in {
   gtk = {
     enable = true;
-    # TODO: use catppuccin-cursor if they allow overrides
-    cursorTheme = {
-      package = pkgs.apple-cursor;
-      name = "macOS-Monterey";
-    };
+    cursorTheme = import ./cursors pkgs;
 
     font = {
       name = (import ./fonts/names.nix).sans;
