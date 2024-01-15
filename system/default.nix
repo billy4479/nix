@@ -47,6 +47,11 @@
     file
   ];
 
+  services.udisks2.enable = true;
+
+  # https://discourse.nixos.org/t/error-gdbus-error-org-freedesktop-dbus-error-serviceunknown-the-name-ca-desrt-dconf-was-not-provided-by-any-service-files/29111/2
+  programs.dconf.enable = true;
+
   programs.zsh.enable = true;
   # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.zsh.enableCompletion
   environment.pathsToLink = ["/share/zsh"];

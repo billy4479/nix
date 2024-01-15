@@ -23,6 +23,7 @@
       ./applications/terminals/konsole
       ./applications/zathura.nix
       ./fonts
+      ./gtk.nix
       ./xdg-open.nix
 
       ./wallpapers.nix
@@ -54,6 +55,7 @@
     kate
     qbittorrent
     qalculate-gtk
+    ark
 
     libreoffice-qt
     hunspell
