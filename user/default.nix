@@ -40,7 +40,7 @@
 
   home.stateVersion = "23.11";
 
-  catppuccin = extraConfig.catppuccinColors;
+  catppuccin = {inherit (extraConfig.catppuccinColors) flavour accent;};
 
   programs.office = {
     enableLibreOffice = true;

@@ -18,11 +18,6 @@ assert extraConfig.desktop != "kde"; let
     inherit pkgs;
     inherit (extraConfig) catppuccinColors;
   };
-
-  # https://github.com/Stonks3141/ctp-nix/blob/main/modules/lib/default.nix#L49C1-L51C78
-  mkUpper = str:
-    with builtins;
-      (lib.toUpper (substring 0 1 str)) + (substring 1 (stringLength str) str);
 in {
   home.sessionVariables = {
     QT_QPA_PLATFORMTHEME = "qt6ct";
@@ -48,7 +43,7 @@ in {
     configFile = let
       conf = {
         "Appearance" = {
-          "color_scheme_path" = "${config.xdg.configHome}/qt5ct/colors/Catppuccin-${mkUpper extraConfig.catppuccinColors.flavour}.conf";
+          "color_scheme_path" = "${config.xdg.configHome}/qt5ct/colors/Catppuccin-${extraConfig.catppuccinColors.upper.flavour}.conf";
           "custom_palette" = true;
           "icon_theme" = papirus.name;
           "standard_dialogs" = "xdgdesktopportal";

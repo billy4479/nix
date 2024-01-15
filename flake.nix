@@ -53,6 +53,22 @@
       fullName = "Billy Panciotto";
     };
 
+    # https://github.com/Stonks3141/ctp-nix/blob/main/modules/lib/default.nix#L49C1-L51C78
+    mkUpper = str:
+      with builtins;
+        (lib.toUpper (substring 0 1 str)) + (substring 1 (stringLength str) str);
+
+    mkCatppuccinColors = {
+      flavour,
+      accent,
+    }: {
+      inherit flavour accent;
+      upper = {
+        flavour = mkUpper flavour;
+        accent = mkUpper accent;
+      };
+    };
+
     # WARNING: the following part might look like a mess but it's actually quite straight forward.
     #          We have all this code because we want to share the same `specialArgs`/`extraSpecialArgs` between
     #          the nixos config and the home-manager config.
@@ -64,7 +80,7 @@
         wayland = true;
         bluetooth = true;
 
-        catppuccinColors = {
+        catppuccinColors = mkCatppuccinColors {
           flavour = "frappe";
           accent = "green";
         };
