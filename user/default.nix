@@ -30,6 +30,7 @@
       ./wallpapers.nix
 
       (import ./desktops extraConfig.desktop)
+      ./applications/office.nix
     ]
     ++ (
       if extraConfig.desktop != "kde"
@@ -40,6 +41,11 @@
   home.stateVersion = "23.11";
 
   catppuccin = extraConfig.catppuccinColors;
+
+  programs.office = {
+    enableLibreOffice = true;
+    enableOnlyOffice = true;
+  };
 
   home.packages = with pkgs; [
     # Shell utilities, not fundamental but still nice
@@ -57,11 +63,6 @@
     qbittorrent
     qalculate-gtk
     ark
-
-    libreoffice-qt
-    hunspell
-    hunspellDicts.en_US
-    hunspellDicts.it_IT
 
     kitty
 
