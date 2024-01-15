@@ -1,4 +1,6 @@
-{...}: {
+{pkgs, ...}: {
+  home.packages = [pkgs.lightly-qt];
+
   programs.plasma = {
     enable = true;
     configFile = {

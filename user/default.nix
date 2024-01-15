@@ -10,24 +10,30 @@
   # Enable unfree - yes, we have to do this here too
   nixpkgs.config.allowUnfree = true;
 
-  imports = [
-    ./applications/browser
-    ./applications/direnv.nix
-    ./applications/editor/nvim
-    ./applications/editor/vscodium
-    ./applications/git.nix
-    ./applications/shell
-    ./applications/spotify.nix
-    ./applications/terminals/kitty.nix
-    ./applications/terminals/konsole
-    ./applications/zathura.nix
-    ./fonts
-    ./xdg-open.nix
+  imports =
+    [
+      ./applications/browser
+      ./applications/direnv.nix
+      ./applications/editor/nvim
+      ./applications/editor/vscodium
+      ./applications/git.nix
+      ./applications/shell
+      ./applications/spotify.nix
+      ./applications/terminals/kitty.nix
+      ./applications/terminals/konsole
+      ./applications/zathura.nix
+      ./fonts
+      ./xdg-open.nix
 
-    ./wallpapers.nix
+      ./wallpapers.nix
 
-    (import ./desktops extraConfig.desktop)
-  ];
+      (import ./desktops extraConfig.desktop)
+    ]
+    ++ (
+      if extraConfig.desktop != "kde"
+      then [./qt.nix]
+      else []
+    );
 
   home.stateVersion = "23.11";
 
@@ -56,7 +62,6 @@
 
     kitty
 
-    lightly-qt
     gcc
   ];
 
