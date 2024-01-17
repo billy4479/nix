@@ -13,6 +13,7 @@
   imports =
     [
       ./applications/browser
+      ./applications/btop.nix
       ./applications/direnv.nix
       ./applications/editor/nvim
       ./applications/editor/vscodium
@@ -63,8 +64,6 @@
     qbittorrent
     qalculate-gtk
     ark
-
-    kitty
 
     gcc
   ];
