@@ -21,6 +21,7 @@ assert !extraConfig.wayland; {
       ../../services/kdeconnect.nix
       ../../services/nm-applet.nix
       ../../services/playerctld.nix
+      ../../services/udiskie.nix
       ../../services/X11/lxsession.nix
       ../../services/X11/nitrogen.nix
       ../../services/X11/picom.nix

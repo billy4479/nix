@@ -47,6 +47,7 @@
     file
   ];
 
+  # We want this so we can enable udiskie in home-manager
   services.udisks2.enable = true;
 
   # https://discourse.nixos.org/t/error-gdbus-error-org-freedesktop-dbus-error-serviceunknown-the-name-ca-desrt-dconf-was-not-provided-by-any-service-files/29111/2
