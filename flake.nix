@@ -40,7 +40,7 @@
     plasma-manager,
     spicetify-nix,
     ...
-  }: let
+  } @ inputs: let
     system = "x86_64-linux";
 
     # Shortcuts
@@ -93,6 +93,8 @@
         spicetifyPkgs = spicetify-nix.packages.${system}.default;
         inherit catppuccin-vsc;
       };
+
+      flakeInputs = inputs;
     };
 
     # This function takes some `args`, merges them with our default `extraArgs`
