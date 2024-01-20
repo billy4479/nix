@@ -76,6 +76,9 @@
 
   home.sessionVariables = {
     EDITOR = "nvim";
+
+    # https://github.com/doron-cohen/antidot/blob/master/rules.yaml#L328
+    GTK2_RC_FILES = "${config.xdg.configHome}/gtk-2.0/gtkrc";
   };
 
   programs.home-manager.enable = true;
