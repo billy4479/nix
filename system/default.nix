@@ -69,6 +69,12 @@
     file
   ];
 
+  # Many file managers need this
+  services.gvfs.enable = true;
+
+  # This is also quite useful since many GUI apps need this
+  security.polkit.enable = true;
+
   # We want this so we can enable udiskie in home-manager
   services.udisks2.enable = true;
 

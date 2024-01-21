@@ -19,10 +19,10 @@ assert !extraConfig.wayland; {
       ../../services/dunst.nix
       ../../services/gammastep.nix
       ../../services/kdeconnect.nix
+      ../../services/lxqt-policykit.nix
       ../../services/nm-applet.nix
       ../../services/playerctld.nix
       ../../services/udiskie.nix
-      ../../services/X11/lxsession.nix
       ../../services/X11/nitrogen.nix
       ../../services/X11/picom.nix
       ../../services/X11/xfce4-clipman.nix
