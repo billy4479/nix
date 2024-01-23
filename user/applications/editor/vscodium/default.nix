@@ -36,6 +36,8 @@
         bradlc.vscode-tailwindcss # Tailwind
         vadimcn.vscode-lldb # LLDB
         xaver.clang-format # Clang Format
+        github.copilot # Copilot
+        mkhl.direnv # Direnv
 
         # IDE customization
         christian-kohler.path-intellisense # Path Intellisense
@@ -72,6 +74,11 @@
         key = "ctrl+/";
         command = "-editor.action.commentLine";
         when = "editorTextFocus && !editorReadonly";
+      }
+      {
+        key = "ctrl+enter";
+        command = "-github.copilot.generate";
+        when = "editorTextFocus && github.copilot.activated && !inInteractiveInput && !interactiveEditorFocused";
       }
     ];
     languageSnippets.go = {
