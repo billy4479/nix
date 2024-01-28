@@ -19,6 +19,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # It should help in desktop use
+  boot.kernelPackages = pkgs.linuxKernel.packages.linux_xanmod_latest;
+
   nix = {
     gc = {
       automatic = true;
