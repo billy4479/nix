@@ -49,17 +49,19 @@
   # Enable unfree
   nixpkgs.config.allowUnfree = true;
 
-  # Enable networking
-  networking.networkmanager.enable = true;
-
-  # This is a not-so-elegant solution to dump whatever setting we get from DHCP
-  environment.etc = {
-    "resolv.conf".text =
-      lib.concatStrings (map (server: "nameserver ${server}\n")
-        ["1.1.1.1" "1.0.0.1"]);
+  networking = {
+    networkmanager = {
+      enable = true;
+      dns = "none";
+    };
+    nameservers = [
+      "1.1.1.1"
+      "9.9.9.9"
+    ];
   };
+  services.resolved.enable = lib.mkForce false;
 
-  main-user = {
+main-user = {
     enable = true;
     userName = extraConfig.user.username;
     fullName = extraConfig.user.fullName;
