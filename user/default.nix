@@ -53,6 +53,7 @@
     fd
     ripgrep
     p7zip
+    zip
     license-cli
     bat-extras.batman
 
