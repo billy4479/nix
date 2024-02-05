@@ -44,9 +44,15 @@
     system = "x86_64-linux";
 
     # Shortcuts
-    pkgs = nixpkgs.legacyPackages.${system};
+    pkgs = import nixpkgs {
+      config.allowUnfree = true;
+      inherit system;
+    };
+
     lib = nixpkgs.lib;
     nixos = nixpkgs.lib.nixosSystem;
+
+    my-packages = import ./packages {inherit pkgs;};
 
     user = {
       username = "billy";
@@ -91,7 +97,7 @@
       extraPkgs = {
         vscode-extensions = nix-vscode-extensions.extensions.${system};
         spicetifyPkgs = spicetify-nix.packages.${system}.default;
-        inherit catppuccin-vsc;
+        inherit catppuccin-vsc my-packages;
       };
 
       flakeInputs = inputs;

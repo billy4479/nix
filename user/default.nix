@@ -17,6 +17,7 @@
       ./applications/direnv.nix
       ./applications/editor/nvim
       ./applications/editor/vscodium
+      ./applications/minecraft
       ./applications/git.nix
       ./applications/shell
       ./applications/spotify.nix

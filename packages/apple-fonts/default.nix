@@ -1,4 +1,3 @@
-# https://gist.githubusercontent.com/robbins/dccf1238e971973a6a963b04c486c099/raw/08b77ef234a7fc44c34470de06f6d6ce25020255/apple-fonts.nix
 {
   lib,
   stdenvNoCC,
@@ -95,7 +94,7 @@ in
       );
 
     meta = {
-      description = "Apple San Francisco, New York fonts";
+      description = "Apple San Francisco and New York fonts";
       homepage = "https://developer.apple.com/fonts/";
       license = lib.licenses.unfree;
     };

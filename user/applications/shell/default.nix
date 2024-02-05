@@ -39,6 +39,7 @@ in {
       s = "$HOME/src";
       n = "$HOME/nix";
       dl = "$HOME/Downloads";
+      mc = "$HOME/.local/share/PrismLauncher/instances";
     };
 
     dotDir = ".config/zsh";

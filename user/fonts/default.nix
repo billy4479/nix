@@ -1,6 +1,10 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  extraPkgs,
+  ...
+}: {
   home.packages = with pkgs; [
-    (callPackage ./apple-fonts.nix {})
+    extraPkgs.my-packages.apple-fonts
     (nerdfonts.override {
       fonts = ["FiraCode"];
     })
