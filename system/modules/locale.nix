@@ -18,8 +18,8 @@
 
   console.keyMap = "it2";
 
-  services.xserver = {
+  services.xserver.xkb = {
     layout = "it";
-    xkbVariant = "";
+    variant = "";
   };
 }
