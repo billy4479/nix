@@ -138,8 +138,11 @@
       extraSystemModules ? [],
       args ? {},
     }: {
-      nixosConfigurations.${hostname} = nixCfg {inherit extraSystemModules args;};
-      homeConfigurations."${user.username}@${hostname}" = hmCfg args;
+      nixosConfigurations.${hostname} = nixCfg {
+        inherit extraSystemModules;
+        args = args // {inherit hostname;};
+      };
+      homeConfigurations."${user.username}@${hostname}" = hmCfg (args // {inherit hostname;});
     };
 
     # This function is like `lib.recursiveUpdate` but takes a list instead.
