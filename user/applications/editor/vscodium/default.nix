@@ -40,6 +40,7 @@
         xaver.clang-format # Clang Format
         github.copilot # Copilot
         mkhl.direnv # Direnv
+        streetsidesoftware.code-spell-checker # Spell checker
 
         # IDE customization
         christian-kohler.path-intellisense # Path Intellisense
