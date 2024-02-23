@@ -39,6 +39,7 @@
         vadimcn.vscode-lldb # LLDB
         xaver.clang-format # Clang Format
         github.copilot # Copilot
+        github.copilot-chat # Copilot Chat
         mkhl.direnv # Direnv
         streetsidesoftware.code-spell-checker # Spell checker
 
