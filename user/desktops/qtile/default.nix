@@ -37,5 +37,10 @@ assert !extraConfig.wayland; {
   home.packages = with pkgs; [
     xfce.xfce4-clipman-plugin
     pcmanfm-qt
+
+    # For screenshot script
+    maim
+    xclip
+    xdotool
   ];
 }

@@ -30,13 +30,14 @@ assert !extraConfig.wayland; {
         method = "dual_kawase";
         strength = 2;
         # kern = "3x3box";
-        background-exclude = [
-          "window_type = 'dock'"
-          "window_type = 'desktop'"
-          "_GTK_FRAME_EXTENTS@:c"
-          "class_g = 'slop'"
-        ];
       };
+
+      blur-background-exclude = [
+        "window_type = 'dock'"
+        "window_type = 'desktop'"
+        "_GTK_FRAME_EXTENTS@:c"
+        "class_g = 'slop'"
+      ];
 
       xrender-sync-fence = true;
     };

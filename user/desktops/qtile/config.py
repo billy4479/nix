@@ -152,8 +152,9 @@ keys = [
             desc='Sent previous signal'
         ),
     # Screenshots
+    # TODO: any better way to do this?
     Key([], "Print",
-        lazy.spawn("/home/billy/scripts/dmenu/screenshot.sh"),
+        lazy.spawn(os.path.expandvars("${XDG_DATA_HOME}/scripts/dmenu/screenshot.sh")),
         desc="Screenshot script with dmenu",
         ),
 ]

@@ -27,6 +27,7 @@
       ./cursor.nix
       ./fonts
       ./gtk.nix
+      ./scripts
       ./xdg-open.nix
 
       ./wallpapers.nix
