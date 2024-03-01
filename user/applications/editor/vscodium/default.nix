@@ -42,6 +42,7 @@
         github.copilot-chat # Copilot Chat
         mkhl.direnv # Direnv
         streetsidesoftware.code-spell-checker # Spell checker
+        charliermarsh.ruff # Ruff (python formatter)
 
         # IDE customization
         christian-kohler.path-intellisense # Path Intellisense
