@@ -61,7 +61,7 @@
   };
   services.resolved.enable = lib.mkForce false;
 
-main-user = {
+  main-user = {
     enable = true;
     userName = extraConfig.user.username;
     fullName = extraConfig.user.fullName;
@@ -85,6 +85,8 @@ main-user = {
 
   # https://discourse.nixos.org/t/error-gdbus-error-org-freedesktop-dbus-error-serviceunknown-the-name-ca-desrt-dconf-was-not-provided-by-any-service-files/29111/2
   programs.dconf.enable = true;
+
+  programs.adb.enable = true;
 
   programs.zsh.enable = true;
   # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.zsh.enableCompletion

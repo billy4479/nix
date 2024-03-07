@@ -29,7 +29,7 @@ in {
       initialPassword = "password";
       description = cfg.fullName;
       shell = pkgs.zsh;
-      extraGroups = ["wheel" "networkmanager"];
+      extraGroups = ["wheel" "networkmanager" "adbusers"];
     };
   };
 }
