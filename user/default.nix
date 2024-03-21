@@ -12,28 +12,17 @@
 
   imports =
     [
-      ./applications/browser
-      ./applications/btop.nix
-      ./applications/direnv.nix
-      ./applications/editor/nvim
-      ./applications/editor/vscodium
-      ./applications/minecraft
-      ./applications/git.nix
-      ./applications/shell
-      ./applications/spotify.nix
-      ./applications/terminals/kitty.nix
-      ./applications/terminals/konsole
-      ./applications/zathura.nix
+      ./applications
       ./cursor.nix
       ./fonts
       ./gtk.nix
       ./scripts
+      ./services/syncthing.nix
       ./xdg-open.nix
 
       ./wallpapers.nix
 
       (import ./desktops extraConfig.desktop)
-      ./applications/office.nix
     ]
     ++ (
       if extraConfig.desktop != "kde"
@@ -45,11 +34,6 @@
 
   catppuccin = {inherit (extraConfig.catppuccinColors) flavour accent;};
 
-  programs.office = {
-    enableLibreOffice = true;
-    enableOnlyOffice = true;
-  };
-
   home.packages = with pkgs; [
     # Shell utilities, not fundamental but still nice
     fd
@@ -58,22 +42,9 @@
     zip
     license-cli
     bat-extras.batman
-
-    # GUI stuff
-    telegram-desktop
-    discord
-    joplin-desktop
-    kate
-    qbittorrent
-    qalculate-gtk
-    ark
-
-    gcc
   ];
 
   xsession.numlock.enable = !extraConfig.wayland;
-
-  programs.mpv.enable = true; # TODO: there are some interesting configs here
 
   home.file = {};
 

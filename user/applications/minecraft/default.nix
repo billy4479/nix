@@ -5,7 +5,7 @@
 }: {
   home.packages = with pkgs; [
     prismlauncher
-    extraPkgs.my-packages.packwiz-installer
+    # extraPkgs.my-packages.packwiz-installer # TODO: uncomment this once i figure out the grale build
     packwiz
   ];
 
