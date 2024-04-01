@@ -7,6 +7,9 @@
     prismlauncher
     # extraPkgs.my-packages.packwiz-installer # TODO: uncomment this once i figure out the grale build
     packwiz
+
+    # Yes, I use cloudflare tunnels to play minecraft
+    cloudflared
   ];
 
   # Yeah, yeah, this is not plasma, but same config file format
