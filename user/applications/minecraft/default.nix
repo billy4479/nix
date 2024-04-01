@@ -21,7 +21,7 @@
       "JavaPath" = "${pkgs.jdk17}/bin/java";
       "Language" = "en_US";
       "LastHostname" = "computerone";
-      "MaxMemAlloc" = "8192";
+      "MaxMemAlloc" = "4096";
       "MinMemAlloc" = "512";
       "ToolbarsLocked" = "false";
       "UseSystemLocale" = "true";
