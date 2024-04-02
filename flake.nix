@@ -28,6 +28,11 @@
         home-manager.follows = "home-manager";
       };
     };
+
+    server-tool = {
+      url = "github:billy4479/server-tool";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -39,6 +44,7 @@
     catppuccin-vsc,
     plasma-manager,
     spicetify-nix,
+    server-tool,
     ...
   } @ inputs: let
     system = "x86_64-linux";
@@ -52,7 +58,11 @@
     lib = nixpkgs.lib;
     nixos = nixpkgs.lib.nixosSystem;
 
-    my-packages = import ./packages {inherit pkgs;};
+    my-packages =
+      import ./packages {inherit pkgs;}
+      // {
+        server-tool = server-tool.packages.${system}.default;
+      };
 
     user = {
       username = "billy";
