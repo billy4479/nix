@@ -220,11 +220,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1712068064,
-        "narHash": "sha256-AhrVweP4/P+264+F1/B7synaSxR5USplsgvilXxOHtE=",
+        "lastModified": 1712278789,
+        "narHash": "sha256-Be8N9UHNUs51BS+BdH3XiLP3qo3d/LIdVd7Ue23zKLM=",
         "owner": "billy4479",
         "repo": "server-tool",
-        "rev": "5a4e13542309bc9b5e1abcb9f6f24be9eced4d06",
+        "rev": "47d6e101f9c5d7d1d6c040dc9c737f60bcdcf1ed",
         "type": "github"
       },
       "original": {
