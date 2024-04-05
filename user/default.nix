@@ -42,6 +42,7 @@
     zip
     license-cli
     bat-extras.batman
+    jq
   ];
 
   xsession.numlock.enable = !extraConfig.wayland;
