@@ -29,7 +29,7 @@
         ms-python.python # Python
         james-yu.latex-workshop # Latex
         llvm-vs-code-extensions.vscode-clangd # C/C++ (clangd)
-        # redhat.java # Java # FIXME: This breaks VSCodium for some reason
+        redhat.java # Java # FIXME: This breaks VSCodium for some reason
         fwcd.kotlin # Kotlin
 
         # Tools
@@ -102,6 +102,15 @@
       // {
         "editor.fontFamily" = (import ../../../fonts/names.nix).mono;
         "clangd.path" = "${pkgs.clang-tools}/bin/clangd"; # TODO: should this be in a devEnvironment?
+        "java.configuration.runtimes" = [
+          {
+            default = true;
+            name = "JavaSE-21";
+            path = "${pkgs.jdk21}/lib/openjdk";
+          }
+        ];
+        "java.import.gradle.java.home" = "${pkgs.jdk21}/lib/openjdk";
+        "java.jdt.ls.java.home" = "${pkgs.jdk21}/lib/openjdk";
       };
   };
 }
