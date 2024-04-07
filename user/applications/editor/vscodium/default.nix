@@ -38,8 +38,8 @@
         bradlc.vscode-tailwindcss # Tailwind
         vadimcn.vscode-lldb # LLDB
         xaver.clang-format # Clang Format
-        github.copilot # Copilot
-        github.copilot-chat # Copilot Chat
+        # github.copilot # Copilot
+        # github.copilot-chat # Copilot Chat
         mkhl.direnv # Direnv
         streetsidesoftware.code-spell-checker # Spell checker
         charliermarsh.ruff # Ruff (python formatter)
