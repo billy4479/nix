@@ -95,6 +95,7 @@
         desktop = "kde";
         wayland = true;
         bluetooth = true;
+        games = false;
 
         catppuccinColors = mkCatppuccinColors {
           flavour = "frappe";
@@ -182,6 +183,7 @@
         args = {
           desktop = "qtile";
           wayland = false;
+          games = true;
         };
         extraSystemModules = [./system/hosts/computerone];
       }
