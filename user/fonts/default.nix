@@ -8,5 +8,7 @@
     (nerdfonts.override {
       fonts = ["FiraCode"];
     })
+    corefonts
+    ubuntu_font_family
   ];
 }
