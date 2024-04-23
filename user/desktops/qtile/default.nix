@@ -16,6 +16,7 @@ assert !extraConfig.wayland; {
   imports =
     [
       ../../applications/rofi.nix
+      ../../applications/pcmanfm.nix
       ../../services/dunst.nix
       ../../services/gammastep.nix
       ../../services/kdeconnect.nix
@@ -36,7 +37,6 @@ assert !extraConfig.wayland; {
   #       If I find the time it would be nice to try writing one.
   home.packages = with pkgs; [
     xfce.xfce4-clipman-plugin
-    pcmanfm-qt
 
     # For screenshot script
     maim
