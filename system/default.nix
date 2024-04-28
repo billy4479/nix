@@ -10,6 +10,7 @@
     [
       ./modules/locale.nix
       ./modules/main-user.nix
+      ./modules/steam.nix
       ./modules/sddm.nix
       ./modules/sound.nix
     ]
