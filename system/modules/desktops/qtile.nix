@@ -7,5 +7,5 @@
     then "wayland"
     else "x11";
 
-  services.xserver.displayManager.defaultSession = "none+qtile";
+  services.displayManager.defaultSession = "none+qtile";
 }

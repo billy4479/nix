@@ -6,7 +6,7 @@
     if extraConfig.wayland
     then "plasmawayland"
     else "plasma";
-  services.xserver.desktopManager.plasma5.enable = true;
+  services.desktopManager.plasma5.enable = true;
 
   xdg.portal = {
     enable = true;
