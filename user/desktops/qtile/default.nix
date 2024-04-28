@@ -37,6 +37,7 @@ assert !extraConfig.wayland; {
   #       If I find the time it would be nice to try writing one.
   home.packages = with pkgs; [
     xfce.xfce4-clipman-plugin
+    pavucontrol
 
     # For screenshot script
     maim
