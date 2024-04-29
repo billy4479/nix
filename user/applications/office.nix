@@ -1,11 +1,12 @@
-{
-  lib,
-  pkgs,
-  config,
-  ...
-}: let
+{ lib
+, pkgs
+, config
+, ...
+}:
+let
   cfg = config.programs.office;
-in {
+in
+{
   options.programs.office = {
     enableLibreOffice = lib.mkEnableOption "Enable LibreOffice";
     enableOnlyOffice = lib.mkEnableOption "Enable OnlyOffice";
@@ -13,7 +14,7 @@ in {
 
   config = {
     home.packages =
-      []
+      [ ]
       ++ (
         if cfg.enableLibreOffice
         then
@@ -23,7 +24,7 @@ in {
             hunspellDicts.en_US
             hunspellDicts.it_IT
           ]
-        else []
+        else [ ]
       )
       ++ (
         if cfg.enableOnlyOffice
@@ -31,7 +32,7 @@ in {
           with pkgs; [
             onlyoffice-bin
           ]
-        else []
+        else [ ]
       );
   };
 }

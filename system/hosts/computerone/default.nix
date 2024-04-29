@@ -1,4 +1,4 @@
-{extraConfig, ...}: {
+{ extraConfig, ... }: {
   imports = [
     ./hardware-configuration.nix
     ../../modules/containers.nix

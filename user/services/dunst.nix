@@ -1,7 +1,6 @@
-{
-  pkgs,
-  extraConfig,
-  ...
+{ pkgs
+, extraConfig
+, ...
 }: {
   services.dunst = {
     enable = true;

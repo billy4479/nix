@@ -1,10 +1,8 @@
-{
-  config,
-  pkgs,
-  lib,
-  extraConfig,
-  flakeInputs,
-  ...
+{ pkgs
+, lib
+, extraConfig
+, flakeInputs
+, ...
 }: {
   imports =
     [
@@ -32,7 +30,7 @@
 
     # Make the nixpkgs flake input be used for various nix commands
     # https://github.com/TLATER/dotfiles/blob/master/nixos-config/default.nix
-    nixPath = ["nixpkgs=${flakeInputs.nixpkgs}"];
+    nixPath = [ "nixpkgs=${flakeInputs.nixpkgs}" ];
     registry.nixpkgs = {
       from = {
         id = "nixpkgs";
@@ -43,7 +41,7 @@
 
     settings = {
       # Enable flakes
-      experimental-features = ["nix-command" "flakes"];
+      experimental-features = [ "nix-command" "flakes" ];
 
       auto-optimise-store = true;
     };
@@ -92,7 +90,7 @@
 
   programs.zsh.enable = true;
   # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.zsh.enableCompletion
-  environment.pathsToLink = ["/share/zsh"];
+  environment.pathsToLink = [ "/share/zsh" ];
 
   services.openssh.enable = true;
 

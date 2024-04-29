@@ -1,14 +1,13 @@
-{
-  pkgs,
-  extraPkgs,
-  ...
+{ pkgs
+, extraPkgs
+, ...
 }: {
-  home.packages = with pkgs; [
+  home.packages = [
     extraPkgs.my-packages.apple-fonts
-    (nerdfonts.override {
-      fonts = ["FiraCode"];
+    (pkgs.nerdfonts.override {
+      fonts = [ "FiraCode" ];
     })
-    corefonts
-    ubuntu_font_family
+    pkgs.corefonts
+    pkgs.ubuntu_font_family
   ];
 }

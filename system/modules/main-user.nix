@@ -1,11 +1,12 @@
-{
-  lib,
-  config,
-  pkgs,
-  ...
-}: let
+{ lib
+, config
+, pkgs
+, ...
+}:
+let
   cfg = config.main-user;
-in {
+in
+{
   options.main-user = {
     enable = lib.mkEnableOption "enable user module";
 
@@ -29,7 +30,7 @@ in {
       initialPassword = "password";
       description = cfg.fullName;
       shell = pkgs.zsh;
-      extraGroups = ["wheel" "networkmanager" "adbusers"];
+      extraGroups = [ "wheel" "networkmanager" "adbusers" ];
     };
   };
 }

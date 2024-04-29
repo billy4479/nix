@@ -1,9 +1,8 @@
-{
-  lib,
-  config,
-  pkgs,
-  extraConfig,
-  ...
+{ lib
+, config
+, pkgs
+, extraConfig
+, ...
 }:
 # TODO: for now we use just the X11 version.
 #       My config sucks and has to be rewritten
@@ -49,7 +48,7 @@ assert !extraConfig.wayland; {
   systemd.user.targets.tray = {
     Unit = {
       Description = "Home Manager System Tray";
-      Requires = ["graphical-session-pre.target"];
+      Requires = [ "graphical-session-pre.target" ];
     };
   };
 }

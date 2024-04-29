@@ -1,8 +1,7 @@
-{
-  pkgs,
-  lib,
-  extraConfig,
-  ...
+{ pkgs
+, lib
+, extraConfig
+, ...
 }: {
   programs.autorandr = {
     enable = true;
@@ -39,7 +38,7 @@
       Description = "autorandr";
     };
 
-    Install = {WantedBy = ["autostart.target"];};
+    Install = { WantedBy = [ "autostart.target" ]; };
 
     Service = {
       ExecStart = "${lib.getExe pkgs.autorandr} --load ${extraConfig.hostname}";

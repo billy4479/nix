@@ -1,14 +1,14 @@
-{
-  pkgs,
-  lib,
-  extraConfig,
-  ...
-}: let
+{ pkgs
+, extraConfig
+, ...
+}:
+let
   cursor = import ./cursors {
     inherit pkgs;
     inherit (extraConfig) catppuccinColors;
   };
-in {
+in
+{
   home.pointerCursor = {
     inherit (cursor) name package;
     size = 10;

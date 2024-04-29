@@ -1,6 +1,8 @@
-{pkgs}: let
+{ pkgs }:
+let
   inherit (pkgs) callPackage;
-in {
-  apple-fonts = callPackage ./apple-fonts {};
-  packwiz-installer = callPackage ./packwiz-installer {};
+in
+{
+  apple-fonts = callPackage ./apple-fonts { };
+  packwiz-installer = callPackage ./packwiz-installer { };
 }

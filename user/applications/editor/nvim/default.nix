@@ -1,13 +1,12 @@
-{
-  pkgs,
-  config,
-  ...
+{ pkgs
+, config
+, ...
 }: {
   # We don't use programs.neovim on purpose,
   # for now we just need to get a working AstroVim setup.
   # When I'll finally decide myself to learn vim properly I'll update this.
 
-  home.packages = [pkgs.neovim];
+  home.packages = [ pkgs.neovim ];
   home.file = {
     "${config.xdg.configHome}/nvim" = {
       source = pkgs.fetchFromGitHub {

@@ -1,4 +1,4 @@
-{extraConfig, ...}: {
+{ extraConfig, ... }: {
   programs.kitty = {
     enable = true;
     font = {

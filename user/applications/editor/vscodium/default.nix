@@ -1,23 +1,22 @@
-{
-  pkgs,
-  lib,
-  extraPkgs,
-  ...
+{ pkgs
+, lib
+, extraPkgs
+, ...
 }: {
-  nixpkgs.overlays = [extraPkgs.catppuccin-vsc.overlays.default];
+  nixpkgs.overlays = [ extraPkgs.catppuccin-vsc.overlays.default ];
 
   home.packages = with pkgs; [
     clang-tools
     nixd
-    alejandra
+    nixpkgs-fmt
   ];
 
   programs.vscode = {
     enable = true;
     package = pkgs.vscodium;
     # TODO: should we install them just in certain dev environments?
-    extensions = with extraPkgs.vscode-extensions.vscode-marketplace;
-      [
+    extensions =
+      (with extraPkgs.vscode-extensions.vscode-marketplace; [
         # Theme
         catppuccin.catppuccin-vsc-icons
 
@@ -49,7 +48,7 @@
         zignd.html-css-class-completion # CSS Classes Intellisense
         gruntfuggly.todo-tree # Todo Tree
         wayou.vscode-todo-highlight # Todo Highlight
-      ]
+      ])
       ++ [
         # Less then ideal because of https://github.com/catppuccin/vscode/issues/218 but this is still the best option we have
         (pkgs.catppuccin-vsc.override {
@@ -60,8 +59,8 @@
           extraBordersEnabled = false;
           workbenchMode = "default";
           bracketMode = "rainbow";
-          colorOverrides = {};
-          customUIColors = {};
+          colorOverrides = { };
+          customUIColors = { };
         })
       ];
     keybindings = [

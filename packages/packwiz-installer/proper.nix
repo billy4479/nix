@@ -1,17 +1,17 @@
-{
-  lib,
-  stdenvNoCC,
-  fetchFromGitHub,
-  # Build time
-  zip,
-  unzip,
-  perl,
-  jdk8,
-  gradle_7,
-  makeWrapper,
-  # Run time
-  jre,
-}: let
+{ lib
+, stdenvNoCC
+, fetchFromGitHub
+, # Build time
+  zip
+, unzip
+, perl
+, jdk8
+, gradle_7
+, makeWrapper
+, # Run time
+  jre
+}:
+let
   pname = "packwiz-installer";
   version = "0.5.13";
 
@@ -48,7 +48,7 @@
     pname = "${pname}-deps";
     inherit version src postPatch patches;
 
-    nativeBuildInputs = [gradle_7 jdk8 perl zip];
+    nativeBuildInputs = [ gradle_7 jdk8 perl zip ];
     buildPhase = ''
       ${exports}
 
@@ -79,66 +79,66 @@
     outputHash = "sha256-meWTnjh+wyCZId7su7r53FFPgQU9RPLxJ3wVth+78Wg=";
   };
 in
-  stdenvNoCC.mkDerivation {
-    inherit pname version src postPatch patches;
+stdenvNoCC.mkDerivation {
+  inherit pname version src postPatch patches;
 
-    nativeBuildInputs = [deps gradle_7 jdk8 makeWrapper unzip];
-    buildInputs = [jre];
+  nativeBuildInputs = [ deps gradle_7 jdk8 makeWrapper unzip ];
+  buildInputs = [ jre ];
 
-    dontStrip = true;
+  dontStrip = true;
 
-    buildPhase = ''
-      ${exports}
+  buildPhase = ''
+    ${exports}
 
-      mkdir -p "$HOME" "$GRADLE_USER_HOME"
+    mkdir -p "$HOME" "$GRADLE_USER_HOME"
 
-      # ln -s ${deps}/caches $GRADLE_USER_HOME/caches
-      unzip -d . ${deps}/caches.zip
+    # ln -s ${deps}/caches $GRADLE_USER_HOME/caches
+    unzip -d . ${deps}/caches.zip
 
-      # substituteInPlace build.gradle.kts --replace \
-      #  'https://jitpack.io' 'file://${deps}/maven'
-      # substituteInPlace build.gradle.kts --replace \
-      #  'google()' ""
-      # substituteInPlace build.gradle.kts --replace \
-      #  'mavenCentral()' ""
+    # substituteInPlace build.gradle.kts --replace \
+    #  'https://jitpack.io' 'file://${deps}/maven'
+    # substituteInPlace build.gradle.kts --replace \
+    #  'google()' ""
+    # substituteInPlace build.gradle.kts --replace \
+    #  'mavenCentral()' ""
 
-      # FIXME: This is a hack around kotlin-gradle-plugin naming conventions being bounded to a specific version of gradle.
-      #        Surely there is a better way to do this.
-      #substituteInPlace build.gradle.kts --replace \
-      # 'kotlin("jvm") version "1.7.10"' 'kotlin("jvm") version "1.7.10-gradle70"'
+    # FIXME: This is a hack around kotlin-gradle-plugin naming conventions being bounded to a specific version of gradle.
+    #        Surely there is a better way to do this.
+    #substituteInPlace build.gradle.kts --replace \
+    # 'kotlin("jvm") version "1.7.10"' 'kotlin("jvm") version "1.7.10-gradle70"'
 
-      # cat <<EOF > settings.gradle.kts
-      # pluginManagement {
-      #   repositories {
-      #     maven(url = "${deps}/maven")
-      #   }
-      # }
-      # rootProject.name = "${pname}"
-      # EOF
+    # cat <<EOF > settings.gradle.kts
+    # pluginManagement {
+    #   repositories {
+    #     maven(url = "${deps}/maven")
+    #   }
+    # }
+    # rootProject.name = "${pname}"
+    # EOF
 
-      rm settings.gradle
+    rm settings.gradle
 
-      gradle ${gradleOptions} --offline build
-    '';
+    gradle ${gradleOptions} --offline build
+  '';
 
-    installPhase = ''
-      runHook preInstall
+  installPhase = ''
+    runHook preInstall
 
-      mkdir -p $out/{bin,lib/${pname}}
-      cp build/libs/${pname}.jar $out/lib/${pname}
-      makeWrapper ${jre}/bin/java $out/bin/${pname} \
-        --add-flags "-jar $out/lib/${pname}/${pname}.jar"
+    mkdir -p $out/{bin,lib/${pname}}
+    cp build/libs/${pname}.jar $out/lib/${pname}
+    makeWrapper ${jre}/bin/java $out/bin/${pname} \
+      --add-flags "-jar $out/lib/${pname}/${pname}.jar"
 
-      runHook postInstall
-    '';
+    runHook postInstall
+  '';
 
-    meta = with lib; {
-      homepage = "https://github.com/packwiz/packwiz-installer";
-      description = "An installer for packwiz modpacks, with automatic auto-updating and optional mods";
-      sourceProvenance = with sourceTypes; [
-        fromSource
-        binaryBytecode # deps are not built from source
-      ];
-      license = licenses.mit;
-    };
-  }
+  meta = with lib; {
+    homepage = "https://github.com/packwiz/packwiz-installer";
+    description = "An installer for packwiz modpacks, with automatic auto-updating and optional mods";
+    sourceProvenance = with sourceTypes; [
+      fromSource
+      binaryBytecode # deps are not built from source
+    ];
+    license = licenses.mit;
+  };
+}

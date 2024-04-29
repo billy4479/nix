@@ -1,5 +1,5 @@
-{pkgs, ...}: {
-  home.packages = [pkgs.lightly-qt];
+{ pkgs, ... }: {
+  home.packages = [ pkgs.lightly-qt ];
 
   programs.plasma = {
     enable = true;

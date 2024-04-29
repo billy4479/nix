@@ -1,7 +1,6 @@
-{
-  pkgs,
-  catppuccinColors,
-  ...
+{ pkgs
+, catppuccinColors
+, ...
 }: {
   programs.rofi = {
     enable = true;
@@ -9,7 +8,7 @@
     extraConfig = {
       modi = "drun,run";
       show-icons = true;
-      icon-theme = (import ../icons/papirus.nix {inherit pkgs catppuccinColors;}).name;
+      icon-theme = (import ../icons/papirus.nix { inherit pkgs catppuccinColors; }).name;
     };
   };
 }

@@ -1,4 +1,4 @@
-{extraPkgs, ...}: {
+{ extraPkgs, ... }: {
   programs.spicetify = {
     enable = true;
     theme = extraPkgs.spicetifyPkgs.themes.catppuccin;

@@ -1,9 +1,9 @@
-{
-  lib,
-  pkgs,
-  config,
-  ...
-}: let
+{ lib
+, pkgs
+, config
+, ...
+}:
+let
   srcs = pkgs.fetchFromGitHub {
     owner = "catppuccin";
     repo = "konsole";
@@ -12,8 +12,10 @@
   };
 
   fileNames = builtins.filter (name: lib.strings.hasSuffix ".colorscheme" name) (builtins.attrNames (builtins.readDir srcs));
-in {
-  home.file = builtins.listToAttrs (map (file: {
+in
+{
+  home.file = builtins.listToAttrs (map
+    (file: {
       name = "${config.xdg.dataHome}/konsole/${file}";
       value.source = builtins.toPath "${srcs}/${file}";
     })

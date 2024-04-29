@@ -1,9 +1,8 @@
-{
-  extraConfig,
-  pkgs,
-  config,
-  lib,
-  ...
+{ extraConfig
+, pkgs
+, config
+, lib
+, ...
 }:
 # We let KDE decide for KDE stuff
 assert extraConfig.desktop != "kde"; let
@@ -18,15 +17,17 @@ assert extraConfig.desktop != "kde"; let
     inherit pkgs;
     inherit (extraConfig) catppuccinColors;
   };
-in {
+in
+{
   home.sessionVariables = {
     QT_QPA_PLATFORMTHEME = "qt6ct";
   };
 
-  home.packages = [pkgs.qt5ct pkgs.qt6ct]
-    ++ [papirus.package]
+  home.packages =
+    (with pkgs; [ qt5ct qt6ct ])
+    ++ [ papirus.package ]
     # https://github.com/boehs/Lightly
-    ++ [pkgs.lightly-boehs];
+    ++ [ pkgs.lightly-boehs ];
 
   home.file."${config.xdg.configHome}/qt5ct/colors" = {
     source = "${srcs}/themes";
@@ -41,25 +42,27 @@ in {
   # Yes, it's not plasma but it's the same config format
   programs.plasma = {
     enable = true;
-    configFile = let
-      fonts = import ./fonts/names.nix;
-      conf = {
-        "Appearance" = {
-          "color_scheme_path".value = "${config.xdg.configHome}/qt5ct/colors/Catppuccin-${extraConfig.catppuccinColors.upper.flavour}.conf";
-          "custom_palette".value = true;
-          "icon_theme".value = papirus.name;
-          "standard_dialogs".value = "xdgdesktopportal";
-          "style".value = "Lightly";
-        };
+    configFile =
+      let
+        fonts = import ./fonts/names.nix;
+        conf = {
+          "Appearance" = {
+            "color_scheme_path".value = "${config.xdg.configHome}/qt5ct/colors/Catppuccin-${extraConfig.catppuccinColors.upper.flavour}.conf";
+            "custom_palette".value = true;
+            "icon_theme".value = papirus.name;
+            "standard_dialogs".value = "xdgdesktopportal";
+            "style".value = "Lightly";
+          };
 
-        "Fonts" = {
-          "fixed".value = "\"${fonts.mono},12,-1,5,50,0,0,0,0,0,Regular\"";
-          "general".value = "\"${fonts.sans},12,-1,5,50,0,0,0,0,0,Regular\"";
+          "Fonts" = {
+            "fixed".value = "\"${fonts.mono},12,-1,5,50,0,0,0,0,0,Regular\"";
+            "general".value = "\"${fonts.sans},12,-1,5,50,0,0,0,0,0,Regular\"";
+          };
         };
+      in
+      {
+        "qt5ct/qt5ct.conf" = conf;
+        "qt6ct/qt6ct.conf" = lib.recursiveUpdate conf { "Appearance"."style".value = "Fusion"; }; # Lightly is not available for qt6 yet
       };
-    in {
-      "qt5ct/qt5ct.conf" = conf;
-      "qt6ct/qt6ct.conf" = lib.recursiveUpdate conf {"Appearance"."style".value = "Fusion";}; # Lightly is not available for qt6 yet
-    };
   };
 }

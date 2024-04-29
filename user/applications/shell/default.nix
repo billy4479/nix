@@ -1,8 +1,8 @@
-{
-  pkgs,
-  config,
-  ...
-}: let
+{ pkgs
+, config
+, ...
+}:
+let
   aliases = {
     rebuild-nix = "sudo nixos-rebuild switch --flake $HOME/nix";
     rebuild-hm = "home-manager switch --flake $HOME/nix";
@@ -27,7 +27,8 @@
     license = "license text --author 'Giacomo Ellero'";
     c = "codium";
   };
-in {
+in
+{
   programs.zsh = {
     enable = true;
     enableCompletion = true;

@@ -1,4 +1,4 @@
-{extraConfig, ...}: {
+{ extraConfig, ... }: {
   services.xserver.enable = !extraConfig.wayland;
 
   # Enable the KDE Plasma Desktop Environment.

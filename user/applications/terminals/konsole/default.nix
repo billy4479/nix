@@ -1,8 +1,10 @@
-{extraConfig, ...}: let
+{ extraConfig, ... }:
+let
   profileFile = "${extraConfig.user.username}.profile";
   profileName = "${extraConfig.user.username}'s profile";
-in {
-  imports = [./catppuccin.nix];
+in
+{
+  imports = [ ./catppuccin.nix ];
 
   programs.plasma = {
     enable = true;

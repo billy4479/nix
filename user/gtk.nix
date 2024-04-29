@@ -1,8 +1,6 @@
-{
-  pkgs,
-  extraConfig,
-  lib,
-  ...
+{ pkgs
+, extraConfig
+, ...
 }: {
   gtk = {
     enable = true;
@@ -24,10 +22,10 @@
     theme = {
       package =
         pkgs.catppuccin-gtk.override
-        {
-          accents = [extraConfig.catppuccinColors.accent];
-          variant = extraConfig.catppuccinColors.flavour;
-        };
+          {
+            accents = [ extraConfig.catppuccinColors.accent ];
+            variant = extraConfig.catppuccinColors.flavour;
+          };
 
       name = "Catppuccin-${extraConfig.catppuccinColors.upper.flavour}-Standard-${extraConfig.catppuccinColors.upper.accent}-Dark";
     };

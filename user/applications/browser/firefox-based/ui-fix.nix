@@ -1,9 +1,8 @@
-{
-  pkgs,
-  config,
-  extraConfig,
-  ...
-}: let
+{ pkgs
+, extraConfig
+, ...
+}:
+let
   srcs = pkgs.fetchFromGitHub {
     owner = "black7375";
     repo = "Firefox-UI-Fix";
@@ -13,7 +12,8 @@
 
   # TODO: support librewolf too
   profilePath = ".mozilla/firefox/${extraConfig.user.username}";
-in {
+in
+{
   home.file."${profilePath}/icons".source = "${srcs}/icons";
 
   programs.firefox.profiles.${extraConfig.user.username} = {

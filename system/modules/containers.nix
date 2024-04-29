@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ ... }: {
   # https://nixos.wiki/wiki/Podman
   virtualisation = {
     podman = {

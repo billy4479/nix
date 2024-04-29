@@ -1,8 +1,4 @@
-{
-  pkgs,
-  extraConfig,
-  ...
-}: {
+{ extraConfig, ... }: {
   programs.git = {
     enable = true;
     delta = {

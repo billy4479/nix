@@ -1,4 +1,4 @@
-{extraConfig, ...}: {
+{ extraConfig, ... }: {
   imports = [
     ./hardware-configuration.nix
     ../../modules/autologin.nix
@@ -9,5 +9,5 @@
   networking.hostName = "nixbox";
 
   services.spice-vdagentd.enable = true;
-  services.xserver.videoDrivers = ["qxl"];
+  services.xserver.videoDrivers = [ "qxl" ];
 }

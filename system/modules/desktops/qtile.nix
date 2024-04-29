@@ -1,4 +1,4 @@
-{extraConfig, ...}: {
+{ extraConfig, ... }: {
   services.xserver.enable = !extraConfig.wayland;
 
   services.xserver.windowManager.qtile.enable = true;

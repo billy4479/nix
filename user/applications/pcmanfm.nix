@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   home.packages = [
     pkgs.lxqt.pcmanfm-qt
   ];
