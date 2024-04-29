@@ -1,13 +1,13 @@
 {pkgs, ...}: {
-  home.packages = with pkgs; [
-    pcmanfm-qt
+  home.packages = [
+    pkgs.lxqt.pcmanfm-qt
   ];
 
   programs.plasma = {
     enable = true;
-    configFile."/pcmanfm-qt/default/settings.conf"."General" = {
-      "Archiver" = "ark";
-      "Terminal" = "kitty";
+    configFile."pcmanfm-qt/default/settings.conf"."System" = {
+      "Archiver".value = "ark";
+      "Terminal".value = "kitty";
     };
   };
 }

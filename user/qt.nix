@@ -23,9 +23,10 @@ in {
     QT_QPA_PLATFORMTHEME = "qt6ct";
   };
 
-  home.packages = with pkgs;
-    [qt5ct qt6ct lightly-qt]
-    ++ [papirus.package];
+  home.packages = [pkgs.qt5ct pkgs.qt6ct]
+    ++ [papirus.package]
+    # https://github.com/boehs/Lightly
+    ++ [pkgs.lightly-boehs];
 
   home.file."${config.xdg.configHome}/qt5ct/colors" = {
     source = "${srcs}/themes";
@@ -41,25 +42,24 @@ in {
   programs.plasma = {
     enable = true;
     configFile = let
+      fonts = import ./fonts/names.nix;
       conf = {
         "Appearance" = {
-          "color_scheme_path" = "${config.xdg.configHome}/qt5ct/colors/Catppuccin-${extraConfig.catppuccinColors.upper.flavour}.conf";
-          "custom_palette" = true;
-          "icon_theme" = papirus.name;
-          "standard_dialogs" = "xdgdesktopportal";
-          "style" = "Lightly";
+          "color_scheme_path".value = "${config.xdg.configHome}/qt5ct/colors/Catppuccin-${extraConfig.catppuccinColors.upper.flavour}.conf";
+          "custom_palette".value = true;
+          "icon_theme".value = papirus.name;
+          "standard_dialogs".value = "xdgdesktopportal";
+          "style".value = "Lightly";
         };
 
-        "Fonts" = let
-          fonts = import ./fonts/names.nix;
-        in {
-          "fixed" = "\"${fonts.mono},12,-1,5,50,0,0,0,0,0,Regular\"";
-          "general" = "\"${fonts.sans},12,-1,5,50,0,0,0,0,0,Regular\"";
+        "Fonts" = {
+          "fixed".value = "\"${fonts.mono},12,-1,5,50,0,0,0,0,0,Regular\"";
+          "general".value = "\"${fonts.sans},12,-1,5,50,0,0,0,0,0,Regular\"";
         };
       };
     in {
       "qt5ct/qt5ct.conf" = conf;
-      "qt6ct/qt6ct.conf" = lib.recursiveUpdate conf {"Appearance"."style" = "Fusion";}; # Lightly is not available for qt6 yet
+      "qt6ct/qt6ct.conf" = lib.recursiveUpdate conf {"Appearance"."style".value = "Fusion";}; # Lightly is not available for qt6 yet
     };
   };
 }

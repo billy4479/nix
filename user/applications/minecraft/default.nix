@@ -42,20 +42,20 @@ in {
       enable = true;
       dataFile."PrismLauncher/prismlauncher.cfg"."General" = {
         # These are the options we need in order to skip the first run wizard
-        "ApplicationTheme" = "system";
-        "BackgroundCat" = "kitteh";
-        "ConfigVersion" = "1.2";
-        "IconTheme" = "pe_colored";
-        "JavaPath" = "${pkgs.jdk17}/bin/java";
-        "Language" = "en_US";
-        "LastHostname" = "computerone";
-        "MaxMemAlloc" = "4096";
-        "MinMemAlloc" = "512";
-        "ToolbarsLocked" = "false";
-        "UseSystemLocale" = "true";
+        "ApplicationTheme".value = "system";
+        "BackgroundCat".value = "kitteh";
+        "ConfigVersion".value = "1.2";
+        "IconTheme".value = "pe_colored";
+        "JavaPath".value = "${pkgs.jdk17}/bin/java";
+        "Language".value = "en_US";
+        "LastHostname".value = "computerone";
+        "MaxMemAlloc".value = "4096";
+        "MinMemAlloc".value = "512";
+        "ToolbarsLocked".value = "false";
+        "UseSystemLocale".value = "true";
 
         # This is extra stuff I also like
-        "ConsoleFont" = (import ../../fonts/names.nix).mono;
+        "ConsoleFont".value = (import ../../fonts/names.nix).mono;
       };
     };
   };

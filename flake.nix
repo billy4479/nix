@@ -36,7 +36,6 @@
   };
 
   outputs = {
-    self,
     nixpkgs,
     home-manager,
     catppuccin,
@@ -133,7 +132,7 @@
     # while `extraSystemModules` is a list of modules that gets added to the default ones.
     nixCfg = {
       extraSystemModules,
-      args,
+      args
     }:
       nixos {
         inherit system;
@@ -147,7 +146,7 @@
     hostFn = {
       hostname,
       extraSystemModules ? [],
-      args ? {},
+      args ? {}
     }: {
       nixosConfigurations.${hostname} = nixCfg {
         inherit extraSystemModules;
