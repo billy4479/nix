@@ -4,11 +4,22 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     catppuccin.url = "github:Stonks3141/ctp-nix";
-    nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
+    flake-utils.url = "github:numtide/flake-utils";
+
+    nix-vscode-extensions = {
+      url = "github:nix-community/nix-vscode-extensions";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
 
     spicetify-nix = {
       url = "github:the-argus/spicetify-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
     };
 
     catppuccin-vsc = {
@@ -31,7 +42,10 @@
 
     server-tool = {
       url = "github:billy4479/server-tool";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
     };
   };
 
