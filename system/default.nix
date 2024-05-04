@@ -21,6 +21,7 @@
   # It should help in desktop use
   # Mhh, it seems like it causes some crashes?
   # boot.kernelPackages = pkgs.linuxKernel.packages.linux_xanmod_latest;
+  boot.kernelPackages = pkgs.linuxPackages_zen;
 
   nix = {
     gc = {
