@@ -5,8 +5,8 @@
     ./direnv.nix
     ./editor/nvim
     ./editor/vscodium
+    ./games
     ./git.nix
-    ./minecraft
     ./office.nix
     ./shell
     ./spotify.nix

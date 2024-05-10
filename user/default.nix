@@ -51,10 +51,5 @@
     EDITOR = "nvim";
   };
 
-  programs.minecraft = {
-    enableClient = true;
-    enableServer = true;
-  };
-
   programs.home-manager.enable = true;
 }

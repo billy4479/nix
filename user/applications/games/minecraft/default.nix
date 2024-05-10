@@ -56,7 +56,7 @@ in
         "UseSystemLocale".value = "true";
 
         # This is extra stuff I also like
-        "ConsoleFont".value = (import ../../fonts/names.nix).mono;
+        "ConsoleFont".value = (import ../../../fonts/names.nix).mono;
       };
     };
   };
