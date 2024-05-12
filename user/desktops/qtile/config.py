@@ -522,6 +522,8 @@ floating_layout = layout.Floating(float_rules=[
     *layout.Floating.default_float_rules,
     Match(title='Qalculate!'),  # qalculate-gtk
     Match(wm_class="mc-oxide"),
+    Match(wm_class="pavucontrol"),
+    Match(wm_class="zenity"),
 ])
 
 auto_fullscreen = True
