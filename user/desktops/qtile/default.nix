@@ -24,12 +24,13 @@
       ../../services/nm-applet.nix
       ../../services/playerctld.nix
       ../../services/udiskie.nix
-    ] ++ ( if !extraConfig.wayland then [
+    ] ++ (if !extraConfig.wayland then [
       ../../services/X11/autorandr.nix
       ../../services/X11/nitrogen.nix
       ../../services/X11/picom.nix
+      ../../services/X11/volumeicon.nix
       ../../services/X11/xfce4-clipman.nix
-    ] else [])
+    ] else [ ])
     # If bluetooth is enable we want to enable this.
     # We already know that blueman will be enabled because of /system/modules/bluetooth.nix
     ++ lib.optional extraConfig.bluetooth ../../services/blueman-applet.nix;
