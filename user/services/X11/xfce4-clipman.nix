@@ -7,7 +7,7 @@ assert !extraConfig.wayland; {
 
   systemd.user.services.xfce4-clipman = {
     Unit = {
-      Description = "LxSession";
+      Description = "XFCE Clipman";
       After = [ "graphical-session-pre.target" ];
       PartOf = [ "graphical-session.target" ];
     };
