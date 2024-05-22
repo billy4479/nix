@@ -8,6 +8,7 @@
     ./games
     ./git.nix
     ./office.nix
+    ./qimgv.nix
     ./shell
     ./spotify.nix
     ./terminals/kitty.nix
