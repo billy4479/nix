@@ -24,10 +24,10 @@
         pkgs.catppuccin-gtk.override
           {
             accents = [ extraConfig.catppuccinColors.accent ];
-            variant = extraConfig.catppuccinColors.flavour;
+            variant = extraConfig.catppuccinColors.flavor;
           };
 
-      name = "Catppuccin-${extraConfig.catppuccinColors.upper.flavour}-Standard-${extraConfig.catppuccinColors.upper.accent}-Dark";
+      name = "Catppuccin-${extraConfig.catppuccinColors.upper.flavor}-Standard-${extraConfig.catppuccinColors.upper.accent}-Dark";
     };
   };
 }

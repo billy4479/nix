@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    catppuccin.url = "github:Stonks3141/ctp-nix";
+    catppuccin.url = "github:catppuccin/nix";
     flake-utils.url = "github:numtide/flake-utils";
 
     nix-vscode-extensions = {
@@ -88,12 +88,12 @@
         (lib.toUpper (builtins.substring 0 1 str)) + (builtins.substring 1 (builtins.stringLength str) str);
 
       mkCatppuccinColors =
-        { flavour
+        { flavor
         , accent
         }: {
-          inherit flavour accent;
+          inherit flavor accent;
           upper = {
-            flavour = mkUpper flavour;
+            flavor = mkUpper flavor;
             accent = mkUpper accent;
           };
         };
@@ -111,7 +111,7 @@
           games = false;
 
           catppuccinColors = mkCatppuccinColors {
-            flavour = "frappe";
+            flavor = "frappe";
             accent = "green";
           };
 

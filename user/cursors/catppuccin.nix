@@ -2,6 +2,6 @@
 , catppuccinColors
 ,
 }: {
-  package = pkgs.catppuccin-cursors."${catppuccinColors.flavour}Dark";
-  name = "Catppuccin-${catppuccinColors.upper.flavour}-Dark-Cursors";
+  package = pkgs.catppuccin-cursors."${catppuccinColors.flavor}Dark";
+  name = "Catppuccin-${catppuccinColors.upper.flavor}-Dark-Cursors";
 }

@@ -47,7 +47,7 @@ in
         fonts = import ./fonts/names.nix;
         conf = {
           "Appearance" = {
-            "color_scheme_path".value = "${config.xdg.configHome}/qt5ct/colors/Catppuccin-${extraConfig.catppuccinColors.upper.flavour}.conf";
+            "color_scheme_path".value = "${config.xdg.configHome}/qt5ct/colors/Catppuccin-${extraConfig.catppuccinColors.upper.flavor}.conf";
             "custom_palette".value = true;
             "icon_theme".value = papirus.name;
             "standard_dialogs".value = "xdgdesktopportal";

@@ -30,7 +30,7 @@
 
   home.stateVersion = "23.11";
 
-  catppuccin = { inherit (extraConfig.catppuccinColors) flavour accent; };
+  catppuccin = { inherit (extraConfig.catppuccinColors) flavor accent; };
 
   home.packages = with pkgs; [
     # Shell utilities, not fundamental but still nice

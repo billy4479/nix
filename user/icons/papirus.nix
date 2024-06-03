@@ -4,7 +4,7 @@
 }: {
   name = "Papirus-Dark";
   package = pkgs.catppuccin-papirus-folders.override {
-    flavor = catppuccinColors.flavour;
+    flavor = catppuccinColors.flavor;
     accent = catppuccinColors.accent;
   };
 }
