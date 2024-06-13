@@ -2,6 +2,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/containers.nix
+    ../../modules/virtualization.nix
     ../../modules/desktops/qtile.nix
     ../../modules/graphics/nvidia.nix
 

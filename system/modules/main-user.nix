@@ -30,7 +30,7 @@ in
       initialPassword = "password";
       description = cfg.fullName;
       shell = pkgs.zsh;
-      extraGroups = [ "wheel" "networkmanager" "adbusers" ];
+      extraGroups = [ "wheel" "networkmanager" "adbusers" "libvirtd" ];
     };
   };
 }
