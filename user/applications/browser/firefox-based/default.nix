@@ -3,7 +3,6 @@ let
   fonts = import ../../../fonts/names.nix;
   aboutConfig = {
     # Lets be honest, this is more annoying than useful
-    "webgl.disabled" = false;
     "privacy.resistFingerprinting" = false;
     "extensions.pocket.enabled" = false;
 
@@ -49,6 +48,14 @@ let
     # Find bar prefereces
     "findbar.highlightAll" = true;
     "accessibility.typeaheadfind.enablesound" = false;
+
+    # Hardware acceleration - https://github.com/elFarto/nvidia-vaapi-driver?tab=readme-ov-file#firefox
+    "media.ffmpeg.vaapi.enabled" = true;
+    "media.rdd-ffmpeg.enabled" = true;
+    "gfx.x11-egl.force-enabled" = true;
+    "widget.dmabuf.force-enabled" = true;
+    "webgl.disabled" = false;
+    "gfx.webrender.all" = true;
   };
 in
 {

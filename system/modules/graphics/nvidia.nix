@@ -1,4 +1,5 @@
 { config
+, pkgs
 , ...
 }: {
   # https://nixos.wiki/wiki/Nvidia
@@ -8,6 +9,15 @@
     enable = true;
     driSupport = true;
     driSupport32Bit = true;
+    extraPackages = with pkgs; [
+      nvidia-vaapi-driver
+    ];
+  };
+
+  # https://github.com/elFarto/nvidia-vaapi-driver
+  environment.variables = {
+    MOZ_DISABLE_RDD_SANDBOX = 1;
+    LIBVA_DRIVER_NAME = "nvidia";
   };
 
   # Load nvidia driver for Xorg and Wayland
