@@ -96,6 +96,8 @@
   # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.zsh.enableCompletion
   environment.pathsToLink = [ "/share/zsh" ];
 
+  services.smartd.enable = true;
+
   services.openssh.enable = true;
 
   system.stateVersion = "23.11";
