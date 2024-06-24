@@ -28,8 +28,9 @@
         ms-python.python # Python
         james-yu.latex-workshop # Latex
         llvm-vs-code-extensions.vscode-clangd # C/C++ (clangd)
-        redhat.java # Java # FIXME: This breaks VSCodium for some reason
+        redhat.java # Java 
         fwcd.kotlin # Kotlin
+        ziglang.vscode-zig # Zig
 
         # Tools
         esbenp.prettier-vscode # Prettier

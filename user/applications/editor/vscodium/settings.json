@@ -189,5 +189,9 @@
         "enable": true
       }
     }
-  }
+  },
+  "zig.path": "zig",
+  "zig.zls.path": "zls",
+  "zig.initialSetupDone": true,
+  "zig.zls.inlayHintsShowVariableTypeHints": false
 }
