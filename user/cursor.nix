@@ -15,4 +15,9 @@ in
     gtk.enable = true;
     x11.enable = true; # We probably still want this because of xwayland
   };
+
+  programs.plasma.workspace.cursor = {
+    theme = cursor.name;
+    size = 24; # Idk how this number relates to the one before    
+  };
 }
