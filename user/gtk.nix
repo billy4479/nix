@@ -18,16 +18,19 @@
       inherit pkgs;
       inherit (extraConfig) catppuccinColors;
     };
+    gtk2.extraConfig = ''
+      gtk-application-prefer-dark-theme=1
+    '';
+    gtk3.extraConfig = {
+      gtk-application-prefer-dark-theme = 1;
+    };
+    gtk4.extraConfig = {
+      gtk-application-prefer-dark-theme = 1;
+    };
 
     theme = {
-      package =
-        pkgs.catppuccin-gtk.override
-          {
-            accents = [ extraConfig.catppuccinColors.accent ];
-            variant = extraConfig.catppuccinColors.flavor;
-          };
-
-      name = "Catppuccin-${extraConfig.catppuccinColors.upper.flavor}-Standard-${extraConfig.catppuccinColors.upper.accent}-Dark";
+      package = pkgs.gnome.gnome-themes-extra;
+      name = "Adwaita";
     };
   };
 }
