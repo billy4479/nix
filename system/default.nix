@@ -78,27 +78,26 @@
     file
   ];
 
-  # Many file managers need this
-  services.gvfs.enable = true;
+  services = {
+    gvfs.enable = true;
+    udisks2.enable = true;
+    printing.enable = true;
+    smartd.enable = true;
+    openssh.enable = true;
+  };
 
-  # This is also quite useful since many GUI apps need this
   security.polkit.enable = true;
 
-  # We want this so we can enable udiskie in home-manager
-  services.udisks2.enable = true;
+  programs = {
+    # https://discourse.nixos.org/t/error-gdbus-error-org-freedesktop-dbus-error-serviceunknown-the-name-ca-desrt-dconf-was-not-provided-by-any-service-files/29111/2
+    dconf.enable = true;
+    adb.enable = true;
+  };
 
-  # https://discourse.nixos.org/t/error-gdbus-error-org-freedesktop-dbus-error-serviceunknown-the-name-ca-desrt-dconf-was-not-provided-by-any-service-files/29111/2
-  programs.dconf.enable = true;
-
-  programs.adb.enable = true;
 
   programs.zsh.enable = true;
   # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.zsh.enableCompletion
   environment.pathsToLink = [ "/share/zsh" ];
-
-  services.smartd.enable = true;
-
-  services.openssh.enable = true;
 
   system.stateVersion = "23.11";
 }
