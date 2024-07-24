@@ -15,10 +15,9 @@
     };
 
     spicetify-nix = {
-      url = "github:the-argus/spicetify-nix";
+      url = "github:Gerg-L/spicetify-nix";
       inputs = {
         nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
       };
     };
 
@@ -120,7 +119,7 @@
 
         extraPkgs = {
           vscode-extensions = nix-vscode-extensions.extensions.${system};
-          spicetifyPkgs = spicetify-nix.packages.${system}.default;
+          spicetifyPkgs = spicetify-nix.legacyPackages.${system};
           inherit catppuccin-vsc my-packages;
         };
 
@@ -136,7 +135,7 @@
           modules = [
             catppuccin.homeManagerModules.catppuccin
             plasma-manager.homeManagerModules.plasma-manager
-            spicetify-nix.homeManagerModule
+            spicetify-nix.homeManagerModules.default
             ./user
           ];
         };
