@@ -6,8 +6,8 @@ let
   srcs = pkgs.fetchFromGitHub {
     owner = "black7375";
     repo = "Firefox-UI-Fix";
-    rev = "f19eb3000da841b8e4f0686eebd450e5bab75d78";
-    hash = "sha256-nSjUXj3TJOG4oY8YZaz/g96EypvcpVRPM7pCdBkXmMA=";
+    rev = "c79922aa45ff04a62e04ef0f8562dc53990b5208";
+    hash = "sha256-Mtnoit1CAGJoc8eiJ+0vfGc9v+3tomm8V8/tWfeAj7o=";
   };
 
   # TODO: support librewolf too
