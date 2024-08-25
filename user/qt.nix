@@ -1,11 +1,13 @@
-{ extraConfig
-, pkgs
-, config
-, lib
-, ...
+{
+  extraConfig,
+  pkgs,
+  config,
+  lib,
+  ...
 }:
 # We let KDE decide for KDE stuff
-assert extraConfig.desktop != "kde"; let
+assert extraConfig.desktop != "kde";
+let
   srcs = pkgs.fetchFromGitHub {
     owner = "catppuccin";
     repo = "qt5ct";
@@ -24,7 +26,10 @@ in
   };
 
   home.packages =
-    (with pkgs; [ qt5ct qt6ct ])
+    (with pkgs; [
+      qt5ct
+      qt6ct
+    ])
     ++ [ papirus.package ]
     # https://github.com/boehs/Lightly
     ++ [ pkgs.lightly-boehs ];

@@ -1,15 +1,16 @@
-{ lib
-, stdenvNoCC
-, fetchFromGitHub
-, # Build time
-  zip
-, unzip
-, perl
-, jdk8
-, gradle_7
-, makeWrapper
-, # Run time
-  jre
+{
+  lib,
+  stdenvNoCC,
+  fetchFromGitHub,
+  # Build time
+  zip,
+  unzip,
+  perl,
+  jdk8,
+  gradle_7,
+  makeWrapper,
+  # Run time
+  jre,
 }:
 let
   pname = "packwiz-installer";
@@ -46,9 +47,19 @@ let
   # The following code is taken from https://github.com/NixOS/nixpkgs/blob/master/pkgs/games/mindustry/default.nix
   deps = stdenvNoCC.mkDerivation {
     pname = "${pname}-deps";
-    inherit version src postPatch patches;
+    inherit
+      version
+      src
+      postPatch
+      patches
+      ;
 
-    nativeBuildInputs = [ gradle_7 jdk8 perl zip ];
+    nativeBuildInputs = [
+      gradle_7
+      jdk8
+      perl
+      zip
+    ];
     buildPhase = ''
       ${exports}
 
@@ -80,9 +91,21 @@ let
   };
 in
 stdenvNoCC.mkDerivation {
-  inherit pname version src postPatch patches;
+  inherit
+    pname
+    version
+    src
+    postPatch
+    patches
+    ;
 
-  nativeBuildInputs = [ deps gradle_7 jdk8 makeWrapper unzip ];
+  nativeBuildInputs = [
+    deps
+    gradle_7
+    jdk8
+    makeWrapper
+    unzip
+  ];
   buildInputs = [ jre ];
 
   dontStrip = true;

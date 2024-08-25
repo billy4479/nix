@@ -1,7 +1,8 @@
-{ lib
-, pkgs
-, config
-, ...
+{
+  lib,
+  pkgs,
+  config,
+  ...
 }:
 let
   srcs = pkgs.fetchFromGitHub {
@@ -11,13 +12,15 @@ let
     hash = "sha256-EwSJMTxnaj2UlNJm1t6znnatfzgm1awIQQUF3VPfCTM=";
   };
 
-  fileNames = builtins.filter (name: lib.strings.hasSuffix ".colorscheme" name) (builtins.attrNames (builtins.readDir srcs));
+  fileNames = builtins.filter (name: lib.strings.hasSuffix ".colorscheme" name) (
+    builtins.attrNames (builtins.readDir srcs)
+  );
 in
 {
-  home.file = builtins.listToAttrs (map
-    (file: {
+  home.file = builtins.listToAttrs (
+    map (file: {
       name = "${config.xdg.dataHome}/konsole/${file}";
       value.source = builtins.toPath "${srcs}/${file}";
-    })
-    fileNames);
+    }) fileNames
+  );
 }

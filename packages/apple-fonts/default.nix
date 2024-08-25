@@ -1,8 +1,9 @@
-{ lib
-, stdenvNoCC
-, fetchurl
-, p7zip
-, fonts ? [ ]
+{
+  lib,
+  stdenvNoCC,
+  fetchurl,
+  p7zip,
+  fonts ? [ ],
 }:
 let
   urlsAndShas = {
@@ -25,26 +26,19 @@ let
   };
   knownFonts = builtins.attrNames srcs;
   selectedFonts =
-    if (fonts == [ ])
-    then knownFonts
+    if (fonts == [ ]) then
+      knownFonts
     else
       let
         unknown = lib.subtractLists knownFonts fonts;
       in
-      if (unknown != [ ])
-      then throw "Unknown font(s): ${lib.concatStringsSep " " unknown}"
-      else fonts;
-  srcs =
-    builtins.mapAttrs
-      (
-        name: value:
-          if builtins.elem name selectedFonts
-          then fetchurl value
-          else ""
-      )
-      urlsAndShas;
+      if (unknown != [ ]) then throw "Unknown font(s): ${lib.concatStringsSep " " unknown}" else fonts;
+  srcs = builtins.mapAttrs (
+    name: value: if builtins.elem name selectedFonts then fetchurl value else ""
+  ) urlsAndShas;
 
-  installFn = name: src:
+  installFn =
+    name: src:
     let
       folderName = builtins.replaceStrings [ " " ] [ "" ] name;
       outName = type: "$out/share/fonts/${type}/AppleFonts/${name}";
@@ -75,26 +69,15 @@ stdenvNoCC.mkDerivation {
   '';
 
   installPhase =
-    (
-      if builtins.elem "sf-pro" selectedFonts
-      then installFn "SF Pro Fonts" srcs.sf-pro
-      else ""
-    )
+    (if builtins.elem "sf-pro" selectedFonts then installFn "SF Pro Fonts" srcs.sf-pro else "")
     + (
-      if builtins.elem "sf-compact" selectedFonts
-      then installFn "SF Compact Fonts" srcs.sf-compact
-      else ""
+      if builtins.elem "sf-compact" selectedFonts then
+        installFn "SF Compact Fonts" srcs.sf-compact
+      else
+        ""
     )
-    + (
-      if builtins.elem "sf-mono" selectedFonts
-      then installFn "SF Mono Fonts" srcs.sf-mono
-      else ""
-    )
-    + (
-      if builtins.elem "ny" selectedFonts
-      then installFn "NY Fonts" srcs.ny
-      else ""
-    );
+    + (if builtins.elem "sf-mono" selectedFonts then installFn "SF Mono Fonts" srcs.sf-mono else "")
+    + (if builtins.elem "ny" selectedFonts then installFn "NY Fonts" srcs.ny else "");
 
   meta = {
     description = "Apple San Francisco and New York fonts";

@@ -1,10 +1,12 @@
-{ pkgs
-, lib
-, config
-, extraConfig
-, ...
+{
+  pkgs,
+  lib,
+  config,
+  extraConfig,
+  ...
 }:
-assert !extraConfig.wayland; {
+assert !extraConfig.wayland;
+{
   home.packages = [ pkgs.volumeicon ];
 
   home.file."${config.xdg.configHome}/volumeicon/volumeicon".text = ''
@@ -42,7 +44,9 @@ assert !extraConfig.wayland; {
       PartOf = [ "graphical-session.target" ];
     };
 
-    Install = { WantedBy = [ "graphical-session.target" ]; };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
 
     Service = {
       ExecStart = lib.getExe pkgs.volumeicon;

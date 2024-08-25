@@ -1,8 +1,6 @@
-{ pkgs
-, extraConfig
-, ...
-}:
-assert !extraConfig.wayland; {
+{ pkgs, extraConfig, ... }:
+assert !extraConfig.wayland;
+{
   home.packages = [ pkgs.lxsession ];
 
   systemd.user.services.lxsession = {
@@ -12,7 +10,9 @@ assert !extraConfig.wayland; {
       PartOf = [ "graphical-session.target" ];
     };
 
-    Install = { WantedBy = [ "graphical-session.target" ]; };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
 
     Service = {
       ExecStart = "${pkgs.lxsession}/bin/lxsession";

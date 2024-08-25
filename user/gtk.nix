@@ -1,7 +1,5 @@
-{ pkgs
-, extraConfig
-, ...
-}: {
+{ pkgs, extraConfig, ... }:
+{
   gtk = {
     enable = true;
     cursorTheme = import ./cursors {

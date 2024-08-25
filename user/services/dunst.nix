@@ -1,7 +1,5 @@
-{ pkgs
-, extraConfig
-, ...
-}: {
+{ pkgs, extraConfig, ... }:
+{
   services.dunst = {
     enable = true;
     iconTheme = import ../icons/papirus.nix {

@@ -1,13 +1,14 @@
-{ lib
-, stdenvNoCC
-, fetchFromGitHub
-, # Build time
-  perl
-, jdk8
-, gradle_7
-, makeWrapper
-, # Run time
-  jre
+{
+  lib,
+  stdenvNoCC,
+  fetchFromGitHub,
+  # Build time
+  perl,
+  jdk8,
+  gradle_7,
+  makeWrapper,
+  # Run time
+  jre,
 }:
 let
   pname = "packwiz-installer";
@@ -34,9 +35,18 @@ let
 
   build = stdenvNoCC.mkDerivation {
     pname = "${pname}-build";
-    inherit version src postPatch patches;
+    inherit
+      version
+      src
+      postPatch
+      patches
+      ;
 
-    nativeBuildInputs = [ gradle_7 jdk8 perl ];
+    nativeBuildInputs = [
+      gradle_7
+      jdk8
+      perl
+    ];
     buildPhase = ''
       export HOME="$NIX_BUILD_TOP/home"
       mkdir -p "$HOME"
@@ -60,7 +70,10 @@ let
 in
 stdenvNoCC.mkDerivation {
   inherit pname version;
-  nativeBuildInputs = [ build makeWrapper ];
+  nativeBuildInputs = [
+    build
+    makeWrapper
+  ];
   buildInputs = [ jre ];
 
   dontUnpack = true;

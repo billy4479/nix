@@ -1,4 +1,5 @@
-{ ... }: {
+{ ... }:
+{
   services.gammastep = {
     enable = true;
     temperature = {

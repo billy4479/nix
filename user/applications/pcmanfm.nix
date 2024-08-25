@@ -1,7 +1,6 @@
-{ pkgs, ... }: {
-  home.packages = [
-    pkgs.lxqt.pcmanfm-qt
-  ];
+{ pkgs, ... }:
+{
+  home.packages = [ pkgs.lxqt.pcmanfm-qt ];
 
   programs.plasma = {
     enable = true;

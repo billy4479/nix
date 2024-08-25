@@ -1,4 +1,5 @@
-{ extraConfig, ... }: {
+{ extraConfig, ... }:
+{
   programs.git = {
     enable = true;
     delta = {
@@ -20,13 +21,15 @@
     };
 
     userEmail =
-      if extraConfig.user.username == "billy"
-      then "giachi.ellero@gmail.com"
-      else throw "you should probably change this";
+      if extraConfig.user.username == "billy" then
+        "giachi.ellero@gmail.com"
+      else
+        throw "you should probably change this";
     userName =
-      if extraConfig.user.username == "billy"
-      then "billy4479"
-      else throw "you should probably change this";
+      if extraConfig.user.username == "billy" then
+        "billy4479"
+      else
+        throw "you should probably change this";
   };
 
   programs.gh = {

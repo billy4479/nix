@@ -1,7 +1,8 @@
-{ lib
-, config
-, pkgs
-, ...
+{
+  lib,
+  config,
+  pkgs,
+  ...
 }:
 let
   cfg = config.main-user;
@@ -30,7 +31,12 @@ in
       initialPassword = "password";
       description = cfg.fullName;
       shell = pkgs.zsh;
-      extraGroups = [ "wheel" "networkmanager" "adbusers" "libvirtd" ];
+      extraGroups = [
+        "wheel"
+        "networkmanager"
+        "adbusers"
+        "libvirtd"
+      ];
     };
   };
 }

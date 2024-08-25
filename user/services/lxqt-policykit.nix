@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   home.packages = [ pkgs.lxqt.lxqt-policykit ];
 
   systemd.user.services.lxqt-policykit = {
@@ -8,7 +9,9 @@
       PartOf = [ "graphical-session.target" ];
     };
 
-    Install = { WantedBy = [ "graphical-session.target" ]; };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
 
     Service = {
       ExecStart = "${pkgs.lxqt.lxqt-policykit}/bin/lxqt-policykit-agent";

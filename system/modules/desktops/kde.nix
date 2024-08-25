@@ -1,11 +1,9 @@
-{ pkgs, extraConfig, ... }: {
+{ pkgs, extraConfig, ... }:
+{
   services.xserver.enable = !extraConfig.wayland;
 
   # Enable the KDE Plasma Desktop Environment.
-  services.displayManager.defaultSession =
-    if extraConfig.wayland
-    then "plasma"
-    else "plasmax11";
+  services.displayManager.defaultSession = if extraConfig.wayland then "plasma" else "plasmax11";
   services.desktopManager.plasma6.enable = true;
 
   xdg.portal = {

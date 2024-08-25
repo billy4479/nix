@@ -49,16 +49,17 @@
   };
 
   outputs =
-    { nixpkgs
-    , home-manager
-    , catppuccin
-    , nix-vscode-extensions
-    , catppuccin-vsc
-    , plasma-manager
-    , spicetify-nix
-    , server-tool
-    , ...
-    } @ inputs:
+    {
+      nixpkgs,
+      home-manager,
+      catppuccin,
+      nix-vscode-extensions,
+      catppuccin-vsc,
+      plasma-manager,
+      spicetify-nix,
+      server-tool,
+      ...
+    }@inputs:
     let
       system = "x86_64-linux";
 
@@ -71,11 +72,9 @@
       lib = nixpkgs.lib;
       nixos = nixpkgs.lib.nixosSystem;
 
-      my-packages =
-        import ./packages { inherit pkgs; }
-        // {
-          server-tool = server-tool.packages.${system}.default;
-        };
+      my-packages = import ./packages { inherit pkgs; } // {
+        server-tool = server-tool.packages.${system}.default;
+      };
 
       user = {
         username = "billy";
@@ -83,13 +82,13 @@
       };
 
       # https://github.com/Stonks3141/ctp-nix/blob/main/modules/lib/default.nix#L49C1-L51C78
-      mkUpper = str:
+      mkUpper =
+        str:
         (lib.toUpper (builtins.substring 0 1 str)) + (builtins.substring 1 (builtins.stringLength str) str);
 
       mkCatppuccinColors =
-        { flavor
-        , accent
-        }: {
+        { flavor, accent }:
+        {
           inherit flavor accent;
           upper = {
             flavor = mkUpper flavor;
@@ -128,7 +127,8 @@
 
       # This function takes some `args`, merges them with our default `extraArgs`
       # and creates a "default" home-manager config with `args` added on top.
-      hmCfg = args:
+      hmCfg =
+        args:
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
           extraSpecialArgs = lib.recursiveUpdate extraArgs { extraConfig = args; };
@@ -144,9 +144,7 @@
       # here we take `args` and `extraSystemModules`. `args` is added to `specialArgs`,
       # while `extraSystemModules` is a list of modules that gets added to the default ones.
       nixCfg =
-        { extraSystemModules
-        , args
-        }:
+        { extraSystemModules, args }:
         nixos {
           inherit system;
           specialArgs = lib.recursiveUpdate extraArgs { extraConfig = args; };
@@ -157,13 +155,17 @@
       # we take a `hostname`, `extraSystemModules` (that we pass to `nixCfg`),
       # and `args` (that we pass to `nixCfg` and `hmCfg`).
       hostFn =
-        { hostname
-        , extraSystemModules ? [ ]
-        , args ? { }
-        }: {
+        {
+          hostname,
+          extraSystemModules ? [ ],
+          args ? { },
+        }:
+        {
           nixosConfigurations.${hostname} = nixCfg {
             inherit extraSystemModules;
-            args = args // { inherit hostname; };
+            args = args // {
+              inherit hostname;
+            };
           };
           homeConfigurations."${user.username}@${hostname}" = hmCfg (args // { inherit hostname; });
         };
@@ -182,7 +184,9 @@
     // createAndMergeHosts [
       {
         hostname = "nixbox";
-        args = { bluetooth = "false"; };
+        args = {
+          bluetooth = "false";
+        };
         extraSystemModules = [ ./system/hosts/vm ];
       }
       {

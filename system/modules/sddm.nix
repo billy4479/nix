@@ -1,7 +1,5 @@
-{ extraConfig
-, lib
-, ...
-}: {
+{ extraConfig, lib, ... }:
+{
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = extraConfig.wayland;

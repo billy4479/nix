@@ -1,8 +1,6 @@
-{ pkgs
-, extraConfig
-, ...
-}:
-assert !extraConfig.wayland; {
+{ pkgs, extraConfig, ... }:
+assert !extraConfig.wayland;
+{
   home.packages = [ pkgs.xfce.xfce4-clipman-plugin ];
 
   systemd.user.services.xfce4-clipman = {
@@ -12,7 +10,9 @@ assert !extraConfig.wayland; {
       PartOf = [ "graphical-session.target" ];
     };
 
-    Install = { WantedBy = [ "graphical-session.target" ]; };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
 
     Service = {
       ExecStart = "${pkgs.xfce.xfce4-clipman-plugin}/bin/xfce4-clipman";

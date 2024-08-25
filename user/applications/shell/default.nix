@@ -1,7 +1,4 @@
-{ pkgs
-, config
-, ...
-}:
+{ pkgs, config, ... }:
 let
   aliases = {
     rebuild-nix = "sudo nixos-rebuild switch --flake $HOME/nix";

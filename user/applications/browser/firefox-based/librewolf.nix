@@ -1,4 +1,5 @@
-{ aboutConfig, ... }: {
+{ aboutConfig, ... }:
+{
   programs.librewolf = {
     enable = true;
 

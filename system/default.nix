@@ -1,18 +1,18 @@
-{ pkgs
-, lib
-, extraConfig
-, flakeInputs
-, ...
-}: {
-  imports =
-    [
-      ./modules/locale.nix
-      ./modules/main-user.nix
-      ./modules/steam.nix
-      ./modules/sddm.nix
-      ./modules/sound.nix
-    ]
-    ++ lib.optional extraConfig.bluetooth ./modules/bluetooth.nix;
+{
+  pkgs,
+  lib,
+  extraConfig,
+  flakeInputs,
+  ...
+}:
+{
+  imports = [
+    ./modules/locale.nix
+    ./modules/main-user.nix
+    ./modules/steam.nix
+    ./modules/sddm.nix
+    ./modules/sound.nix
+  ] ++ lib.optional extraConfig.bluetooth ./modules/bluetooth.nix;
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -42,7 +42,10 @@
 
     settings = {
       # Enable flakes
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
 
       auto-optimise-store = true;
     };
@@ -93,7 +96,6 @@
     dconf.enable = true;
     adb.enable = true;
   };
-
 
   programs.zsh.enable = true;
   # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.zsh.enableCompletion

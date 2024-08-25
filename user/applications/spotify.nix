@@ -10,7 +10,12 @@ let
     exec = "${pkgs.dbus}/bin/dbus-send --type=method_call --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.OpenUri string:%U";
     terminal = false;
     mimeTypes = [ "x-scheme-handler/spotify" ];
-    categories = [ "Audio" "Music" "Player" "AudioVideo" ];
+    categories = [
+      "Audio"
+      "Music"
+      "Player"
+      "AudioVideo"
+    ];
     startupWMClass = "spotify";
   };
 in

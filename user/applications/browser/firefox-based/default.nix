@@ -1,4 +1,4 @@
-{ ... } @ args:
+{ ... }@args:
 let
   fonts = import ../../../fonts/names.nix;
   aboutConfig = {

@@ -1,7 +1,5 @@
-{ pkgs
-, config
-, ...
-}: {
+{ pkgs, config, ... }:
+{
   home.file."${config.xdg.userDirs.pictures}/wallpapers".source = pkgs.fetchFromGitHub {
     owner = "billy4479";
     repo = "wallpapers";

@@ -1,7 +1,4 @@
-{ pkgs
-, extraConfig
-, ...
-}:
+{ pkgs, extraConfig, ... }:
 let
   cursor = import ./cursors {
     inherit pkgs;
@@ -18,6 +15,6 @@ in
 
   programs.plasma.workspace.cursor = {
     theme = cursor.name;
-    size = 24; # Idk how this number relates to the one before    
+    size = 24; # Idk how this number relates to the one before
   };
 }

@@ -1,4 +1,5 @@
-{ ... }: {
+{ ... }:
+{
   xdg.enable = true;
   xdg.mimeApps =
     let

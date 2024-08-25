@@ -1,7 +1,8 @@
-{ lib
-, pkgs
-, config
-, ...
+{
+  lib,
+  pkgs,
+  config,
+  ...
 }:
 let
   cfg = config.programs.office;
@@ -16,23 +17,17 @@ in
     home.packages =
       [ ]
       ++ (
-        if cfg.enableLibreOffice
-        then
-          with pkgs; [
+        if cfg.enableLibreOffice then
+          with pkgs;
+          [
             libreoffice-qt
             hunspell
             hunspellDicts.en_US
             hunspellDicts.it_IT
           ]
-        else [ ]
+        else
+          [ ]
       )
-      ++ (
-        if cfg.enableOnlyOffice
-        then
-          with pkgs; [
-            onlyoffice-bin
-          ]
-        else [ ]
-      );
+      ++ (if cfg.enableOnlyOffice then with pkgs; [ onlyoffice-bin ] else [ ]);
   };
 }

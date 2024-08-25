@@ -1,5 +1,6 @@
 { extraConfig, ... }:
-assert !extraConfig.wayland; {
+assert !extraConfig.wayland;
+{
   # https://github.com/billy4479/dotfiles/blob/master/.config/picom/picom.conf
   services.picom = {
     enable = true;
@@ -7,10 +8,11 @@ assert !extraConfig.wayland; {
 
     fade = true;
     fadeDelta = 10;
-    fadeSteps = [ 0.08 0.08 ];
-    fadeExclude = [
-      "class_g = 'Rofi'"
+    fadeSteps = [
+      8.0e-2
+      8.0e-2
     ];
+    fadeExclude = [ "class_g = 'Rofi'" ];
 
     vSync = true;
 
@@ -54,12 +56,16 @@ assert !extraConfig.wayland; {
         shadow = false;
         clip-shadow-above = true;
       };
-      dnd = { shadow = false; };
+      dnd = {
+        shadow = false;
+      };
       popup_menu = {
         opacity = 1;
         fade = false;
       };
-      dropdown_menu = { opacity = 1; };
+      dropdown_menu = {
+        opacity = 1;
+      };
     };
   };
 }

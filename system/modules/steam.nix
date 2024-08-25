@@ -1,7 +1,8 @@
-{ pkgs
-, lib
-, extraConfig
-, ...
+{
+  pkgs,
+  lib,
+  extraConfig,
+  ...
 }:
 {
   # TODO: this should be in home manager...
@@ -11,9 +12,7 @@
       enable = true;
       remotePlay.openFirewall = true;
       dedicatedServer.openFirewall = true;
-      extraCompatPackages = with pkgs; [
-        proton-ge-bin
-      ];
+      extraCompatPackages = with pkgs; [ proton-ge-bin ];
     };
   };
 }

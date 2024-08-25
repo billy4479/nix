@@ -1,7 +1,4 @@
-{ pkgs
-, extraConfig
-, ...
-}:
+{ pkgs, extraConfig, ... }:
 let
   srcs = pkgs.fetchFromGitHub {
     owner = "black7375";

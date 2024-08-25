@@ -1,14 +1,10 @@
-{ config
-, pkgs
-, ...
-}: {
+{ config, pkgs, ... }:
+{
   # https://nixos.wiki/wiki/Nvidia
 
   hardware.graphics = {
     enable = true;
-    extraPackages = with pkgs; [
-      nvidia-vaapi-driver
-    ];
+    extraPackages = with pkgs; [ nvidia-vaapi-driver ];
   };
 
   # https://github.com/elFarto/nvidia-vaapi-driver
