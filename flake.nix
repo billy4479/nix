@@ -175,7 +175,7 @@
       createAndMergeHosts = hostProps: recursiveMerge (map hostFn hostProps);
     in
     {
-      formatter.${system} = pkgs.nixpkgs-fmt;
+      formatter.${system} = pkgs.nixfmt-rfc-style;
     }
     # Finally we define our `hostProps`:
     # these are the real configuration changes I want from one host to another.

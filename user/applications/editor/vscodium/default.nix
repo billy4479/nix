@@ -8,7 +8,7 @@
   home.packages = with pkgs; [
     clang-tools
     nixd
-    nixpkgs-fmt
+    nixfmt-rfc-style
   ];
 
   programs.vscode = {
