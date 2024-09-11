@@ -74,11 +74,12 @@
     fullName = extraConfig.user.fullName;
   };
 
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
+  # These are packages that I need on all users
   environment.systemPackages = with pkgs; [
     neovim
     file
+    lsof
+    usbutils # lsusb
   ];
 
   services = {
