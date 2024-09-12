@@ -29,7 +29,6 @@
     ++ (
       if !extraConfig.wayland then
         [
-          ../../services/X11/autorandr.nix
           ../../services/X11/nitrogen.nix
           ../../services/X11/picom.nix
           ../../services/X11/volumeicon.nix
