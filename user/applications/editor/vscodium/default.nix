@@ -28,6 +28,7 @@
         golang.go # Go
         twxs.cmake # CMake
         ms-python.python # Python
+        reditorsupport.r # R
         james-yu.latex-workshop # Latex
         llvm-vs-code-extensions.vscode-clangd # C/C++ (clangd)
         redhat.java # Java
