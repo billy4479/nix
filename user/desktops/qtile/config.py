@@ -332,30 +332,6 @@ def init_widgets_list():
             background=col['bg'],
         ),
         widget.TextBox(
-            text=" ⟳",
-            padding=2,
-            foreground=col['white'],
-            background=col['bg'],
-            fontsize=14
-        ),
-        widget.CheckUpdates(
-            distro='Arch_checkupdates',
-            update_interval=1800,
-            foreground=col['white'],
-            background=col['bg'],
-            no_update_string='No Updates',
-            mouse_callbacks={'Button1': lambda: qtile.cmd_spawn(
-                myTerm + ' -e yay -Syu')},
-            display_format="{updates} Updates",
-            padding=5
-        ),
-        widget.Sep(
-            linewidth=3,
-            padding=10,
-            foreground=col['green'],
-            background=col['bg'],
-        ),
-        widget.TextBox(
             text=" 󰍛 ",
             foreground=col['white'],
             background=col['bg'],
@@ -378,23 +354,6 @@ def init_widgets_list():
         widget.Net(
             interface="eno1",
             format='{down:.1f}{down_suffix} ↓↑ {up:.1f}{up_suffix}',
-            foreground=col['white'],
-            background=col['bg'],
-            padding=5
-        ),
-        widget.Sep(
-            linewidth=3,
-            padding=10,
-            foreground=col['green'],
-            background=col['bg'],
-        ),
-        widget.TextBox(
-            text=" Vol:",
-            foreground=col['white'],
-            background=col['bg'],
-            padding=0
-        ),
-        widget.Volume(
             foreground=col['white'],
             background=col['bg'],
             padding=5
