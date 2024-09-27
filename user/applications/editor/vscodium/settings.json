@@ -37,34 +37,6 @@
   "[dockerfile]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   },
-  "cSpell.userWords": [
-    "bindgen",
-    "ccache",
-    "cmake",
-    "egui",
-    "fyne",
-    "gorm",
-    "hasher",
-    "HWND",
-    "keypair",
-    "lzma",
-    "Minecraft",
-    "minmax",
-    "postgres",
-    "precompiled",
-    "prefetch",
-    "Scriptable",
-    "submodules",
-    "sveltekit",
-    "vite",
-    "wgpu",
-    "windicss",
-    "winit",
-    "Wireframe",
-    "youtube",
-    "zstd"
-  ],
-  "sync.gist": "afff5cddf59660d6c6f909bf140cc05d",
   "editor.maxTokenizationLineLength": 200000,
   "cmake.configureOnOpen": false,
   "clangd.onConfigChanged": "restart",
@@ -194,5 +166,6 @@
   "zig.zls.path": "zls",
   "zig.initialSetupDone": true,
   "zig.zls.inlayHintsShowVariableTypeHints": false,
-  "editor.minimap.enabled": false 
+  "editor.minimap.enabled": false,
+  "latex-workshop.formatting.latex": "latexindent"
 }
