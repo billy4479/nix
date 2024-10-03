@@ -52,6 +52,7 @@
         zignd.html-css-class-completion # CSS Classes Intellisense
         gruntfuggly.todo-tree # Todo Tree
         wayou.vscode-todo-highlight # Todo Highlight
+        vscodevim.vim # Vim motion - testing
       ])
       ++ [
         # Less then ideal because of https://github.com/catppuccin/vscode/issues/218 but this is still the best option we have

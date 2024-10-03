@@ -20,7 +20,7 @@
   console.keyMap = "it2";
 
   services.xserver.xkb = {
-    layout = "it";
-    variant = "";
+    layout = "us";
+    variant = "intl";
   };
 }
