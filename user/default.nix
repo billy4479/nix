@@ -1,4 +1,9 @@
-{ pkgs, extraConfig, ... }:
+{
+  pkgs,
+  extraConfig,
+  config,
+  ...
+}:
 {
   home.username = extraConfig.user.username;
   home.homeDirectory = "/home/${extraConfig.user.username}";
@@ -12,6 +17,7 @@
     ./fonts
     ./gtk.nix
     ./scripts
+    ./secrets.nix
     ./services/syncthing.nix
     ./xdg-open.nix
 
@@ -39,7 +45,7 @@
 
   xsession.numlock.enable = !extraConfig.wayland;
 
-  home.file = { };
+  home.file."${config.home.homeDirectory}/.ssh/id_ed25519.pub".source = ./keys/computerone.pub;
 
   home.sessionVariables = {
     EDITOR = "nvim";

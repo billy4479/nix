@@ -18,6 +18,8 @@
     file
     lsof
     usbutils # lsusb
+    age
+    sops
   ];
 
   services.smartd.enable = true;

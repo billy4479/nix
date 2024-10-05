@@ -1,0 +1,11 @@
+keys:
+  - &users
+    - &billy age15uzjpcp7d8gvect6qnlh3g5hfxu6c0feu7rdu9n6d3dwpp4fgftq0qjxa4
+  - &hosts
+    - &computerone age15yhlrda4zjvnqth8lelzx59xc64d6vhqphf9lm7jpcrjufrawuqst3az9z
+creation_rules:
+  - path_regex: secrets/computerone.yaml
+    key_groups:
+      - age:
+          - *billy
+          - *computerone
