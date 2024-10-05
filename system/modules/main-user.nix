@@ -26,9 +26,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    sops.secrets.user_password = { };
+
     users.users.${cfg.userName} = {
       isNormalUser = true;
-      initialPassword = "password";
+      hashedPasswordFile = config.sops.secrets.user_password.path;
       description = cfg.fullName;
       shell = pkgs.zsh;
       extraGroups = [
