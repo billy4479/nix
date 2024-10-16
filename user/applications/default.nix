@@ -20,7 +20,6 @@
   home.packages = with pkgs; [
     telegram-desktop
     discord
-    joplin-desktop
     kate
     qbittorrent
     qalculate-gtk

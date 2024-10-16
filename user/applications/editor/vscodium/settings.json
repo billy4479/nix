@@ -131,8 +131,7 @@
     "vscode-extension",
     ".git/objects",
     ".vscode",
-    ".vscode-insiders",
-    "joplin-desktop"
+    ".vscode-insiders"
   ],
   "eslint.lintTask.enable": true,
   "terminal.integrated.persistentSessionReviveProcess": "never",
