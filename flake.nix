@@ -151,7 +151,10 @@
         {
           nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
             inherit system specialArgs;
-            modules = [ ./system ] ++ extraSystemModules;
+            modules = [
+              ./system
+              sops-nix.nixosModules.sops
+            ] ++ extraSystemModules;
           };
 
           homeConfigurations."${user.username}@${hostname}" = home-manager.lib.homeManagerConfiguration {
@@ -161,6 +164,7 @@
               catppuccin.homeManagerModules.catppuccin
               plasma-manager.homeManagerModules.plasma-manager
               spicetify-nix.homeManagerModules.default
+              sops-nix.homeManagerModules.sops
               ./user
             ];
           };
