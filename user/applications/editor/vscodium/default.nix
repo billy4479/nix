@@ -34,6 +34,7 @@
         redhat.java # Java
         fwcd.kotlin # Kotlin
         ziglang.vscode-zig # Zig
+        svelte.svelte-vscode # Svelte
 
         # Tools
         esbenp.prettier-vscode # Prettier
