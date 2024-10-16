@@ -10,6 +10,7 @@
     ./modules/bootloader.nix
     ./modules/network.nix
     ./modules/nix.nix
+    ./modules/secrets.nix
   ] ++ lib.optional extraConfig.bluetooth ./modules/bluetooth.nix;
 
   # These are packages that I need on all users
