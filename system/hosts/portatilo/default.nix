@@ -1,4 +1,4 @@
-{ extraConfig, ... }:
+{ ... }:
 {
   imports = [
     ./hardware-configuration.nix
@@ -7,8 +7,7 @@
     ../../modules/containers.nix
     ../../modules/graphics/intel.nix
     ../../modules/power-management
-
-    (import ../../modules/desktops extraConfig.desktop)
+    ../../modules/desktops
   ];
 
   networking.hostName = "portatilo";

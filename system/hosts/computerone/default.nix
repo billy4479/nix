@@ -1,4 +1,4 @@
-{ extraConfig, ... }:
+{ ... }:
 {
   imports = [
     ./hardware-configuration.nix
@@ -8,7 +8,7 @@
     ../../modules/desktops/qtile.nix
     ../../modules/graphics/nvidia.nix
 
-    (import ../../modules/desktops extraConfig.desktop)
+    ../../modules/desktops
   ];
 
   networking.hostName = "computerone";

@@ -46,6 +46,11 @@
         flake-utils.follows = "flake-utils";
       };
     };
+
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -70,7 +75,6 @@
       };
 
       lib = nixpkgs.lib;
-      nixos = nixpkgs.lib.nixosSystem;
 
       my-packages = import ./packages { inherit pkgs; } // {
         server-tool = server-tool.packages.${system}.default;
@@ -107,6 +111,7 @@
           wayland = true;
           bluetooth = true;
           games = false;
+          isServer = false;
 
           catppuccinColors = mkCatppuccinColors {
             flavor = "frappe";
@@ -125,49 +130,34 @@
         flakeInputs = inputs;
       };
 
-      # This function takes some `args`, merges them with our default `extraArgs`
-      # and creates a "default" home-manager config with `args` added on top.
-      hmCfg =
-        args:
-        home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          extraSpecialArgs = lib.recursiveUpdate extraArgs { extraConfig = args; };
-          modules = [
-            catppuccin.homeManagerModules.catppuccin
-            plasma-manager.homeManagerModules.plasma-manager
-            spicetify-nix.homeManagerModules.default
-            ./user
-          ];
-        };
-
-      # This function does pretty much the same of the above one but with the nixos config:
-      # here we take `args` and `extraSystemModules`. `args` is added to `specialArgs`,
-      # while `extraSystemModules` is a list of modules that gets added to the default ones.
-      nixCfg =
-        { extraSystemModules, args }:
-        nixos {
-          inherit system;
-          specialArgs = lib.recursiveUpdate extraArgs { extraConfig = args; };
-          modules = [ ./system ] ++ extraSystemModules;
-        };
-
       # This function creates the flake output for a single host:
-      # we take a `hostname`, `extraSystemModules` (that we pass to `nixCfg`),
-      # and `args` (that we pass to `nixCfg` and `hmCfg`).
+      # we take a `hostname`, `extraSystemModules` (that we pass to NixOS),
+      # and `args` (that we pass to both to NixOS and home-manager).
       hostFn =
         {
           hostname,
           extraSystemModules ? [ ],
           args ? { },
         }:
+        let
+          specialArgs = lib.recursiveUpdate extraArgs { extraConfig = (args // { inherit hostname; }); };
+        in
         {
-          nixosConfigurations.${hostname} = nixCfg {
-            inherit extraSystemModules;
-            args = args // {
-              inherit hostname;
-            };
+          nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
+            inherit system specialArgs;
+            modules = [ ./system ] ++ extraSystemModules;
           };
-          homeConfigurations."${user.username}@${hostname}" = hmCfg (args // { inherit hostname; });
+
+          homeConfigurations."${user.username}@${hostname}" = home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            extraSpecialArgs = specialArgs;
+            modules = [
+              catppuccin.homeManagerModules.catppuccin
+              plasma-manager.homeManagerModules.plasma-manager
+              spicetify-nix.homeManagerModules.default
+              ./user
+            ];
+          };
         };
 
       # This function is like `lib.recursiveUpdate` but takes a list instead.
@@ -187,12 +177,16 @@
         args = {
           bluetooth = "false";
         };
-        extraSystemModules = [ ./system/hosts/vm ];
+        extraSystemModules = [
+          ./system/hosts/vm
+        ];
       }
       {
         hostname = "portatilo";
         args = { };
-        extraSystemModules = [ ./system/hosts/portatilo ];
+        extraSystemModules = [
+          ./system/hosts/portatilo
+        ];
       }
       {
         hostname = "computerone";
@@ -201,7 +195,19 @@
           wayland = false;
           games = true;
         };
-        extraSystemModules = [ ./system/hosts/computerone ];
+        extraSystemModules = [
+          ./system/hosts/computerone
+        ];
+      }
+      {
+        hostname = "serverone";
+        args = {
+          isServer = true;
+          bluetooth = false;
+        };
+        extraSystemModules = [
+          ./system/hosts/serverone
+        ];
       }
     ];
 }
