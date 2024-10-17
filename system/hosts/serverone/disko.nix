@@ -174,8 +174,10 @@
         datasets = {
           HDD_generic = {
             type = "zfs_fs";
-            mountpoint = "/mnt/HDD/generic";
-            options."com.sun:auto-snapshot" = "true";
+            options = {
+              mountpoint = "/mnt/HDD/generic";
+              "com.sun:auto-snapshot" = "true";
+            };
           };
         };
       };
@@ -197,8 +199,10 @@
         datasets = {
           SSD_generic = {
             type = "zfs_fs";
-            mountpoint = "/mnt/SSD/generic";
-            options."com.sun:auto-snapshot" = "true";
+            options = {
+              mountpoint = "/mnt/SSD/generic";
+              "com.sun:auto-snapshot" = "true";
+            };
           };
         };
       };
