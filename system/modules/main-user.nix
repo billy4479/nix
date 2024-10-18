@@ -26,7 +26,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    sops.secrets.user_password = { };
+    sops.secrets.user_password.neededForUsers = true;
 
     users = {
       mutableUsers = false;

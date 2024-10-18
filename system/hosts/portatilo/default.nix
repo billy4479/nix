@@ -1,4 +1,4 @@
-{ ... }:
+{ extraConfig, ... }:
 {
   imports = [
     ./hardware-configuration.nix
@@ -11,4 +11,8 @@
   ];
 
   networking.hostName = "portatilo";
+
+  users.users.${extraConfig.user.username}.openssh.authorizedKeys.keys = [
+    (builtins.readFile ../../../secrets/public_keys/billy_computerone.pub)
+  ];
 }
