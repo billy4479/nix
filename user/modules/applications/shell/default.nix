@@ -23,6 +23,8 @@ let
 
     license = "license text --author 'Giacomo Ellero'";
     c = "codium";
+
+    kssh = "kitten ssh";
   };
 in
 {
