@@ -4,6 +4,7 @@ keys:
   - &hosts
     - &computerone age15yhlrda4zjvnqth8lelzx59xc64d6vhqphf9lm7jpcrjufrawuqst3az9z
     - &serverone age1ykh30xkjz5w6fkjc3u4vsjkfnhkdcdnhgdwtrwkpmwmfpymfaugsckde2q
+    - &portatilo age1wr2fr73q5t0ze0vqnkjwhxgnl9j4z9d6t90g596h7fqrdete95mscks7xp
 creation_rules:
   - path_regex: secrets/computerone.yaml
     key_groups:
@@ -15,3 +16,8 @@ creation_rules:
       - age:
           - *billy
           - *serverone
+  - path_regex: secrets/portatilo.yaml
+    key_groups:
+      - age:
+          - *billy
+          - *portatilo
