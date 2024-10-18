@@ -25,6 +25,7 @@
       ];
 
       auto-optimise-store = true;
+      warn-dirty = false;
     };
   };
   # Enable unfree
