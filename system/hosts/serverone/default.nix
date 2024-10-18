@@ -29,8 +29,7 @@
     mutableUsers = false;
     users = {
       root.openssh.authorizedKeys.keys = [
-        builtins.readFile
-        ../../../secrets/public_keys/billy_computerone.pub
+        (builtins.readFile ../../../secrets/public_keys/billy_computerone.pub)
       ];
 
       billy = {
@@ -42,9 +41,8 @@
         shell = pkgs.zsh;
 
         hashedPasswordFile = config.sops.secrets.user_password.path;
-        openssh.authorizedKeys = [
-          builtins.readFile
-          ../../../secrets/public_keys/billy_computerone.pub
+        openssh.authorizedKeys.keys = [
+          (builtins.readFile ../../../secrets/public_keys/billy_computerone.pub)
         ];
 
         extraGroups = [
