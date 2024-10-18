@@ -6,11 +6,13 @@
 }:
 {
   imports = [
-    ../../modules/power-management
-    ../../modules/graphics/intel.nix
     ./hardware-configuration.nix
     flakeInputs.disko.nixosModules.disko
     ./disko.nix
+
+    ./samba.nix
+    ../../modules/power-management
+    ../../modules/graphics/intel.nix
   ];
 
   # https://github.com/nix-community/disko/issues/581#issuecomment-2260602290
