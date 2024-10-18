@@ -10,4 +10,8 @@
       sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
     };
   };
+
+  environment.sessionVariables = {
+    SOPS_AGE_KEY_FILE = "/var/lib/sops-nix/key.txt";
+  };
 }
