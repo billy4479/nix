@@ -14,4 +14,14 @@
     ./modules/desktops/qtile
     ./modules/qt.nix
   ];
+
+  programs.ssh = {
+    enable = true;
+
+    matchBlocks = {
+      serverone = {
+        hostname = "192.168.1.51";
+      };
+    };
+  };
 }
