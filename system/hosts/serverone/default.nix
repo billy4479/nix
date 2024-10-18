@@ -95,5 +95,8 @@
     };
   };
 
-  networking.hostId = "d3cb129c";
+  networking = {
+    hostId = "d3cb129c";
+    hostName = "serverone";
+  };
 }
