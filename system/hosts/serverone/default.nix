@@ -1,4 +1,9 @@
-{ flakeInputs, ... }:
+{
+  flakeInputs,
+  config,
+  pkgs,
+  ...
+}:
 {
   imports = [
     ../../modules/power-management
@@ -18,9 +23,82 @@
     enable = true;
   };
 
-  users.users.root.openssh.authorizedKeys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIImNlhEzdTtpz598zDIQBnh39tLbXi1bZgkMY1qBQ/PS giachi.ellero@gmail.com"
-  ];
+  sops.secrets.user_password = { };
+
+  users = {
+    mutableUsers = false;
+    users = {
+      root.openssh.authorizedKeys.keys = [
+        builtins.readFile
+        ../../../secrets/public_keys/billy_computerone.pub
+      ];
+
+      billy = {
+        name = "billy";
+        description = "Billy Panciotto";
+        isNormalUser = true;
+        uid = 1000;
+
+        shell = pkgs.zsh;
+
+        hashedPasswordFile = config.sops.secrets.user_password.path;
+        openssh.authorizedKeys = [
+          builtins.readFile
+          ../../../secrets/public_keys/billy_computerone.pub
+        ];
+
+        extraGroups = [
+          "wheel"
+          "networkmanager"
+        ];
+      };
+
+      luke = {
+        name = "luke";
+        isNormalUser = true;
+        uid = 1001;
+        shell = null;
+        createHome = false;
+      };
+
+      edo = {
+        name = "edo";
+        isNormalUser = true;
+        uid = 1002;
+        shell = null;
+        createHome = false;
+      };
+
+      barbara = {
+        name = "barbara";
+        isNormalUser = true;
+        uid = 1003;
+        shell = null;
+        createHome = false;
+      };
+    };
+
+    groups = {
+      admin = {
+        gid = 2000;
+        name = "admin";
+        members = [
+          "billy"
+        ];
+      };
+
+      family = {
+        gid = 2001;
+        name = "family";
+        members = [
+          "luke"
+          "barbara"
+          "edo"
+          "billy"
+        ];
+      };
+    };
+  };
 
   networking.hostId = "d3cb129c";
 }

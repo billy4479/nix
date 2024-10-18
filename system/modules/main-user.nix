@@ -28,17 +28,21 @@ in
   config = lib.mkIf cfg.enable {
     sops.secrets.user_password = { };
 
-    users.users.${cfg.userName} = {
-      isNormalUser = true;
-      hashedPasswordFile = config.sops.secrets.user_password.path;
-      description = cfg.fullName;
-      shell = pkgs.zsh;
-      extraGroups = [
-        "wheel"
-        "networkmanager"
-        "adbusers"
-        "libvirtd"
-      ];
+    users = {
+      mutableUsers = false;
+      users.${cfg.userName} = {
+        isNormalUser = true;
+        uid = 1000;
+        hashedPasswordFile = config.sops.secrets.user_password.path;
+        description = cfg.fullName;
+        shell = pkgs.zsh;
+        extraGroups = [
+          "wheel"
+          "networkmanager"
+          "adbusers"
+          "libvirtd"
+        ];
+      };
     };
   };
 }
