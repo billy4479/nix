@@ -28,10 +28,6 @@
   users = {
     mutableUsers = false;
     users = {
-      root.openssh.authorizedKeys.keys = [
-        (builtins.readFile ../../../secrets/public_keys/billy_computerone.pub)
-      ];
-
       billy = {
         name = "billy";
         description = "Billy Panciotto";
