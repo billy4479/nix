@@ -23,7 +23,7 @@
     enable = true;
   };
 
-  sops.secrets.user_password = { };
+  sops.secrets.user_password.neededForUsers = true;
 
   users = {
     mutableUsers = false;
@@ -39,6 +39,7 @@
         hashedPasswordFile = config.sops.secrets.user_password.path;
         openssh.authorizedKeys.keys = [
           (builtins.readFile ../../../secrets/public_keys/billy_computerone.pub)
+          (builtins.readFile ../../../secrets/public_keys/billy_portatilo.pub)
         ];
 
         extraGroups = [
