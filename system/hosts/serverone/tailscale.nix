@@ -10,6 +10,12 @@
     ];
   };
 
+  # For samba we have to run `tailscale serve --bg --tcp 445 tcp://localhost:445`
+  # otherwise it samba will refuse the connections coming from tailscale0 interface.
+  # The command needs to be run just once, then it saves this config to /var/lib/tailscale/tailscaled.state
+  # which is some weird json-base64 thing.
+  # TODO: find a way to automate this
+
   systemd.services.transport-layer-offloads = {
     # https://tailscale.com/kb/1319/performance-best-practices#ethtool-configuration.
     description = "Transport layer offloads for UDP";
