@@ -104,5 +104,6 @@
   networking = {
     hostId = "d3cb129c";
     hostName = "serverone";
+    interfaces.enp2s0.wakeOnLan.enable = true;
   };
 }
