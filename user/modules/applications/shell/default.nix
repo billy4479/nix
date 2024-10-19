@@ -1,4 +1,10 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  extraConfig,
+  ...
+}:
 let
   aliases = {
     rebuild-nix = "sudo nixos-rebuild switch --flake $HOME/nix";
@@ -108,7 +114,21 @@ in
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
-    settings = pkgs.lib.importTOML ./starship.toml;
+    settings =
+      let
+        color =
+          if extraConfig.hostname == "computerone" then
+            "green"
+          else if extraConfig.hostname == "portatilo" then
+            "yellow"
+          else if extraConfig.hostname == "computerone" then
+            "purple"
+          else
+            "red";
+      in
+      lib.recursiveUpdate (pkgs.lib.importTOML ./starship.toml) {
+        hostname.style = "${color} bold";
+      };
     catppuccin.enable = true;
   };
 
