@@ -33,13 +33,19 @@
       "defaults"
       "discard"
       "noauto"
-      "users"
+      "x-systemd.automount"
+      "x-systemd.idle-timeout=5m"
+      "x-systemd.device-timeout=1s"
+      "x-systemd.mount-timeout=1s"
     ];
 
     "/mnt/HDD".options = [
       "defaults"
       "noauto"
-      "users"
+      "x-systemd.automount"
+      "x-systemd.idle-timeout=5m"
+      "x-systemd.device-timeout=1s"
+      "x-systemd.mount-timeout=1s"
     ];
   };
 }

@@ -8,6 +8,8 @@
     ../../modules/graphics/intel.nix
     ../../modules/power-management
     ../../modules/desktops
+
+    ../../modules/cifs-client.nix
   ];
 
   networking.hostName = "portatilo";
