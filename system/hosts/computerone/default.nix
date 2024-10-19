@@ -8,6 +8,8 @@
     ../../modules/desktops/qtile.nix
     ../../modules/graphics/nvidia.nix
 
+    ../../modules/cifs-client.nix
+
     ../../modules/desktops
   ];
 
