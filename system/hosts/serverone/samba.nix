@@ -76,10 +76,10 @@
                       | "${pkgs.samba}/bin/smbpasswd" -s -a '${user}'  
         ''
       )
-      ([
+      [
         "billy"
         "luke"
         "edo"
         "barbara"
-      ]);
+      ];
 }
