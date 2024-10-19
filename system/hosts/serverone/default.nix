@@ -11,6 +11,8 @@
     ./disko.nix
 
     ./samba.nix
+    ./tailscale.nix
+
     ../../modules/power-management
     ../../modules/graphics/intel.nix
   ];
@@ -21,8 +23,10 @@
     "ssd_pool"
   ];
 
-  services.openssh = {
-    enable = true;
+  services = {
+    openssh = {
+      enable = true;
+    };
   };
 
   sops.secrets.user_password.neededForUsers = true;
