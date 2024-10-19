@@ -10,6 +10,7 @@
     ../../modules/desktops
 
     ../../modules/cifs-client.nix
+    ../../modules/tailscale.nix
   ];
 
   networking.hostName = "portatilo";
