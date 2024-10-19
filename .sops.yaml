@@ -6,17 +6,17 @@ keys:
     - &serverone age1ykh30xkjz5w6fkjc3u4vsjkfnhkdcdnhgdwtrwkpmwmfpymfaugsckde2q
     - &portatilo age1wr2fr73q5t0ze0vqnkjwhxgnl9j4z9d6t90g596h7fqrdete95mscks7xp
 creation_rules:
-  - path_regex: secrets/computerone.yaml
+  - path_regex: secrets/computerone.yaml$
     key_groups:
       - age:
           - *billy
           - *computerone
-  - path_regex: secrets/serverone.yaml
+  - path_regex: secrets/serverone.yaml$
     key_groups:
       - age:
           - *billy
           - *serverone
-  - path_regex: secrets/portatilo.yaml
+  - path_regex: secrets/portatilo.yaml$
     key_groups:
       - age:
           - *billy
