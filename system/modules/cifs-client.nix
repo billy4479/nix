@@ -9,7 +9,7 @@ let
   mount_options = lib.concatStringsSep "," [
     "noauto"
     "x-systemd.automount"
-    "x-systemd.idle-timeout=5s"
+    "x-systemd.idle-timeout=5m"
     "x-systemd.device-timeout=5s"
     "x-systemd.mount-timeout=5s"
     "uid=1000"
