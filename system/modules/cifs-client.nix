@@ -16,6 +16,9 @@ let
     "gid=1000"
     "credentials=${config.sops.secrets.cifs_credentials.path}"
   ];
+
+  # TODO: once we have DNS on serverone use actual names
+  nas_address = "100.105.236.47";
 in
 {
   environment.systemPackages = [ pkgs.cifs-utils ];
@@ -24,13 +27,13 @@ in
 
   fileSystems = {
     "/mnt/serverone/hdd-generic" = {
-      device = "//192.168.1.51/nas-hdd";
+      device = "//${nas_address}/nas-hdd";
       fsType = "cifs";
       options = [ mount_options ];
     };
 
     "/mnt/serverone/ssd-generic" = {
-      device = "//192.168.1.51/nas-ssd";
+      device = "//${nas_address}/nas-ssd";
       fsType = "cifs";
       options = [ mount_options ];
     };
