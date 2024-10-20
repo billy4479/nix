@@ -12,6 +12,7 @@
 
     ./samba.nix
     ./tailscale.nix
+    ./containers.nix
 
     ../../modules/power-management
     ../../modules/graphics/intel.nix
