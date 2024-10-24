@@ -27,7 +27,7 @@ in
 
   home.packages =
     (with pkgs; [
-      qt5ct
+      libsForQt5.qt5ct
       qt6ct
     ])
     ++ [ papirus.package ]
