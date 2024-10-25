@@ -8,8 +8,9 @@
         recolor = lib.mkDefault true;
         recolor-keephue = true;
         scroll-step = 60;
-        font = "SF Pro Display";
+        font = (import ../fonts/names.nix).sans;
         guioptions = "none";
+        database = "sqlite";
       };
     };
   };
