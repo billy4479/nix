@@ -68,7 +68,7 @@ in
         "/mnt/SSD/apps/syncthing/config:/config"
       ];
 
-      extraOptions = ["--network=host"];
+      extraOptions = [ "--network=host" ];
     };
   };
 
