@@ -98,11 +98,14 @@
 
       mkCatppuccinColors =
         { flavor, accent }:
-        {
+        rec {
           inherit flavor accent;
+          flavorWithAccent = if flavor == "frappe" then "Frappé" else flavor;
+
           upper = {
             flavor = mkUpper flavor;
             accent = mkUpper accent;
+            flavorWithAccent = mkUpper flavorWithAccent;
           };
         };
 
