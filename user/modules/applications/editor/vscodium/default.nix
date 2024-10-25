@@ -2,6 +2,7 @@
   pkgs,
   lib,
   extraPkgs,
+  extraConfig,
   ...
 }:
 {
@@ -104,6 +105,11 @@
     };
     userSettings = lib.importJSON ./settings.json // {
       "editor.fontFamily" = (import ../../../fonts/names.nix).mono;
+
+      "workbench.iconTheme" = "catppuccin-${extraConfig.catppuccinColors.flavor}";
+      "workbench.colorTheme" = "Catppuccin ${extraConfig.catppuccinColors.upper.flavorWithAccent}";
+      "catppuccin.accentColor" = extraConfig.catppuccinColors.accent;
+
       "clangd.path" = "${pkgs.clang-tools}/bin/clangd"; # TODO: should this be in a devEnvironment?
       "java.configuration.runtimes" = [
         {
