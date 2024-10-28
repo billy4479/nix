@@ -34,6 +34,8 @@
       "defaults"
       "discard"
       "noauto"
+      "uid=1000"
+      "gid=1000"
       "x-systemd.automount"
       "x-systemd.idle-timeout=5m"
       "x-systemd.device-timeout=1s"
