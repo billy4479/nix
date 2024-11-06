@@ -6,5 +6,6 @@
     ./modules/applications/editor/nvim
     ./modules/applications/git.nix
     ./modules/applications/shell
+    ./modules/applications/zellij
   ];
 }
