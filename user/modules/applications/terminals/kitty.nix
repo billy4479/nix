@@ -18,7 +18,7 @@
       update_check_interval = 0;
     };
     keybindings = {
-      "ctrl+plus" = "change_font_size all +2.0";
+      "ctrl+equal" = "change_font_size all +2.0";
       "ctrl+minus" = "change_font_size all -2.0";
       "ctrl+0" = "change_font_size all 0";
     };
