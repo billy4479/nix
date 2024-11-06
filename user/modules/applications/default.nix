@@ -15,6 +15,7 @@
     ./terminals/kitty.nix
     ./terminals/konsole
     ./zathura.nix
+    ./zellij.nix
   ];
 
   home.packages = with pkgs; [
