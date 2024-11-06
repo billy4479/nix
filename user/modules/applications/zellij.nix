@@ -10,10 +10,13 @@
       default_layout = "compact";
       pane_frames = false;
       keybinds = {
+        "unbind \"Ctrl h\"" = { }; # This conflicts with Ctrl Backspace
 
-        "unbind \"Ctrl h\"" = {}; # This conflicts with Ctrl Backspace
         move = {
-            "bind \"Ctrl m\"".SwitchToMode = { _args = ["Normal"]; };
+          "unbind \"Ctrl h\"" = { }; # This conflicts with Ctrl Backspace
+          "bind \"Ctrl m\"".SwitchToMode = {
+            _args = [ "Normal" ];
+          };
         };
 
         normal = {
