@@ -1,20 +1,49 @@
-{ pkgs, config, ... }:
 {
-  # We don't use programs.neovim on purpose,
-  # for now we just need to get a working AstroVim setup.
-  # When I'll finally decide myself to learn vim properly I'll update this.
+  pkgs,
+  lib,
+  extraConfig,
+  ...
+}:
+{
+  imports = [
+    ./plugins/catppuccin.nix
+    ./plugins/treesitter.nix
+  ];
+  programs.neovim = {
+    enable = true;
+    extraLuaConfig = # lua
+      ''
+        vim.opt.nu = true
+        vim.opt.relativenumber = true
 
-  home.packages = [ pkgs.neovim ];
-  home.file = {
-    "${config.xdg.configHome}/nvim" = {
-      source = pkgs.fetchFromGitHub {
-        owner = "AstroNvim";
-        repo = "AstroNvim";
-        rev = "271c9c3f71c2e315cb16c31276dec81ddca6a5a6";
-        hash = "sha256-h019vKDgaOk0VL+bnAPOUoAL8VAkhY6MGDbqEy+uAKg=";
-      };
-      recursive = true;
-    };
-    "${config.xdg.configHome}/nvim/lua/user".source = ./user;
+        vim.opt.tabstop = 4
+        vim.opt.softtabstop = 4
+        vim.opt.shiftwidth = 4
+        vim.opt.expandtab = true
+
+        vim.opt.smartindent = true
+
+        vim.opt.wrap = false
+
+        vim.opt.hlsearch = false
+        vim.opt.incsearch = true
+
+        vim.opt.termguicolors = true
+
+        vim.opt.scrolloff = 8
+
+        vim.opt.updatetime = 50
+
+        -- vim.opt.colorcolumn = "80"
+
+        vim.g.mapleader = " "
+        vim.keymap.set("i", "<C-c>", "<Esc>")
+        vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
+
+        vim.keymap.set("x", "<leader>p", [["_dP]])
+        vim.keymap.set({"n", "v"}, "<leader>y", [["+y]])
+        vim.keymap.set("n", "<leader>Y", [["+Y]])
+        vim.keymap.set({"n", "v"}, "<leader>d", "\"_d")
+      '';
   };
 }
