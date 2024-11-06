@@ -11,7 +11,7 @@ in
     configFile."konsolerc"."Desktop Entry"."DefaultProfile".value = profileFile;
     dataFile."konsole/${profileFile}" = {
       "Appearance" = {
-        "ColorScheme".value = "Catppuccin-Frappe";
+        "ColorScheme".value = "catppuccin-${extraConfig.catppuccinColors.flavor}";
         "Font".value = "${(import ../../../fonts/names.nix).mono},16,-1,5,53,0,0,0,0,0,Regular";
       };
 

@@ -8,19 +8,19 @@ let
   srcs = pkgs.fetchFromGitHub {
     owner = "catppuccin";
     repo = "konsole";
-    rev = "7d86b8a1e56e58f6b5649cdaac543a573ac194ca";
-    hash = "sha256-EwSJMTxnaj2UlNJm1t6znnatfzgm1awIQQUF3VPfCTM=";
+    rev = "3b64040e3f4ae5afb2347e7be8a38bc3cd8c73a8";
+    hash = "sha256-d5+ygDrNl2qBxZ5Cn4U7d836+ZHz77m6/yxTIANd9BU=";
   };
 
   fileNames = builtins.filter (name: lib.strings.hasSuffix ".colorscheme" name) (
-    builtins.attrNames (builtins.readDir srcs)
+    builtins.attrNames (builtins.readDir "${srcs}/themes")
   );
 in
 {
   home.file = builtins.listToAttrs (
     map (file: {
       name = "${config.xdg.dataHome}/konsole/${file}";
-      value.source = builtins.toPath "${srcs}/${file}";
+      value.source = builtins.toPath "${srcs}/themes/${file}";
     }) fileNames
   );
 }
