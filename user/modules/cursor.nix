@@ -8,7 +8,7 @@ in
 {
   home.pointerCursor = {
     inherit (cursor) name package;
-    size = 10;
+    size = 24;
     gtk.enable = true;
     x11.enable = true; # We probably still want this because of xwayland
   };
