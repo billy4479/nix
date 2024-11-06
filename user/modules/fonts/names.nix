@@ -4,6 +4,6 @@ rec {
 
   sans = "SF Pro Display";
   serif = sans; # Disable serif fonts
-  # mono = "FiraCode Nerd Font";
-  mono = "BigBlueTermPlus Nerd Font Mono";
+  mono = "FiraCode Nerd Font";
+  # mono = "BigBlueTermPlus Nerd Font Mono";
 }
