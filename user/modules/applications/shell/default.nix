@@ -15,9 +15,6 @@ let
     o = "xdg-open";
     man = "batman";
 
-    ls = "eza -a --icons --color=auto --group-directories-first";
-    ll = "ls -lh";
-
     gaa = "git add -A";
     gc = "git commit";
     gap = "git add --patch";
@@ -37,7 +34,10 @@ in
   programs.zsh = {
     enable = true;
     enableCompletion = true;
-    syntaxHighlighting.enable = true;
+    syntaxHighlighting = {
+      enable = true;
+      catppuccin.enable = true;
+    };
     shellAliases = aliases;
 
     dirHashes = {
@@ -137,9 +137,23 @@ in
     enableZshIntegration = true;
   };
 
-  # This is stuff that I assume is installed whenever I use a shell
-  home.packages = with pkgs; [
-    bat
-    eza
-  ];
+  programs.bat = {
+    enable = true;
+    catppuccin.enable = true;
+
+    extraPackages = with pkgs.bat-extras; [ batman ];
+    config = {
+      wrap = "never";
+    };
+  };
+
+  programs.eza = {
+    enable = true;
+    colors = "auto";
+    icons = "auto";
+    extraOptions = [
+      "--group-directories-first"
+      "-h"
+    ];
+  };
 }
