@@ -13,7 +13,7 @@
       enable_audio_bell = false;
       window_padding_width = 0;
       confirm_os_window_close = 0;
-      background_opacity = if extraConfig.desktop == "kde" then "1" else "0.7";
+      background_opacity = if extraConfig.desktop == "kde" then "1" else "0.85";
       shell = "zsh";
       update_check_interval = 0;
     };
