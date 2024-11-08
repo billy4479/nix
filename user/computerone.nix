@@ -20,7 +20,7 @@
 
     matchBlocks = {
       serverone = {
-        hostname = "192.168.1.51";
+        hostname = "100.105.236.47";
       };
     };
   };
