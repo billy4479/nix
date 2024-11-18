@@ -36,6 +36,7 @@
         fwcd.kotlin # Kotlin
         ziglang.vscode-zig # Zig
         svelte.svelte-vscode # Svelte
+        jinliming2.vscode-go-template # Go Templates
 
         # Tools
         esbenp.prettier-vscode # Prettier
