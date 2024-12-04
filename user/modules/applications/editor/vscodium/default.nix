@@ -37,6 +37,7 @@
         ziglang.vscode-zig # Zig
         svelte.svelte-vscode # Svelte
         jinliming2.vscode-go-template # Go Templates
+        mechatroner.rainbow-csv # CSV
 
         # Tools
         esbenp.prettier-vscode # Prettier
