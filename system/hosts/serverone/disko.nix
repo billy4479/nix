@@ -1,5 +1,5 @@
 {
-  # TODO: i dont want to use /dev/sdX in the future, 
+  # TODO: i dont want to use /dev/sdX in the future,
   # but at the same time i dont want to post on github my disks serial numbers
   disko.devices = {
     disk = {

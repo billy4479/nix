@@ -8,7 +8,7 @@
 # TODO: for now we use just the X11 version.
 #       My config sucks and has to be rewritten
 #       I also need to figure out what tools I need installed for Wayland to replace my X11 config.
-#assert !extraConfig.wayland; 
+#assert !extraConfig.wayland;
 {
   home.file = {
     "${config.xdg.configHome}/qtile/config.py".source = ./config.py;

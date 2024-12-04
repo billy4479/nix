@@ -1,6 +1,9 @@
 { pkgs, ... }:
 {
-  home.packages = [ pkgs.lightly-qt ];
+  home.packages = with pkgs; [
+    lightly-qt
+    kdePackages.plasma-systemmonitor
+  ];
 
   programs.plasma = {
     enable = true;
