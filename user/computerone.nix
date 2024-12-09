@@ -21,6 +21,7 @@
     matchBlocks = {
       serverone = {
         hostname = "100.105.236.47";
+        forwardAgent = true;
       };
     };
   };
