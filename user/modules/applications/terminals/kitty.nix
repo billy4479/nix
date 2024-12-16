@@ -4,7 +4,7 @@
     enable = true;
     font = {
       name = (import ../../fonts/names.nix).mono;
-      size = 16;
+      size = 18;
     };
     shellIntegration.enableZshIntegration = true;
     catppuccin.enable = true;
