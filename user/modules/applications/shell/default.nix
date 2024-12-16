@@ -44,6 +44,7 @@ in
       c = "$HOME/code";
       s = "$HOME/src";
       n = "$HOME/nix";
+      v = "$HOME/nix/user/modules/applications/editor/nvim";
       dl = "$HOME/Downloads";
       mc = "$HOME/.local/share/PrismLauncher/instances";
     };
