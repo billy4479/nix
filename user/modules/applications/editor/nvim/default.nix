@@ -35,7 +35,7 @@
 
         vim.opt.updatetime = 50
 
-        -- vim.opt.colorcolumn = "80"
+        vim.opt.colorcolumn = "100"
 
         vim.g.mapleader = " "
         vim.keymap.set("i", "<C-c>", "<Esc>")
