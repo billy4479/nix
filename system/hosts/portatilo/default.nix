@@ -16,6 +16,6 @@
   networking.hostName = "portatilo";
 
   users.users.${extraConfig.user.username}.openssh.authorizedKeys.keys = [
-    (builtins.readFile ../../../secrets/public_keys/billy_computerone.pub)
+    (builtins.readFile ../../../secrets/public_keys/ssh/billy_computerone.pub)
   ];
 }

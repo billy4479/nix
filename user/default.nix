@@ -7,7 +7,7 @@
 }:
 let
   public_key_name = "${extraConfig.user.username}_${extraConfig.hostname}.pub";
-  public_key = ../secrets/public_keys/${public_key_name};
+  public_key = ../secrets/public_keys/ssh/${public_key_name};
 in
 {
   home.username = extraConfig.user.username;

@@ -17,7 +17,7 @@
   networking.hostName = "computerone";
 
   users.users.${extraConfig.user.username}.openssh.authorizedKeys.keys = [
-    (builtins.readFile ../../../secrets/public_keys/billy_portatilo.pub)
+    (builtins.readFile ../../../secrets/public_keys/ssh/billy_portatilo.pub)
   ];
 
   fileSystems = {
