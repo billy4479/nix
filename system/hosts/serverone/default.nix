@@ -15,7 +15,6 @@
     ./containers.nix
     ./samba.nix
 
-    ./tailscale.nix
     ./wireguard.nix
 
     ../../modules/power-management
@@ -33,8 +32,6 @@
       enable = true;
     };
   };
-
-  sops.secrets.tailscale_key = { };
 
   networking = {
     hostId = "d3cb129c";
