@@ -9,7 +9,7 @@
     ../../modules/graphics/nvidia.nix
 
     ../../modules/cifs-client.nix
-    ../../modules/tailscale.nix
+    ../../modules/wireguard.nix
 
     ../../modules/desktops
   ];
