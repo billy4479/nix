@@ -58,17 +58,17 @@ in
       image = "syncthing:latest";
       imageFile = syncthingImage;
       ports = [
-        "127.0.0.1:8384:8384"
-        "127.0.0.1:22000:22000/tcp"
-        "127.0.0.1:22000:22000/udp"
-        "127.0.0.1:21027:21027/udp"
+        "8384:8384"
+        "22000:22000/tcp"
+        "22000:22000/udp"
+        "21027:21027/udp"
       ];
 
       volumes = [
         "/mnt/SSD/apps/syncthing/config:/config"
       ];
 
-      extraOptions = [ "--network=host" ];
+      extraOptions = [ "--ip=10.0.1.2" ];
     };
   };
 
