@@ -91,7 +91,7 @@
         fullName = "Billy Panciotto";
       };
 
-      # https://github.com/Stonks3141/ctp-nix/blob/main/modules/lib/default.nix#L49C1-L51C78
+      # https://github.com/catppuccin/nix/blob/5501cb508c2d4224d932a0b924d75454b68680bf/modules/lib/default.nix#L79
       mkUpper =
         str:
         (lib.toUpper (builtins.substring 0 1 str)) + (builtins.substring 1 (builtins.stringLength str) str);
@@ -121,6 +121,7 @@
           bluetooth = true;
           games = false;
           isServer = false;
+          standaloneHomeManager = true;
 
           catppuccinColors = mkCatppuccinColors {
             flavor = "frappe";
@@ -150,27 +151,47 @@
         }:
         let
           specialArgs = lib.recursiveUpdate extraArgs { extraConfig = (args // { inherit hostname; }); };
+          defaultHomeManagerModules = [
+            catppuccin.homeManagerModules.catppuccin
+            plasma-manager.homeManagerModules.plasma-manager
+            spicetify-nix.homeManagerModules.default
+            sops-nix.homeManagerModules.sops
+            ./user
+          ];
         in
         {
           nixosConfigurations.${hostname} = nixpkgs.lib.nixosSystem {
             inherit system specialArgs;
-            modules = [
-              ./system
-              sops-nix.nixosModules.sops
-            ] ++ extraSystemModules;
+            modules =
+              [
+                ./system
+                sops-nix.nixosModules.sops
+              ]
+              ++ lib.optionals (!args.standaloneHomeManager) [
+                home-manager.nixosModules.home-manager
+                {
+                  home-manager = {
+                    useGlobalPkgs = true;
+                    useUserPackages = true;
+                    extraSpecialArgs = specialArgs;
+                    users.${user.username}.imports = defaultHomeManagerModules;
+                  };
+                }
+              ]
+              ++ extraSystemModules;
           };
 
-          homeConfigurations."${user.username}@${hostname}" = home-manager.lib.homeManagerConfiguration {
-            inherit pkgs;
-            extraSpecialArgs = specialArgs;
-            modules = [
-              catppuccin.homeManagerModules.catppuccin
-              plasma-manager.homeManagerModules.plasma-manager
-              spicetify-nix.homeManagerModules.default
-              sops-nix.homeManagerModules.sops
-              ./user
-            ];
-          };
+          homeConfigurations =
+            if args.standaloneHomeManager then
+              {
+                "${user.username}@${hostname}" = home-manager.lib.homeManagerConfiguration {
+                  inherit pkgs;
+                  extraSpecialArgs = specialArgs;
+                  modules = defaultHomeManagerModules;
+                };
+              }
+            else
+              { };
         };
 
       # This function is like `lib.recursiveUpdate` but takes a list instead.
@@ -216,6 +237,7 @@
         hostname = "serverone";
         args = {
           isServer = true;
+          standaloneHomeManager = false;
           bluetooth = false;
         };
         extraSystemModules = [
