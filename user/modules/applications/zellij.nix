@@ -1,9 +1,9 @@
 { ... }:
 {
+  catppuccin.zellij.enable = true;
   programs.zellij = {
     enable = true;
     # enableZshIntegration = true;
-    catppuccin.enable = true;
 
     # https://www.reddit.com/r/NixOS/comments/1ealycu/comment/lemhigr/
     settings = {
