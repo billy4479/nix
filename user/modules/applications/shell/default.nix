@@ -31,13 +31,11 @@ let
   };
 in
 {
+  catppuccin.zsh-syntax-highlighting.enable = true;
   programs.zsh = {
     enable = true;
     enableCompletion = true;
-    syntaxHighlighting = {
-      enable = true;
-      catppuccin.enable = true;
-    };
+    syntaxHighlighting.enable = true;
     shellAliases = aliases;
 
     dirHashes = {
@@ -112,6 +110,7 @@ in
     shellAliases = aliases;
   };
 
+  catppuccin.starship.enable = true;
   programs.starship = {
     enable = true;
     enableZshIntegration = true;
@@ -130,7 +129,6 @@ in
       lib.recursiveUpdate (pkgs.lib.importTOML ./starship.toml) {
         hostname.style = "${color} bold";
       };
-    catppuccin.enable = true;
   };
 
   programs.fzf = {
@@ -138,9 +136,9 @@ in
     enableZshIntegration = true;
   };
 
+  catppuccin.bat.enable = true;
   programs.bat = {
     enable = true;
-    catppuccin.enable = true;
 
     extraPackages = with pkgs.bat-extras; [ batman ];
     config = {
