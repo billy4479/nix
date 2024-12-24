@@ -1,62 +1,11 @@
 { pkgs, ... }:
-let
-  # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/networking/syncthing.nix
-  # https://github.com/linuxserver/docker-syncthing/blob/master/Dockerfile
-  syncthingImage = pkgs.dockerTools.buildImage {
-    name = "syncthing";
-    tag = "latest";
-
-    runAsRoot = ''
-      #!${pkgs.stdenv.shell}
-      ${pkgs.dockerTools.shadowSetup}
-      groupadd -r syncthing
-      useradd -r -g syncthing -d /data -M syncthing
-      mkdir /config
-      chown syncthing:syncthing /config
-    '';
-
-    copyToRoot = pkgs.buildEnv {
-      name = "image-root";
-      paths = [ pkgs.syncthing ];
-      pathsToLink = [ "/bin" ];
-    };
-
-    config = {
-      Env = [
-        "HOME=/config"
-        "STNORESTART=yes"
-        "STNOUPGRADE=yes"
-      ];
-
-      Volumes = {
-        "/config" = { };
-      };
-
-      ExposedPorts = {
-        "8384" = { };
-        "22000/tcp" = { };
-        "22000/udp" = { };
-        "21027/udp" = { };
-      };
-
-      Cmd = [
-        "/bin/syncthing"
-        "-no-browser"
-        "-no-restart"
-        "--gui-address=0.0.0.0:8384"
-      ];
-    };
-  };
-in
 {
 
   virtualisation.oci-containers.containers = {
     syncthing = {
       autoStart = true;
 
-      # image = "lscr.io/linuxserver/syncthing:latest";
-      image = "syncthing:latest";
-      imageFile = syncthingImage;
+      image = "lscr.io/linuxserver/syncthing:latest";
       ports = [
         "8384:8384"
         "22000:22000/tcp"
@@ -64,8 +13,15 @@ in
         "21027:21027/udp"
       ];
 
+      environment = {
+        UID = "1000";
+        GID = "1000";
+        TZ = "Europe/Rome";
+      };
+
       volumes = [
         "/mnt/SSD/apps/syncthing/config:/config"
+        "/mnt/HDD/generic/syncthing-data:/data"
       ];
 
       extraOptions = [ "--ip=10.0.1.2" ];
