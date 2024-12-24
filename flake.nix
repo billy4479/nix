@@ -167,7 +167,7 @@
                 ./system
                 sops-nix.nixosModules.sops
               ]
-              ++ lib.optionals (!args.standaloneHomeManager) [
+              ++ lib.optionals (!specialArgs.extraConfig.standaloneHomeManager) [
                 home-manager.nixosModules.home-manager
                 {
                   home-manager = {
@@ -182,7 +182,7 @@
           };
 
           homeConfigurations =
-            if args.standaloneHomeManager then
+            if specialArgs.extraConfig.standaloneHomeManager then
               {
                 "${user.username}@${hostname}" = home-manager.lib.homeManagerConfiguration {
                   inherit pkgs;

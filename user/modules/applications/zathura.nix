@@ -1,9 +1,9 @@
 { lib, ... }:
 {
+  catppuccin.zathura.enable = true;
   programs = {
     zathura = {
       enable = true;
-      catppuccin.enable = true;
       options = {
         recolor = lib.mkDefault true;
         recolor-keephue = true;
