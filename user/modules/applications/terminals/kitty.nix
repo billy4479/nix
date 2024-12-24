@@ -1,5 +1,6 @@
 { extraConfig, ... }:
 {
+  catppuccin.kitty.enable = true;
   programs.kitty = {
     enable = true;
     font = {
@@ -7,7 +8,6 @@
       size = 18;
     };
     shellIntegration.enableZshIntegration = true;
-    catppuccin.enable = true;
     settings = {
       copy_on_select = false;
       enable_audio_bell = false;
