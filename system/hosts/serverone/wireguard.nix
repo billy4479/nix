@@ -6,6 +6,7 @@
 }:
 let
   eth = "enp2s0";
+  podmanInterface = "podman0";
 in
 {
   sops.secrets.wireguard_key = { };
@@ -44,12 +45,12 @@ in
           "${iptables} -t nat -A POSTROUTING -s 10.0.254.0/24 -d 10.0.1.0/24 -j MASQUERADE"
 
           # Allow forwarding from WireGuard to Podman
-          "${iptables} -A FORWARD -i wg0 -o podman0 -s 10.0.253.0/24 -d 10.0.1.0/24 -j ACCEPT"
-          "${iptables} -A FORWARD -i wg0 -o podman0 -s 10.0.254.0/24 -d 10.0.1.0/24 -j ACCEPT"
+          "${iptables} -A FORWARD -i wg0 -o ${podmanInterface} -s 10.0.253.0/24 -d 10.0.1.0/24 -j ACCEPT"
+          "${iptables} -A FORWARD -i wg0 -o ${podmanInterface} -s 10.0.254.0/24 -d 10.0.1.0/24 -j ACCEPT"
 
           # Allow forwarding from Podman to WireGuard
-          "${iptables} -A FORWARD -i podman0 -o wg0 -s 10.0.1.0/24 -d 10.0.253.0/24 -j ACCEPT"
-          "${iptables} -A FORWARD -i podman0 -o wg0 -s 10.0.1.0/24 -d 10.0.254.0/24 -j ACCEPT"
+          "${iptables} -A FORWARD -i ${podmanInterface} -o wg0 -s 10.0.1.0/24 -d 10.0.253.0/24 -j ACCEPT"
+          "${iptables} -A FORWARD -i ${podmanInterface} -o wg0 -s 10.0.1.0/24 -d 10.0.254.0/24 -j ACCEPT"
 
           "${iptables} -A INPUT -i wg0 -j ACCEPT"
           "${iptables} -A FORWARD -i wg0 -j ACCEPT"
@@ -57,7 +58,7 @@ in
           # IP routing
           # Not sure if this is the proper way to do this but it seems to be working
           "${ip} route del 10.0.1.0/24 dev wg0 || true"
-          "${ip} route add 10.0.1.0/24 dev podman0 || true"
+          "${ip} route add 10.0.1.0/24 dev ${podmanInterface} || true"
         ];
 
         # Undo the above commands (mostly just replace add with del and -A with -D)
@@ -70,13 +71,13 @@ in
           "${iptables} -t nat -D POSTROUTING -s 10.0.253.0/24 -d 10.0.1.0/24 -j MASQUERADE"
           "${iptables} -t nat -D POSTROUTING -s 10.0.254.0/24 -d 10.0.1.0/24 -j MASQUERADE"
 
-          "${iptables} -D FORWARD -i wg0 -o podman0 -s 10.0.253.0/24 -d 10.0.1.0/24 -j ACCEPT"
-          "${iptables} -D FORWARD -i wg0 -o podman0 -s 10.0.254.0/24 -d 10.0.1.0/24 -j ACCEPT"
+          "${iptables} -D FORWARD -i wg0 -o ${podmanInterface} -s 10.0.253.0/24 -d 10.0.1.0/24 -j ACCEPT"
+          "${iptables} -D FORWARD -i wg0 -o ${podmanInterface} -s 10.0.254.0/24 -d 10.0.1.0/24 -j ACCEPT"
 
-          "${iptables} -D FORWARD -i podman0 -o wg0 -s 10.0.1.0/24 -d 10.0.253.0/24 -j ACCEPT"
-          "${iptables} -D FORWARD -i podman0 -o wg0 -s 10.0.1.0/24 -d 10.0.254.0/24 -j ACCEPT"
+          "${iptables} -D FORWARD -i ${podmanInterface} -o wg0 -s 10.0.1.0/24 -d 10.0.253.0/24 -j ACCEPT"
+          "${iptables} -D FORWARD -i ${podmanInterface} -o wg0 -s 10.0.1.0/24 -d 10.0.254.0/24 -j ACCEPT"
 
-          "${ip} route del 10.0.1.0/24 dev podman0"
+          "${ip} route del 10.0.1.0/24 dev ${podmanInterface}"
         ];
 
         privateKeyFile = config.sops.secrets.wireguard_key.path;
