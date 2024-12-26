@@ -106,6 +106,10 @@ in
               ip = 1;
             }
             {
+              name = "portatilo";
+              ip = 2;
+            }
+            {
               name = "nord";
               ip = 10;
             }
