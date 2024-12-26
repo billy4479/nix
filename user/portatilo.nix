@@ -13,4 +13,15 @@
 
     ./modules/desktops/kde
   ];
+
+  programs.ssh = {
+    enable = true;
+
+    matchBlocks = {
+      serverone = {
+        hostname = "10.0.0.1";
+        forwardAgent = true;
+      };
+    };
+  };
 }
