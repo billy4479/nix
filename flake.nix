@@ -95,6 +95,9 @@
           shfmt
           nixfmt-rfc-style
 
+          lua-language-server
+          nixd
+
           sops
           age
 
