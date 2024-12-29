@@ -1,54 +1,72 @@
 { pkgs, ... }:
 {
-  programs.neovim.plugins = [
-    {
-      plugin = pkgs.vimPlugins.conform-nvim;
-      type = "lua";
-      config = # lua
-        ''
-          require("conform").setup({
-            formatters_by_ft = {
-                lua = { "stylua" },
-                go = { "gofmt" },
-                nix = { "nixfmt" },
-                python = { "ruff" },
-                rust = { "rustfmt", lsp_format = "fallback" },
-                javascript = { "prettierd", "prettier", stop_after_first = true },
-              },
-          })
+  programs.neovim = {
+    # TODO: move this to flake.nix mkShell
+    #       each project should add their own
+    extraPackages = with pkgs; [
+      stylua
+    ];
 
-          vim.api.nvim_create_autocmd("BufWritePre", {
-              pattern = "*",
-              callback = function(args)
-                -- Disable "format_on_save lsp_fallback" for languages that don't
-                -- have a well standardized coding style. You can add additional
-                -- languages here or re-enable it for the disabled ones.
-                local disable_filetypes = { c = true, cpp = true }
-                local lsp_format_opt
-                if disable_filetypes[args.buf.filetype] then
-                  lsp_format_opt = 'never'
-                else
-                  lsp_format_opt = 'fallback'
-                end
-                require("conform").format({ bufnr = args.buf, lsp_format = lsp_format_opt })
-              end,
-          })
+    plugins = [
+      {
+        plugin = pkgs.vimPlugins.conform-nvim;
+        type = "lua";
+        config = # lua
+          ''
+            -- https://github.com/nvim-lua/kickstart.nvim/blob/master/init.lua#L677
+            -- https://github.com/tjdevries/config.nvim/blob/master/lua/custom/autoformat.lua
+            local conform = require("conform")
 
-          vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+            conform.setup({
+            	formatters_by_ft = {
+            		lua = { "stylua" },
+            		go = { "gofmt" },
+            		nix = { "nixfmt", "injected" },
+            		python = { "ruff" },
+            		rust = { "rustfmt", lsp_format = "fallback" },
+            		javascript = { "prettierd", "prettier", stop_after_first = true },
+            	},
 
-          vim.keymap.set("n", "<leader>f", function()
-              local disable_filetypes = { c = true, cpp = true }
-              local lsp_format_opt
-              if disable_filetypes[args.buf.filetype] then
-                lsp_format_opt = 'never'
-              else
-                lsp_format_opt = 'fallback'
-              end
+            	formatters = { injected = { options = { ignore_errors = false } } },
 
-              require('conform').format { async = true, lsp_format = lsp_format_opt}
-            end, {}
-          )
-        '';
-    }
-  ];
+            	-- log_level = vim.log.levels.DEBUG,
+            })
+
+            local format_buf = function(bufnr, async)
+            	-- Disable "format_on_save lsp_fallback" for languages that don't
+            	-- have a well standardized coding style. You can add additional
+            	-- languages here or re-enable it for the disabled ones.
+            	local disable_filetypes = { c = true, cpp = true }
+            	local lsp_format_opt
+            	if disable_filetypes[vim.bo[bufnr].filetype] then
+            		lsp_format_opt = "never"
+            	else
+            		lsp_format_opt = "fallback"
+            	end
+
+            	require("conform").format({
+            		async = async,
+            		bufnr = bufnr,
+            		lsp_format = lsp_format_opt,
+            	})
+            end
+
+            vim.api.nvim_create_autocmd("BufWritePre", {
+            	group = vim.api.nvim_create_augroup("custom-conform", { clear = true }),
+            	pattern = "*",
+            	callback = function(args)
+            		format_buf(args.buf, false)
+            	end,
+            })
+
+            vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+
+            vim.keymap.set("n", "<leader>f", function()
+            	local bufnr = vim.api.nvim_buf_get_number(0)
+            	format_buf(bufnr, true)
+            end, {})
+          '';
+      }
+    ];
+  };
 }
