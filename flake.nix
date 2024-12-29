@@ -209,7 +209,7 @@
       {
         hostname = "nixbox";
         args = {
-          bluetooth = "false";
+          bluetooth = false;
         };
         extraSystemModules = [
           ./system/hosts/vm
