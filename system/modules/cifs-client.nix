@@ -18,7 +18,7 @@ let
   ];
 
   # TODO: once we have DNS on serverone use actual names
-  nas_address = "100.105.236.47";
+  nas_address = "10.0.0.1";
 in
 {
   environment.systemPackages = [ pkgs.cifs-utils ];
