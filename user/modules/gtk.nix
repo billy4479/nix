@@ -27,8 +27,11 @@
     };
 
     theme = {
-      package = pkgs.gnome-themes-extra;
-      name = "Adwaita";
+      package = pkgs.magnetic-catppuccin-gtk.override {
+        accent = [ extraConfig.catppuccinColors.accent ];
+        tweaks = [ extraConfig.catppuccinColors.flavor ];
+      };
+      name = "Catppuccin-GTK-${extraConfig.catppuccinColors.upper.accent}-Dark-${extraConfig.catppuccinColors.upper.flavor}";
     };
   };
 }
