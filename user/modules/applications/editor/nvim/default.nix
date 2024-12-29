@@ -7,6 +7,7 @@
 {
   imports = [
     ./plugins/catppuccin.nix
+    ./plugins/format.nix
     ./plugins/telescope.nix
     ./plugins/treesitter.nix
   ];
