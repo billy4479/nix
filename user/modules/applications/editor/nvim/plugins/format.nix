@@ -1,10 +1,10 @@
 { pkgs, ... }:
 {
   programs.neovim = {
-    # TODO: move this to flake.nix mkShell
-    #       each project should add their own
+    # This shouldn't be necessary,
+    # since every project should install it's own formatters in its flake.
+    # I leave it here just in case.
     extraPackages = with pkgs; [
-      stylua
     ];
 
     plugins = [
@@ -25,6 +25,7 @@
             		python = { "ruff" },
             		rust = { "rustfmt", lsp_format = "fallback" },
             		javascript = { "prettierd", "prettier", stop_after_first = true },
+            		sh = { "shfmt" },
             	},
 
             	formatters = { injected = { options = { ignore_errors = false } } },

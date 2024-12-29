@@ -88,6 +88,19 @@
     in
     {
       formatter.${system} = pkgs.nixfmt-rfc-style;
+
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs; [
+          stylua
+          shfmt
+          nixfmt-rfc-style
+
+          sops
+          age
+
+          wireguard-tools
+        ];
+      };
     }
     // hosts;
 }
