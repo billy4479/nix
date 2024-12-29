@@ -1,16 +1,7 @@
-{
-  pkgs,
-  lib,
-  extraConfig,
-  ...
-}:
+{ ... }:
 {
   imports = [
-    ./plugins/catppuccin.nix
-    ./plugins/format.nix
-    ./plugins/lsp.nix
-    ./plugins/telescope.nix
-    ./plugins/treesitter.nix
+    ./plugins
   ];
 
   programs.neovim = {
