@@ -27,5 +27,21 @@
           require("gitsigns").setup({})
         '';
     }
+    {
+      plugin = todo-comments-nvim;
+      type = "lua";
+      config = # lua
+        ''
+          require("todo-comments").setup({})
+        '';
+    }
+    {
+      plugin = rainbow-delimiters-nvim;
+      type = "lua";
+      config = # lua
+        ''
+          require("rainbow-delimiters.setup").setup({})
+        '';
+    }
   ];
 }
