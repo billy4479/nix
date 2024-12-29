@@ -21,3 +21,8 @@ creation_rules:
       - age:
           - *billy
           - *portatilo
+  # TODO: this seemes ugly
+  - path_regex: secrets/nixbox.yaml$
+    key_groups:
+      - age:
+          - *billy
