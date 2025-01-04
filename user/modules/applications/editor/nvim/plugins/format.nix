@@ -26,6 +26,7 @@
             		rust = { "rustfmt", lsp_format = "fallback" },
             		javascript = { "prettierd", "prettier", stop_after_first = true },
             		sh = { "shfmt" },
+            		tex = { "latexindent" },
             	},
 
             	formatters = { injected = { options = { ignore_errors = false } } },
