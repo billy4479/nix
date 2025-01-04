@@ -11,7 +11,7 @@
 
     settings = {
       global = {
-        "hosts allow" = "192.168.1.0/24 10.0.252.0/22"; # Yes, it is a weird range
+        "hosts allow" = "192.168.1.0/24 10.0.253.0/24 10.0.254.0/24";
         "hosts deny" = "0.0.0.0/0";
       };
 
