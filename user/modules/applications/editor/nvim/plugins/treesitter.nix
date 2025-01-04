@@ -12,6 +12,7 @@
               tree-sitter-cmake
               tree-sitter-cpp
               tree-sitter-css
+              tree-sitter-csv
               tree-sitter-dockerfile
               tree-sitter-go
               tree-sitter-html
@@ -34,14 +35,14 @@
         type = "lua";
         config = # lua
           ''
-            require('nvim-treesitter.configs').setup {
-                auto_install = false,
+            require("nvim-treesitter.configs").setup({
+            	auto_install = false,
 
-                highlight = {
-                    enable = true,
-                    additional_vim_regex_highlighting = false,
-                },
-            }
+            	highlight = {
+            		enable = true,
+            		additional_vim_regex_highlighting = false,
+            	},
+            })
           '';
       }
     ];
