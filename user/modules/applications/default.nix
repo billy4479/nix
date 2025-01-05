@@ -14,8 +14,8 @@
     ./spotify.nix
     ./terminals/kitty.nix
     ./terminals/konsole
+    ./tmux.nix
     ./zathura.nix
-    ./zellij.nix
   ];
 
   home.packages = with pkgs; [
