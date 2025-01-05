@@ -32,6 +32,8 @@
           	lua_ls = {},
           	nixd = {},
           	gopls = {},
+          	basedpyright = {},
+          	r_language_server = {},
           }
 
           for server, config in pairs(servers) do
