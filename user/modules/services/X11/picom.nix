@@ -17,7 +17,7 @@ assert !extraConfig.wayland;
     vSync = true;
 
     settings = {
-      corner-radius = 10;
+      # corner-radius = 10;
       rounded-corners-exclude = [
         "window_type = 'dock'"
         "window_type = 'desktop'"
