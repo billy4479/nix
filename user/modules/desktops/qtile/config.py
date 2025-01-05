@@ -203,7 +203,7 @@ col = {
 }
 
 layout_theme = {"border_width": 1,
-                "margin": 6,
+                # "margin": 6,
                 "border_focus": col['white'],
                 "border_normal": col['bg'],
                 }
