@@ -20,6 +20,8 @@
           config.front_end = "WebGpu"
 
           config.audible_bell = "Disabled"
+          config.default_cursor_style = "SteadyBar"
+          config.hide_mouse_cursor_when_typing = false
 
           config.ssh_domains = wezterm.default_ssh_domains()
           for _, dom in ipairs(config.ssh_domains) do
@@ -34,6 +36,16 @@
           		key = "t",
           		mods = "LEADER",
           		action = act.SpawnTab("CurrentPaneDomain"),
+          	},
+          	{
+          		key = "n",
+          		mods = "LEADER",
+          		action = act.ActivateTabRelative(1),
+          	},
+          	{
+          		key = "p",
+          		mods = "LEADER",
+          		action = act.ActivateTabRelative(-1),
           	},
 
           	-- Splits
