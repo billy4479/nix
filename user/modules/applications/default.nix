@@ -14,6 +14,7 @@
     ./spotify.nix
     ./terminals/kitty.nix
     ./terminals/konsole
+    ./terminals/wezterm.nix
     ./tmux.nix
     ./zathura.nix
   ];
