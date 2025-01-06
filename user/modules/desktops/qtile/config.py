@@ -10,7 +10,7 @@ from libqtile.lazy import lazy
 from typing import List  # noqa: F401
 
 mod = "mod4"                                      # Sets mod key to SUPER/WINDOWS
-myTerm = "kitty"                                  # My terminal of choice
+myTerm = "wezterm"                                # My terminal of choice
 myConfig = "/home/billy/.config/qtile/config.py"  # The Qtile config file location
 
 # myLauncherDesktop = 'j4-dmenu-desktop --dmenu="(cat ; (stest -flx $(echo $PATH | tr : \' \') | sort -u)) | dmenu -h 20" --display-binary'
