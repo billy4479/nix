@@ -1,11 +1,19 @@
-{ ... }:
+{ lib, extraConfig, ... }:
+let
+  rotationStr = if extraConfig.rotateMonitor then " {rotation=left}" else "";
+  bigMonitorPosition = if extraConfig.rotateMonitor then "+1080+0" else "+1920+0";
+  metamodes = lib.strings.concatStringsSep ", " [
+    "DP-0: 2560x1440_170 ${bigMonitorPosition}"
+    "DP-2: 1920x1080_75 +0+0${rotationStr}"
+  ];
+in
 {
   services.xserver = {
     # To get this I used nvidia-settings and copied the screen section
     # from the generated X.org config
     screenSection = ''
       Option         "nvidiaXineramaInfoOrder" "DP-0"
-      Option         "metamodes" "DP-0: 2560x1440_170 +1920+0, DP-2: 1920x1080_75 +0+0"
+      Option         "metamodes" "${metamodes}"
       Option         "SLI" "Off"
       Option         "MultiGPU" "Off"
       Option         "BaseMosaic" "off"

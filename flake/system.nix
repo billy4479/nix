@@ -12,6 +12,7 @@ let
     games = false;
     isServer = false;
     standaloneHomeManager = true;
+    rotateMonitor = false; # only for computerone
 
     catppuccin = {
       flavor = "frappe";
@@ -49,6 +50,7 @@ createAndMergeHosts defaultOptions [
       desktop = "qtile";
       wayland = false;
       games = true;
+      rotateMonitor = true;
     };
     extraSystemModules = [
       ../system/hosts/computerone
