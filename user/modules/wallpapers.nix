@@ -3,7 +3,7 @@
   home.file."${config.xdg.userDirs.pictures}/wallpapers".source = pkgs.fetchFromGitHub {
     owner = "billy4479";
     repo = "wallpapers";
-    rev = "c45b45d308eea9ceaa707f6524485ea538e2c67f";
-    hash = "sha256-jm4dVQi24JevjnE5lBsQuOFURVwQku7cotyQeP3khjE=";
+    rev = "2c362bb492d9ebbfffa06c1ddcc1ebea0a8d279a";
+    hash = "sha256-jA13+mwv0hyodDQhwckT8F2DFsdMViuR8NCoG9k+T+s=";
   };
 }
