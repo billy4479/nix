@@ -16,6 +16,7 @@
               tree-sitter-dockerfile
               tree-sitter-go
               tree-sitter-html
+              tree-sitter-ini
               tree-sitter-javascript
               tree-sitter-json
               tree-sitter-latex
