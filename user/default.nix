@@ -36,7 +36,7 @@ in
   ];
 
   services.ssh-agent.enable = true;
-  programs.ssh.addKeysToAgent = "confirm";
+  programs.ssh.addKeysToAgent = "yes";
   home.file."${config.home.homeDirectory}/.ssh/id_ed25519.pub" =
     lib.mkIf (builtins.pathExists public_key)
       {

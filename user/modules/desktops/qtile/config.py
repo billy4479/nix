@@ -156,6 +156,10 @@ keys = [
         lazy.spawn(os.path.expandvars("${XDG_DATA_HOME}/scripts/dmenu/screenshot.sh")),
         desc="Screenshot script with dmenu",
         ),
+    Key([mod], "d",
+        lazy.spawn(os.path.expandvars("${XDG_DATA_HOME}/scripts/dmenu/open-document.sh")),
+        desc="Open PDF with dmenu",
+        ),
 ]
 
 group_names = [("WWW", {'layout': 'monadtall'}),
