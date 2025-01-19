@@ -8,5 +8,6 @@
     ./modules/applications/git.nix
     ./modules/applications/shell
     ./modules/applications/tmux.nix
+    ./modules/applications/terminals/wezterm.nix
   ];
 }
