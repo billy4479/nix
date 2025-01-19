@@ -8,6 +8,7 @@
         plugin = (
           nvim-treesitter.withPlugins (
             plugins: with plugins; [
+              tree-sitter-bash
               tree-sitter-c
               tree-sitter-cmake
               tree-sitter-cpp
