@@ -1,7 +1,5 @@
 {
   flakeInputs,
-  config,
-  pkgs,
   ...
 }:
 {
@@ -16,6 +14,8 @@
     ./samba.nix
 
     ./wireguard.nix
+
+    ./vm.nix
 
     ../../modules/power-management
     ../../modules/graphics/intel.nix
