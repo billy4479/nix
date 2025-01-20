@@ -2,4 +2,6 @@
 
 set -euo pipefail
 
-fd --extension=pdf -I . "$HOME/Downloads" "$HOME/code" | rofi -dmenu | xargs --delimiter='\n' xdg-open
+files=$(fd --extension=pdf -I . "$HOME/Downloads" "$HOME/code")
+files=$(echo "$files" | sed "s,$HOME/,,g")
+echo "$files" | rofi -dmenu | xargs --delimiter '\n' printf "$HOME/%s" | xargs xdg-open

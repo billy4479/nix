@@ -5,6 +5,7 @@
   ...
 }:
 {
+  catppuccin.rofi.enable = true;
   programs.rofi = {
     enable = true;
     package = if extraConfig.wayland then pkgs.rofi-wayland else pkgs.rofi;
