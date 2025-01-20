@@ -18,6 +18,7 @@
             local conform = require("conform")
 
             conform.setup({
+            	-- https://github.com/stevearc/conform.nvim?tab=readme-ov-file#formatters
             	formatters_by_ft = {
             		lua = { "stylua" },
             		go = { "gofmt" },
@@ -27,6 +28,7 @@
             		javascript = { "prettierd", "prettier", stop_after_first = true },
             		sh = { "shfmt" },
             		tex = { "latexindent" },
+            		-- zig = { "zigfmt" },
             	},
 
             	formatters = { injected = { options = { ignore_errors = false } } },
