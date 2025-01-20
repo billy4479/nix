@@ -34,6 +34,7 @@
           	gopls = {},
           	basedpyright = {},
           	r_language_server = {},
+          	zls = {},
           }
 
           for server, config in pairs(servers) do
