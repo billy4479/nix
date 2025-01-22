@@ -67,30 +67,35 @@
     let
       system = "x86_64-linux";
 
-      pkgs = import nixpkgs {
-        config.allowUnfree = true;
+      pkgsForFlake = import nixpkgs {
+        # config.allowUnfree = true;
         inherit system;
       };
 
-      my-packages = import ./packages { inherit pkgs; } // {
-        server-tool = server-tool.packages.${system}.default;
-      };
+      # TODO: this should definitely be an overlay.
+      myPackagesFn =
+        pkgs:
+        (
+          import ./packages { inherit pkgs; }
+          // {
+            server-tool = server-tool.packages.${system}.default;
+          }
+        );
 
       hosts = import ./flake/system.nix {
         inherit
-          pkgs
           system
-          my-packages
+          myPackagesFn
           inputs
           ;
       };
 
     in
     {
-      formatter.${system} = pkgs.nixfmt-rfc-style;
+      formatter.${system} = pkgsForFlake.nixfmt-rfc-style;
 
-      devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [
+      devShells.${system}.default = pkgsForFlake.mkShell {
+        packages = with pkgsForFlake; [
           stylua
           shfmt
           nixfmt-rfc-style

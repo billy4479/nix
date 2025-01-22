@@ -1,7 +1,6 @@
 {
-  pkgs,
   system,
-  my-packages,
+  myPackagesFn,
   inputs,
 }@args:
 let
@@ -13,6 +12,7 @@ let
     isServer = false;
     standaloneHomeManager = true;
     rotateMonitor = false; # only for computerone
+    hasCuda = false;
 
     catppuccin = {
       flavor = "frappe";
@@ -51,6 +51,7 @@ createAndMergeHosts defaultOptions [
       wayland = false;
       games = true;
       rotateMonitor = true;
+      hasCuda = true;
     };
     extraSystemModules = [
       ../system/hosts/computerone

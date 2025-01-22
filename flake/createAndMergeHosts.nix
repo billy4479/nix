@@ -1,7 +1,6 @@
 {
-  pkgs,
   system,
-  my-packages,
+  myPackagesFn,
   inputs,
 }:
 let
@@ -39,6 +38,19 @@ let
       defaultedArgs = lib.recursiveUpdate defaultOptions args;
       user = defaultedArgs.user;
 
+      # This is undocumented like everywhere
+      # https://github.com/NixOS/nixpkgs/blob/master/pkgs/top-level/config.nix
+      # https://discourse.nixos.org/t/where-are-options-like-config-cudasupport-documented/17805/7
+      nixpkgsConfig = {
+        allowUnfree = true;
+        cudaSupport = defaultedArgs.hasCuda;
+      };
+
+      pkgs = import inputs.nixpkgs {
+        config = nixpkgsConfig;
+        inherit system;
+      };
+
       specialArgs = {
         extraConfig = builtins.removeAttrs (lib.recursiveUpdate defaultedArgs {
           catppuccinColors = mkCatppuccinColors defaultedArgs.catppuccin;
@@ -49,7 +61,7 @@ let
           vscode-extensions = inputs.nix-vscode-extensions.extensions.${system};
           spicetifyPkgs = inputs.spicetify-nix.legacyPackages.${system};
           inherit (inputs) catppuccin-vsc;
-          inherit my-packages;
+          my-packages = myPackagesFn pkgs;
         };
         flakeInputs = inputs;
       };
@@ -59,8 +71,16 @@ let
         inputs.plasma-manager.homeManagerModules.plasma-manager
         inputs.spicetify-nix.homeManagerModules.default
         inputs.sops-nix.homeManagerModules.sops
+
+        {
+          # Not sure why we need thise here too
+          # https://nix-community.github.io/home-manager/options.xhtml#opt-nixpkgs.config
+          nixpkgs.config = nixpkgsConfig;
+        }
+
         ../user
       ];
+
     in
     {
       nixosConfigurations.${hostname} = inputs.nixpkgs.lib.nixosSystem {
