@@ -17,6 +17,11 @@
             -- https://github.com/tjdevries/config.nvim/blob/master/lua/custom/autoformat.lua
             local conform = require("conform")
 
+            -- Disable logging
+            conform.formatters.latexindent = {
+            	prepend_args = { "-g", "/dev/null" },
+            }
+
             conform.setup({
             	-- https://github.com/stevearc/conform.nvim?tab=readme-ov-file#formatters
             	formatters_by_ft = {
@@ -28,6 +33,8 @@
             		javascript = { "prettierd", "prettier", stop_after_first = true },
             		sh = { "shfmt" },
             		tex = { "latexindent" },
+            		c = { "clang-format" },
+            		cpp = { "clang-format" },
             		-- zig = { "zigfmt" },
             	},
 

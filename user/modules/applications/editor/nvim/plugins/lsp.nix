@@ -35,6 +35,7 @@
           	basedpyright = {},
           	r_language_server = {},
           	zls = {},
+          	clangd = {},
           }
 
           for server, config in pairs(servers) do
