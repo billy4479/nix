@@ -13,9 +13,6 @@ in
   home.username = extraConfig.user.username;
   home.homeDirectory = "/home/${extraConfig.user.username}";
 
-  # Enable unfree - yes, we have to do this here too
-  nixpkgs.config.allowUnfree = true;
-
   imports = [
     ./${extraConfig.hostname}.nix
     ./modules/scripts
