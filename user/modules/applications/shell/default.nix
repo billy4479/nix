@@ -7,8 +7,8 @@
 }:
 let
   aliases = {
-    rebuild-nix = "sudo nixos-rebuild switch --flake $HOME/nix";
-    rebuild-hm = "home-manager switch --flake $HOME/nix";
+    rebuild-nix = "sudo nixos-rebuild switch -L -v --flake $HOME/nix";
+    rebuild-hm = "home-manager switch -L -v --flake $HOME/nix";
 
     cls = "clear";
     vim = "nvim";
