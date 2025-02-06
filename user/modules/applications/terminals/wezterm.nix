@@ -16,8 +16,9 @@
           config.use_fancy_tab_bar = false
           config.tab_bar_at_bottom = true
 
-          -- https://github.com/wez/wezterm/issues/5990
-          config.front_end = "WebGpu"
+          -- Fix for font not rendering: see https://github.com/wez/wezterm/issues/5990
+          -- Either uncomment below or run `fc-cache -rvf`.
+          -- config.front_end = "WebGpu"
 
           config.audible_bell = "Disabled"
           config.default_cursor_style = "SteadyBar"
