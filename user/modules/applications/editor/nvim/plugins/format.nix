@@ -36,6 +36,7 @@
             		c = { "clang-format" },
             		cpp = { "clang-format" },
             		-- zig = { "zigfmt" },
+            		python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
             	},
 
             	formatters = { injected = { options = { ignore_errors = false } } },
