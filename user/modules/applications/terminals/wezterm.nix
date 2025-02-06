@@ -88,6 +88,11 @@
           		mods = "LEADER|CTRL",
           		action = act.SendKey({ key = "a", mods = "CTRL" }),
           	},
+          	{
+          		key = "t",
+          		mods = "CTRL|SHIFT",
+          		action = wezterm.action.DisableDefaultAssignment,
+          	},
           }
 
           return config
