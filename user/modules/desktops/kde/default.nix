@@ -5,6 +5,15 @@
     kdePackages.plasma-systemmonitor
   ];
 
+  # https://github.com/nix-community/home-manager/issues/2064#issuecomment-887300055
+  # TODO: deduplicate this
+  systemd.user.targets.tray = {
+    Unit = {
+      Description = "Home Manager System Tray";
+      Requires = [ "graphical-session-pre.target" ];
+    };
+  };
+
   programs.plasma = {
     enable = true;
     configFile = {
