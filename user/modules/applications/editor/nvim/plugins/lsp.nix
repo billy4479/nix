@@ -36,6 +36,7 @@
           	r_language_server = {},
           	zls = {},
           	clangd = {},
+          	templ = {},
           }
 
           for server, config in pairs(servers) do

@@ -26,7 +26,7 @@
             	-- https://github.com/stevearc/conform.nvim?tab=readme-ov-file#formatters
             	formatters_by_ft = {
             		lua = { "stylua" },
-            		go = { "gofmt" },
+            		go = { "goimports", "gofmt" },
             		nix = { "nixfmt", "injected" },
             		python = { "ruff" },
             		rust = { "rustfmt", lsp_format = "fallback" },
@@ -37,6 +37,7 @@
             		cpp = { "clang-format" },
             		-- zig = { "zigfmt" },
             		python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
+            		templ = { "templ" },
             	},
 
             	formatters = { injected = { options = { ignore_errors = false } } },

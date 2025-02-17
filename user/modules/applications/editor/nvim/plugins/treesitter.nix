@@ -28,6 +28,7 @@
               tree-sitter-python
               tree-sitter-rust
               tree-sitter-svelte
+              tree-sitter-templ
               tree-sitter-typescript
               tree-sitter-yaml
               tree-sitter-zig
