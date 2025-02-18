@@ -11,7 +11,7 @@
 
     ./modules/wallpapers.nix
 
-    ./modules/desktops/qtile
+    ./modules/desktops
     ./modules/qt.nix
   ];
 

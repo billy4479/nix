@@ -10,6 +10,6 @@
 
     ./modules/wallpapers.nix
 
-    ./modules/desktops/kde
+    ./modules/desktops
   ];
 }
