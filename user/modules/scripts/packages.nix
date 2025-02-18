@@ -34,7 +34,7 @@ in
           --text="Enter video URL" \
           --title="MPV URL player" \
           --ok-label="Play" |
-          ${mpv}
+          xargs ${mpv}
       '';
 
   open-document =
