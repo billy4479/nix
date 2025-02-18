@@ -99,6 +99,7 @@
           stylua
           shfmt
           nixfmt-rfc-style
+          ruff
 
           lua-language-server
           nixd
