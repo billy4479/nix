@@ -11,7 +11,7 @@
           local config = wezterm.config_builder()
 
           config.font = wezterm.font(font_name)
-          config.font_size = 18
+          config.font_size = 14
           config.color_scheme = color_scheme
           config.use_fancy_tab_bar = false
           config.tab_bar_at_bottom = true
