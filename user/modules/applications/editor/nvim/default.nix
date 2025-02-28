@@ -1,8 +1,13 @@
-{ ... }:
+{ config, ... }:
 {
   imports = [
     ./plugins
   ];
+
+  home.file."${config.xdg.configHome}/nvim" = {
+    source = ./ftplugin;
+    recursive = true;
+  };
 
   programs.neovim = {
     enable = true;

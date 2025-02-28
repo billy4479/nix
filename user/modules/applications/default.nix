@@ -5,7 +5,7 @@
     ./btop.nix
     ./direnv.nix
     ./editor/nvim
-    ./editor/vscodium
+    # ./editor/vscodium
     ./games
     ./git.nix
     ./office.nix
@@ -22,10 +22,10 @@
   home.packages = with pkgs; [
     telegram-desktop
     discord
-    kate
+    kdePackages.kate
+    kdePackages.ark
     qbittorrent
     qalculate-gtk
-    ark
     gimp
   ];
 

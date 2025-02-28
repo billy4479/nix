@@ -3,6 +3,7 @@
   imports = [
     ./catppuccin.nix
     ./format.nix
+    ./jupyter.nix
     ./lsp.nix
     ./telescope.nix
     ./treesitter.nix
