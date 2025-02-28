@@ -1,4 +1,9 @@
-{ config, ... }:
+{
+  pkgs,
+  config,
+  flakeInputs,
+  ...
+}:
 {
   imports = [
     ./plugins
@@ -11,6 +16,7 @@
 
   programs.neovim = {
     enable = true;
+    package = flakeInputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
     extraLuaConfig = # lua
       ''
         vim.opt.nu = true
