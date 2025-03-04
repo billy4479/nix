@@ -4,10 +4,7 @@
     ./plugins
   ];
 
-  home.file."${config.xdg.configHome}/nvim" = {
-    source = ./ftplugin;
-    recursive = true;
-  };
+  home.file."${config.xdg.configHome}/nvim/ftplugin".source = ./ftplugin;
 
   programs.neovim = {
     enable = true;
