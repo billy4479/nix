@@ -53,13 +53,13 @@
           vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
         '';
     }
-    {
-      plugin = mini-pairs;
-      type = "lua";
-      config = # lua
-        ''
-          require("mini.pairs").setup()
-        '';
-    }
+    # {
+    #   plugin = mini-pairs;
+    #   type = "lua";
+    #   config = # lua
+    #     ''
+    #       require("mini.pairs").setup()
+    #     '';
+    # }
   ];
 }
