@@ -7,7 +7,7 @@
 }:
 let
   home = config.home.homeDirectory;
-  dmenu = "${lib.getExe (if extraConfig.wayland then pkgs.rofi-wayland else pkgs.rofi)} -dmenu";
+  dmenu = "${lib.getExe (if extraConfig.wayland then pkgs.rofi-wayland else pkgs.rofi)} -i -dmenu";
 
   zenity = lib.getExe pkgs.zenity;
 
