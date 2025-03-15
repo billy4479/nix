@@ -27,6 +27,15 @@ assert !extraConfig.wayland;
       '';
   };
 
+  home.activation = {
+    # This is needed because otherwise qtile will still use the old, cached config.
+    removePycache =
+      lib.hm.dag.entryAfter [ "writeBoundary" ] # sh
+        ''
+          run rm -rf $VERBOSE_ARG ${config.xdg.configHome}/qtile/__pycache__
+        '';
+  };
+
   imports =
     [
       ../../applications/rofi.nix
