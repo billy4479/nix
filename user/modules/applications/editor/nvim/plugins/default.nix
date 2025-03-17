@@ -53,6 +53,15 @@
           vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
         '';
     }
+    {
+      plugin = multicursors-nvim;
+      type = "lua";
+      config = # lua
+        ''
+          require("multicursors").setup({})
+          vim.keymap.set({ "v", "n" }, "<leader>m", "<cmd>MCstart<cr>")
+        '';
+    }
     # {
     #   plugin = mini-pairs;
     #   type = "lua";
