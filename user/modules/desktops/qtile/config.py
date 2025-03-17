@@ -13,15 +13,6 @@ myLauncherDesktop = (
 myLauncher = f'{rofi} -show run -display-run "Run: " -run-display-format "{{name}}"'
 
 
-# import logging
-# from libqtile.log_utils import logger
-# logger.setLevel(logging.DEBUG)
-#
-# @lazy.function
-# def debug_me(qtile):
-#     logger.debug("lol")
-
-
 keys = [
     # The essentials
     Key(
@@ -221,9 +212,14 @@ keys = [
     Key(
         [mod],
         "d",
-        # debug_me(),
         lazy.spawn(open_document_script),
         desc="Open PDF with dmenu",
+    ),
+    Key(
+        [mod],
+        "p",
+        lazy.spawn(open_mpv_script),
+        desc="Open mpv with url",
     ),
 ]
 
