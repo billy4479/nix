@@ -21,6 +21,7 @@ assert !extraConfig.wayland;
         rofi = "${rofi}"
         open_document_script = "${lib.getExe scripts.open-document}"
         screenshot_script = "${lib.getExe scripts.dmenu-screenshot}"
+        open_mpv_script = "${lib.getExe scripts.mpv-url}"
         terminal = "${lib.getExe pkgs.wezterm}"
 
         ${builtins.readFile ./config.py}
