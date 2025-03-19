@@ -60,6 +60,22 @@
         "type": "github"
       }
     },
+    "firefox-ui-fix": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1741629672,
+        "narHash": "sha256-NBPSKIxTNSuJahySyLqD45R/UmeyvkJBKehUIE/dI0I=",
+        "owner": "black7375",
+        "repo": "Firefox-UI-Fix",
+        "rev": "d46476ce72ecf236389c568742a2c8ad68dab771",
+        "type": "github"
+      },
+      "original": {
+        "owner": "black7375",
+        "repo": "Firefox-UI-Fix",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -165,6 +181,7 @@
         "catppuccin": "catppuccin",
         "catppuccin-vsc": "catppuccin-vsc",
         "disko": "disko",
+        "firefox-ui-fix": "firefox-ui-fix",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "nix-vscode-extensions": "nix-vscode-extensions",

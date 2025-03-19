@@ -1,11 +1,10 @@
-{ pkgs, extraConfig, ... }:
+{
+  extraConfig,
+  flakeInputs,
+  ...
+}:
 let
-  srcs = pkgs.fetchFromGitHub {
-    owner = "black7375";
-    repo = "Firefox-UI-Fix";
-    rev = "e5eff553fd4e33750157232a262d6430a7610e87";
-    hash = "sha256-8sRUGrKcSBDzqIjACR7eRfn4VzFbL3zfRB8GDsNKO5A=";
-  };
+  srcs = flakeInputs.firefox-ui-fix;
 
   # TODO: support librewolf too
   profilePath = ".mozilla/firefox/${extraConfig.user.username}";

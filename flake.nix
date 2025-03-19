@@ -60,6 +60,11 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    firefox-ui-fix = {
+      url = "github:black7375/Firefox-UI-Fix";
+      flake = false;
+    };
   };
 
   outputs =
