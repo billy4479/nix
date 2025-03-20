@@ -38,6 +38,7 @@
             		-- zig = { "zigfmt" },
             		python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
             		templ = { "templ" },
+            		markdown = { "injected" },
             	},
 
             	formatters = { injected = { options = { ignore_errors = false } } },
