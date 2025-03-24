@@ -63,11 +63,11 @@
     "firefox-ui-fix": {
       "flake": false,
       "locked": {
-        "lastModified": 1741629672,
-        "narHash": "sha256-NBPSKIxTNSuJahySyLqD45R/UmeyvkJBKehUIE/dI0I=",
+        "lastModified": 1742575168,
+        "narHash": "sha256-fOJFKbHUF3SU4Fv9cdgLjzASVysuuHC7riQSRrp6lTQ=",
         "owner": "black7375",
         "repo": "Firefox-UI-Fix",
-        "rev": "d46476ce72ecf236389c568742a2c8ad68dab771",
+        "rev": "a9c2d4ecb5f5685fde6881422a85f7ae53cfc0f2",
         "type": "github"
       },
       "original": {
