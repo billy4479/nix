@@ -70,5 +70,24 @@
     #       require("mini.pairs").setup()
     #     '';
     # }
+    {
+      plugin = pkgs.vimUtils.buildVimPlugin rec {
+        pname = "scroll-eof-nvim";
+        version = "1.2.7";
+        src = pkgs.fetchFromGitHub {
+          owner = "Aasim-A";
+          repo = "scrollEOF.nvim";
+          rev = version;
+          hash = "sha256-MHa53sHrqSrIKrWjM1Nqz9Lr3TWYGFLXZH6LGER0b18=";
+        };
+      };
+      type = "lua";
+      config = # lua
+        ''
+          require("scrollEOF").setup({
+          	insert_mode = true,
+          })
+        '';
+    }
   ];
 }
