@@ -67,7 +67,7 @@ let
       };
 
       defaultHomeManagerModules = [
-        inputs.catppuccin.homeManagerModules.catppuccin
+        inputs.catppuccin.homeModules.catppuccin
         inputs.plasma-manager.homeManagerModules.plasma-manager
         inputs.spicetify-nix.homeManagerModules.default
         inputs.sops-nix.homeManagerModules.sops
