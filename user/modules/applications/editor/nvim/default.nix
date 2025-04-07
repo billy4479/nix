@@ -54,6 +54,18 @@
         		vim.highlight.on_yank()
         	end,
         })
+
+        vim.api.nvim_create_autocmd("VimEnter", {
+        	desc = "Automatically chdir to the command line arg",
+        	pattern = "*",
+        	group = vim.api.nvim_create_augroup("auto-cmd", { clear = true }),
+        	callback = function(arg)
+        		local file = string.gsub(arg.file, "oil://", "")
+        		if vim.fn.isdirectory(file) == 1 then
+        			vim.api.nvim_set_current_dir(file)
+        		end
+        	end,
+        })
       '';
   };
 }
