@@ -1,10 +1,10 @@
 { pkgs, ... }:
 {
-  # https://github.com/benlubas/molten-nvim/blob/main/docs/NixOS.md#nixos-home-manager-installation
-  # https://github.com/benlubas/molten-nvim/blob/main/docs/Notebook-Setup.md
   programs.neovim = {
     plugins = with pkgs.vimPlugins; [
       {
+        # https://github.com/benlubas/molten-nvim/blob/main/docs/NixOS.md#nixos-home-manager-installation
+        # https://github.com/benlubas/molten-nvim/blob/main/docs/Notebook-Setup.md
         plugin = molten-nvim;
         type = "lua";
         config = # lua
@@ -88,9 +88,8 @@
       }
     ];
     extraPackages = with pkgs; [
-      imagemagick # for image rendering
-
       python3Packages.jupytext
+      imagemagick # for image rendering
     ];
     extraLuaPackages =
       ps: with ps; [
@@ -100,6 +99,7 @@
       ps: with ps; [
         pynvim
         jupyter-client
+
         cairosvg # for image rendering
         pnglatex # for image rendering
         plotly # for image rendering
