@@ -14,7 +14,13 @@
           -- https://github.com/nvim-lua/kickstart.nvim/blob/master/init.lua#L455
 
           local blink = require("blink.cmp")
-          blink.setup({})
+          blink.setup({
+          	snippets = { preset = "luasnip" },
+          	-- ensure you have the `snippets` source (enabled by default)
+          	sources = {
+          		default = { "lsp", "path", "snippets", "buffer" },
+          	},
+          })
           local cap = blink.get_lsp_capabilities()
           local lspconfig = require("lspconfig")
 

@@ -5,6 +5,7 @@
     ./format.nix
     ./jupyter.nix
     ./lsp.nix
+    ./snippets.nix
     ./telescope.nix
     ./treesitter.nix
   ];
