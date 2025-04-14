@@ -110,6 +110,7 @@
           	generic_env("eq", "equation"),
           	generic_env("al", "align"),
           	generic_env("mat", "pmatrix"),
+          	generic_env("pr", "proof"),
 
           	generic_command("cal", "mathcal"),
           	generic_command("ds", "mathds"),
