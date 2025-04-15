@@ -1,8 +1,14 @@
 { pkgs, catppuccinColors }:
 {
   name = "Papirus-Dark";
-  package = pkgs.catppuccin-papirus-folders.override {
-    flavor = catppuccinColors.flavor;
-    accent = catppuccinColors.accent;
-  };
+  package =
+    (pkgs.catppuccin-papirus-folders.override {
+      flavor = catppuccinColors.flavor;
+      accent = catppuccinColors.accent;
+    }).overrideAttrs
+      (
+        finalAttrs: previousAttrs: {
+          dontFixup = true;
+        }
+      );
 }
