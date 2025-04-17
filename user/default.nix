@@ -27,6 +27,7 @@ in
     ripgrep
     p7zip
     zip
+    unzip
     license-cli
     bat-extras.batman
     jq
