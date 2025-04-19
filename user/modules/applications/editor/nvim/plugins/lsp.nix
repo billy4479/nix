@@ -43,6 +43,8 @@
           	zls = {},
           	clangd = {},
           	templ = {},
+          	ts_ls = {},
+          	svelte = {},
           }
 
           for server, config in pairs(servers) do
@@ -155,6 +157,14 @@
           		require("lint").try_lint()
           	end,
           })
+        '';
+    }
+    {
+      plugin = tailwind-tools-nvim;
+      type = "lua";
+      config = # lua
+        ''
+          require("tailwind-tools").setup({})
         '';
     }
   ];
