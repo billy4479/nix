@@ -22,6 +22,8 @@
             	prepend_args = { "-g", "/dev/null" },
             }
 
+            local prettier_cfg = { "prettierd", "prettier", stop_after_first = true }
+
             conform.setup({
             	-- https://github.com/stevearc/conform.nvim?tab=readme-ov-file#formatters
             	formatters_by_ft = {
@@ -30,7 +32,9 @@
             		nix = { "nixfmt", "injected" },
             		python = { "ruff" },
             		rust = { "rustfmt", lsp_format = "fallback" },
-            		javascript = { "prettierd", "prettier", stop_after_first = true },
+            		javascript = prettier_cfg,
+            		typescript = prettier_cfg,
+            		svelte = prettier_cfg,
             		sh = { "shfmt" },
             		tex = { "latexindent" },
             		c = { "clang-format" },
