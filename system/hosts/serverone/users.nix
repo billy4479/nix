@@ -29,7 +29,7 @@
         name = "luke";
         isNormalUser = true;
         uid = 1001;
-        shell = null;
+        shell = pkgs.shadow;
         createHome = false;
       };
 
@@ -37,7 +37,7 @@
         name = "edo";
         isNormalUser = true;
         uid = 1002;
-        shell = null;
+        shell = pkgs.shadow;
         createHome = false;
       };
 
@@ -45,7 +45,7 @@
         name = "barbara";
         isNormalUser = true;
         uid = 1003;
-        shell = null;
+        shell = pkgs.shadow;
         createHome = false;
       };
     };
