@@ -40,7 +40,8 @@ assert !extraConfig.wayland;
   imports =
     [
       ../../applications/rofi.nix
-      ../../applications/pcmanfm.nix
+      # ../../applications/pcmanfm.nix
+      ../../applications/nemo.nix
       ../../services/dunst.nix
       ../../services/gammastep.nix
       ../../services/kdeconnect.nix

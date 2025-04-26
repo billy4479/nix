@@ -26,7 +26,7 @@
     kdePackages.ark
     qbittorrent
     qalculate-gtk
-    gimp
+    gimp3
   ];
 
   programs.office = {
