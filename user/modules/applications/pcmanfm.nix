@@ -9,4 +9,6 @@
       "Terminal".value = "kitty";
     };
   };
+
+  xdg.mimeApps.defaultApplications."inode/directory" = [ "pcmanfm-qt.desktop" ];
 }

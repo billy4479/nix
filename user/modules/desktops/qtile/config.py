@@ -84,7 +84,7 @@ keys = [
     Key(
         [mod],
         "e",
-        lazy.spawn("pcmanfm-qt"),
+        lazy.spawn("nemo"),
         desc="Spawn file manager",
     ),
     # Switch focus to specific monitor
