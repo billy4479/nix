@@ -1,5 +1,6 @@
 { pkgs, ... }:
 {
+  imports = [ ../../services/kdeconnect.nix ];
   home.packages = with pkgs; [
     lightly-qt
     kdePackages.plasma-systemmonitor
