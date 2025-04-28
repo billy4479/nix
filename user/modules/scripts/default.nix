@@ -9,6 +9,9 @@ let
   scripts = import ./packages.nix args;
 in
 {
+  # Needed for generate-wg-config
+  sops.secrets.serveronePublicIP = { };
+
   home.packages =
     with scripts;
     [
