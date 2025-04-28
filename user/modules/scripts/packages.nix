@@ -121,7 +121,7 @@ in
 
           if [ "$split" = true ]; then
             # Respectively: server, containers, other clients
-            allowedIPs="10.0.0.1/32, 10.0.1.0/24, 10.0.252.0/22"
+            allowedIPs="10.0.0.1/32, 10.0.1.0/24, 10.0.248.0/21"
             if [ "$local" = true ]; then
               address="10.0.251.$addr/32"
               confName="wg0.split.loc.conf"
