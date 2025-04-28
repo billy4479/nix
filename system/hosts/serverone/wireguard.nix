@@ -90,11 +90,19 @@ in
               lib.lists.flatten (
                 map (peer: [
                   {
-                    publicKey = builtins.readFile (keyPath + "/${peer.name}-split.pub");
+                    publicKey = builtins.readFile (keyPath + "/${peer.name}/wg0-split-loc.pub");
+                    allowedIPs = [ "10.0.251.${builtins.toString peer.ip}/32" ];
+                  }
+                  {
+                    publicKey = builtins.readFile (keyPath + "/${peer.name}/wg1-split-pub.pub");
+                    allowedIPs = [ "10.0.252.${builtins.toString peer.ip}/32" ];
+                  }
+                  {
+                    publicKey = builtins.readFile (keyPath + "/${peer.name}/wg2-full-loc.pub");
                     allowedIPs = [ "10.0.253.${builtins.toString peer.ip}/32" ];
                   }
                   {
-                    publicKey = builtins.readFile (keyPath + "/${peer.name}-full.pub");
+                    publicKey = builtins.readFile (keyPath + "/${peer.name}/wg3-full-pub.pub");
                     allowedIPs = [ "10.0.254.${builtins.toString peer.ip}/32" ];
                   }
                 ]) peers
