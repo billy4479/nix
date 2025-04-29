@@ -4,8 +4,11 @@
   virtualisation.oci-containers.containers = {
     syncthing = {
       autoStart = true;
+      # podman.user = "containers";
+      user = "5000:5000";
 
-      image = "lscr.io/linuxserver/syncthing:latest";
+      # image = "lscr.io/linuxserver/syncthing:latest";
+      image = "docker.io/syncthing/syncthing:latest";
       ports = [
         "8384:8384"
         "22000:22000/tcp"
@@ -14,18 +17,45 @@
       ];
 
       environment = {
-        UID = "1000";
-        GID = "1000";
-        TZ = "Europe/Rome";
+        # PUID = "5000";
+        # PGID = "5000";
+        # TZ = "Europe/Rome";
       };
 
       volumes = [
-        "/mnt/SSD/apps/syncthing/config:/config"
-        "/mnt/HDD/generic/syncthing-data:/data"
+        "/mnt/SSD/apps/syncthing:/var/syncthing/config"
+        "/mnt/HDD/generic/Giacomo/Syncthing:/var/syncthing/Sync"
       ];
 
       extraOptions = [ "--ip=10.0.1.2" ];
     };
+  };
+
+  systemd.services.podman-syncthing.postStart =
+    let
+      setfacl = "${pkgs.acl}/bin/setfacl";
+    in
+    # sh
+    ''
+      sleep 5
+
+      f="/mnt/SSD/apps/syncthing"
+      chown -R containers:containers $f
+      ${setfacl} -R -m g:admin:rwx $f
+      ${setfacl} -R -m d:g:admin:rwx $f
+      echo "Set permissions for $f"
+
+      f="/mnt/HDD/generic/Giacomo/Syncthing"
+      chown -R containers:containers $f
+      ${setfacl} -R -m u:billy:rwx $f
+      ${setfacl} -R -m d:u:billy:rwx $f
+      echo "Set permissions for $f"
+    '';
+
+  # For QUIC
+  boot.kernel.sysctl = {
+    "net.core.rmem_max" = 7500000;
+    "core.wmem_max" = 7500000;
   };
 
 }

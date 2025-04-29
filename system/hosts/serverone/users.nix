@@ -48,6 +48,14 @@
         shell = pkgs.shadow;
         createHome = false;
       };
+
+      containers = {
+        name = "containers";
+        isSystemUser = true;
+        uid = 5000;
+        shell = pkgs.shadow;
+        group = "containers";
+      };
     };
 
     groups = {
@@ -68,6 +76,12 @@
           "edo"
           "billy"
         ];
+      };
+
+      containers = {
+        gid = 5000;
+        name = "containers";
+        members = [ "containers" ];
       };
     };
   };
