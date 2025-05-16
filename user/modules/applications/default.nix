@@ -12,6 +12,7 @@
     ./qimgv.nix
     ./shell
     ./spotify.nix
+    ./ncspot.nix
     ./terminals/kitty.nix
     ./terminals/konsole
     ./terminals/wezterm.nix
