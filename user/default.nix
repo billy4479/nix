@@ -31,6 +31,8 @@ in
     license-cli
     bat-extras.batman
     jq
+
+    nixfmt-rfc-style
   ];
 
   services.ssh-agent.enable = true;
