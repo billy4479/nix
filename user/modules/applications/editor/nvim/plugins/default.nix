@@ -90,5 +90,13 @@
           })
         '';
     }
+    {
+      plugin = bufferline-nvim;
+      type = "lua";
+      config = # lua
+        ''
+          require("bufferline").setup({})
+        '';
+    }
   ];
 }
