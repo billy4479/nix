@@ -42,7 +42,6 @@ in
       c = "$HOME/code";
       s = "$HOME/src";
       n = "$HOME/nix";
-      v = "$HOME/nix/user/modules/applications/editor/nvim";
       dl = "$HOME/Downloads";
       mc = "$HOME/.local/share/PrismLauncher/instances";
     };
@@ -60,48 +59,53 @@ in
       WORDCHARS = "";
     };
 
-    initExtra = ''
-      zstyle ':completion:*' menu select
+    initContent = lib.mkMerge [
+      (lib.mkOrder 1000
+        # sh
+        ''
+          zstyle ':completion:*' menu select
 
-      # Case insensitive
-      zstyle ':completion:*' matcher-list "" 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+          # Case insensitive
+          zstyle ':completion:*' matcher-list "" 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 
-      # Include hidden files
-      _comp_options+=(globdots)
+          # Include hidden files
+          _comp_options+=(globdots)
 
-      autoload bashcompinit
-      bashcompinit
+          autoload bashcompinit
+          bashcompinit
 
-      # Key bindings
-      bindkey "^[[H" beginning-of-line # HOME
-      bindkey "^[[F" end-of-line # END
-      bindkey "^[[3~" delete-char # DEL
-      bindkey "^[[3;5~" delete-word # CTRL+DEL
-      bindkey "^H" backward-delete-word # CTRL+BACKSPACE
-      bindkey "^[[1;5C" forward-word # CTRL+ARROW_RIGHT
-      bindkey "^[[1;5D" backward-word # CTRL+ARROW_LEFT
-      bindkey "^Z" undo
-      bindkey "^Y" redo
+          # Key bindings
+          bindkey "^[[H" beginning-of-line  # HOME
+          bindkey "^[[F" end-of-line        # END
+          bindkey "^[[3~" delete-char       # DEL
+          bindkey "^[[3;5~" delete-word     # CTRL+DEL
+          bindkey "^H" backward-delete-word # CTRL+BACKSPACE
+          bindkey "^[[1;5C" forward-word    # CTRL+ARROW_RIGHT
+          bindkey "^[[1;5D" backward-word   # CTRL+ARROW_LEFT
+          bindkey "^Z" undo
+          bindkey "^Y" redo
 
-      # Arrow Up
-      autoload -U up-line-or-beginning-search
-      zle -N up-line-or-beginning-search
-      bindkey "^[[A" up-line-or-beginning-search
-      bindkey "^[OA" up-line-or-beginning-search
+          # Arrow Up
+          autoload -U up-line-or-beginning-search
+          zle -N up-line-or-beginning-search
+          bindkey "^[[A" up-line-or-beginning-search
+          bindkey "^[OA" up-line-or-beginning-search
 
-      # Arrow Down
-      autoload -U down-line-or-beginning-search
-      zle -N down-line-or-beginning-search
-      bindkey "^[[B" down-line-or-beginning-search
-      bindkey "^[OB" down-line-or-beginning-search
+          # Arrow Down
+          autoload -U down-line-or-beginning-search
+          zle -N down-line-or-beginning-search
+          bindkey "^[[B" down-line-or-beginning-search
+          bindkey "^[OB" down-line-or-beginning-search
 
-      setopt rmstarsilent
+          setopt rmstarsilent
 
-      # Functions
-      function mkcd(){
-        mkdir -p "$1" && cd "$1"
-      }
-    '';
+          # Functions
+          function mkcd() {
+            mkdir -p "$1" && cd "$1"
+          }
+        ''
+      )
+    ];
   };
 
   programs.bash = {
