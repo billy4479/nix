@@ -187,9 +187,28 @@
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs",
         "plasma-manager": "plasma-manager",
+        "secrets-repo": "secrets-repo",
         "server-tool": "server-tool",
         "sops-nix": "sops-nix",
         "spicetify-nix": "spicetify-nix"
+      }
+    },
+    "secrets-repo": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1748097338,
+        "narHash": "sha256-fWKlvFqts/A4cou/wzUHxluenbaJjobAEf2ZRSblIwM=",
+        "ref": "master",
+        "rev": "190ee0cdc355ef0fa87228804ffa3ca42618fc42",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/nix-secrets.git"
+      },
+      "original": {
+        "ref": "master",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/nix-secrets.git"
       }
     },
     "server-tool": {

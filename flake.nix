@@ -65,6 +65,11 @@
       url = "github:black7375/Firefox-UI-Fix";
       flake = false;
     };
+
+    secrets-repo = {
+      url = "git+ssh://git@github.com/billy4479/nix-secrets.git?ref=master&shallow=1";
+      flake = false;
+    };
   };
 
   outputs =

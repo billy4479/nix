@@ -1,7 +1,7 @@
-{ extraConfig, ... }:
+{ extraConfig, flakeInputs, ... }:
 {
   sops = {
-    defaultSopsFile = ../../secrets/${extraConfig.hostname}.yaml;
+    defaultSopsFile = "${flakeInputs.secrets-repo}/${extraConfig.hostname}.yaml";
 
     validateSopsFiles = false;
 

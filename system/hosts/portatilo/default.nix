@@ -1,4 +1,4 @@
-{ extraConfig, ... }:
+{ extraConfig, flakeInputs, ... }:
 {
   imports = [
     ./hardware-configuration.nix
@@ -17,6 +17,6 @@
   networking.hostName = "portatilo";
 
   users.users.${extraConfig.user.username}.openssh.authorizedKeys.keys = [
-    (builtins.readFile ../../../secrets/public_keys/ssh/billy_computerone.pub)
+    (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_computerone.pub")
   ];
 }

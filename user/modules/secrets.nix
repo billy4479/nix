@@ -1,7 +1,12 @@
-{ extraConfig, config, ... }:
+{
+  extraConfig,
+  config,
+  flakeInputs,
+  ...
+}:
 {
   sops = {
-    defaultSopsFile = ../../secrets/${extraConfig.hostname}.yaml;
+    defaultSopsFile = "${flakeInputs.secrets-repo}/${extraConfig.hostname}.yaml";
     age.keyFile = "/var/lib/sops-nix/key.txt";
     validateSopsFiles = false;
 
