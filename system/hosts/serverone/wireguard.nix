@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  flakeInputs,
   ...
 }:
 let
@@ -46,7 +47,7 @@ in
 
         peers =
           let
-            keyPath = ../../../secrets/public_keys/wireguard;
+            keyPath = "${flakeInputs.secrets-repo}/public_keys/wireguard";
             mapPeers =
               peers:
               lib.lists.flatten (

@@ -1,4 +1,9 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  flakeInputs,
+  ...
+}:
 {
   sops.secrets.user_password.neededForUsers = true;
 
@@ -15,8 +20,8 @@
 
         hashedPasswordFile = config.sops.secrets.user_password.path;
         openssh.authorizedKeys.keys = [
-          (builtins.readFile ../../../secrets/public_keys/ssh/billy_computerone.pub)
-          (builtins.readFile ../../../secrets/public_keys/ssh/billy_portatilo.pub)
+          (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_computerone.pub")
+          (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_portatilo.pub")
         ];
 
         extraGroups = [
