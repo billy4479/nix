@@ -51,7 +51,7 @@ createAndMergeHosts defaultOptions [
       wayland = false;
       games = true;
       rotateMonitor = true;
-      # hasCuda = true;
+      hasCuda = true;
     };
     extraSystemModules = [
       ../system/hosts/computerone
