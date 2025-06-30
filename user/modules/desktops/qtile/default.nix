@@ -48,6 +48,7 @@ assert !extraConfig.wayland;
       ../../services/lxqt-policykit.nix
       ../../services/nm-applet.nix
       ../../services/playerctld.nix
+      ../../services/polkit.nix
       ../../services/udiskie.nix
     ]
     ++ (
@@ -61,8 +62,6 @@ assert !extraConfig.wayland;
       else
         [ ]
     )
-    # If bluetooth is enable we want to enable this.
-    # We already know that blueman will be enabled because of /system/modules/bluetooth.nix
     ++ lib.optional extraConfig.bluetooth ../../services/blueman-applet.nix;
 
   # https://github.com/nix-community/home-manager/issues/2064#issuecomment-887300055

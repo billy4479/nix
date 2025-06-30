@@ -21,6 +21,7 @@
               tree-sitter-javascript
               tree-sitter-json
               tree-sitter-java
+              tree-sitter-kdl
               tree-sitter-latex
               tree-sitter-lua
               tree-sitter-make

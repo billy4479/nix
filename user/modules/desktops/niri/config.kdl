@@ -1,0 +1,38 @@
+
+input {
+  keyboard {
+    xkb {
+      layout "us"
+      variant "intl"
+    }
+    
+    numlock
+  }
+
+  // touchpad {
+  //   tap
+  //   drag true
+  //   natural-scroll
+  // }
+}
+
+binds {
+  Mod+Return { spawn "wezterm"; }
+  Mod+Shift+Q { quit; }
+
+}
+
+output "DP-1" {
+  mode "2560x1440@169.831"
+  position x=1080 y=0
+  variable-refresh-rate on-demand=true
+  focus-at-startup
+}
+
+output "DP-2" {
+  mode "1920x1080@74.986"
+  position x=0 y=0
+  transform "90"
+  variable-refresh-rate on-demand=true
+}
+
