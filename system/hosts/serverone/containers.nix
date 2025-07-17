@@ -2,6 +2,7 @@
 {
   imports = [
     ../../../containers/syncthing.nix
+    ../../../containers/immich.nix
   ];
 
   virtualisation = {
