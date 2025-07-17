@@ -7,6 +7,7 @@ let
   uploadLocation = "${baseHDDDir}/upload";
   modelCacheLocation = "${baseHDDDir}/model-cache";
   dbLocation = "${baseSSDDir}/db";
+  valkeyLocation = "${baseSSDDir}/valkey";
 in
 {
   sops.secrets.immichEnv = { };
@@ -21,6 +22,9 @@ in
       volumes = [
         "${uploadLocation}:/usr/src/app/upload"
         "/etc/localtime:/etc/localtime:ro"
+
+        "/mnt/HDD/generic/Giacomo/Archive/Foto Jack:/mnt/media/Foto Jack Archivio:ro"
+        "/mnt/HDD/generic/Edo/foto - edo - archivio:/mnt/media/Foto Edo Archivio:ro"
       ];
       environmentFiles = [
         config.sops.secrets.immichEnv.path
@@ -63,6 +67,7 @@ in
       user = "5000:5000";
 
       image = "docker.io/valkey/valkey:8-alpine";
+      volumes = [ "${valkeyLocation}:/data" ];
       extraOptions = [
         "--health-cmd=redis-cli ping || exit 1"
         "--ip=10.0.1.129"
