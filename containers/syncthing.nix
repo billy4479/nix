@@ -1,13 +1,10 @@
 { pkgs, ... }:
 {
-
   virtualisation.oci-containers.containers = {
     syncthing = {
       autoStart = true;
-      # podman.user = "containers";
       user = "5000:5000";
 
-      # image = "lscr.io/linuxserver/syncthing:latest";
       image = "docker.io/syncthing/syncthing:latest";
       ports = [
         "8384:8384"
@@ -17,8 +14,6 @@
       ];
 
       environment = {
-        # PUID = "5000";
-        # PGID = "5000";
         # TZ = "Europe/Rome";
       };
 
