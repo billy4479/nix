@@ -5,6 +5,7 @@
     ../../modules/autologin.nix
     ../../modules/bluetooth.nix
     ../../modules/containers.nix
+    ../../modules/iphone.nix
     ../../modules/graphics/intel.nix
     ../../modules/power-management
     ../../modules/desktops
