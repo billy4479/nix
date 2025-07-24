@@ -1,9 +1,18 @@
-{ ... }:
+{ lib, ... }:
 {
   xdg.enable = true;
   xdg.mimeApps =
     let
       imgViewer = "qimgv.desktop";
+      imgTypes = [
+        "image/jpeg"
+        "image/gif"
+        "image/png"
+        "image/bmp"
+        "image/webp"
+        "image/heif"
+      ];
+      imgTypesAttrSet = builtins.foldl' (acc: elem: acc // { "${elem}" = imgViewer; }) { } imgTypes;
     in
     {
       enable = true;
@@ -16,11 +25,6 @@
         "x-scheme-handler/tg" = "org.telegram.desktop.desktop";
         "application/pdf" = "org.pwmt.zathura.desktop";
         "text/plain" = "org.kde.kate.desktop";
-        "image/jpeg" = imgViewer;
-        "image/gif" = imgViewer;
-        "image/png" = imgViewer;
-        "image/bmp" = imgViewer;
-        "image/webp" = imgViewer;
-      };
+      } // imgTypesAttrSet;
     };
 }
