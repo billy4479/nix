@@ -2,6 +2,7 @@
 {
   imports = [
     ./plugins
+    ./spell.nix
   ];
 
   home.file."${config.xdg.configHome}/nvim/ftplugin".source = ./ftplugin;
