@@ -98,5 +98,15 @@
           require("bufferline").setup({})
         '';
     }
+    {
+      plugin = nvim-origami;
+      type = "lua";
+      config = # lua
+        ''
+          vim.opt.foldlevel = 99
+          vim.opt.foldlevelstart = 99
+          require("origami").setup({})
+        '';
+    }
   ];
 }
