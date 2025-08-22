@@ -46,7 +46,7 @@ in
       mc = "$HOME/.local/share/PrismLauncher/instances";
     };
 
-    dotDir = ".config/zsh";
+    dotDir = "${config.xdg.configHome}/zsh";
     history = {
       ignoreAllDups = true;
       path = "${config.xdg.dataHome}/zsh/zsh_history";
