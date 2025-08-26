@@ -386,13 +386,12 @@ def init_widgets_list():
             foreground=col["blue"],
             background=col["bg"],
         ),
-        widget.CurrentLayoutIcon(
-            custom_icon_paths=[os.path.expanduser("~/.config/qtile/icons")],
-            foreground=col["white"],
-            background=col["bg"],
-            padding=0,
-            scale=0.7,
-        ),
+        # widget.CurrentLayoutIcon(
+        #     foreground=col["white"],
+        #     background=col["bg"],
+        #     padding=0,
+        #     scale=0.7,
+        # ),
         widget.CurrentLayout(
             foreground=col["white"],
             background=col["bg"],
