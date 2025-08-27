@@ -1,13 +1,15 @@
 { ... }:
 {
   imports = [
-    ../../../containers/syncthing.nix
+    ../../../containers/headscale.nix
     ../../../containers/immich.nix
+    ../../../containers/syncthing.nix
   ];
 
   virtualisation = {
     podman = {
       enable = true;
+      dockerSocket.enable = true;
 
       defaultNetwork.settings = {
         dns_enabled = true;
