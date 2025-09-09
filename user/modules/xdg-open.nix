@@ -11,6 +11,7 @@
         "image/bmp"
         "image/webp"
         "image/heif"
+        "image/x-adobe-dng"
       ];
       imgTypesAttrSet = builtins.foldl' (acc: elem: acc // { "${elem}" = imgViewer; }) { } imgTypes;
     in
@@ -25,6 +26,7 @@
         "x-scheme-handler/tg" = "org.telegram.desktop.desktop";
         "application/pdf" = "org.pwmt.zathura.desktop";
         "text/plain" = "org.kde.kate.desktop";
-      } // imgTypesAttrSet;
+      }
+      // imgTypesAttrSet;
     };
 }
