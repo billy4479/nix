@@ -61,14 +61,17 @@ let
     dontUnpack = true;
 
     installPhase = # sh
-      ''
-        mkdir -p $out
-      ''
-      + lib.concatStringsSep "\n" (
-        map (x: "cp -v ${x.fetchedPath} $out/${x.finalFileName}") fetchedPaths
-      );
+    ''
+      mkdir -p $out
+    ''
+    + lib.concatStringsSep "\n" (
+      map (x: "cp -v ${x.fetchedPath} $out/${x.finalFileName}") fetchedPaths
+    );
   };
 in
 {
-  home.file."${config.xdg.configHome}/nvim/spell".source = spellsDrv;
+  home.file."${config.xdg.configHome}/nvim/spell" = {
+    source = spellsDrv;
+    recursive = true;
+  };
 }
