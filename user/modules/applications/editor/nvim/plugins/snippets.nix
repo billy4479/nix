@@ -115,7 +115,8 @@
           	generic_command("cal", "mathcal"),
           	generic_command("ds", "mathds"),
           	generic_command("emph", "emph"),
-          	generic_command("bf", "bold"),
+          	generic_command("bf", "textbf"),
+          	generic_command("it", "textit"),
 
           	generic_up_down("int", "int"),
           	generic_up_down("sum", "sum"),
