@@ -44,6 +44,7 @@
           	clangd = {},
           	templ = {},
           	ts_ls = {},
+          	tinymist = {},
           	svelte = {},
           	jdtls = {},
           }

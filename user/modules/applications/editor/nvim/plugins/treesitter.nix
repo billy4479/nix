@@ -30,6 +30,7 @@
               tree-sitter-rust
               tree-sitter-svelte
               tree-sitter-templ
+              tree-sitter-typst
               tree-sitter-typescript
               tree-sitter-yaml
               tree-sitter-zig
