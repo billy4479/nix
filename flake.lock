@@ -114,6 +114,29 @@
         "type": "github"
       }
     },
+    "myPackages": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1757588242,
+        "narHash": "sha256-cJDthVsfBP3izq173MzKlShL8SNDNK1co1hvOfZ4lN0=",
+        "owner": "billy4479",
+        "repo": "nix-packages",
+        "rev": "02494f10de240f184b55cc4d5f6234b63312dd9f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "billy4479",
+        "repo": "nix-packages",
+        "type": "github"
+      }
+    },
     "nix-vscode-extensions": {
       "inputs": {
         "flake-utils": [
@@ -184,6 +207,7 @@
         "firefox-ui-fix": "firefox-ui-fix",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
+        "myPackages": "myPackages",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs",
         "plasma-manager": "plasma-manager",

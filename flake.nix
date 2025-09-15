@@ -70,12 +70,21 @@
       url = "git+ssh://git@github.com/billy4479/nix-secrets.git?ref=master&shallow=1";
       flake = false;
     };
+
+    myPackages = {
+      url = "github:billy4479/nix-packages";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
   };
 
   outputs =
     {
       nixpkgs,
       server-tool,
+      myPackages,
       ...
     }@inputs:
     let
@@ -90,7 +99,7 @@
       myPackagesFn =
         pkgs:
         (
-          import ./packages { inherit pkgs; }
+          myPackages.packages.${system}
           // {
             server-tool = server-tool.packages.${system}.default;
           }
