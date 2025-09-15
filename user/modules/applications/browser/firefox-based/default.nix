@@ -37,7 +37,7 @@ let
     "font.name.monospace.x-western" = fonts.mono;
     "font.name.sans-serif.x-western" = fonts.sans;
     "font.name.serif.x-western" = fonts.serif;
-    "browser.display.use_document_fonts" = 0; # No custom fonts
+    # "browser.display.use_document_fonts" = 0; # No custom fonts
 
     "browser.aboutConfig.showWarning" = false;
     "browser.bookmarks.addedImportButton" = true;
