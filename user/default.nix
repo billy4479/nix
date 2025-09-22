@@ -28,6 +28,7 @@ in
     p7zip
     zip
     unzip
+    unrar-free
     license-cli
     bat-extras.batman
     jq

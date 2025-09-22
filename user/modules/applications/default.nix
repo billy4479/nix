@@ -28,6 +28,10 @@
     qbittorrent
     qalculate-gtk
     gimp3
+    inkscape
+
+    ffmpeg
+    imagemagick
   ];
 
   programs.office = {
