@@ -3,6 +3,7 @@
   imports = [
     ../../../containers/syncthing.nix
     ../../../containers/immich.nix
+    ../../../containers/qbittorrent.nix
   ];
 
   virtualisation = {
