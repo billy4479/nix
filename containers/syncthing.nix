@@ -22,6 +22,10 @@
         "/mnt/HDD/generic/Giacomo/Syncthing:/var/syncthing/Sync"
       ];
 
+      labels = {
+        "io.containers.autoupdate" = "registry";
+      };
+
       extraOptions = [ "--ip=10.0.1.2" ];
     };
   };
