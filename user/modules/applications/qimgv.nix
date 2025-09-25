@@ -1,8 +1,6 @@
-{ pkgs, ... }:
+{ pkgs, extraPkgs, ... }:
 {
-  home.packages = with pkgs; [
-    qimgv
-
-    kdePackages.kimageformats
+  home.packages = [
+    extraPkgs.my-packages.qimgv-qt6
   ];
 }
