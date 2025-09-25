@@ -25,7 +25,6 @@
     discord
     kdePackages.kate
     kdePackages.ark
-    qbittorrent
     qalculate-gtk
     gimp3
     inkscape
