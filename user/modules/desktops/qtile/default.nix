@@ -13,12 +13,10 @@ assert !extraConfig.wayland;
   home.file = {
     "${config.xdg.configHome}/qtile/config.py".text =
       let
-        rofi = lib.getExe (if extraConfig.wayland then pkgs.rofi-wayland else pkgs.rofi);
         scripts = import ../../scripts/packages.nix args;
       in
-      #python
       ''
-        rofi = "${rofi}"
+        rofi = "${lib.getExe pkgs.rofi}"
         open_document_script = "${lib.getExe scripts.open-document}"
         screenshot_script = "${lib.getExe scripts.dmenu-screenshot}"
         open_mpv_script = "${lib.getExe scripts.mpv-url}"
@@ -37,33 +35,32 @@ assert !extraConfig.wayland;
         '';
   };
 
-  imports =
-    [
-      ../../applications/rofi.nix
-      # ../../applications/pcmanfm.nix
-      ../../applications/nemo.nix
-      ../../services/dunst.nix
-      ../../services/gammastep.nix
-      ../../services/kdeconnect.nix
-      ../../services/lxqt-policykit.nix
-      ../../services/nm-applet.nix
-      ../../services/playerctld.nix
-      ../../services/udiskie.nix
-    ]
-    ++ (
-      if !extraConfig.wayland then
-        [
-          ../../services/X11/nitrogen.nix
-          ../../services/X11/picom.nix
-          ../../services/X11/volumeicon.nix
-          ../../services/X11/xfce4-clipman.nix
-        ]
-      else
-        [ ]
-    )
-    # If bluetooth is enable we want to enable this.
-    # We already know that blueman will be enabled because of /system/modules/bluetooth.nix
-    ++ lib.optional extraConfig.bluetooth ../../services/blueman-applet.nix;
+  imports = [
+    ../../applications/rofi.nix
+    # ../../applications/pcmanfm.nix
+    ../../applications/nemo.nix
+    ../../services/dunst.nix
+    ../../services/gammastep.nix
+    ../../services/kdeconnect.nix
+    ../../services/lxqt-policykit.nix
+    ../../services/nm-applet.nix
+    ../../services/playerctld.nix
+    ../../services/udiskie.nix
+  ]
+  ++ (
+    if !extraConfig.wayland then
+      [
+        ../../services/X11/nitrogen.nix
+        ../../services/X11/picom.nix
+        ../../services/X11/volumeicon.nix
+        ../../services/X11/xfce4-clipman.nix
+      ]
+    else
+      [ ]
+  )
+  # If bluetooth is enable we want to enable this.
+  # We already know that blueman will be enabled because of /system/modules/bluetooth.nix
+  ++ lib.optional extraConfig.bluetooth ../../services/blueman-applet.nix;
 
   # https://github.com/nix-community/home-manager/issues/2064#issuecomment-887300055
   systemd.user.targets.tray = {
