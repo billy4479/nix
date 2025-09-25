@@ -3,21 +3,20 @@ let
   desktop = extraConfig.desktop;
 in
 {
-  imports =
-    [
-      ../../modules/main-user.nix
-      ../../modules/steam.nix
-      ../../modules/sddm.nix
-      ../../modules/sound.nix
-    ]
-    ++ (
-      if desktop == "kde" then
-        [ ./kde.nix ]
-      else if desktop == "qtile" then
-        [ ./qtile.nix ]
-      else
-        throw "desktop ${desktop} is not supported"
-    );
+  imports = [
+    ../../modules/main-user.nix
+    ../../modules/steam.nix
+    ../../modules/sddm.nix
+    ../../modules/sound.nix
+  ]
+  ++ (
+    if desktop == "kde" then
+      [ ./kde.nix ]
+    else if desktop == "qtile" then
+      [ ./qtile.nix ]
+    else
+      throw "desktop ${desktop} is not supported"
+  );
 
   # It should help in desktop use
   # Mhh, it seems like it causes some crashes?

@@ -12,7 +12,8 @@
     ./modules/nix.nix
     ./modules/secrets.nix
     ./modules/sensors.nix
-  ] ++ lib.optional extraConfig.bluetooth ./modules/bluetooth.nix;
+  ]
+  ++ lib.optional extraConfig.bluetooth ./modules/bluetooth.nix;
 
   # These are packages that I need on all users
   environment.systemPackages = with pkgs; [
