@@ -25,6 +25,16 @@
         "valid users" = "@family";
       };
 
+      "nas-torrent" = {
+        "path" = "/mnt/HDD/torrent";
+        "browsable" = "yes";
+        "read only" = "no";
+        "guest ok" = "no";
+        "create mask" = "0660";
+        "directory mask" = "0770";
+        "valid users" = "@family";
+      };
+
       "nas-ssd" = {
         "path" = "/mnt/SSD/generic";
         "browsable" = "yes";
