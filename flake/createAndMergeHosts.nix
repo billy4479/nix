@@ -68,7 +68,7 @@ let
 
       defaultHomeManagerModules = [
         inputs.catppuccin.homeModules.catppuccin
-        inputs.plasma-manager.homeManagerModules.plasma-manager
+        inputs.plasma-manager.homeModules.plasma-manager
         inputs.spicetify-nix.homeManagerModules.default
         inputs.sops-nix.homeManagerModules.sops
 
@@ -85,23 +85,22 @@ let
     {
       nixosConfigurations.${hostname} = inputs.nixpkgs.lib.nixosSystem {
         inherit system specialArgs;
-        modules =
-          [
-            ../system
-            inputs.sops-nix.nixosModules.sops
-          ]
-          ++ lib.optionals (!specialArgs.extraConfig.standaloneHomeManager) [
-            inputs.home-manager.nixosModules.home-manager
-            {
-              home-manager = {
-                useGlobalPkgs = true;
-                useUserPackages = true;
-                extraSpecialArgs = specialArgs;
-                users.${user.username}.imports = defaultHomeManagerModules;
-              };
-            }
-          ]
-          ++ extraSystemModules;
+        modules = [
+          ../system
+          inputs.sops-nix.nixosModules.sops
+        ]
+        ++ lib.optionals (!specialArgs.extraConfig.standaloneHomeManager) [
+          inputs.home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              extraSpecialArgs = specialArgs;
+              users.${user.username}.imports = defaultHomeManagerModules;
+            };
+          }
+        ]
+        ++ extraSystemModules;
       };
 
       homeConfigurations =

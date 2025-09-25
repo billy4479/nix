@@ -29,10 +29,11 @@ in
     (with pkgs; [
       libsForQt5.qt5ct
       qt6ct
+
+      darkly
+      darkly-qt5
     ])
-    ++ [ papirus.package ]
-    # https://github.com/boehs/Lightly
-    ++ [ pkgs.lightly-boehs ];
+    ++ [ papirus.package ];
 
   home.file."${config.xdg.configHome}/qt5ct/colors" = {
     source = "${srcs}/themes";
@@ -57,7 +58,7 @@ in
             "custom_palette".value = true;
             "icon_theme".value = papirus.name;
             "standard_dialogs".value = "xdgdesktopportal";
-            "style".value = "Lightly";
+            "style".value = "Darkly";
           };
 
           "Fonts" = {
@@ -68,7 +69,7 @@ in
       in
       {
         "qt5ct/qt5ct.conf" = conf;
-        "qt6ct/qt6ct.conf" = lib.recursiveUpdate conf { "Appearance"."style".value = "Fusion"; }; # Lightly is not available for qt6 yet
+        "qt6ct/qt6ct.conf" = conf;
       };
   };
 }

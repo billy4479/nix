@@ -21,6 +21,7 @@
       serverone = {
         hostname = "10.0.0.1";
         forwardAgent = true;
+        addKeysToAgent = "yes";
       };
     };
   };
