@@ -2,7 +2,8 @@
 {
   imports = [ ../../services/kdeconnect.nix ];
   home.packages = with pkgs; [
-    lightly-qt
+    darkly
+    darkly-qt5
     kdePackages.plasma-systemmonitor
   ];
 
