@@ -8,6 +8,8 @@
     ../../../containers/cloudflared.nix
     ../../../containers/certbot.nix
     ../../../containers/nginx.nix
+    ../../../containers/radarr.nix
+    ../../../containers/jackett.nix
   ];
 
   virtualisation = {
