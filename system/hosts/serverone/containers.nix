@@ -4,6 +4,8 @@
     ../../../containers/syncthing.nix
     ../../../containers/immich.nix
     ../../../containers/qbittorrent.nix
+    ../../../containers/radarr.nix
+    ../../../containers/jackett.nix
   ];
 
   virtualisation = {
