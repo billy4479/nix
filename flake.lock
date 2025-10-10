@@ -1,5 +1,30 @@
 {
   "nodes": {
+    "calendar-proxy": {
+      "inputs": {
+        "flake-utils": [
+          "myPackages",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "myPackages",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1760104997,
+        "narHash": "sha256-dX8NBdNpVyhwjgzqUa0kjixNlJfEP5GFz+tPbTwDOZU=",
+        "owner": "billy4479",
+        "repo": "calendar-proxy",
+        "rev": "dc96611c2d5162f97c85b9cbf79e8cbcf885fc4b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "billy4479",
+        "repo": "calendar-proxy",
+        "type": "github"
+      }
+    },
     "catppuccin": {
       "inputs": {
         "nixpkgs": [
@@ -116,6 +141,7 @@
     },
     "myPackages": {
       "inputs": {
+        "calendar-proxy": "calendar-proxy",
         "flake-utils": [
           "flake-utils"
         ],
@@ -124,11 +150,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1758803579,
-        "narHash": "sha256-NM0GveVO3r0V4v3DVYjFVG86Mq+2gI/95otZK78vMB0=",
+        "lastModified": 1760105303,
+        "narHash": "sha256-gBpPrUm7y6fBBcmsFwEevlUM1YHTNgRqsBtpG9huLy0=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "189720d614199512c1fc64c6887634d8e5bb70a3",
+        "rev": "18ff04149790a314680306b11e393cfb55aa1299",
         "type": "github"
       },
       "original": {
@@ -220,10 +246,10 @@
     "secrets-repo": {
       "flake": false,
       "locked": {
-        "lastModified": 1756323928,
-        "narHash": "sha256-RyA0okt4he40jABGW+N8EAb/O7UOi/dx/zQfvYd8TNg=",
+        "lastModified": 1760106765,
+        "narHash": "sha256-PsNIEQUwyx0adeIhhIy8L/S251vhk9fvcB+REHMDk/8=",
         "ref": "master",
-        "rev": "14dd2ed9731986f1adb0ace1ca7ff14a053e312b",
+        "rev": "207c55fc797a3cac1413da216053043df8a3245b",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/nix-secrets.git"
