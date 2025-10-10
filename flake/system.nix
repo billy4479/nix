@@ -1,6 +1,5 @@
 {
   system,
-  myPackagesFn,
   inputs,
 }@args:
 let

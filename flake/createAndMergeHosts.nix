@@ -1,6 +1,5 @@
 {
   system,
-  myPackagesFn,
   inputs,
 }:
 let
@@ -60,8 +59,8 @@ let
         extraPkgs = {
           vscode-extensions = inputs.nix-vscode-extensions.extensions.${system};
           spicetifyPkgs = inputs.spicetify-nix.legacyPackages.${system};
+          my-packages = inputs.myPackages.packages.${system};
           inherit (inputs) catppuccin-vsc;
-          my-packages = myPackagesFn pkgs;
         };
         flakeInputs = inputs;
       };

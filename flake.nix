@@ -43,14 +43,6 @@
       };
     };
 
-    server-tool = {
-      url = "github:billy4479/server-tool";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
-    };
-
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -83,8 +75,6 @@
   outputs =
     {
       nixpkgs,
-      server-tool,
-      myPackages,
       ...
     }@inputs:
     let
@@ -95,20 +85,9 @@
         inherit system;
       };
 
-      # TODO: this should definitely be an overlay.
-      myPackagesFn =
-        pkgs:
-        (
-          myPackages.packages.${system}
-          // {
-            server-tool = server-tool.packages.${system}.default;
-          }
-        );
-
       hosts = import ./flake/system.nix {
         inherit
           system
-          myPackagesFn
           inputs
           ;
       };
