@@ -5,6 +5,7 @@
     ../../../containers/immich.nix
     ../../../containers/qbittorrent.nix
     ../../../containers/calendar-proxy.nix
+    ../../../containers/cloudflared.nix
   ];
 
   virtualisation = {
