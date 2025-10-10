@@ -147,14 +147,15 @@
         ],
         "nixpkgs": [
           "nixpkgs"
-        ]
+        ],
+        "server-tool": "server-tool"
       },
       "locked": {
-        "lastModified": 1760105303,
-        "narHash": "sha256-gBpPrUm7y6fBBcmsFwEevlUM1YHTNgRqsBtpG9huLy0=",
+        "lastModified": 1760108183,
+        "narHash": "sha256-emiLdw1uM+BqlrrvfXeFHG965QgEzhRnm8NRvUUoKoU=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "18ff04149790a314680306b11e393cfb55aa1299",
+        "rev": "934699f51d2078329eab80795ec109e0342956dd",
         "type": "github"
       },
       "original": {
@@ -238,7 +239,6 @@
         "nixpkgs": "nixpkgs",
         "plasma-manager": "plasma-manager",
         "secrets-repo": "secrets-repo",
-        "server-tool": "server-tool",
         "sops-nix": "sops-nix",
         "spicetify-nix": "spicetify-nix"
       }
@@ -264,9 +264,11 @@
     "server-tool": {
       "inputs": {
         "flake-utils": [
+          "myPackages",
           "flake-utils"
         ],
         "nixpkgs": [
+          "myPackages",
           "nixpkgs"
         ]
       },
