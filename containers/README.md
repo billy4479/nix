@@ -9,8 +9,12 @@
     - redis on `10.0.1.129`
     - postgres on `10.0.1.130`
 - Cloudflared
-    - `10.0.1.131`
+    - `10.0.1.131` (no ui)
 - Calendar Proxy
     - `10.0.1.4` port 4479
 - qBittorrent
     - `10.0.1.5` webui on 8080
+- Certbot
+    - `10.0.1.132` (no ui)
+- nginx
+    - `10.0.1.6`

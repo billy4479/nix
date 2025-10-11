@@ -55,7 +55,9 @@ in
           ${lib.getExe pkgs.podman} exec certbot certbot renew \
             --dns-cloudflare-propagation-seconds 60 \
             --dns-cloudflare \
-            --dns-cloudflare-credentials /cloudflare.ini \
+            --dns-cloudflare-credentials /cloudflare.ini
+
+          ${lib.getExe pkgs.podman} exec nginx nginx -s reload
         '';
       serviceConfig = {
         Type = "oneshot";

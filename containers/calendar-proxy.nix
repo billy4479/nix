@@ -15,12 +15,12 @@ in
       ENV = "prod";
     };
 
-    volumes = [
-      "/tmp:/tmp"
-    ];
-
     environmentFiles = [ config.sops.secrets.calendar-proxy-env.path ];
 
-    extraOptions = [ "--ip=10.0.1.4" ];
+    extraOptions = [
+      "--ip=10.0.1.4"
+      "--tmpfs"
+      "/tmp"
+    ];
   };
 }
