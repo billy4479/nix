@@ -28,5 +28,5 @@ in
 }
 // (givePermissions {
   inherit pkgs containerName;
-  userDirs = [ baseSSDDir ];
+  adminOnlyDirs = [ baseSSDDir ];
 })
