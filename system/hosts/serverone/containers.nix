@@ -6,6 +6,7 @@
     ../../../containers/qbittorrent.nix
     ../../../containers/calendar-proxy.nix
     ../../../containers/cloudflared.nix
+    ../../../containers/certbot.nix
   ];
 
   virtualisation = {
