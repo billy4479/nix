@@ -25,7 +25,7 @@
               chown -R containers:containers $f
               ${setfacl} -R -m g:admin:rwx $f
               ${setfacl} -R -m d:g:admin:rwx $f
-              echo "Set permissions \"admin only\" for $f for ${containerName}"
+              echo "Set permissions \"admin only\" for $f for container ${containerName}"
             '') adminOnlyDirs)
           ++ (map (
             x:
@@ -35,7 +35,7 @@
               chown -R containers:containers $f
               ${setfacl} -R -m u:billy:rwx $f
               ${setfacl} -R -m d:u:billy:rwx $f
-              echo "Set permissions \"user only\" for $f for ${containerName}"
+              echo "Set permissions \"user only\" for $f for container ${containerName}"
             '') userDirs)
         );
     };
