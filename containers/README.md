@@ -18,3 +18,7 @@
     - `10.0.1.132` (no ui)
 - nginx
     - `10.0.1.6`
+- radarr
+    - `10.0.1.7` webui on 7878
+- jackett
+    - `10.0.1.8` webui on 9117

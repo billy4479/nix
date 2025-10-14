@@ -1,13 +1,15 @@
 { pkgs, ... }:
 let
-  torrentDestinationDir = "/mnt/HDD/torrent";
-  baseSSDDir = "/mnt/SSD/apps/qbittorrent";
+  containerName = "qbittorrent";
+  torrentDestinationDir = "/mnt/HDD/torrent/${containerName}";
+  baseSSDDir = "/mnt/SSD/apps/${containerName}";
+  inherit (import ./utils.nix) givePermissions;
 
   torrentingPort = "6881";
   webUiPort = "8080";
 in
 {
-  virtualisation.oci-containers.containers."qbittorrent" = {
+  virtualisation.oci-containers.containers."${containerName}" = {
     image = "lscr.io/linuxserver/qbittorrent:latest";
     environment = {
       "PGID" = "5000";
@@ -17,7 +19,7 @@ in
       "WEBUI_PORT" = webUiPort;
     };
     volumes = [
-      "${torrentDestinationDir}:/downloads:rw"
+      "${torrentDestinationDir}:/data/${containerName}:rw"
       "${baseSSDDir}:/config:rw"
     ];
     ports = [
@@ -32,25 +34,9 @@ in
 
     extraOptions = [ "--ip=10.0.1.5" ];
   };
-
-  systemd.services.podman-qbittorrent.postStart =
-    let
-      setfacl = "${pkgs.acl}/bin/setfacl";
-    in
-    # sh
-    ''
-      sleep 5
-
-      f="${baseSSDDir}"
-      chown -R containers:containers $f
-      ${setfacl} -R -m g:admin:rwx $f
-      ${setfacl} -R -m d:g:admin:rwx $f
-      echo "Set permissions for $f"
-
-      f="${torrentDestinationDir}"
-      chown -R containers:containers $f
-      ${setfacl} -R -m u:billy:rwx $f
-      ${setfacl} -R -m d:u:billy:rwx $f
-      echo "Set permissions for $f"
-    '';
 }
+// (givePermissions {
+  inherit pkgs containerName;
+  adminOnlyDirs = [ baseSSDDir ];
+  userDirs = [ torrentDestinationDir ];
+})

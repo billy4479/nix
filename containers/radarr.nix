@@ -1,51 +1,32 @@
 { pkgs, ... }:
 let
-  dataDir = "/mnt/HDD/torrent";
-  configDir = "/mnt/SSD/apps/radarr";
-  port = "7878";
+  containerName = "radarr";
+  baseHDDDir = "/mnt/HDD/torrent";
+  configDir = "/mnt/SSD/apps/${containerName}";
+  inherit (import ./utils.nix) givePermissions;
 in
 {
-  virtualisation.oci-containers.containers."radarr" = {
-    image = "ghcr.io/hotio/radarr:latest";
+  virtualisation.oci-containers.containers."${containerName}" = {
+    image = "lscr.io/linuxserver/radarr:latest";
     environment = {
       "PGID" = "5000";
       "PUID" = "5000";
-      "UMASK" = "002";
       "TZ" = "Europe/Rome";
     };
     volumes = [
-      "${dataDir}:/data:rw"
+      "${baseHDDDir}:/data:rw"
       "${configDir}:/config:rw"
-    ];
-    ports = [
-      # "${port}:${port}/tcp"
     ];
 
     labels = {
       "io.containers.autoupdate" = "registry";
     };
 
-    extraOptions = [ "--ip=10.0.1.6" ];
+    extraOptions = [ "--ip=10.0.1.7" ];
   };
-
-  systemd.services.podman-radarr.postStart =
-    let
-      setfacl = "${pkgs.acl}/bin/setfacl";
-    in
-    # sh
-    ''
-      sleep 5
-
-      f="${configDir}"
-      chown -R containers:containers $f
-      ${setfacl} -R -m g:admin:rwx $f
-      ${setfacl} -R -m d:g:admin:rwx $f
-      echo "Set permissions for $f"
-
-      f="${dataDir}"
-      chown -R containers:containers $f
-      ${setfacl} -R -m u:billy:rwx $f
-      ${setfacl} -R -m d:u:billy:rwx $f
-      echo "Set permissions for $f"
-    '';
 }
+// (givePermissions {
+  inherit pkgs containerName;
+  adminOnlyDirs = [ configDir ];
+  userDirs = [ baseHDDDir ];
+})
