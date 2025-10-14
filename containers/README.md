@@ -1,26 +1,28 @@
 # IPs
 
 - Syncthing
-    - `10.0.1.2`, webui on 8384
+    - `10.0.1.2:8385`
     - Has a bunch of more open ports
 - Immich
-    - `10.0.1.3`, webui on 2283
+    - `10.0.1.3:2283`
     - machine learning on `10.0.1.128`
     - redis on `10.0.1.129`
     - postgres on `10.0.1.130`
 - Cloudflared
     - `10.0.1.131` (no ui)
 - Calendar Proxy
-    - `10.0.1.4` port 4479
+    - `10.0.1.4:4479`
 - qBittorrent
-    - `10.0.1.5` webui on 8080
+    - `10.0.1.5:8080`
 - Certbot
     - `10.0.1.132` (no ui)
 - nginx
     - `10.0.1.6`
-- radarr
-    - `10.0.1.7` webui on 7878
-- jackett
-    - `10.0.1.8` webui on 9117
-- flaresolverr
-    - `10.0.1.133:8191`
+- arr stack
+    - radarr `10.0.1.7:7878`
+    - jackett `10.0.1.8:9117`
+    - flaresolverr `10.0.1.133:8191`
+    - sonarr `10.0.1.9:8989`
+- jellyfin
+    - `10.0.1.10:8096`
+    - More ports available, idk if needed
