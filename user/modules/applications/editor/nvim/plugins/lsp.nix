@@ -22,7 +22,6 @@
           	},
           })
           local cap = blink.get_lsp_capabilities()
-          local lspconfig = require("lspconfig")
 
           require("lazydev").setup({
           	library = {
@@ -51,7 +50,8 @@
 
           for server, config in pairs(servers) do
           	config.capabilities = cap
-          	lspconfig[server].setup(config)
+          	vim.lsp.config(server, config)
+          	vim.lsp.enable(server)
           end
 
           vim.api.nvim_create_autocmd("LspAttach", {
