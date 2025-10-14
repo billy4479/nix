@@ -22,3 +22,5 @@
     - `10.0.1.7` webui on 7878
 - jackett
     - `10.0.1.8` webui on 9117
+- flaresolverr
+    - `10.0.1.133:8191`

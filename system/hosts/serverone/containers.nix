@@ -4,12 +4,17 @@
     ../../../containers/syncthing.nix
     ../../../containers/immich.nix
     ../../../containers/qbittorrent.nix
+
     ../../../containers/calendar-proxy.nix
+
     ../../../containers/cloudflared.nix
     ../../../containers/certbot.nix
     ../../../containers/nginx.nix
+
     ../../../containers/radarr.nix
     ../../../containers/jackett.nix
+    ../../../containers/sonarr.nix
+    ../../../containers/flaresolverr.nix
   ];
 
   virtualisation = {
