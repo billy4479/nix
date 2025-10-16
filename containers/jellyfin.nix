@@ -27,7 +27,10 @@ in
       "io.containers.autoupdate" = "registry";
     };
 
-    extraOptions = [ "--ip=10.0.1.10" ];
+    extraOptions = [
+      "--ip=10.0.1.10"
+      "--device=/dev/dri:/dev/dri"
+    ];
   };
 }
 // (givePermissions {
