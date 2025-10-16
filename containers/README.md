@@ -26,3 +26,6 @@
 - jellyfin
     - `10.0.1.10:8096`
     - More ports available, idk if needed
+- pihole
+    - `10.0.1.11:80` webui
+    - `10.0.1.11:53` dns

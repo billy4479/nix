@@ -3,12 +3,12 @@
   networking = {
     networkmanager = {
       enable = true;
-      dns = "none";
+      # dns = "none";
     };
-    nameservers = [
-      "1.1.1.1"
-      "9.9.9.9"
-    ];
+    # nameservers = [
+    #   "1.1.1.1"
+    #   "9.9.9.9"
+    # ];
     # hosts = {
     #   "0.0.0.0" = [ "www.youtube.com" ];
     # };

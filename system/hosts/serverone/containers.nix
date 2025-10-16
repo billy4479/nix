@@ -10,6 +10,7 @@
     ../../../containers/cloudflared.nix
     ../../../containers/certbot.nix
     ../../../containers/nginx.nix
+    ../../../containers/pihole.nix
 
     ../../../containers/radarr.nix
     ../../../containers/jackett.nix
@@ -24,7 +25,7 @@
       enable = true;
 
       defaultNetwork.settings = {
-        dns_enabled = true;
+        dns_enabled = false;
         subnets = [
           {
             gateway = "10.0.1.1";
