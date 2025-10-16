@@ -16,6 +16,11 @@ in
       "${certsDir}:/certs/:ro"
     ];
 
+    ports = [
+      "80:80/tcp"
+      "443:443/tcp"
+    ];
+
     labels = {
       "io.containers.autoupdate" = "registry";
     };
