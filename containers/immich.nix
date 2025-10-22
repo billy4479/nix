@@ -3,7 +3,7 @@ let
   baseHDDDir = "/mnt/HDD/apps/immich";
   baseSSDDir = "/mnt/SSD/apps/immich";
 
-  version = "v2.0.1";
+  version = "v2.1.0";
   uploadLocation = "${baseHDDDir}/upload";
   modelCacheLocation = "${baseHDDDir}/model-cache";
   dbLocation = "${baseSSDDir}/db";
