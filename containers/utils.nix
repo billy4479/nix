@@ -39,4 +39,37 @@
             '') userDirs)
         );
     };
+
+  setCommonContainerConfig =
+    {
+      ip,
+      dns ? "10.0.1.11",
+      tmpfs ? [ ],
+      autoUpdate ? true,
+      runByUser ? true,
+    }:
+    {
+      user = if runByUser then "5000:5000" else null;
+      extraOptions = [
+        "--ip=${ip}"
+      ]
+      ++ (if dns != null then [ "--dns=${dns}" ] else [ ])
+      ++ (builtins.foldl' (x: y: x ++ y) [ ] (
+        map (x: [
+          "--tmpfs"
+          x
+        ]) tmpfs
+      ));
+    }
+    // (
+      if autoUpdate then
+        {
+          labels = {
+            "io.containers.autoupdate" = "registry";
+          };
+
+        }
+      else
+        { }
+    );
 }
