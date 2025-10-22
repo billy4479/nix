@@ -47,8 +47,10 @@
       tmpfs ? [ ],
       autoUpdate ? true,
       runByUser ? true,
+      autoStart ? true,
     }:
     {
+      inherit autoStart;
       user = if runByUser then "5000:5000" else null;
       extraOptions = [
         "--ip=${ip}"
