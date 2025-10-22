@@ -38,5 +38,12 @@
     enableOnlyOffice = false; # TODO: this doesn't work wery well on nix..
   };
 
-  programs.mpv.enable = true; # TODO: there are some interesting configs here
+  programs.mpv = {
+    enable = true;
+    config = {
+      profile = "high-quality";
+      hwdec = "auto-copy";
+      vo = "gpu-next";
+    };
+  };
 }
