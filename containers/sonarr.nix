@@ -3,7 +3,7 @@ let
   containerName = "sonarr";
   baseHDDDir = "/mnt/HDD/torrent";
   configDir = "/mnt/SSD/apps/${containerName}";
-  inherit (import ./utils.nix) givePermissions;
+  inherit (import ./utils.nix) givePermissions setCommonContainerConfig;
 in
 {
   virtualisation.oci-containers.containers."${containerName}" = {
@@ -17,13 +17,11 @@ in
       "${baseHDDDir}:/data:rw"
       "${configDir}:/config:rw"
     ];
-
-    labels = {
-      "io.containers.autoupdate" = "registry";
-    };
-
-    extraOptions = [ "--ip=10.0.1.9" ];
-  };
+  }
+  // (setCommonContainerConfig {
+    ip = "10.0.1.9";
+    runByUser = false;
+  });
 }
 // (givePermissions {
   inherit pkgs containerName;
