@@ -96,6 +96,15 @@
     {
       formatter.${system} = pkgsForFlake.nixfmt-rfc-style;
 
+      packages.${system} = rec {
+        nginx-config = pkgsForFlake.callPackage ./containers/nginx/config.nix {
+          cloudflaredAddress = "10.0.1.131";
+        };
+
+        bind9-hosts = pkgsForFlake.callPackage ./containers/bind9/hosts.nix { };
+        bind9-config = pkgsForFlake.callPackage ./containers/bind9/config.nix { inherit bind9-hosts; };
+      };
+
       devShells.${system}.default = pkgsForFlake.mkShell {
         packages = with pkgsForFlake; [
           stylua
