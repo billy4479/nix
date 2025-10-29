@@ -9,7 +9,7 @@
 
     ../../../containers/cloudflared.nix
     ../../../containers/certbot.nix
-    ../../../containers/nginx.nix
+    ../../../containers/nginx
     ../../../containers/pihole.nix
 
     ../../../containers/radarr.nix
