@@ -25,6 +25,7 @@
               tree-sitter-lua
               tree-sitter-make
               tree-sitter-markdown
+              tree-sitter-nginx
               tree-sitter-nix
               tree-sitter-python
               tree-sitter-rust
