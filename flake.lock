@@ -12,11 +12,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1760104997,
-        "narHash": "sha256-dX8NBdNpVyhwjgzqUa0kjixNlJfEP5GFz+tPbTwDOZU=",
+        "lastModified": 1762246303,
+        "narHash": "sha256-EJLZUBADjSD1qGldnHddVQx9af40WuZJv1rX65cZMa0=",
         "owner": "billy4479",
         "repo": "calendar-proxy",
-        "rev": "dc96611c2d5162f97c85b9cbf79e8cbcf885fc4b",
+        "rev": "79647f7ee87b96c83c12bb32edf284686c846660",
         "type": "github"
       },
       "original": {
@@ -151,11 +151,11 @@
         "server-tool": "server-tool"
       },
       "locked": {
-        "lastModified": 1760108183,
-        "narHash": "sha256-emiLdw1uM+BqlrrvfXeFHG965QgEzhRnm8NRvUUoKoU=",
+        "lastModified": 1762246327,
+        "narHash": "sha256-o3Mcb66EVeyQw2yDz4Qm+IqYFbQv4456tjW46bjK8y8=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "934699f51d2078329eab80795ec109e0342956dd",
+        "rev": "67f9617d5679c0a5d97b5f94f1e67a3e88a6625b",
         "type": "github"
       },
       "original": {
