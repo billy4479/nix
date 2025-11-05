@@ -48,6 +48,7 @@
       autoUpdate ? true,
       runByUser ? true,
       autoStart ? true,
+      extraOptions ? [ ],
     }:
     {
       inherit autoStart;
@@ -61,7 +62,8 @@
           "--tmpfs"
           x
         ]) tmpfs
-      ));
+      ))
+      ++ extraOptions;
     }
     // (
       if autoUpdate then
