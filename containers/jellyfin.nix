@@ -2,39 +2,30 @@
 let
   containerName = "jellyfin";
   baseHDDDir = "/mnt/HDD/torrent";
-  configDir = "/mnt/SSD/apps/${containerName}";
-  inherit (import ./utils.nix) givePermissions;
+  baseSSDDir = "/mnt/SSD/apps/${containerName}";
+  inherit (import ./utils.nix) givePermissions setCommonContainerConfig;
 in
 {
   virtualisation.oci-containers.containers."${containerName}" = {
-    image = "lscr.io/linuxserver/jellyfin:latest";
+    image = "docker.io/jellyfin/jellyfin:latest";
     environment = {
-      "PGID" = "5000";
-      "PUID" = "5000";
       "TZ" = "Europe/Rome";
     };
     volumes = [
-      "${baseHDDDir}:/data:rw"
-      "${configDir}:/config:rw"
+      "${baseHDDDir}:/media:rw"
+      "${baseSSDDir}/config:/config:rw"
+      "${baseSSDDir}/cache:/cache:rw"
     ];
-
-    # TODO: remove this
-    ports = [
-      "8096:8096"
-    ];
-
-    labels = {
-      "io.containers.autoupdate" = "registry";
-    };
-
+  }
+  // (setCommonContainerConfig {
+    ip = "10.0.1.10";
     extraOptions = [
-      "--ip=10.0.1.10"
       "--device=/dev/dri:/dev/dri"
     ];
-  };
+  });
 }
 // (givePermissions {
   inherit pkgs containerName;
-  adminOnlyDirs = [ configDir ];
+  adminOnlyDirs = [ baseSSDDir ];
   userDirs = [ baseHDDDir ];
 })
