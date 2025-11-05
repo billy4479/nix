@@ -1,42 +1,38 @@
 { pkgs, ... }:
 let
   containerName = "qbittorrent";
-  torrentDestinationDir = "/mnt/HDD/torrent/${containerName}";
-  baseSSDDir = "/mnt/SSD/apps/${containerName}";
-  inherit (import ./utils.nix) givePermissions;
+  downloadPath = "/mnt/HDD/torrent/${containerName}";
+  configDir = "/mnt/SSD/apps/${containerName}";
+  inherit (import ./utils.nix) givePermissions setCommonContainerConfig;
 
   torrentingPort = "6881";
   webUiPort = "8080";
 in
 {
   virtualisation.oci-containers.containers."${containerName}" = {
-    image = "lscr.io/linuxserver/qbittorrent:latest";
+    image = "docker.io/qbittorrentofficial/qbittorrent-nox:latest";
     environment = {
-      "PGID" = "5000";
-      "PUID" = "5000";
-      "TORRENTING_PORT" = torrentingPort;
+      "QBT_LEGAL_NOTICE" = "confirm";
+      "QBT_TORRENTING_PORT" = torrentingPort;
+      "QBT_WEBUI_PORT" = webUiPort;
       "TZ" = "Europe/Rome";
-      "WEBUI_PORT" = webUiPort;
     };
     volumes = [
-      "${torrentDestinationDir}:/data/${containerName}:rw"
-      "${baseSSDDir}:/config:rw"
+      "${downloadPath}:/data/${containerName}:rw"
+      "${configDir}:/config:rw"
     ];
     ports = [
-      # "${webUiPort}:${webUiPort}/tcp"
       "${torrentingPort}:${torrentingPort}/tcp"
       "${torrentingPort}:${torrentingPort}/udp"
     ];
-
-    labels = {
-      "io.containers.autoupdate" = "registry";
-    };
-
-    extraOptions = [ "--ip=10.0.1.5" ];
-  };
+  }
+  // (setCommonContainerConfig {
+    ip = "10.0.1.5";
+    tmpfs = [ "/tmp" ];
+  });
 }
 // (givePermissions {
   inherit pkgs containerName;
-  adminOnlyDirs = [ baseSSDDir ];
-  userDirs = [ torrentDestinationDir ];
+  adminOnlyDirs = [ configDir ];
+  userDirs = [ downloadPath ];
 })
