@@ -6,7 +6,7 @@
   ]
   ++ (with pkgs; [
     corefonts
-    ubuntu_font_family
+    ubuntu-sans
     google-fonts
     nerd-fonts.fira-code
     nerd-fonts.bigblue-terminal
