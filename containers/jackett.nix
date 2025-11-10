@@ -1,30 +1,26 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
-  containerName = "jackett";
-  configDir = "/mnt/SSD/apps/${containerName}/config";
-  downloadsDir = "/mnt/SSD/apps/${containerName}/downloads";
-  inherit (import ./utils.nix) givePermissions setCommonContainerConfig;
+  inherit ((import ./utils.nix) { inherit pkgs config; }) makeContainer;
+
+  name = "jackett";
+  configDir = "/mnt/SSD/apps/${name}/config";
+  downloadsDir = "/mnt/SSD/apps/${name}/downloads";
 in
-{
-  virtualisation.oci-containers.containers."${containerName}" = {
-    image = "lscr.io/linuxserver/jackett:latest";
-    environment = {
-      "PGID" = "5000";
-      "PUID" = "5000";
-      "TZ" = "Europe/Rome";
-    };
-    volumes = [
-      "${downloadsDir}:/downloads:rw"
-      "${configDir}:/config:rw"
-    ];
-  }
-  // (setCommonContainerConfig {
-    ip = "10.0.1.8";
-    runByUser = false;
-  });
-}
-// (givePermissions {
-  inherit pkgs containerName;
+makeContainer {
+  inherit name;
+  image = "lscr.io/linuxserver/jackett";
+  ip = "10.0.1.8";
+
+  environment = {
+    "PGID" = "5000";
+    "PUID" = "5000";
+  };
+  volumes = [
+    "${downloadsDir}:/downloads:rw"
+    "${configDir}:/config:rw"
+  ];
+  runByUser = false; # TODO: remove
+
   adminOnlyDirs = [ configDir ];
   userDirs = [ downloadsDir ];
-})
+}

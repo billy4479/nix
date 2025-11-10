@@ -75,6 +75,7 @@
   outputs =
     {
       nixpkgs,
+      myPackages,
       ...
     }@inputs:
     let
@@ -119,6 +120,8 @@
           age
 
           wireguard-tools
+
+          myPackages.packages.${system}.prefetch-all-images
         ];
       };
     }

@@ -1,30 +1,26 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
-  containerName = "sonarr";
+  inherit ((import ./utils.nix) { inherit pkgs config; }) makeContainer;
+
+  name = "sonarr";
   baseHDDDir = "/mnt/HDD/torrent";
-  configDir = "/mnt/SSD/apps/${containerName}";
-  inherit (import ./utils.nix) givePermissions setCommonContainerConfig;
+  configDir = "/mnt/SSD/apps/${name}";
 in
-{
-  virtualisation.oci-containers.containers."${containerName}" = {
-    image = "lscr.io/linuxserver/sonarr:latest";
-    environment = {
-      "PGID" = "5000";
-      "PUID" = "5000";
-      "TZ" = "Europe/Rome";
-    };
-    volumes = [
-      "${baseHDDDir}:/data:rw"
-      "${configDir}:/config:rw"
-    ];
-  }
-  // (setCommonContainerConfig {
-    ip = "10.0.1.9";
-    runByUser = false;
-  });
-}
-// (givePermissions {
-  inherit pkgs containerName;
+makeContainer {
+  inherit name;
+  image = "lscr.io/linuxserver/sonarr";
+  ip = "10.0.1.9";
+
+  runByUser = false; # TODO: remove
+  environment = {
+    "PGID" = "5000";
+    "PUID" = "5000";
+  };
+
+  volumes = [
+    "${baseHDDDir}:/data:rw"
+    "${configDir}:/config:rw"
+  ];
   adminOnlyDirs = [ configDir ];
   userDirs = [ baseHDDDir ];
-})
+}

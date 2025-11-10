@@ -1,33 +1,25 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
-  containerName = "flaresolverr";
-  baseSSDDir = "/mnt/SSD/apps/${containerName}";
-  inherit (import ./utils.nix) givePermissions;
+  name = "flaresolverr";
+  baseSSDDir = "/mnt/SSD/apps/${name}";
+  inherit (import ./utils.nix { inherit pkgs config; }) makeContainer;
 in
-{
-  virtualisation.oci-containers.containers."${containerName}" = {
-    image = "ghcr.io/flaresolverr/flaresolverr:latest";
-    environment = {
-      "LOG_LEVEL" = "info";
-      "TZ" = "Europe/Rome";
-    };
+makeContainer {
+  inherit name;
+  image = "ghcr.io/flaresolverr/flaresolverr";
+  ip = "10.0.1.133";
 
-    volumes = [
-      "${baseSSDDir}/local:/app/.local:rw"
-    ];
-
-    labels = {
-      "io.containers.autoupdate" = "registry";
-    };
-
-    extraOptions = [
-      "--ip=10.0.1.133"
-      "--tmpfs"
-      "/app/.cache"
-    ];
+  environment = {
+    "LOG_LEVEL" = "info";
   };
-}
-// (givePermissions {
-  inherit pkgs containerName;
+
+  volumes = [
+    "${baseSSDDir}/local:/app/.local:rw"
+  ];
   adminOnlyDirs = [ baseSSDDir ];
-})
+
+  tmpfs = [
+    "/tmp"
+    "/app/.cache"
+  ];
+}

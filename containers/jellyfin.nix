@@ -1,31 +1,25 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 let
-  containerName = "jellyfin";
+  inherit ((import ./utils.nix) { inherit pkgs config; }) makeContainer;
+
+  name = "jellyfin";
   baseHDDDir = "/mnt/HDD/torrent";
-  baseSSDDir = "/mnt/SSD/apps/${containerName}";
-  inherit (import ./utils.nix) givePermissions setCommonContainerConfig;
+  baseSSDDir = "/mnt/SSD/apps/${name}";
 in
-{
-  virtualisation.oci-containers.containers."${containerName}" = {
-    image = "docker.io/jellyfin/jellyfin:latest";
-    environment = {
-      "TZ" = "Europe/Rome";
-    };
-    volumes = [
-      "${baseHDDDir}:/media:rw"
-      "${baseSSDDir}/config:/config:rw"
-      "${baseSSDDir}/cache:/cache:rw"
-    ];
-  }
-  // (setCommonContainerConfig {
-    ip = "10.0.1.10";
-    extraOptions = [
-      "--device=/dev/dri:/dev/dri"
-    ];
-  });
-}
-// (givePermissions {
-  inherit pkgs containerName;
+makeContainer {
+  inherit name;
+  image = "docker.io/jellyfin/jellyfin";
+  ip = "10.0.1.8";
+
+  volumes = [
+    "${baseHDDDir}:/media:rw"
+    "${baseSSDDir}/config:/config:rw"
+    "${baseSSDDir}/cache:/cache:rw"
+  ];
   adminOnlyDirs = [ baseSSDDir ];
   userDirs = [ baseHDDDir ];
-})
+
+  extraOptions = [
+    "--device=/dev/dri:/dev/dri"
+  ];
+}
