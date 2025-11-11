@@ -74,12 +74,12 @@
     {
       plugin = pkgs.vimUtils.buildVimPlugin rec {
         pname = "scroll-eof-nvim";
-        version = "1.2.7";
+        version = "1.2.10";
         src = pkgs.fetchFromGitHub {
           owner = "Aasim-A";
           repo = "scrollEOF.nvim";
           rev = version;
-          hash = "sha256-MHa53sHrqSrIKrWjM1Nqz9Lr3TWYGFLXZH6LGER0b18=";
+          hash = "sha256-hHoS5WgIsbuVEOUbUBpDRxIwdNoR/cAfD+hlBWzaxug=";
         };
       };
       type = "lua";
