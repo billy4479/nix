@@ -162,7 +162,18 @@
         '';
     }
     {
-      plugin = tailwind-tools-nvim;
+      plugin = pkgs.vimUtils.buildVimPlugin {
+        pname = "tailwind-tools";
+        version = "0.3.2-unstable-2025-11-11";
+        # NOTE: This is a fork, check for fork status before updating
+        #       The original is https://github.com/luckasRanarison/tailwind-tools.nvim
+        src = pkgs.fetchFromGitHub {
+          owner = "Anticks";
+          repo = "tailwind-tools.nvim";
+          rev = "b183d3b62c9f359403014994faed9d14024b5f3b";
+          hash = "sha256-uWOozv6nEgT7EP3dlhEt8rqcOKVZHcRQrldhDvl/Ua8=";
+        };
+      };
       type = "lua";
       config = # lua
         ''
