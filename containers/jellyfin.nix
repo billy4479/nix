@@ -9,7 +9,7 @@ in
 makeContainer {
   inherit name;
   image = "docker.io/jellyfin/jellyfin";
-  ip = "10.0.1.8";
+  ip = "10.0.1.10";
 
   volumes = [
     "${baseHDDDir}:/media:rw"
