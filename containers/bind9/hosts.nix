@@ -16,6 +16,8 @@ stdenvNoCC.mkDerivation rec {
         cut -d " " -f 2 |
         tail -n +2 |
         sort |
+        grep -v "s.click.aliexpress.com" |
+        grep -v "click.aliexpress.com" |
         sed -r 's/(.*)/zone "\1" { type master; file "\/etc\/bind\/sinkhole.zone"; };/' >$out
     '';
 }
