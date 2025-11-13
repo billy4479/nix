@@ -13,6 +13,11 @@
     ++ lib.optionals (extraConfig.desktop == "kde") [ ./kde ]
     ++ lib.optionals (extraConfig.desktop == "qtile") [ ./qtile ];
 
+  programs.keepassxc = {
+    enable = true;
+    autostart = true;
+  };
+
   home.packages =
     with pkgs;
     [ pavucontrol ] ++ (if (extraConfig.wayland) then [ wl-clipboard ] else [ xclip ]);

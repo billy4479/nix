@@ -1,6 +1,7 @@
 { lib, ... }:
 {
   xdg.enable = true;
+  xdg.autostart.enable = true;
   xdg.configFile."mimeapps.list".force = true;
   xdg.mimeApps =
     let
