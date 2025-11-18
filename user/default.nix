@@ -32,6 +32,7 @@ in
     license-cli
     bat-extras.batman
     jq
+    pv
 
     nixfmt-rfc-style
   ];
