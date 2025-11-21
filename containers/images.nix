@@ -2,8 +2,8 @@
 {
   "docker.io/jellyfin/jellyfin" = {
     imageName = "docker.io/jellyfin/jellyfin";
-    imageDigest = "sha256:d43a8878689311f841a1967f899f54db56877bf6b426fd7ff870ac1a6fd1dce4";
-    hash = "sha256-9Chr2pRT/QOYFY125yRKSDxo3BYtEL3fsyM83A9XVGE=";
+    imageDigest = "sha256:1edf3f17997acbe139718f252a7d2ded2706762390d787a34204668498dbc5f6";
+    hash = "sha256-7LoYWwr5+BVgoQTwxtNgyBjWDzfKFuNGec4iTmtzu0c=";
     finalImageName = "docker.io/jellyfin/jellyfin";
     finalImageTag = "latest";
   };
@@ -16,15 +16,15 @@
   };
   "ghcr.io/immich-app/immich-server" = {
     imageName = "ghcr.io/immich-app/immich-server";
-    imageDigest = "sha256:4504d794123c3f5410cc45bbc61e4d7dbcacec1e1b0cd2e599691430c94e5849";
-    hash = "sha256-bvSP3QYMP/wZTld5x9KOs0Xl0GqYhq19jW6Yu4eUqik=";
+    imageDigest = "sha256:f8d06a32b1b2a81053d78e40bf8e35236b9faefb5c3903ce9ca8712c9ed78445";
+    hash = "sha256-vSmYmk69XupNr4g0qusv1m6jK+27b0cgy0maXwyC2JI=";
     finalImageName = "ghcr.io/immich-app/immich-server";
     finalImageTag = "v2";
   };
   "ghcr.io/immich-app/immich-machine-learning" = {
     imageName = "ghcr.io/immich-app/immich-machine-learning";
-    imageDigest = "sha256:bf339cbb44af6c2ef25d9128e1da51b2bec0cfd524846a83e3017c21bd71ddb4";
-    hash = "sha256-213s2/6IAc/kb574igwAKw8m5Sfz7rIJVuARunDdmjg=";
+    imageDigest = "sha256:379e31b8c75107b0af8141904baa8cc933d7454b88fdb204265ef11749d7d908";
+    hash = "sha256-yyIIgxPZDLf2Fr+d5VgHODucS4xlK8EvfhmxGslKnUE=";
     finalImageName = "ghcr.io/immich-app/immich-machine-learning";
     finalImageTag = "v2";
   };
@@ -44,8 +44,8 @@
   };
   "ghcr.io/flaresolverr/flaresolverr" = {
     imageName = "ghcr.io/flaresolverr/flaresolverr";
-    imageDigest = "sha256:06c76759d062c185d8ac0b48f302258645b8d99db86109a3d6dce3209d93de51";
-    hash = "sha256-fmP0NCbbEYUYMdGsiIEOwSnPycbExwvddu1bolZV7xc=";
+    imageDigest = "sha256:4f4e5f759aa3a9a64305e99188ea1db1ec2944a5e7d290d2b089af5f2f6f48e4";
+    hash = "sha256-YOCqzmOXoE45gX5DAMcXKSE6bvVflOSItypkknIr7T8=";
     finalImageName = "ghcr.io/flaresolverr/flaresolverr";
     finalImageTag = "latest";
   };
@@ -65,8 +65,8 @@
   };
   "lscr.io/linuxserver/radarr" = {
     imageName = "lscr.io/linuxserver/radarr";
-    imageDigest = "sha256:c984533510abe0219a70e80d15bd0d212b7df21baa0913759c4ce6cc9092240b";
-    hash = "sha256-rU4tLGG8BEY2W8c/wIH6MflF73TgCOHKLuaEILvwFzQ=";
+    imageDigest = "sha256:e26fbfd3782520c0bb820666f041ca056acfe187a8b95214ee1f47512cc05a29";
+    hash = "sha256-Fjo6EAJ3OLi5xRqAcoDXY9jzAa5m1RoezWUpmtqRb70=";
     finalImageName = "lscr.io/linuxserver/radarr";
     finalImageTag = "latest";
   };
@@ -86,22 +86,22 @@
   };
   "docker.io/erisamoe/cloudflared" = {
     imageName = "docker.io/erisamoe/cloudflared";
-    imageDigest = "sha256:31a13222d0c5e9bc6931f647997f6d477c090a1496bc10d8c6bdbd563034d315";
-    hash = "sha256-ZX+Ge+hD+zC5HlwkX6rkC8FlG+Eee1agQ362hJvDt9k=";
+    imageDigest = "sha256:ba08f4b19c1d04cce95cc692a32e51ecde65938a90d4d8d527635e7197d30ca0";
+    hash = "sha256-JwtN6+3EyhLuZpZzpRJWHmHYj4kAHnHFt/Xtr5frD/s=";
     finalImageName = "docker.io/erisamoe/cloudflared";
     finalImageTag = "latest";
   };
   "docker.io/qbittorrentofficial/qbittorrent-nox" = {
     imageName = "docker.io/qbittorrentofficial/qbittorrent-nox";
-    imageDigest = "sha256:a561d192887101aaeb42617312bb2bb9f91050e77d4ed8d0bfee6c5bbabb1ddc";
-    hash = "sha256-DBE8Lsf0Nrin6ffqATQTx7w+skzMq5dlfTWSGv52l1M=";
+    imageDigest = "sha256:41888f4e05646ace98aeaff01a7bbec714e2e6082ab273fd4af0d1210352ea2c";
+    hash = "sha256-4A32t9fGmkSuboG5vA6v56XtGXvLzmoBW5034/OQ9QY=";
     finalImageName = "docker.io/qbittorrentofficial/qbittorrent-nox";
     finalImageTag = "latest";
   };
   "lscr.io/linuxserver/jackett" = {
     imageName = "lscr.io/linuxserver/jackett";
-    imageDigest = "sha256:18b4f57df983d4c96771cea30724eea7b5dcb2dc72d313f65e7867cd60b6bad0";
-    hash = "sha256-9fdLdGvvfAJzx8+z8OENLZwRiN73JAP9jnnCUrS1dC0=";
+    imageDigest = "sha256:e694e175ea44fee0da4f95d0dde9ea4d55abc056028d00dcdfe7bba50c85cf86";
+    hash = "sha256-XY1TZ0LufE7QYiQwyHF1uNKs94ZaNS2sICkDA+mBTEc=";
     finalImageName = "lscr.io/linuxserver/jackett";
     finalImageTag = "latest";
   };
