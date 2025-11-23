@@ -28,3 +28,5 @@
     - More ports available, idk if needed
 - bind9
     - `10.0.1.11:53` dns
+- StitlingPDF
+    - `10.0.1.12:8080`

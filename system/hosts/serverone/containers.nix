@@ -18,6 +18,8 @@
     ../../../containers/flaresolverr.nix
 
     ../../../containers/jellyfin.nix
+
+    ../../../containers/stirling-pdf.nix
   ];
 
   virtualisation = {
