@@ -1,4 +1,9 @@
-{ flakeInputs, ... }:
+{
+  flakeInputs,
+  extraConfig,
+  lib,
+  ...
+}:
 {
   nix = {
     gc = {
@@ -30,10 +35,16 @@
       substituters = [
         "https://nix-community.cachix.org"
         "https://cache.nixos.org/"
-      ];
+      ]
+      ++ (lib.optionals extraConfig.hasCuda [
+        "https://cache.nixos-cuda.org"
+      ]);
       trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      ];
+      ]
+      ++ (lib.optionals extraConfig.hasCuda [
+        "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
+      ]);
     };
   };
   # Enable unfree
