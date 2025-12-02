@@ -1,41 +1,10 @@
 {
-  "[c]": {
-    "editor.defaultFormatter": "xaver.clang-format"
-  },
-  "[cpp]": {
-    "editor.defaultFormatter": "xaver.clang-format"
-  },
-  "[html]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[java]": {
-    "editor.defaultFormatter": "xaver.clang-format"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-  },
   "[json]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
   "[jsonc]": {
     "editor.defaultFormatter": "vscode.json-language-features"
   },
-  "[svelte]": {
-    "editor.defaultFormatter": "svelte.svelte-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  },
-  "C_Cpp.default.cppStandard": "c++20",
-  "C_Cpp.default.cStandard": "c11",
-  "C_Cpp.intelliSenseEngine": "Disabled",
-  "clangd.arguments": [
-    "-header-insertion=never"
-  ],
-  "clangd.onConfigChanged": "restart",
   "cSpell.enabledFiletypes": [
     "svelte"
   ],
@@ -48,12 +17,10 @@
     "vscode-extension"
   ],
   "cSpell.ignoreWords": [],
-  "css.validate": false,
   "diffEditor.ignoreTrimWhitespace": false,
   "editor.bracketPairColorization.enabled": true,
   "editor.fontLigatures": true,
   "editor.fontSize": 16,
-  "editor.fontWeight": 550,
   "editor.formatOnSave": true,
   "editor.maxTokenizationLineLength": 200000,
   "editor.minimap.enabled": false,
@@ -66,59 +33,11 @@
     "jinja-html": "html",
     "postcss": "css"
   },
-  "eslint.format.enable": true,
-  "eslint.lintTask.enable": true,
-  "eslint.probe": [
-    "html",
-    "javascript",
-    "javascriptreact",
-    "markdown",
-    "svelte",
-    "typescript",
-    "typescriptreact",
-    "typescrypt",
-    "vue"
-  ],
-  "eslint.validate": [
-    "html",
-    "javascript",
-    "javascriptreact",
-    "svelte",
-    "typescript"
-  ],
   "explorer.confirmDragAndDrop": false,
   "files.associations": {
     "*.css": "css"
   },
-  "go.formatFlags": [
-    "-s"
-  ],
-  "go.lintTool": "golangci-lint",
-  "go.toolsManagement.autoUpdate": true,
-  "go.useLanguageServer": true,
-  "java.format.enabled": false,
-  "java.format.settings.profile": "",
-  "java.format.settings.url": "",
-  "javascript.preferences.importModuleSpecifier": "relative",
-  "latex-workshop.formatting.latex": "latexindent",
-  "lldb.suppressUpdateNotifications": true,
-  "Lua.telemetry.enable": false,
-  "nix.enableLanguageServer": true,
-  "nix.serverPath": "nixd",
-  "nix.serverSettings": {
-    "nixd": {
-      "options": {
-        "enable": true
-      }
-    }
-  },
   "python.languageServer": "Default",
-  "redhat.telemetry.enabled": false,
-  "rust-analyzer.inlayHints.parameterHints.enable": false,
-  "svelte.enable-ts-plugin": true,
-  "svelte.plugin.svelte.compilerWarnings": {
-    "a11y-click-events-have-key-events": "ignore"
-  },
   "terminal.integrated.defaultProfile.linux": "zsh",
   "terminal.integrated.persistentSessionReviveProcess": "never",
   "todo-tree.general.tags": [
@@ -132,12 +51,7 @@
   ],
   "todo-tree.highlights.enabled": false,
   "todo-tree.regex.regex": "(//|#|<!--|;|/\\*|^|^\\s*(-|\\d+.))\\s*($TAGS)",
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.updateImportsOnFileMove.enabled": "always",
   "window.zoomLevel": 2,
   "workbench.startupEditor": "newUntitledFile",
-  "zig.initialSetupDone": true,
-  "zig.path": "zig",
-  "zig.zls.inlayHintsShowVariableTypeHints": false,
-  "zig.zls.path": "zls"
+  "editor.fontLigatures": true
 }
