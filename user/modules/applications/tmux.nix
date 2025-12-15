@@ -6,6 +6,6 @@
     historyLimit = 10000;
     keyMode = "vi";
     mouse = true;
-    shortcut = "a";
+    shortcut = "b";
   };
 }
