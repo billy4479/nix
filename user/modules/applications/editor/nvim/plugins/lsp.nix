@@ -168,10 +168,10 @@
         # NOTE: This is a fork, check for fork status before updating
         #       The original is https://github.com/luckasRanarison/tailwind-tools.nvim
         src = pkgs.fetchFromGitHub {
-          owner = "Anticks";
+          owner = "Chaitanyabsprip";
           repo = "tailwind-tools.nvim";
-          rev = "b183d3b62c9f359403014994faed9d14024b5f3b";
-          hash = "sha256-uWOozv6nEgT7EP3dlhEt8rqcOKVZHcRQrldhDvl/Ua8=";
+          rev = "f3bcd1627a7e114c7ce1d8273881d04fffaadb98";
+          hash = "sha256-dZo8ELo2P65owDuKi86e13vg8tXCQaUqWhqm8s1N8KQ=";
         };
       };
       type = "lua";
