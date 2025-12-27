@@ -139,23 +139,49 @@
         "type": "github"
       }
     },
+    "mc-runner": {
+      "inputs": {
+        "flake-utils": [
+          "myPackages",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "myPackages",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1766846214,
+        "narHash": "sha256-5sun9UDNpUhUwjNneGGPYjdlLvBy5Z9/5eZ2PYz4b58=",
+        "owner": "billy4479",
+        "repo": "mc-runner",
+        "rev": "bd9f4eb5d7f388088e00ecf8a5f38e93c5fff31e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "billy4479",
+        "repo": "mc-runner",
+        "type": "github"
+      }
+    },
     "myPackages": {
       "inputs": {
         "calendar-proxy": "calendar-proxy",
         "flake-utils": [
           "flake-utils"
         ],
+        "mc-runner": "mc-runner",
         "nixpkgs": [
           "nixpkgs"
         ],
         "server-tool": "server-tool"
       },
       "locked": {
-        "lastModified": 1763722606,
-        "narHash": "sha256-1avOS/z4ymlNyANDC+Wl/HhZlYLBj0VRH3HkiavZqwk=",
+        "lastModified": 1766848932,
+        "narHash": "sha256-NMvZDVNm5oueat47smRV7Pns2lxf9YEu4P7NLjmpRlg=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "b64afd5dd03e1f5a7e661175ceb100f54ffa7295",
+        "rev": "a1fab70bac215706126aaaaa5b023c2bf1bfc124",
         "type": "github"
       },
       "original": {
