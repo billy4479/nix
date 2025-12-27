@@ -20,6 +20,8 @@
     ../../../containers/jellyfin.nix
 
     ../../../containers/stirling-pdf.nix
+
+    ../../../containers/mc-runner
   ];
 
   virtualisation = {

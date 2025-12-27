@@ -1,0 +1,18 @@
+world_dir: /world
+db_path: /mc-runner/mc-runner.db
+connect_url: localhost:25565    # Where players should connect
+
+# The number of minutes to wait when there are no players online before stopping the server
+minutes_before_stop: 15
+
+# Restic config for automatic backups
+restic_path: /some/backup/path  # Where the backups live
+
+# Use these defaults when using the container image
+java8: java8                    # Java 8 executable
+java17: java17                  # Java 17 executable
+java21: java21                  # Java 21 executable
+java25: java25                  # Java 25 executable
+
+# Log level
+log_level: debug
