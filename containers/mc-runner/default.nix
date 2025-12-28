@@ -25,6 +25,12 @@ makeContainer {
     CONFIG_PATH = "/mc-runner/config.yml";
   };
 
+  ports = [
+    "25565:25565/tcp"
+    "19132:19132/udp"
+    "19132:19132/tcp"
+  ];
+
   volumes = [
     "${baseDir}:/mc-runner:rw"
     "${worldDir}:/world:rw"
