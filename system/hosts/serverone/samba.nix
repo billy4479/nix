@@ -45,6 +45,16 @@
         "valid users" = "@family";
       };
 
+      "nas-mc" = {
+        "path" = "/mnt/SSD/minecraft";
+        "browsable" = "yes";
+        "read only" = "no";
+        "guest ok" = "no";
+        "create mask" = "0660";
+        "directory mask" = "0770";
+        "valid users" = "@family";
+      };
+
       "nas-timemachine" = {
         "path" = "/mnt/HDD/timemachine";
         "browsable" = "yes";

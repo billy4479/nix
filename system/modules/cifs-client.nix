@@ -17,8 +17,7 @@ let
     "credentials=${config.sops.secrets.cifs_credentials.path}"
   ];
 
-  # TODO: once we have DNS on serverone use actual names
-  nas_address = "10.0.0.1";
+  nas_address = "internal.polpetta.online";
 in
 {
   environment.systemPackages = [ pkgs.cifs-utils ];
@@ -40,6 +39,12 @@ in
 
     "/mnt/serverone/ssd-generic" = {
       device = "//${nas_address}/nas-ssd";
+      fsType = "cifs";
+      options = [ mount_options ];
+    };
+
+    "/mnt/serverone/minecraft" = {
+      device = "//${nas_address}/nas-mc";
       fsType = "cifs";
       options = [ mount_options ];
     };
