@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  extraConfig,
   ...
 }:
 let
@@ -232,4 +233,34 @@ in
         echo "$selection" |
           screenshot
       '';
+
+  clip-copy = pkgs.writeScriptBin "clip-copy" (
+    if extraConfig.wayland then
+      #sh
+      ''
+        #!/bin/sh
+        exec ${pkgs.wl-clipboard}/bin/wl-copy --type text/plain
+      ''
+    else
+      #sh
+      ''
+        #!/bin/sh
+        exec ${lib.getExe pkgs.xclip} -selection clipboard
+      ''
+  );
+
+  clip-paste = pkgs.writeScriptBin "clip-paste" (
+    if extraConfig.wayland then
+      #sh
+      ''
+        #!/bin/sh
+        exec ${pkgs.wl-clipboard}/bin/wl-paste --no-newline
+      ''
+    else
+      #sh
+      ''
+        #!/bin/sh
+        exec ${lib.getExe pkgs.xclip} -selection clipboard -o
+      ''
+  );
 }

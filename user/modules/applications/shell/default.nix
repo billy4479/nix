@@ -99,12 +99,33 @@ in
 
           setopt rmstarsilent
 
+          # Open command line in vim
+          autoload -Uz edit-command-line
+          zle -N edit-command-line
+          bindkey "^e" edit-command-line
+
+          # Global shortcuts
+          alias -g NE='2>/dev/null'      # Redirect stderr to /dev/null
+          alias -g NO='>/dev/null'       # Redirect stdout to /dev/null
+          alias -g NUL='>/dev/null 2>&1' # Redirect both stdout and stderr to /dev/null
+          alias -g C='| clip-copy'       # Copy output to clipboard
+
           # Functions
           function mkcd() {
             mkdir -p "$1" && cd "$1"
           }
         ''
       )
+    ];
+  };
+
+  programs.zoxide = {
+    enable = true;
+    enableBashIntegration = true;
+    enableZshIntegration = true;
+    options = [
+      "--cmd"
+      "cd"
     ];
   };
 

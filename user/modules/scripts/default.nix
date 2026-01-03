@@ -18,6 +18,8 @@ in
       mpv-url
       open-document
       generate-wg-config
+      clip-copy
+      clip-paste
     ]
     ++ lib.optionals (!extraConfig.wayland) [ dmenu-screenshot ];
 }
