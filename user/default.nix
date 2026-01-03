@@ -37,7 +37,12 @@ in
     nixfmt-rfc-style
   ];
 
-  services.ssh-agent.enable = true;
+  services.ssh-agent = {
+    enable = true;
+    enableBashIntegration = true;
+    enableZshIntegration = true;
+  };
+
   programs.ssh = {
     enableDefaultConfig = false;
     matchBlocks."*" = {
