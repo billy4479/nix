@@ -6,7 +6,21 @@ let
 in
 makeContainer {
   inherit name;
-  image = "ghcr.io/flaresolverr/flaresolverr";
+  image = "localhost/flaresolverr:latest";
+  imageFile = pkgs.dockerTools.buildLayeredImage {
+
+    inherit name;
+    tag = "latest";
+
+    contents = with pkgs; [
+      flaresolverr
+    ];
+
+    config = {
+      EntryPoint = [ "flaresolverr" ];
+      WorkingDir = "/app";
+    };
+  };
   ip = "10.0.1.133";
 
   environment = {

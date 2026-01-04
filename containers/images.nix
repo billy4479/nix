@@ -2,8 +2,8 @@
 {
   "docker.io/certbot/dns-cloudflare" = {
     imageName = "docker.io/certbot/dns-cloudflare";
-    imageDigest = "sha256:8181d9632ee6af74234ede88469f9f4d9b7faab4ed4cd7e77e66afca908ea992";
-    hash = "sha256-mWAUfSuZaovMibv3ukWgXC6LLi6OwbfDCZLfaFezt0s=";
+    imageDigest = "sha256:aba913370a75668cf63d74b50b7484401d3c6666fc4ba2f6fed6eeae1ea6cd3e";
+    hash = "sha256-tLHl4g1z+EuY2Geg0orviySaRl8cs4zn0K1sN35mWz4=";
     finalImageName = "docker.io/certbot/dns-cloudflare";
     finalImageTag = "latest";
   };
@@ -16,15 +16,15 @@
   };
   "docker.io/jellyfin/jellyfin" = {
     imageName = "docker.io/jellyfin/jellyfin";
-    imageDigest = "sha256:1edf3f17997acbe139718f252a7d2ded2706762390d787a34204668498dbc5f6";
-    hash = "sha256-7LoYWwr5+BVgoQTwxtNgyBjWDzfKFuNGec4iTmtzu0c=";
+    imageDigest = "sha256:6d819e9ab067efcf712993b23455cc100ee5585919bb297ea5a109ac00cb626e";
+    hash = "sha256-kiGWe/RT9Zf8l8t2mXn3UgLyzX3QVAw/b+zoxuPG448=";
     finalImageName = "docker.io/jellyfin/jellyfin";
     finalImageTag = "latest";
   };
   "docker.io/nginx" = {
     imageName = "docker.io/nginx";
-    imageDigest = "sha256:b3c656d55d7ad751196f21b7fd2e8d4da9cb430e32f646adcf92441b72f82b14";
-    hash = "sha256-RKWCZcfuak0LAPAlu/m6Jau/zsaOCGdhWqvqB4gk9+Y=";
+    imageDigest = "sha256:8491795299c8e739b7fcc6285d531d9812ce2666e07bd3dd8db00020ad132295";
+    hash = "sha256-Lqo5fEd7Qbdks3Ne68Ghjn9VZ36nW8C0UJGbsjAmpVc=";
     finalImageName = "docker.io/nginx";
     finalImageTag = "alpine";
   };
@@ -37,50 +37,43 @@
   };
   "docker.io/syncthing/syncthing" = {
     imageName = "docker.io/syncthing/syncthing";
-    imageDigest = "sha256:905d4a8fac511e0022432d084413a2a8578a67036dc44cc3df184c4e6f20ec33";
-    hash = "sha256-tuwOHRvJRompfbRoX2K73Opkx6l6gYSNhh6Il96UQqw=";
+    imageDigest = "sha256:7ae77d066e9b81d3d8c312b2f9e1a874a5115680bfde90aff5fc9aece694ec93";
+    hash = "sha256-p+GxBUg1pagteBkjhiRWGsQ7ly02sRyCT6q1mwTiQiI=";
     finalImageName = "docker.io/syncthing/syncthing";
     finalImageTag = "latest";
   };
   "docker.io/ubuntu/bind9" = {
     imageName = "docker.io/ubuntu/bind9";
-    imageDigest = "sha256:360622f1481a577822b7a310cdca4e37c16c5d3af53a3e455a13e90cb234943f";
-    hash = "sha256-D5w04BL0PzVm2vER+h78bG0mP7ugwxK6kVs9rQUjwhA=";
+    imageDigest = "sha256:45d541e9688f2c9010d22a78200117b66ed2df31b78f3464876f7e6e15cfaf77";
+    hash = "sha256-XAhXuTfoNhlNsMYqx32xvIlPCHTOd1jYJALoI7qIgFk=";
     finalImageName = "docker.io/ubuntu/bind9";
     finalImageTag = "latest";
   };
   "docker.io/valkey/valkey" = {
     imageName = "docker.io/valkey/valkey";
-    imageDigest = "sha256:e706d1213aaba6896c162bb6a3a9e1894e1a435f28f8f856d14fab2e10aa098b";
-    hash = "sha256-jwEc3fV8U+fGMK/HunLKjmvS1YUBNfZDPXJvLHLYe70=";
+    imageDigest = "sha256:3c3ccc8571d4866ec5ac5ffb2519b6b6a1fdbf6b5ff5fdab075413026fbff273";
+    hash = "sha256-flxG/+cVUb2SW3zG4M2rwnNvsG3L5l8AS8AdX5lQ34g=";
     finalImageName = "docker.io/valkey/valkey";
     finalImageTag = "8-alpine";
   };
   "docker.stirlingpdf.com/stirlingtools/stirling-pdf" = {
     imageName = "docker.stirlingpdf.com/stirlingtools/stirling-pdf";
-    imageDigest = "sha256:bfe2b8dd378c4f3d5fc1d2fc7649a357d0916b3a713022aa70ac3f08d6302cbc";
-    hash = "sha256-iODpnJcNlHAiuxZAxl3m/vPSv0lFP/zFAfue63Q4uwM=";
+    imageDigest = "sha256:e8b96ebd749ee6c087f853c31fbbb79dc35bb08792bdd5ef0e72e74f5b209ea1";
+    hash = "sha256-V4ZjitNBBI4ipdUWmwLHN0kXuFcDM2fV7BLbEXAF8PU=";
     finalImageName = "docker.stirlingpdf.com/stirlingtools/stirling-pdf";
-    finalImageTag = "latest";
-  };
-  "ghcr.io/flaresolverr/flaresolverr" = {
-    imageName = "ghcr.io/flaresolverr/flaresolverr";
-    imageDigest = "sha256:4f4e5f759aa3a9a64305e99188ea1db1ec2944a5e7d290d2b089af5f2f6f48e4";
-    hash = "sha256-YOCqzmOXoE45gX5DAMcXKSE6bvVflOSItypkknIr7T8=";
-    finalImageName = "ghcr.io/flaresolverr/flaresolverr";
     finalImageTag = "latest";
   };
   "ghcr.io/immich-app/immich-machine-learning" = {
     imageName = "ghcr.io/immich-app/immich-machine-learning";
-    imageDigest = "sha256:379e31b8c75107b0af8141904baa8cc933d7454b88fdb204265ef11749d7d908";
-    hash = "sha256-yyIIgxPZDLf2Fr+d5VgHODucS4xlK8EvfhmxGslKnUE=";
+    imageDigest = "sha256:b3deefd1826f113824e9d7bc30d905e7f823535887d03f869330946b6db3b44a";
+    hash = "sha256-AJuW39itpju1kuFZpZ2BgQpsQcujgYZlrM73ee+Vrps=";
     finalImageName = "ghcr.io/immich-app/immich-machine-learning";
     finalImageTag = "v2";
   };
   "ghcr.io/immich-app/immich-server" = {
     imageName = "ghcr.io/immich-app/immich-server";
-    imageDigest = "sha256:f8d06a32b1b2a81053d78e40bf8e35236b9faefb5c3903ce9ca8712c9ed78445";
-    hash = "sha256-vSmYmk69XupNr4g0qusv1m6jK+27b0cgy0maXwyC2JI=";
+    imageDigest = "sha256:e6a6298e67ae077808fdb7d8d5565955f60b0708191576143fc02d30ab1389d1";
+    hash = "sha256-Rig1lw6YZvtpPbLmAFyR+KONEIGDSsDWzCXGQXQdLIE=";
     finalImageName = "ghcr.io/immich-app/immich-server";
     finalImageTag = "v2";
   };
@@ -93,22 +86,22 @@
   };
   "lscr.io/linuxserver/jackett" = {
     imageName = "lscr.io/linuxserver/jackett";
-    imageDigest = "sha256:8c225d444911075eb73b9910e78dfbd9469b8d1c2cd5d40d399a847aa7673959";
-    hash = "sha256-O64gkzctBegrFeUPXuSBLwt/DbTACdZdGMJls9b7F1A=";
+    imageDigest = "sha256:05ccaa4f57b7736231263f619ab43e8f0b4193655a8b3dec0e3403838175fd01";
+    hash = "sha256-EpRepMvzGCf3BdvPp06xgTKpfbgw522jG3KxSnN2rDI=";
     finalImageName = "lscr.io/linuxserver/jackett";
     finalImageTag = "latest";
   };
   "lscr.io/linuxserver/radarr" = {
     imageName = "lscr.io/linuxserver/radarr";
-    imageDigest = "sha256:e26fbfd3782520c0bb820666f041ca056acfe187a8b95214ee1f47512cc05a29";
-    hash = "sha256-Fjo6EAJ3OLi5xRqAcoDXY9jzAa5m1RoezWUpmtqRb70=";
+    imageDigest = "sha256:6c0948b42c149e36bb3dbc0b64d36c77b2d3c9dccf1b424c4f72af1e57ba0c21";
+    hash = "sha256-HKzZmwlnC0sFjn48f5hTLX3Hi5bCwaFMBk7Y8vQI9jk=";
     finalImageName = "lscr.io/linuxserver/radarr";
     finalImageTag = "latest";
   };
   "lscr.io/linuxserver/sonarr" = {
     imageName = "lscr.io/linuxserver/sonarr";
-    imageDigest = "sha256:2fc9c36769a3f50ab529e7ccc37687d118ab42199b01588573f03b3393cc3223";
-    hash = "sha256-jRcJ5GtSkp3QnM/aITO7JfovJO+E/rceb2fOQGpQVD8=";
+    imageDigest = "sha256:8b9f2138ec50fc9e521960868f79d2ad0d529bc610aef19031ea8ff80b54c5e0";
+    hash = "sha256-0WTY5dP+EpqbmjN9MWJv7levplcBvWGr5Kr8mkt/Do8=";
     finalImageName = "lscr.io/linuxserver/sonarr";
     finalImageTag = "latest";
   };
