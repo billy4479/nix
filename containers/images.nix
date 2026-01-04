@@ -28,6 +28,13 @@
     finalImageName = "docker.io/nginx";
     finalImageTag = "alpine";
   };
+  "docker.io/opencloudeu/opencloud-rolling" = {
+    imageName = "docker.io/opencloudeu/opencloud-rolling";
+    imageDigest = "sha256:6e36a7be89e6ce121167c2633ac03fae54962d59efa1837e69720296041b8d87";
+    hash = "sha256-Q9OAmR8lBzQDu8lnCB54fhLl2J4aB9Bb8a4wKPWSEGg=";
+    finalImageName = "docker.io/opencloudeu/opencloud-rolling";
+    finalImageTag = "latest";
+  };
   "docker.io/qbittorrentofficial/qbittorrent-nox" = {
     imageName = "docker.io/qbittorrentofficial/qbittorrent-nox";
     imageDigest = "sha256:41888f4e05646ace98aeaff01a7bbec714e2e6082ab273fd4af0d1210352ea2c";

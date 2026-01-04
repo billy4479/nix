@@ -20,6 +20,7 @@
     ../../../containers/jellyfin.nix
 
     ../../../containers/stirling-pdf.nix
+    ../../../containers/opencloud.nix
 
     ../../../containers/mc-runner
   ];
