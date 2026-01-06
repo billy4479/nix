@@ -41,13 +41,49 @@
         type = "lua";
         config = # lua
           ''
-            require("nvim-treesitter.configs").setup({
-            	auto_install = false,
+            require("nvim-treesitter").setup({})
 
-            	highlight = {
-            		enable = true,
-            		additional_vim_regex_highlighting = false,
-            	},
+            -- Internal nvim types
+            local skip_ft_contains = {
+            	"Telescope",
+            	"blink",
+            	"fidget",
+            }
+
+            local function should_skip(ft)
+            	for _, word in ipairs(skip_ft_contains) do
+            		if ft:find(word, 1, true) then
+            			return true
+            		end
+            	end
+            	return false
+            end
+
+            vim.api.nvim_create_autocmd("FileType", {
+            	pattern = "*",
+            	callback = function()
+            		local ft = vim.bo.filetype
+            		if ft == "" or should_skip(ft) then
+            			return
+            		end
+
+            		-- Check if a Tree-sitter parser exists for this filetype
+            		local ok = pcall(vim.treesitter.start)
+            		if not ok then
+            			vim.notify(
+            				("Tree-sitter failed to start for filetype: %s"):format(ft),
+            				vim.log.levels.WARN,
+            				{ title = "Tree-sitter" }
+            			)
+            			return
+            		end
+
+            		-- folds, provided by Neovim
+            		vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+            		vim.wo.foldmethod = "expr"
+            		-- indentation, provided by nvim-treesitter
+            		vim.bo.indentexpr = 'v:lua.require("nvim-treesitter").indentexpr()'
+            	end,
             })
           '';
       }
