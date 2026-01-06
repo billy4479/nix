@@ -1,8 +1,6 @@
 { pkgs, extraConfig, ... }:
 assert !extraConfig.wayland;
 {
-  home.packages = [ pkgs.xfce.xfce4-clipman-plugin ];
-
   systemd.user.services.xfce4-clipman = {
     Unit = {
       Description = "XFCE Clipman";
@@ -15,7 +13,7 @@ assert !extraConfig.wayland;
     };
 
     Service = {
-      ExecStart = "${pkgs.xfce.xfce4-clipman-plugin}/bin/xfce4-clipman";
+      ExecStart = "${pkgs.xfce4-clipman-plugin}/bin/xfce4-clipman";
       Restart = "always";
       RestartSec = 3;
     };
