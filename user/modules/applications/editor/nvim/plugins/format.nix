@@ -44,6 +44,7 @@
             		templ = { "templ" },
             		markdown = { "injected" },
             		typst = { "typstyle" },
+            		json = { "jq" },
             	},
 
             	formatters = { injected = { options = { ignore_errors = false } } },
