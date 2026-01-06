@@ -28,7 +28,7 @@ in
       (makeContainer {
         name = "immich-server";
         image = "ghcr.io/immich-app/immich-server";
-        ip = "10.0.1.3";
+        id = 3;
         volumes = [
           {
             hostPath = uploadLocation;
@@ -74,7 +74,7 @@ in
       })
       (makeContainer {
         name = "immich-machine-learning";
-        ip = "10.0.1.128";
+        id = 128;
         image = "ghcr.io/immich-app/immich-machine-learning";
         volumes = [
           {
@@ -98,7 +98,7 @@ in
               containerPath = "/data";
             }
           ];
-          ip = "10.0.1.129";
+          id = 129;
         })
         (makeContainer {
           name = "immich-database";
@@ -117,6 +117,6 @@ in
               containerPath = "/var/lib/postgresql/data";
             }
           ];
-          ip = "10.0.1.130";
+          id = 130;
         })
     )

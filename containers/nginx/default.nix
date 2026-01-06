@@ -11,7 +11,7 @@ in
 makeContainer {
   inherit name;
   image = "docker.io/nginx";
-  ip = "10.0.1.6";
+  id = 6;
   runByUser = false; # We need to bind port 80 and 433
 
   volumes = [

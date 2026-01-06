@@ -47,7 +47,7 @@ in
 // makeContainer {
   inherit name;
   image = "docker.io/certbot/dns-cloudflare";
-  ip = "10.0.1.132";
+  id = 132;
 
   volumes = [
     {

@@ -8,7 +8,7 @@ in
     {
       name,
       image,
-      ip,
+      id,
 
       imageFile ? null,
       labels ? { },
@@ -23,7 +23,10 @@ in
       runByUser ? true,
       ...
     }@args:
+    assert (id >= 2 && id <= 255);
     let
+      ip = "10.0.1.${toString id}";
+
       # Helper to convert volume object to OCI string
       mkOciVolume = v: "${v.hostPath}:${v.containerPath}:${if v.readOnly or false then "ro" else "rw"}";
 
@@ -66,7 +69,7 @@ in
               "TZ" = config.time.timeZone;
             };
 
-            user = if runByUser then "5000:5000" else null;
+            user = if runByUser then "${toString (5000 + id)}:5000" else null;
 
             extraOptions = [
               "--ip=${ip}"
@@ -93,7 +96,7 @@ in
               "image"
               "imageFile"
               "name"
-              "ip"
+              "id"
               "dns"
               "tmpfs"
               "volumes"

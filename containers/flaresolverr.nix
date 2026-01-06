@@ -21,7 +21,7 @@ makeContainer {
       WorkingDir = "/app";
     };
   };
-  ip = "10.0.1.133";
+  id = 133;
 
   environment = {
     "LOG_LEVEL" = "info";

@@ -65,7 +65,7 @@ makeContainer {
     };
   };
 
-  ip = "10.0.1.12";
+  id = 12;
 
   environment = {
     DISABLE_ADDITIONAL_FEATURES = "true";

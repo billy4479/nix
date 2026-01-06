@@ -9,7 +9,7 @@ in
 makeContainer {
   inherit name;
   image = "lscr.io/linuxserver/jackett";
-  ip = "10.0.1.8";
+  id = 8;
 
   environment = {
     "PGID" = "5000";

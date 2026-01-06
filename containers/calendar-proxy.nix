@@ -15,7 +15,7 @@ in
   inherit name;
   image = "localhost/calendar-proxy:latest";
   imageFile = extraPkgs.my-packages.containers.calendar-proxy;
-  ip = "10.0.1.4";
+  id = 4;
 
   environment = {
     PORT = "4479";

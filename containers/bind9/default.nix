@@ -11,7 +11,7 @@ makeContainer {
   inherit name;
   image = "localhost/bind9:latest";
 
-  ip = "10.0.1.11";
+  id = 11;
   runByUser = false; # Bind apparently _expects_ to be run as root
   dns = null;
 

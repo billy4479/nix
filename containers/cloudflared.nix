@@ -8,7 +8,7 @@ in
 makeContainer {
   inherit name;
   image = "docker.io/erisamoe/cloudflared";
-  ip = "10.0.1.131";
+  id = 131;
 
   volumes = [
     {

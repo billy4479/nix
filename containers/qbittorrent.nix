@@ -12,7 +12,7 @@ in
 makeContainer {
   inherit name;
   image = "docker.io/qbittorrentofficial/qbittorrent-nox";
-  ip = "10.0.1.5";
+  id = 5;
 
   environment = {
     "QBT_LEGAL_NOTICE" = "confirm";

@@ -9,7 +9,7 @@ in
 makeContainer {
   inherit name;
   image = "lscr.io/linuxserver/radarr";
-  ip = "10.0.1.7";
+  id = 7;
 
   runByUser = false; # TODO: remove
   environment = {

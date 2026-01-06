@@ -16,7 +16,7 @@ makeContainer {
   inherit name;
 
   image = "docker.io/opencloudeu/opencloud-rolling";
-  ip = "10.0.1.14";
+  id = 14;
 
   environment = {
     "OC_INSECURE" = "false";

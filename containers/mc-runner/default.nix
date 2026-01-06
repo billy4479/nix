@@ -15,7 +15,7 @@ makeContainer {
   inherit name;
   image = "localhost/mc-runner:latest";
   imageFile = extraPkgs.my-packages.containers.mc-runner;
-  ip = "10.0.1.13";
+  id = 13;
 
   environment = {
     DONT_LOAD_DOTENV = "yes";
