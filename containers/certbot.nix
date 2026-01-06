@@ -50,9 +50,19 @@ in
   ip = "10.0.1.132";
 
   volumes = [
-    "${baseSSDDir}:/etc/letsencrypt:rw"
-    "${baseSSDDir}/logs:/var/log/letsencrypt:rw"
-    "${config.sops.secrets.cloudflare-dns-token.path}:/cloudflare.ini:ro"
+    {
+      hostPath = baseSSDDir;
+      containerPath = "/etc/letsencrypt";
+    }
+    {
+      hostPath = "${baseSSDDir}/logs";
+      containerPath = "/var/log/letsencrypt";
+    }
+    {
+      hostPath = config.sops.secrets.cloudflare-dns-token.path;
+      containerPath = "/cloudflare.ini";
+      readOnly = true;
+    }
   ];
 
   entrypoint = "/bin/sh";
@@ -60,6 +70,4 @@ in
     "-c"
     "trap : TERM INT; sleep infinity & wait"
   ];
-
-  adminOnlyDirs = [ baseSSDDir ];
 }

@@ -21,11 +21,16 @@ makeContainer {
   };
 
   volumes = [
-    "${downloadPath}:/data/${name}:rw"
-    "${configDir}:/config:rw"
+    {
+      hostPath = downloadPath;
+      containerPath = "/data/${name}";
+      userAccessible = true;
+    }
+    {
+      hostPath = configDir;
+      containerPath = "/config";
+    }
   ];
-  adminOnlyDirs = [ configDir ];
-  userDirs = [ downloadPath ];
 
   ports = [
     "${torrentingPort}:${torrentingPort}/tcp"

@@ -30,11 +30,25 @@ in
         image = "ghcr.io/immich-app/immich-server";
         ip = "10.0.1.3";
         volumes = [
-          "${uploadLocation}:/usr/src/app/upload"
-          "/etc/localtime:/etc/localtime:ro"
-
-          "/mnt/HDD/generic/Giacomo/Archive/Foto Jack:/mnt/media/Foto Jack Archivio:ro"
-          "/mnt/HDD/generic/Edo/foto - edo - archivio:/mnt/media/Foto Edo Archivio:ro"
+          {
+            hostPath = uploadLocation;
+            containerPath = "/usr/src/app/upload";
+          }
+          {
+            hostPath = "/etc/localtime";
+            containerPath = "/etc/localtime";
+            readOnly = true;
+          }
+          {
+            hostPath = "/mnt/HDD/generic/Giacomo/Archive/Foto Jack";
+            containerPath = "/mnt/media/Foto Jack Archivio";
+            readOnly = true;
+          }
+          {
+            hostPath = "/mnt/HDD/generic/Edo/foto - edo - archivio";
+            containerPath = "/mnt/media/Foto Edo Archivio";
+            readOnly = true;
+          }
         ];
         environmentFiles = [
           config.sops.secrets.immichEnv.path
@@ -62,7 +76,12 @@ in
         name = "immich-machine-learning";
         ip = "10.0.1.128";
         image = "ghcr.io/immich-app/immich-machine-learning";
-        volumes = [ "${modelCacheLocation}:/cache" ];
+        volumes = [
+          {
+            hostPath = modelCacheLocation;
+            containerPath = "/cache";
+          }
+        ];
         environment = {
           IMMICH_VERSION = version;
         };
@@ -73,7 +92,12 @@ in
         (makeContainer {
           name = "immich-redis";
           image = "docker.io/valkey/valkey";
-          volumes = [ "${valkeyLocation}:/data" ];
+          volumes = [
+            {
+              hostPath = valkeyLocation;
+              containerPath = "/data";
+            }
+          ];
           ip = "10.0.1.129";
         })
         (makeContainer {
@@ -87,7 +111,12 @@ in
             POSTGRES_DB = "immich";
             POSTGRES_INITDB_ARGS = "--data-checksums";
           };
-          volumes = [ "${dbLocation}:/var/lib/postgresql/data" ];
+          volumes = [
+            {
+              hostPath = dbLocation;
+              containerPath = "/var/lib/postgresql/data";
+            }
+          ];
           ip = "10.0.1.130";
         })
     )

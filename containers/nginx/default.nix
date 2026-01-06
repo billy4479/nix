@@ -15,13 +15,26 @@ makeContainer {
   runByUser = false; # We need to bind port 80 and 433
 
   volumes = [
-    "${nginxConfig}/nginx.conf:/etc/nginx/nginx.conf:ro"
-    "${nginxConfig}/snippets:/etc/nginx/snippets:ro"
-
-    "${baseSSDDir}/logs:/var/log/nginx:rw"
-    "${certsDir}:/certs/:ro"
+    {
+      hostPath = "${nginxConfig}/nginx.conf";
+      containerPath = "/etc/nginx/nginx.conf";
+      readOnly = true;
+    }
+    {
+      hostPath = "${nginxConfig}/snippets";
+      containerPath = "/etc/nginx/snippets";
+      readOnly = true;
+    }
+    {
+      hostPath = "${baseSSDDir}/logs";
+      containerPath = "/var/log/nginx";
+    }
+    {
+      hostPath = certsDir;
+      containerPath = "/certs/";
+      readOnly = true;
+    }
   ];
-  adminOnlyDirs = [ baseSSDDir ];
 
   ports = [
     "80:80/tcp"

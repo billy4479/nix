@@ -18,9 +18,14 @@ makeContainer {
   };
 
   volumes = [
-    "${baseHDDDir}:/data:rw"
-    "${configDir}:/config:rw"
+    {
+      hostPath = baseHDDDir;
+      containerPath = "/data";
+      userAccessible = true;
+    }
+    {
+      hostPath = configDir;
+      containerPath = "/config";
+    }
   ];
-  adminOnlyDirs = [ configDir ];
-  userDirs = [ baseHDDDir ];
 }

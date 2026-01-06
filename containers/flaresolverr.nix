@@ -28,9 +28,11 @@ makeContainer {
   };
 
   volumes = [
-    "${baseSSDDir}/local:/app/.local:rw"
+    {
+      hostPath = "${baseSSDDir}/local";
+      containerPath = "/app/.local";
+    }
   ];
-  adminOnlyDirs = [ baseSSDDir ];
 
   tmpfs = [
     "/tmp"

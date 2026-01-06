@@ -74,11 +74,22 @@ makeContainer {
   };
 
   volumes = [
-    # "${baseDir}/tessdata:/usr/share/tessdata:rw"
-    "${baseDir}/config:/configs:rw"
-    "${baseDir}/customFiles:/customFiles:rw"
-    "${baseDir}/logs:/logs:rw"
-    "${baseDir}/pipeline:/pipeline:rw"
+    # { hostPath = "${baseDir}/tessdata"; containerPath = "/usr/share/tessdata"; }
+    {
+      hostPath = "${baseDir}/config";
+      containerPath = "/configs";
+    }
+    {
+      hostPath = "${baseDir}/customFiles";
+      containerPath = "/customFiles";
+    }
+    {
+      hostPath = "${baseDir}/logs";
+      containerPath = "/logs";
+    }
+    {
+      hostPath = "${baseDir}/pipeline";
+      containerPath = "/pipeline";
+    }
   ];
-  adminOnlyDirs = [ baseDir ];
 }

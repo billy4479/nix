@@ -11,9 +11,11 @@ makeContainer {
   ip = "10.0.1.131";
 
   volumes = [
-    "${baseSSDDir}:/etc/cloudflared:rw"
+    {
+      hostPath = baseSSDDir;
+      containerPath = "/etc/cloudflared";
+    }
   ];
-  adminOnlyDirs = [ baseSSDDir ];
 
   cmd = [
     "tunnel"

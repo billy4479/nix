@@ -2,8 +2,6 @@
 let
   lib = pkgs.lib;
   images = import ./images.nix;
-  setfacl = "${pkgs.acl}/bin/setfacl";
-  sleepTime = 5;
 in
 {
   makeContainer =
@@ -16,8 +14,7 @@ in
       labels ? { },
       extraOptions ? [ ],
 
-      adminOnlyDirs ? [ ],
-      userDirs ? [ ],
+      volumes ? [ ],
 
       dns ? "10.0.1.11",
       tmpfs ? [ "/tmp" ],
@@ -26,6 +23,38 @@ in
       runByUser ? true,
       ...
     }@args:
+    let
+      # Helper to convert volume object to OCI string
+      mkOciVolume = v: "${v.hostPath}:${v.containerPath}:${if v.readOnly or false then "ro" else "rw"}";
+
+      # Helper to create tmpfiles rules
+      mkTmpRules =
+        v:
+        if v.readOnly or false then
+          [ ]
+        else
+          let
+            # Base rule to create directory with owner containers:containers
+            createRule = "d \"${v.hostPath}\" 0770 containers containers - -";
+
+            # ACL rule
+            # userAccessible -> family (group)
+            # !userAccessible -> admin (group)
+            aclTarget = if v.userAccessible or false then "g:family:rwx" else "g:admin:rwx";
+
+            # We need recursive ACLs (default and regular)
+            aclEntry = "${aclTarget},d:${aclTarget}";
+
+            aclRule = "A+ \"${v.hostPath}\" - - - - ${aclEntry}";
+          in
+          [
+            createRule
+            aclRule
+          ];
+
+      ociVolumes = map mkOciVolume volumes;
+      tmpRules = lib.flatten (map mkTmpRules volumes);
+    in
     {
       virtualisation.oci-containers.containers."${name}" =
         lib.recursiveUpdate
@@ -51,6 +80,8 @@ in
             ))
             ++ extraOptions;
 
+            volumes = ociVolumes;
+
             labels =
               (lib.optionalAttrs autoUpdate {
                 "io.containers.autoupdate" = "registry";
@@ -58,15 +89,14 @@ in
               // labels;
           }
           (
-            builtins.removeAttrs args [
+            removeAttrs args [
               "image"
               "imageFile"
               "name"
               "ip"
               "dns"
               "tmpfs"
-              "adminOnlyDirs"
-              "userDirs"
+              "volumes"
               "labels"
               "extraOptions"
               "runByUser"
@@ -74,33 +104,7 @@ in
             ]
           );
 
-      systemd.services."podman-${name}".postStart =
-        # sh
-        ''
-          sleep ${builtins.toString sleepTime}
-        ''
-        + pkgs.lib.concatStringsSep "\n" (
-          (map (
-            x:
-            # sh
-            ''
-              f="${x}"
-              chown -R containers:containers $f
-              ${setfacl} -R -m g:admin:rwx $f
-              ${setfacl} -R -m d:g:admin:rwx $f
-              echo "Set permissions \"admin only\" for $f for container ${name}"
-            '') adminOnlyDirs)
-          ++ (map (
-            x:
-            # sh
-            ''
-              f="${x}"
-              chown -R containers:containers $f
-              ${setfacl} -R -m u:billy:rwx $f
-              ${setfacl} -R -m d:u:billy:rwx $f
-              echo "Set permissions \"user only\" for $f for container ${name}"
-            '') userDirs)
-        );
+      systemd.tmpfiles.rules = tmpRules;
     };
 
 }

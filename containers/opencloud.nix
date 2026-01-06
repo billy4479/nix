@@ -36,14 +36,18 @@ makeContainer {
   };
 
   volumes = [
-    "${configDir}:/etc/opencloud:rw"
-    "${dataDir}:/var/lib/opencloud:rw"
-    "${appsDir}:/var/lib/opencloud/web/assets/apps:rw"
-  ];
-
-  adminOnlyDirs = [
-    baseSSDDir
-    dataDir
+    {
+      hostPath = configDir;
+      containerPath = "/etc/opencloud";
+    }
+    {
+      hostPath = dataDir;
+      containerPath = "/var/lib/opencloud";
+    }
+    {
+      hostPath = appsDir;
+      containerPath = "/var/lib/opencloud/web/assets/apps";
+    }
   ];
 
   entrypoint = "/bin/sh";

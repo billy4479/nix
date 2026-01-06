@@ -12,12 +12,20 @@ makeContainer {
   ip = "10.0.1.10";
 
   volumes = [
-    "${baseHDDDir}:/media:rw"
-    "${baseSSDDir}/config:/config:rw"
-    "${baseSSDDir}/cache:/cache:rw"
+    {
+      hostPath = baseHDDDir;
+      containerPath = "/media";
+      userAccessible = true;
+    }
+    {
+      hostPath = "${baseSSDDir}/config";
+      containerPath = "/config";
+    }
+    {
+      hostPath = "${baseSSDDir}/cache";
+      containerPath = "/cache";
+    }
   ];
-  adminOnlyDirs = [ baseSSDDir ];
-  userDirs = [ baseHDDDir ];
 
   extraOptions = [
     "--device=/dev/dri:/dev/dri"

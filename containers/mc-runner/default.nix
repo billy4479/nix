@@ -32,10 +32,19 @@ makeContainer {
   ];
 
   volumes = [
-    "${baseDir}:/mc-runner:rw"
-    "${worldDir}:/world:rw"
-    "${./config.yml}:/mc-runner/config.yml:ro"
+    {
+      hostPath = baseDir;
+      containerPath = "/mc-runner";
+    }
+    {
+      hostPath = worldDir;
+      containerPath = "/world";
+      userAccessible = true;
+    }
+    {
+      hostPath = "${./config.yml}";
+      containerPath = "/mc-runner/config.yml";
+      readOnly = true;
+    }
   ];
-  adminOnlyDirs = [ baseDir ];
-  userDirs = [ worldDir ];
 }

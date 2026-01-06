@@ -33,12 +33,24 @@ makeContainer {
     };
 
   volumes = [
-    "${baseDir}/cache:/var/cache/bind:rw"
-    "${baseDir}/lib:/var/lib/bind:rw"
-    "${baseDir}/log:/var/log:rw"
-    "${bindConfig}:/etc/bind:ro"
+    {
+      hostPath = "${baseDir}/cache";
+      containerPath = "/var/cache/bind";
+    }
+    {
+      hostPath = "${baseDir}/lib";
+      containerPath = "/var/lib/bind";
+    }
+    {
+      hostPath = "${baseDir}/log";
+      containerPath = "/var/log";
+    }
+    {
+      hostPath = "${bindConfig}";
+      containerPath = "/etc/bind";
+      readOnly = true;
+    }
   ];
-  adminOnlyDirs = [ baseDir ];
 
   environment = {
     "PUID" = "5000";

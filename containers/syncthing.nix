@@ -23,11 +23,16 @@ in
   ];
 
   volumes = [
-    "/mnt/SSD/apps/syncthing:/var/syncthing/config"
-    "/mnt/HDD/generic/Giacomo/Syncthing:/var/syncthing/Sync"
+    {
+      hostPath = "/mnt/SSD/apps/syncthing";
+      containerPath = "/var/syncthing/config";
+    }
+    {
+      hostPath = "/mnt/HDD/generic/Giacomo/Syncthing";
+      containerPath = "/var/syncthing/Sync";
+      userAccessible = true;
+    }
   ];
 
   ip = "10.0.1.2";
-  adminOnlyDirs = [ configDir ];
-  userDirs = [ dataDir1 ];
 }

@@ -16,11 +16,15 @@ makeContainer {
     "PUID" = "5000";
   };
   volumes = [
-    "${downloadsDir}:/downloads:rw"
-    "${configDir}:/config:rw"
+    {
+      hostPath = downloadsDir;
+      containerPath = "/downloads";
+      userAccessible = true;
+    }
+    {
+      hostPath = configDir;
+      containerPath = "/config";
+    }
   ];
   runByUser = false; # TODO: remove
-
-  adminOnlyDirs = [ configDir ];
-  userDirs = [ downloadsDir ];
 }
