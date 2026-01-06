@@ -5,6 +5,7 @@
     ./btop.nix
     ./direnv.nix
     ./editor/nvim
+    ./editor/opencode
     ./editor/vscodium
     ./games
     ./git.nix
