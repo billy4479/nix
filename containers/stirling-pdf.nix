@@ -16,12 +16,12 @@ in
 makeContainer {
   inherit name;
   image = "localhost/stirling-pdf:latest";
-  imageFile = pkgs.dockerTools.buildLayeredImage {
+  imageFile = pkgs.dockerTools.buildImage {
 
     inherit name;
     tag = "latest";
 
-    contents = with pkgs; [
+    copyToRoot = with pkgs; [
       stirling-pdf
 
       # https://docs.stirlingpdf.com/Installation/Unix%20Installation#step-3-install-additional-software
@@ -39,7 +39,8 @@ makeContainer {
 
       (python3.withPackages (p: [
         p.opencv-python-headless
-        p.weasyprint
+        # FIXME: seems broken in the new nix version
+        # p.weasyprint
 
         p.pillow
         p.pdf2image

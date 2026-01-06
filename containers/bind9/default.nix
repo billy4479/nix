@@ -17,7 +17,7 @@ makeContainer {
 
   imageFile =
     with pkgs.dockerTools;
-    buildLayeredImage {
+    buildImage {
       name = "bind9";
       tag = "latest";
       fromImage = pullImage {
@@ -28,7 +28,7 @@ makeContainer {
         finalImageTag = "latest";
       };
 
-      contents = [ ./contents ];
+      copyToRoot = [ ./contents ];
       config.Entrypoint = [ "/entrypoint.sh" ];
     };
 

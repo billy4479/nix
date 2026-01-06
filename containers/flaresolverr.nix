@@ -7,12 +7,12 @@ in
 makeContainer {
   inherit name;
   image = "localhost/flaresolverr:latest";
-  imageFile = pkgs.dockerTools.buildLayeredImage {
+  imageFile = pkgs.dockerTools.buildImage {
 
     inherit name;
     tag = "latest";
 
-    contents = with pkgs; [
+    copyToRoot = with pkgs; [
       flaresolverr
     ];
 
