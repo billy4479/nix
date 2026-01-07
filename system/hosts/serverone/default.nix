@@ -8,6 +8,7 @@
   imports = [
     ./hardware-configuration.nix
     flakeInputs.disko.nixosModules.disko
+    flakeInputs.nix-snapshotter.nixosModules.default
     ./disko.nix
     ./storage.nix
 

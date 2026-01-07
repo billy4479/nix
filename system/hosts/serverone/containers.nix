@@ -1,4 +1,8 @@
-{ ... }:
+{
+  flakeInputs,
+  pkgs,
+  ...
+}:
 {
   imports = [
     ../../../containers/syncthing.nix
@@ -25,7 +29,24 @@
     ../../../containers/mc-runner
   ];
 
+  nixpkgs.overlays = [ flakeInputs.nix-snapshotter.overlays.default ];
+
+  environment.systemPackages = [
+    pkgs.nerdctl
+    pkgs.cni-plugins
+  ];
+
+  services.nix-snapshotter = {
+    enable = true;
+    setSocketVariable = true;
+  };
+
   virtualisation = {
+    containerd = {
+      enable = true;
+      nixSnapshotterIntegration = true;
+    };
+
     podman = {
       enable = true;
 
@@ -45,5 +66,46 @@
       };
     };
     oci-containers.backend = "podman";
+  };
+
+  environment.etc = {
+    "nerdctl/nerdctl.toml".text = ''
+      cni_path = "${pkgs.cni-plugins}/bin"
+      cni_netconfpath = "/etc/cni/net.d"
+    '';
+
+    "cni/net.d/10-nerdctl.conflist".text = builtins.toJSON {
+      cniVersion = "1.0.0";
+      name = "nerdctl-bridge";
+      plugins = [
+        {
+          type = "bridge";
+          bridge = "nerdctl0";
+          isGateway = true;
+          ipMasq = true;
+          hairpinMode = true;
+          ipam = {
+            type = "host-local";
+            routes = [ { dst = "0.0.0.0/0"; } ];
+            ranges = [
+              [
+                {
+                  subnet = "10.0.2.0/24";
+                  gateway = "10.0.2.1";
+                }
+              ]
+            ];
+          };
+        }
+        {
+          type = "portmap";
+          capabilities = {
+            portMappings = true;
+          };
+        }
+        { type = "firewall"; }
+        { type = "tuning"; }
+      ];
+    };
   };
 }
