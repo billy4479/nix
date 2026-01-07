@@ -26,37 +26,36 @@ in
     assert (id >= 2 && id <= 255);
     let
       ip = "10.0.1.${toString id}";
+      uid = toString (5000 + id);
+      gid = "5000";
+
+      setfacl = lib.getExe' pkgs.acl "setfacl";
 
       # Helper to convert volume object to OCI string
-      mkOciVolume = v: "${v.hostPath}:${v.containerPath}:${if v.readOnly or false then "ro" else "rw"}";
+      mkVolumeFlag = v: "${v.hostPath}:${v.containerPath}:${if v.readOnly or false then "ro" else "rw"}";
 
-      # Helper to create tmpfiles rules
-      mkTmpRules =
+      mkVolumeDir =
         v:
+        let
+          aclTarget = if v.userAccessible or false then "family" else "admin";
+        in
         if v.readOnly or false then
-          [ ]
+          ""
         else
-          let
-            # Base rule to create directory with owner containers:containers
-            createRule = "d \"${v.hostPath}\" 0770 containers containers - -";
+          # sh
+          ''
+            mkdir -p "${v.hostPath}"
 
-            # ACL rule
-            # userAccessible -> family (group)
-            # !userAccessible -> admin (group)
-            aclTarget = if v.userAccessible or false then "g:family:rwx" else "g:admin:rwx";
+            # We set these just once
+            currentPerm=$(stat -c %u:%g "${v.hostPath}")
+            if [ "$currentPerm" != "${uid}:${gid}" ]; then
+              chown -R ${uid}:${gid} "${v.hostPath}"
+              ${setfacl} -R -m d:g:${aclTarget}:rwX,g:${aclTarget}:rwX "${v.hostPath}"
+            fi
+          '';
 
-            # We need recursive ACLs (default and regular)
-            aclEntry = "${aclTarget},d:${aclTarget}";
-
-            aclRule = "A+ \"${v.hostPath}\" - - - - ${aclEntry}";
-          in
-          [
-            createRule
-            aclRule
-          ];
-
-      ociVolumes = map mkOciVolume volumes;
-      tmpRules = lib.flatten (map mkTmpRules volumes);
+      createVolumeDirScript = lib.strings.concatMapStringsSep "\n" mkVolumeDir volumes;
+      volumeFlag = map mkVolumeFlag volumes;
     in
     {
       virtualisation.oci-containers.containers."${name}" =
@@ -69,7 +68,7 @@ in
               "TZ" = config.time.timeZone;
             };
 
-            user = if runByUser then "${toString (5000 + id)}:5000" else null;
+            user = if runByUser then "${uid}:${gid}" else null;
 
             extraOptions = [
               "--ip=${ip}"
@@ -83,7 +82,7 @@ in
             ))
             ++ extraOptions;
 
-            volumes = ociVolumes;
+            volumes = volumeFlag;
 
             labels =
               (lib.optionalAttrs autoUpdate {
@@ -107,7 +106,22 @@ in
             ]
           );
 
-      systemd.tmpfiles.rules = tmpRules;
+      systemd.services = {
+        "podman-${name}" = {
+          after = [ "volumes-${name}.service" ];
+          requires = [ "volumes-${name}.service" ];
+        };
+
+        "volumes-${name}" = {
+          script = createVolumeDirScript;
+          before = [ "podman-${name}.service" ];
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+            User = "root";
+          };
+        };
+      };
     };
 
 }
