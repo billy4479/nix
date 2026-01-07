@@ -1,9 +1,6 @@
 { pkgs, config, ... }:
 let
   inherit ((import ./utils.nix) { inherit pkgs config; }) makeContainer;
-
-  configDir = "/mnt/SSD/apps/syncthing";
-  dataDir1 = "/mnt/HDD/generic/Giacomo/Syncthing";
 in
 {
   # For QUIC
