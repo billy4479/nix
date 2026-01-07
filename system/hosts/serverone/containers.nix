@@ -2,7 +2,7 @@
 {
   imports = [
     ../../../containers/syncthing.nix
-    ../../../containers/immich.nix
+    ../../../containers/immich
     ../../../containers/qbittorrent.nix
 
     ../../../containers/calendar-proxy.nix
@@ -12,14 +12,14 @@
     ../../../containers/nginx
     ../../../containers/bind9
 
-    ../../../containers/radarr.nix
-    ../../../containers/jackett.nix
-    ../../../containers/sonarr.nix
-    ../../../containers/flaresolverr.nix
+    # ../../../containers/radarr.nix
+    # ../../../containers/jackett.nix
+    # ../../../containers/sonarr.nix
+    # ../../../containers/flaresolverr.nix
 
     ../../../containers/jellyfin.nix
 
-    ../../../containers/stirling-pdf.nix
+    # ../../../containers/stirling-pdf.nix
     ../../../containers/opencloud.nix
 
     ../../../containers/mc-runner
