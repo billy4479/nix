@@ -5,15 +5,15 @@
 }:
 {
   imports = [
-    ../../../containers/syncthing.nix
-    ../../../containers/immich
-    ../../../containers/qbittorrent.nix
+    # ../../../containers/syncthing.nix
+    # ../../../containers/immich
+    # ../../../containers/qbittorrent.nix
 
-    ../../../containers/calendar-proxy.nix
+    # ../../../containers/calendar-proxy.nix
 
-    ../../../containers/cloudflared.nix
-    ../../../containers/certbot.nix
-    ../../../containers/nginx
+    # ../../../containers/cloudflared.nix
+    # ../../../containers/certbot.nix
+    # ../../../containers/nginx
     ../../../containers/bind9
 
     # ../../../containers/radarr.nix
@@ -21,12 +21,12 @@
     # ../../../containers/sonarr.nix
     # ../../../containers/flaresolverr.nix
 
-    ../../../containers/jellyfin.nix
+    # ../../../containers/jellyfin.nix
 
     # ../../../containers/stirling-pdf.nix
-    ../../../containers/opencloud.nix
+    # ../../../containers/opencloud.nix
 
-    ../../../containers/mc-runner
+    # ../../../containers/mc-runner
   ];
 
   nixpkgs.overlays = [ flakeInputs.nix-snapshotter.overlays.default ];
@@ -48,7 +48,7 @@
     };
 
     podman = {
-      enable = true;
+      enable = false;
 
       autoPrune = {
         enable = true;
