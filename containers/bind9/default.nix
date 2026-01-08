@@ -10,7 +10,7 @@ in
 makeContainer {
   inherit name;
   imageToBuild = pkgs.nix-snapshotter.buildImage {
-    name = "localhost/bind9";
+    name = "bind9";
     tag = "nix-local";
     fromImage = pkgs.dockerTools.pullImage {
       imageName = "ubuntu/bind9";

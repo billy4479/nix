@@ -13,7 +13,7 @@
 
     # ../../../containers/cloudflared.nix
     # ../../../containers/certbot.nix
-    # ../../../containers/nginx
+    ../../../containers/nginx
     ../../../containers/bind9
 
     # ../../../containers/radarr.nix

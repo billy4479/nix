@@ -65,7 +65,7 @@ in
 
       # Image Logic
       tag = "nix-local";
-      imageName = "localhost/${name}:${tag}";
+      imageName = "${name}:${tag}";
       nixImage =
         if imageToBuild != null then
           imageToBuild
@@ -103,7 +103,6 @@ in
       envFileFlags = map (f: "--env-file \"${f}\"") environmentFiles;
       labelFlags = lib.mapAttrsToList (n: v: "-l ${n}=\"${v}\"") labels;
       portFlags = map (p: "-p ${p}") ports;
-      userFlag = if runByUser then "--user ${uid}:${gid}" else "";
       cmdFlag = lib.strings.concatMapStringsSep " " (x: "\"${x}\"") cmd;
 
       allFlags = lib.flatten (
@@ -124,15 +123,15 @@ in
           envFileFlags
           labelFlags
           portFlags
-          userFlag
           extraOptions
         ]
+        ++ lib.optional runByUser "--user ${uid}:${gid}"
         ++ lib.optional (dns != null) "--dns=${dns}"
-        ++ lib.optional (entrypoint != null) "--entrypoint \"${lib.concatStringsSep " " entrypoint}\""
+        ++ lib.optional (entrypoint != null) "--entrypoint \"${entrypoint}\""
         ++ [
           imageName
-          cmdFlag
         ]
+        ++ lib.optional (cmdFlag != "") cmdFlag
       );
 
     in
@@ -165,7 +164,7 @@ in
 
         script = ''
           exec ${nerdctl} \
-          ${lib.concatStringsSep " \\\n\t" allFlags}
+            ${lib.concatStringsSep " \\\n\t" allFlags}
         '';
 
         postStop = # sh

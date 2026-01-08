@@ -10,9 +10,15 @@ let
 in
 makeContainer {
   inherit name;
-  image = "docker.io/nginx";
+  imageToPull = "docker.io/nginx";
   id = 6;
   runByUser = false; # We need to bind port 80 and 433
+
+  entrypoint = "nginx";
+  cmd = [
+    "-g"
+    "daemon off;"
+  ];
 
   volumes = [
     {
