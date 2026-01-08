@@ -9,28 +9,24 @@ let
 in
 makeContainer {
   inherit name;
-  image = "localhost/bind9:latest";
+  imageToBuild = pkgs.nix-snapshotter.buildImage {
+    name = "localhost/bind9";
+    tag = "nix-local";
+    fromImage = pkgs.dockerTools.pullImage {
+      imageName = "ubuntu/bind9";
+      imageDigest = "sha256:360622f1481a577822b7a310cdca4e37c16c5d3af53a3e455a13e90cb234943f";
+      hash = "sha256-D5w04BL0PzVm2vER+h78bG0mP7ugwxK6kVs9rQUjwhA=";
+      finalImageName = "ubuntu/bind9";
+      finalImageTag = "latest";
+    };
+
+    copyToRoot = [ ./contents ];
+    config.Entrypoint = [ "/entrypoint.sh" ];
+  };
 
   id = 11;
   runByUser = false; # Bind apparently _expects_ to be run as root
   dns = null;
-
-  imageFile =
-    with pkgs.dockerTools;
-    buildImage {
-      name = "bind9";
-      tag = "latest";
-      fromImage = pullImage {
-        imageName = "ubuntu/bind9";
-        imageDigest = "sha256:360622f1481a577822b7a310cdca4e37c16c5d3af53a3e455a13e90cb234943f";
-        hash = "sha256-D5w04BL0PzVm2vER+h78bG0mP7ugwxK6kVs9rQUjwhA=";
-        finalImageName = "ubuntu/bind9";
-        finalImageTag = "latest";
-      };
-
-      copyToRoot = [ ./contents ];
-      config.Entrypoint = [ "/entrypoint.sh" ];
-    };
 
   volumes = [
     {

@@ -28,11 +28,12 @@ in
       entrypoint ? null,
     }:
     assert (id >= 2 && id <= 255);
-    assert (imageToBuild == null && imageToPull != null || imageToBuild != null && imageToPull == null);
     let
       ip = "10.0.1.${toString id}";
       uid = toString (5000 + id);
       gid = "5000";
+
+      nerdctl = lib.getExe pkgs.nerdctl;
 
       # Volume creation
       setfacl = lib.getExe' pkgs.acl "setfacl";
@@ -63,6 +64,8 @@ in
         ) volumes;
 
       # Image Logic
+      tag = "nix-local";
+      imageName = "localhost/${name}:${tag}";
       nixImage =
         if imageToBuild != null then
           imageToBuild
@@ -72,13 +75,18 @@ in
             srcImage = pkgs.dockerTools.pullImage imageData;
           in
           pkgs.nix-snapshotter.buildImage {
-            name = imageToPull;
-            tag = imageData.finalImageTag;
+            inherit name tag;
             fromImage = srcImage;
-            resolvedByNix = true;
           }
         else
           throw "makeSnapshotterContainer: Must provide either imageToPull or imageToBuild";
+
+      namespace = "default";
+      address = "/run/containerd/containerd.sock";
+
+      loadToContainerd = nixImage.copyToContainerd {
+        inherit namespace address;
+      };
 
       # Flags Construction
       volumeFlags = map (
@@ -100,8 +108,13 @@ in
 
       allFlags = lib.flatten (
         [
+          "--snapshotter nix"
+          "--address ${address}"
+          "--namespace ${namespace}"
+          "run"
           "--name ${name}"
           "--rm"
+          "--pull never"
           "--log-driver=journald"
           "--net=nerdctl-bridge"
           "--ip=${ip}"
@@ -117,29 +130,49 @@ in
         ++ lib.optional (dns != null) "--dns=${dns}"
         ++ lib.optional (entrypoint != null) "--entrypoint \"${lib.concatStringsSep " " entrypoint}\""
         ++ [
-          "nix:0${nixImage}"
+          imageName
           cmdFlag
         ]
       );
+
     in
     {
       systemd.services."nerdctl-${name}" = {
         after = [
-          "volumes-${name}.service"
+          "nerdctl-volumes-${name}.service"
           "network-online.target"
+          "containerd.service"
+          "nix-snapshotter.service"
         ];
-        requires = [ "nerdctl-volumes-${name}.service" ];
+
+        requires = [
+          "nerdctl-volumes-${name}.service"
+          "network-online.target"
+          "containerd.service"
+          "nix-snapshotter.service"
+        ];
         wantedBy = [ "multi-user.target" ];
 
-        script = ''
-          # Clean up previous state
-          ${pkgs.nerdctl}/bin/nerdctl stop ${name} || true
-          ${pkgs.nerdctl}/bin/nerdctl rm ${name} || true
+        path = [ pkgs.iptables ];
 
-          # Run the container
-          exec ${pkgs.nerdctl}/bin/nerdctl run \
+        preStart = # sh
+          ''
+            ${nerdctl} stop ${name} || true
+            ${nerdctl} rm ${name} || true
+
+            ${loadToContainerd}/bin/copy-to-containerd
+          '';
+
+        script = ''
+          exec ${nerdctl} \
           ${lib.concatStringsSep " \\\n\t" allFlags}
         '';
+
+        postStop = # sh
+          ''
+            ${nerdctl} --address ${address} --namespace ${namespace} rm -f ${name} || true
+            ${nerdctl} --address ${address} --namespace ${namespace} rmi -f ${imageName} || true
+          '';
 
         serviceConfig = {
           Restart = "always";

@@ -31,6 +31,7 @@
               tree-sitter-rust
               tree-sitter-svelte
               tree-sitter-templ
+              tree-sitter-toml
               tree-sitter-typst
               tree-sitter-typescript
               tree-sitter-yaml
