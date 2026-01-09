@@ -5,6 +5,8 @@
 }:
 {
   imports = [
+    ../../../containers/module.nix
+
     ../../../containers/syncthing.nix
     # ../../../containers/immich
     # ../../../containers/qbittorrent.nix

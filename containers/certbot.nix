@@ -7,7 +7,6 @@
 let
   name = "certbot";
   baseSSDDir = "/mnt/SSD/apps/${name}";
-  inherit ((import ./utils.nix) { inherit pkgs config; }) makeContainer;
 in
 {
   sops.secrets.cloudflare-dns-token = {
@@ -43,31 +42,31 @@ in
       };
     };
   };
-}
-// makeContainer {
-  inherit name;
-  imageToPull = "docker.io/certbot/dns-cloudflare";
-  id = 132;
 
-  volumes = [
-    {
-      hostPath = baseSSDDir;
-      containerPath = "/etc/letsencrypt";
-    }
-    {
-      hostPath = "${baseSSDDir}/logs";
-      containerPath = "/var/log/letsencrypt";
-    }
-    {
-      hostPath = config.sops.secrets.cloudflare-dns-token.path;
-      containerPath = "/cloudflare.ini";
-      readOnly = true;
-    }
-  ];
+  nerdctl-containers.${name} = {
+    id = 132;
+    imageToPull = "docker.io/certbot/dns-cloudflare";
 
-  entrypoint = "/bin/sh";
-  cmd = [
-    "-c"
-    "trap : TERM INT; sleep infinity & wait"
-  ];
+    volumes = [
+      {
+        hostPath = baseSSDDir;
+        containerPath = "/etc/letsencrypt";
+      }
+      {
+        hostPath = "${baseSSDDir}/logs";
+        containerPath = "/var/log/letsencrypt";
+      }
+      {
+        hostPath = config.sops.secrets.cloudflare-dns-token.path;
+        containerPath = "/cloudflare.ini";
+        readOnly = true;
+      }
+    ];
+
+    entrypoint = "/bin/sh";
+    cmd = [
+      "-c"
+      "trap : TERM INT; sleep infinity & wait"
+    ];
+  };
 }
