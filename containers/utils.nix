@@ -56,9 +56,13 @@ in
             ''
               mkdir -p "${v.hostPath}"
               currentPerm=$(stat -c %u:%g "${v.hostPath}")
+              echo "Current permissions of ${v.hostPath}: $currentPerm"
               if [ "$currentPerm" != "${uid}:${gid}" ]; then
+                echo "Changing permissions for ${v.hostPath}"
                 chown -R ${uid}:${gid} "${v.hostPath}"
                 ${setfacl} -R -m d:g:${aclTarget}:rwX,g:${aclTarget}:rwX "${v.hostPath}"
+              else
+                echo "Permissions for ${v.hostPath} are good"
               fi
             ''
         ) volumes;
@@ -138,14 +142,12 @@ in
     {
       systemd.services."nerdctl-${name}" = {
         after = [
-          "nerdctl-volumes-${name}.service"
           "network-online.target"
           "containerd.service"
           "nix-snapshotter.service"
         ];
 
         requires = [
-          "nerdctl-volumes-${name}.service"
           "network-online.target"
           "containerd.service"
           "nix-snapshotter.service"
@@ -156,6 +158,8 @@ in
 
         preStart = # sh
           ''
+            ${volumeDirScript { inherit uid gid volumes; }}
+
             ${nerdctl} stop ${name} || true
             ${nerdctl} rm ${name} || true
 
@@ -175,16 +179,6 @@ in
 
         serviceConfig = {
           Restart = "always";
-        };
-      };
-
-      systemd.services."nerdctl-volumes-${name}" = {
-        script = volumeDirScript { inherit uid gid volumes; };
-        before = [ "nerdctl-${name}.service" ];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
-          User = "root";
         };
       };
     };

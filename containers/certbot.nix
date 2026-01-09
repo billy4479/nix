@@ -29,12 +29,12 @@ in
     services."certbot-renew" = {
       script = # sh
         ''
-          ${lib.getExe pkgs.podman} exec certbot certbot renew \
+          ${lib.getExe pkgs.nerdctl} exec certbot certbot renew \
             --dns-cloudflare-propagation-seconds 60 \
             --dns-cloudflare \
             --dns-cloudflare-credentials /cloudflare.ini
 
-          ${lib.getExe pkgs.podman} exec nginx nginx -s reload
+          ${lib.getExe pkgs.nerdctl} exec nginx nginx -s reload
         '';
       serviceConfig = {
         Type = "oneshot";
@@ -46,7 +46,7 @@ in
 }
 // makeContainer {
   inherit name;
-  image = "docker.io/certbot/dns-cloudflare";
+  imageToPull = "docker.io/certbot/dns-cloudflare";
   id = 132;
 
   volumes = [

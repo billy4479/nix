@@ -5,14 +5,14 @@
 }:
 {
   imports = [
-    # ../../../containers/syncthing.nix
+    ../../../containers/syncthing.nix
     # ../../../containers/immich
     # ../../../containers/qbittorrent.nix
 
     # ../../../containers/calendar-proxy.nix
 
     # ../../../containers/cloudflared.nix
-    # ../../../containers/certbot.nix
+    ../../../containers/certbot.nix
     ../../../containers/nginx
     ../../../containers/bind9
 

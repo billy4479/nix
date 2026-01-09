@@ -1,4 +1,9 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 let
   inherit ((import ./utils.nix) { inherit pkgs config; }) makeContainer;
 in
@@ -9,10 +14,23 @@ in
     "core.wmem_max" = 7500000;
   };
 }
-// makeContainer {
-
+// makeContainer rec {
   name = "syncthing";
-  image = "docker.io/syncthing/syncthing";
+  imageToBuild = pkgs.nix-snapshotter.buildImage {
+    inherit name;
+    tag = "nix-local";
+
+    copyToRoot = [ pkgs.dockerTools.caCertificates ];
+
+    config = {
+      entrypoint = [ "${lib.getExe pkgs.syncthing}" ];
+      env = [
+        "HOME=/var/syncthing"
+        "STHOMEDIR=/var/syncthing/config"
+        "STGUIADDRESS=0.0.0.0:8384"
+      ];
+    };
+  };
   ports = [
     "22000:22000/tcp"
     "22000:22000/udp"
