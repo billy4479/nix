@@ -119,11 +119,11 @@ in
     );
   };
 
-  config = lib.mkIf (config.nerdctl-containers != { }) {
-    systemd.services = lib.mkMerge (
-      lib.mapAttrsToList (
+  config = lib.mkIf (config.nerdctl-containers != { }) (
+    let
+      containerConfigs = lib.mapAttrsToList (
         name: cfg:
-        (utils.makeContainer {
+        utils.makeContainer {
           inherit name;
           inherit (cfg)
             id
@@ -141,8 +141,19 @@ in
             cmd
             entrypoint
             ;
-        }).systemd.services
-      ) config.nerdctl-containers
-    );
-  };
+        }
+      ) config.nerdctl-containers;
+    in
+    {
+      users = lib.mkMerge (
+        map (c: c.users) containerConfigs
+        ++ [
+          {
+            groups.containers.gid = 5000;
+          }
+        ]
+      );
+      systemd = lib.mkMerge (map (c: c.systemd) containerConfigs);
+    }
+  );
 }

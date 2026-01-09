@@ -30,7 +30,8 @@ in
     assert (id >= 2 && id <= 255);
     let
       ip = "10.0.1.${toString id}";
-      uid = toString (5000 + id);
+      uidInt = 5000 + id;
+      uid = toString uidInt;
       gid = "5000";
 
       nerdctl = lib.getExe pkgs.nerdctl;
@@ -140,6 +141,14 @@ in
 
     in
     {
+      users.users."container-${name}" = {
+        isSystemUser = true;
+        uid = uidInt;
+        group = "containers";
+        description = "User for container ${name}";
+        createHome = false;
+      };
+
       systemd.services."nerdctl-${name}" = {
         after = [
           "network-online.target"
