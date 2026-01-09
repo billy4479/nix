@@ -258,15 +258,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1756173736,
-        "narHash": "sha256-sE5/KCQfgMW1Mkgx8FaecY1f6dcjRfE3z4yYsQjhrRc=",
-        "owner": "pdtpartners",
+        "lastModified": 1767987715,
+        "narHash": "sha256-XC71qiU/QhteNK6kL1KbAATaDayLyQkd7U6vDe8q9OU=",
+        "owner": "billy4479",
         "repo": "nix-snapshotter",
-        "rev": "ce7698e34990e1e59b9693e5c8ec08f4d9bf2fb6",
+        "rev": "aacab66f08e59a8aeef33f4e2dbf59fafd9a7610",
         "type": "github"
       },
       "original": {
-        "owner": "pdtpartners",
+        "owner": "billy4479",
         "repo": "nix-snapshotter",
         "type": "github"
       }

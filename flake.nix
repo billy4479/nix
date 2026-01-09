@@ -51,7 +51,7 @@
     };
 
     nix-snapshotter = {
-      url = "github:pdtpartners/nix-snapshotter";
+      url = "github:billy4479/nix-snapshotter";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
