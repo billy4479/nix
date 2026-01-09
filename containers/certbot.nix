@@ -7,10 +7,11 @@
 let
   name = "certbot";
   baseSSDDir = "/mnt/SSD/apps/${name}";
+  id = 132;
 in
 {
   sops.secrets.cloudflare-dns-token = {
-    owner = config.users.users.containers.name;
+    owner = config.users.users."container-${name}".name;
     group = config.users.users.containers.group;
   };
 
@@ -28,7 +29,7 @@ in
     services."certbot-renew" = {
       script = # sh
         ''
-          ${lib.getExe pkgs.nerdctl} exec certbot certbot renew \
+          ${lib.getExe pkgs.nerdctl} exec certbot certbot -v renew \
             --dns-cloudflare-propagation-seconds 60 \
             --dns-cloudflare \
             --dns-cloudflare-credentials /cloudflare.ini
@@ -44,17 +45,21 @@ in
   };
 
   nerdctl-containers.${name} = {
-    id = 132;
+    inherit id;
     imageToPull = "docker.io/certbot/dns-cloudflare";
 
     volumes = [
       {
-        hostPath = baseSSDDir;
+        hostPath = "${baseSSDDir}/config";
         containerPath = "/etc/letsencrypt";
       }
       {
         hostPath = "${baseSSDDir}/logs";
         containerPath = "/var/log/letsencrypt";
+      }
+      {
+        hostPath = "${baseSSDDir}/work";
+        containerPath = "/var/lib/letsencrypt";
       }
       {
         hostPath = config.sops.secrets.cloudflare-dns-token.path;
