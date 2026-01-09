@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  config,
   ...
 }:
 {
@@ -39,7 +38,7 @@
         containerPath = "/var/syncthing/config";
       }
       {
-        hostPath = "/mnt/HDD/generic/Giacomo/Syncthing";
+        hostPath = "/mnt/HDD/apps/syncthing";
         containerPath = "/var/syncthing/Sync";
         userAccessible = true;
       }
