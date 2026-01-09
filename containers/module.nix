@@ -113,6 +113,12 @@ in
               default = null;
               description = "Entrypoint for the container.";
             };
+
+            dependsOn = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = "Names of other containers that should be started before this one.";
+            };
           };
         }
       )
@@ -140,6 +146,7 @@ in
             ports
             cmd
             entrypoint
+            dependsOn
             ;
         }
       ) config.nerdctl-containers;

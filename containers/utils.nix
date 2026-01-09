@@ -26,6 +26,8 @@ in
       ports ? [ ],
       cmd ? [ ],
       entrypoint ? null,
+
+      dependsOn ? [ ],
     }:
     assert (id >= 2 && id <= 255);
     let
@@ -139,10 +141,13 @@ in
         ++ lib.optional (cmdFlag != "") cmdFlag
       );
 
+      # Dependencies
+      dependencies = map (x: "nerdctl-${x}.service") dependsOn;
     in
     {
       users.users."container-${name}" = {
         isSystemUser = true;
+        name = "container-${uid}";
         uid = uidInt;
         group = "containers";
         description = "User for container ${name}";
@@ -154,13 +159,15 @@ in
           "network-online.target"
           "containerd.service"
           "nix-snapshotter.service"
-        ];
+        ]
+        ++ dependencies;
 
         requires = [
           "network-online.target"
           "containerd.service"
           "nix-snapshotter.service"
-        ];
+        ]
+        ++ dependencies;
         wantedBy = [ "multi-user.target" ];
 
         path = [ pkgs.iptables ];
