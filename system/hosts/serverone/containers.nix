@@ -8,7 +8,7 @@
     ../../../containers/module.nix
 
     ../../../containers/syncthing.nix
-    # ../../../containers/immich
+    ../../../containers/immich
     # ../../../containers/qbittorrent.nix
 
     # ../../../containers/calendar-proxy.nix
