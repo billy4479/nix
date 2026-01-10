@@ -13,12 +13,6 @@ in
     id = 6;
     runByUser = false; # We need to bind port 80 and 433
 
-    entrypoint = "nginx";
-    cmd = [
-      "-g"
-      "daemon off;"
-    ];
-
     volumes = [
       {
         hostPath = "${nginxConfig}/nginx.conf";
