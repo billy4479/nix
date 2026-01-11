@@ -145,6 +145,10 @@ in
       dependencies = map (x: "nerdctl-${x}.service") dependsOn;
     in
     {
+      systemd.targets.all-containers = {
+        wantedBy = [ "multi-user.target" ];
+      };
+
       users.users."container-${name}" = {
         isSystemUser = true;
         name = "container-${uid}";
@@ -168,7 +172,8 @@ in
           "nix-snapshotter.service"
         ]
         ++ dependencies;
-        wantedBy = [ "multi-user.target" ];
+        partOf = [ "all-containers.target" ];
+        wantedBy = [ "all-containers.target" ];
 
         path = [ pkgs.iptables ];
 
