@@ -1,7 +1,5 @@
-{ pkgs, config, ... }:
+{ pkgs, ... }:
 let
-  inherit ((import ./utils.nix) { inherit pkgs config; }) makeContainer;
-
   name = "stirling-pdf";
   baseDir = "/mnt/SSD/apps/${name}";
   tess = (
@@ -13,84 +11,82 @@ let
     }
   );
 in
-makeContainer {
-  inherit name;
-  image = "localhost/stirling-pdf:latest";
-  imageFile = pkgs.dockerTools.buildImage {
+{
+  nerdctl-containers.${name} = {
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
 
-    inherit name;
-    tag = "latest";
+      copyToRoot = pkgs.buildEnv {
+        name = "image-root";
 
-    copyToRoot = with pkgs; [
-      stirling-pdf
+        pathsToLink = [ "/bin" ];
+        paths = with pkgs; [
+          stirling-pdf
 
-      # https://docs.stirlingpdf.com/Installation/Unix%20Installation#step-3-install-additional-software
-      # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/web-apps/stirling-pdf.nix
-      which
+          # https://docs.stirlingpdf.com/Installation/Unix%20Installation#step-3-install-additional-software
+          # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/web-apps/stirling-pdf.nix
+          which
 
-      libreoffice-fresh
-      tess
-      ghostscript_headless
-      pngquant
-      ocrmypdf
-      unoconv
-      unpaper
-      poppler-utils
+          libreoffice-fresh
+          tess
+          ghostscript_headless
+          pngquant
+          ocrmypdf
+          unoconv
+          unpaper
+          poppler-utils
 
-      (python3.withPackages (p: [
-        p.opencv-python-headless
-        # FIXME: seems broken in the new nix version
-        # p.weasyprint
+          (python3.withPackages (p: [
+            p.opencv-python-headless
+            # FIXME: seems broken in the new nix version
+            # p.weasyprint
 
-        p.pillow
-        p.pdf2image
-      ]))
+            p.pillow
+            p.pdf2image
+          ]))
 
-      # https://github.com/Stirling-Tools/Stirling-PDF/blob/main/Dockerfile
-      calibre
-      ffmpeg
-      qpdf
-    ];
+          # https://github.com/Stirling-Tools/Stirling-PDF/blob/main/Dockerfile
+          calibre
+          ffmpeg
+          qpdf
+        ];
+      };
 
-    # TODO: fix OCR
+      # TODO: fix OCR
 
-    # extraCommands = # sh
-    #   ''
-    #     mkdir -p /usr/share
-    #     ln -s ${tess}/share/tessdata /usr/share/tessdata
-    #   '';
-
-    config = {
-      EntryPoint = [ "Stirling-PDF" ];
+      config = {
+        EntryPoint = [ "Stirling-PDF" ];
+      };
     };
+
+    id = 12;
+
+    environment = {
+      DISABLE_ADDITIONAL_FEATURES = "true";
+      INSTALL_BOOK_AND_ADVANCED_HTML_OPS = "true";
+      DISABLE_PIXEL = "true";
+      LANGS = "en_US";
+    };
+
+    volumes = [
+      # { hostPath = "${baseDir}/tessdata"; containerPath = "/usr/share/tessdata"; }
+      {
+        hostPath = "${baseDir}/config";
+        containerPath = "/configs";
+      }
+      {
+        hostPath = "${baseDir}/customFiles";
+        containerPath = "/customFiles";
+      }
+      {
+        hostPath = "${baseDir}/logs";
+        containerPath = "/logs";
+      }
+      {
+        hostPath = "${baseDir}/pipeline";
+        containerPath = "/pipeline";
+      }
+    ];
   };
-
-  id = 12;
-
-  environment = {
-    DISABLE_ADDITIONAL_FEATURES = "true";
-    INSTALL_BOOK_AND_ADVANCED_HTML_OPS = "true";
-    DISABLE_PIXEL = "true";
-    LANGS = "en_US";
-  };
-
-  volumes = [
-    # { hostPath = "${baseDir}/tessdata"; containerPath = "/usr/share/tessdata"; }
-    {
-      hostPath = "${baseDir}/config";
-      containerPath = "/configs";
-    }
-    {
-      hostPath = "${baseDir}/customFiles";
-      containerPath = "/customFiles";
-    }
-    {
-      hostPath = "${baseDir}/logs";
-      containerPath = "/logs";
-    }
-    {
-      hostPath = "${baseDir}/pipeline";
-      containerPath = "/pipeline";
-    }
-  ];
 }
