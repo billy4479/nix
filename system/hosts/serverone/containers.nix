@@ -13,7 +13,7 @@
 
     # ../../../containers/calendar-proxy.nix
 
-    # ../../../containers/cloudflared.nix
+    ../../../containers/cloudflared.nix
     ../../../containers/certbot.nix
     ../../../containers/nginx
     ../../../containers/bind9
@@ -26,7 +26,7 @@
     ../../../containers/jellyfin.nix
 
     # ../../../containers/stirling-pdf.nix
-    # ../../../containers/opencloud.nix
+    ../../../containers/opencloud.nix
 
     # ../../../containers/mc-runner
   ];
