@@ -5,22 +5,27 @@
   ...
 }:
 let
-  inherit ((import ./utils.nix) { inherit pkgs config; }) makeContainer;
   name = "calendar-proxy";
 in
 {
   sops.secrets.calendar-proxy-env = { };
-}
-// makeContainer {
-  inherit name;
-  image = "localhost/calendar-proxy:latest";
-  imageFile = extraPkgs.my-packages.containers.calendar-proxy;
-  id = 4;
 
-  environment = {
-    PORT = "4479";
-    ENV = "prod";
+  nerdctl-containers.${name} = {
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
+
+      config.entrypoint = [
+        "${extraPkgs.my-packages.calendar-proxy}/bin/calendar-proxy"
+      ];
+    };
+    id = 4;
+
+    environment = {
+      PORT = "4479";
+      ENV = "prod";
+    };
+
+    environmentFiles = [ config.sops.secrets.calendar-proxy-env.path ];
   };
-
-  environmentFiles = [ config.sops.secrets.calendar-proxy-env.path ];
 }
