@@ -33,6 +33,14 @@ in
         hostPath = baseHDDDir;
         containerPath = "/data";
         userAccessible = true;
+        customPermissionScript = ''
+          currentPerm=$(stat -c %u:%g "${baseHDDDir}")
+          if [ "$currentPerm" != "5007:5000" ]; then
+            echo "Fixing permissions for ${baseHDDDir} (non-recursive)"
+            chown 5007:5000 "${baseHDDDir}"
+            ${lib.getExe' pkgs.acl "setfacl"} -m d:g:family:rwX,g:family:rwX "${baseHDDDir}"
+          fi
+        '';
       }
       {
         hostPath = configDir;

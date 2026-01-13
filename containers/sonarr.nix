@@ -14,7 +14,7 @@ in
         env = [
           "XDG_CONFIG_HOME=/config"
         ];
-        entrypoint = [ (lib.getExe pkgs.radarr) ];
+        entrypoint = [ (lib.getExe pkgs.sonarr) ];
         cmd = [
           "-nobrowser"
           "-data=/config"
@@ -33,6 +33,15 @@ in
         hostPath = baseHDDDir;
         containerPath = "/data";
         userAccessible = true;
+        customPermissionScript = ''
+          currentPerm=$(stat -c %u:%g "${baseHDDDir}")
+          if [ "$currentPerm" != "5009:5000" ]; then
+            echo "Fixing permissions for ${baseHDDDir} (non-recursive)"
+            chown 5009:5000 "${baseHDDDir}"
+            chmod g+rwX "${baseHDDDir}"
+            ${lib.getExe' pkgs.acl "setfacl"} -m d:g:family:rwX,g:family:rwX "${baseHDDDir}"
+          fi
+        '';
       }
       {
         hostPath = configDir;

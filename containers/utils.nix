@@ -58,15 +58,22 @@ in
             # sh
             ''
               mkdir -p "${v.hostPath}"
-              currentPerm=$(stat -c %u:%g "${v.hostPath}")
-              echo "Current permissions of ${v.hostPath}: $currentPerm"
-              if [ "$currentPerm" != "${uid}:${gid}" ]; then
-                echo "Changing permissions for ${v.hostPath}"
-                chown -R ${uid}:${gid} "${v.hostPath}"
-                ${setfacl} -R -m d:g:${aclTarget}:rwX,g:${aclTarget}:rwX "${v.hostPath}"
-              else
-                echo "Permissions for ${v.hostPath} are good"
-              fi
+              ${
+                if v.customPermissionScript != null then
+                  v.customPermissionScript
+                else
+                  ''
+                    currentPerm=$(stat -c %u:%g "${v.hostPath}")
+                    echo "Current permissions of ${v.hostPath}: $currentPerm"
+                    if [ "$currentPerm" != "${uid}:${gid}" ]; then
+                      echo "Changing permissions for ${v.hostPath}"
+                      chown -R ${uid}:${gid} "${v.hostPath}"
+                      ${setfacl} -R -m d:g:${aclTarget}:rwX,g:${aclTarget}:rwX "${v.hostPath}"
+                    else
+                      echo "Permissions for ${v.hostPath} are good"
+                    fi
+                  ''
+              }
             ''
         ) volumes;
 

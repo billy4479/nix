@@ -59,6 +59,11 @@ in
                       type = lib.types.bool;
                       default = false;
                     };
+                    customPermissionScript = lib.mkOption {
+                      type = lib.types.nullOr lib.types.str;
+                      default = null;
+                      description = "Custom shell script to set permissions. Replaces the default recursive chown behavior.";
+                    };
                   };
                 }
               );
