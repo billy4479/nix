@@ -181,23 +181,23 @@ in
           ''
             ${volumeDirScript { inherit uid gid volumes; }}
 
-            ${nerdctl} stop ${name} 2>&1 >/dev/null || true
-            ${nerdctl} rm ${name} 2>&1 >/dev/null || true
+            ${nerdctl} stop ${name} 2>/dev/null >/dev/null || true
+            ${nerdctl} rm ${name} 2>/dev/null >/dev/null || true
 
             ${loadToContainerd}/bin/copy-to-containerd
           '';
 
         script = ''
           exec ${nerdctl} \
-              ${lib.concatStringsSep " \\\n\t" allFlags} \
-              2>&1 >/dev/null 
+            ${lib.concatStringsSep " \\\n  " allFlags} \
+            2>/dev/null >/dev/null 
         '';
 
         postStop = # sh
           ''
             echo "Unloading image"
-            ${nerdctl} --address ${address} --namespace ${namespace} rm -f ${name} 2>&1 >/dev/null || true
-            ${nerdctl} --address ${address} --namespace ${namespace} rmi -f ${imageName} 2>&1 >/dev/null || true
+            ${nerdctl} --address ${address} --namespace ${namespace} rm -f ${name} 2>/dev/null >/dev/null || true
+            ${nerdctl} --address ${address} --namespace ${namespace} rmi -f ${imageName} 2>/dev/null >/dev/null || true
           '';
 
         serviceConfig = {
