@@ -20,7 +20,7 @@
 
     ../../../containers/radarr.nix
     ../../../containers/jackett.nix
-    # ../../../containers/sonarr.nix
+    ../../../containers/sonarr.nix
     ../../../containers/flaresolverr.nix
 
     ../../../containers/jellyfin.nix
