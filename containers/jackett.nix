@@ -1,30 +1,40 @@
-{ pkgs, config, ... }:
+{ pkgs, lib, ... }:
 let
-  inherit ((import ./utils.nix) { inherit pkgs config; }) makeContainer;
-
   name = "jackett";
   configDir = "/mnt/SSD/apps/${name}/config";
   downloadsDir = "/mnt/SSD/apps/${name}/downloads";
 in
-makeContainer {
-  inherit name;
-  image = "lscr.io/linuxserver/jackett";
-  id = 8;
+{
+  nerdctl-containers.${name} = {
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
 
-  environment = {
-    "PGID" = "5000";
-    "PUID" = "5000";
+      config = {
+        env = [
+          "XDG_DATA_HOME=/config"
+          "XDG_CONFIG_HOME=/config"
+        ];
+        entrypoint = [ (lib.getExe pkgs.jackett) ];
+      };
+
+      copyToRoot = with pkgs.dockerTools; [
+        caCertificates
+      ];
+    };
+
+    id = 8;
+
+    volumes = [
+      {
+        hostPath = downloadsDir;
+        containerPath = "/downloads";
+        userAccessible = true;
+      }
+      {
+        hostPath = configDir;
+        containerPath = "/config";
+      }
+    ];
   };
-  volumes = [
-    {
-      hostPath = downloadsDir;
-      containerPath = "/downloads";
-      userAccessible = true;
-    }
-    {
-      hostPath = configDir;
-      containerPath = "/config";
-    }
-  ];
-  runByUser = false; # TODO: remove
 }

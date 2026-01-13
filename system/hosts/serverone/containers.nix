@@ -18,8 +18,8 @@
     ../../../containers/nginx
     ../../../containers/bind9
 
-    # ../../../containers/radarr.nix
-    # ../../../containers/jackett.nix
+    ../../../containers/radarr.nix
+    ../../../containers/jackett.nix
     # ../../../containers/sonarr.nix
     ../../../containers/flaresolverr.nix
 
