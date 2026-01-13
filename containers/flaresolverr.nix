@@ -1,41 +1,36 @@
-{ pkgs, config, ... }:
+{ pkgs, lib, ... }:
 let
   name = "flaresolverr";
   baseSSDDir = "/mnt/SSD/apps/${name}";
-  inherit (import ./utils.nix { inherit pkgs config; }) makeContainer;
 in
-makeContainer {
-  inherit name;
-  image = "localhost/flaresolverr:latest";
-  imageFile = pkgs.dockerTools.buildImage {
+{
+  nerdctl-containers.${name} = {
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
 
-    inherit name;
-    tag = "latest";
+      config = {
+        Env = [ "HOME=/app" ];
+        EntryPoint = [ (lib.getExe pkgs.flaresolverr) ];
+        WorkingDir = "/app";
+      };
+    };
+    id = 133;
 
-    copyToRoot = with pkgs; [
-      flaresolverr
+    environment = {
+      "LOG_LEVEL" = "info";
+    };
+
+    volumes = [
+      {
+        hostPath = "${baseSSDDir}/local";
+        containerPath = "/app/.local";
+      }
     ];
 
-    config = {
-      EntryPoint = [ "flaresolverr" ];
-      WorkingDir = "/app";
-    };
+    tmpfs = [
+      "/tmp"
+      "/app/.cache"
+    ];
   };
-  id = 133;
-
-  environment = {
-    "LOG_LEVEL" = "info";
-  };
-
-  volumes = [
-    {
-      hostPath = "${baseSSDDir}/local";
-      containerPath = "/app/.local";
-    }
-  ];
-
-  tmpfs = [
-    "/tmp"
-    "/app/.cache"
-  ];
 }
