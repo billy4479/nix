@@ -62,6 +62,7 @@ in
                 if v.customPermissionScript != null then
                   v.customPermissionScript
                 else
+                  # sh
                   ''
                     currentPerm=$(stat -c %u:%g "${v.hostPath}")
                     echo "Current permissions of ${v.hostPath}: $currentPerm"
@@ -74,7 +75,8 @@ in
                     fi
                   ''
               }
-            ''
+            
+''
         ) volumes;
 
       # Image Logic
@@ -104,7 +106,7 @@ in
 
       # Flags Construction
       volumeFlags = map (
-        v: "-v ${v.hostPath}:${v.containerPath}:${if v.readOnly or false then "ro" else "rw"}"
+        v: "-v \"${v.hostPath}:${v.containerPath}:${if v.readOnly or false then "ro" else "rw"}\""
       ) volumes;
 
       tmpfsFlags = map (t: "--tmpfs ${t}") tmpfs;
