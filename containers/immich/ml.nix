@@ -15,6 +15,13 @@ in
     ];
     environment = {
       IMMICH_VERSION = version;
+      MACHINE_LEARNING_CACHE_FOLDER = "/cache";
+
+      HF_HOME = "/cache/hf";
+      HF_HUB_CACHE = "/cache/hf/hub";
+      HF_XET_CACHE = "/cache/hf/xet";
+
+      MPLCONFIGDIR = "/cache/matplotlib";
     };
   };
 }

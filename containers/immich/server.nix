@@ -21,8 +21,13 @@ in
         readOnly = true;
       }
       {
-        hostPath = "${baseHDDDir}/media";
-        containerPath = "/mnt/media";
+        hostPath = "/mnt/HDD/generic/Giacomo/Archive/Foto Jack";
+        containerPath = "/mnt/media/Foto Jack Archivio";
+        readOnly = true;
+      }
+      {
+        hostPath = "/mnt/HDD/generic/Edo/foto - edo - archivio";
+        containerPath = "/mnt/media/Foto Edo Archivio";
         readOnly = true;
       }
     ];
