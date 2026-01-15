@@ -28,7 +28,7 @@
     ../../../containers/stirling-pdf.nix
     ../../../containers/opencloud.nix
 
-    # ../../../containers/mc-runner
+    ../../../containers/mc-runner
   ];
 
   nixpkgs.overlays = [ flakeInputs.nix-snapshotter.overlays.default ];
