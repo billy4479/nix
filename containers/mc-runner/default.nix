@@ -19,6 +19,7 @@ in
 
       copyToRoot = [
         pkgs.dockerTools.caCertificates
+        pkgs.restic
         extraPkgs.my-packages.mc-runner
         extraPkgs.my-packages.mc-java
       ];
