@@ -34,7 +34,7 @@ in
     jq
     pv
 
-    nixfmt-rfc-style
+    nixfmt
   ];
 
   services.ssh-agent = {

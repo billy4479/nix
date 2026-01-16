@@ -97,7 +97,7 @@
 
     in
     {
-      formatter.${system} = pkgsForFlake.nixfmt-rfc-style;
+      formatter.${system} = pkgsForFlake.nixfmt;
 
       packages.${system} = rec {
         nginx-config = pkgsForFlake.callPackage ./containers/nginx/config.nix {
@@ -112,7 +112,7 @@
         packages = with pkgsForFlake; [
           stylua
           shfmt
-          nixfmt-rfc-style
+          nixfmt
           ruff
 
           lua-language-server
