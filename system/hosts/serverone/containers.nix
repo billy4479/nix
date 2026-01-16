@@ -7,6 +7,8 @@
   imports = [
     ../../../containers/module.nix
 
+    ../../../containers/headscale
+
     ../../../containers/syncthing.nix
     ../../../containers/immich
     ../../../containers/qbittorrent.nix

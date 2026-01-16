@@ -112,4 +112,11 @@
     finalImageName = "lscr.io/linuxserver/sonarr";
     finalImageTag = "latest";
   };
+  "ghcr.io/tale/headplane" = {
+    imageName = "ghcr.io/tale/headplane";
+    imageDigest = "sha256:74bec8f23ce57f235574b7b3e809a0d9ca500947da45dac485b5132fa4cc9fab";
+    hash = "sha256-mXTKT4UWxEnaIyMKePaRzQCrFGRu/hsdNsbMXKNZSPg=";
+    finalImageName = "ghcr.io/tale/headplane";
+    finalImageTag = "latest";
+  };
 }

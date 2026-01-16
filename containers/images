@@ -4,13 +4,8 @@ ghcr.io/immich-app/immich-server:v2
 ghcr.io/immich-app/immich-machine-learning:v2
 docker.io/valkey/valkey:8-alpine
 ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
-lscr.io/linuxserver/sonarr:latest
 docker.io/nginx:alpine
-lscr.io/linuxserver/radarr:latest
 docker.io/certbot/dns-cloudflare:latest
-docker.io/syncthing/syncthing:latest
-docker.io/erisamoe/cloudflared:latest
 docker.io/qbittorrentofficial/qbittorrent-nox:latest
-lscr.io/linuxserver/jackett:latest
-docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest
 docker.io/opencloudeu/opencloud-rolling:latest
+ghcr.io/tale/headplane:latest
