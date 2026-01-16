@@ -209,11 +209,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1768499596,
-        "narHash": "sha256-0IYpAEWJcipqonFeBbUUOajvIZHP/wiwDOVyOPCPy2I=",
+        "lastModified": 1768565846,
+        "narHash": "sha256-i2sszs37gun1LoRmbwwwiJvicbcQeO+OWNjUgSlXMPE=",
         "owner": "billy4479",
         "repo": "mc-runner",
-        "rev": "caad8724a7e38efa7ab53c472eca0f902896a3bf",
+        "rev": "d188c83a916b5f64042d47859093073df7c2b630",
         "type": "github"
       },
       "original": {
@@ -235,11 +235,11 @@
         "server-tool": "server-tool"
       },
       "locked": {
-        "lastModified": 1768499626,
-        "narHash": "sha256-Yf4CHoxBOkMqfI4pV3Cq0mMfJ3oOAirA5PrNjPz0/XI=",
+        "lastModified": 1768565978,
+        "narHash": "sha256-H4/+tXrw/2+LsFj36nBAkTzJ9w6aJFpv2/Mok/LIiTw=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "734b65e4c79604c19b24f29d3579d721ba45c2ca",
+        "rev": "074e0d2a1ad3471f16be4ad4e3c219fda619c491",
         "type": "github"
       },
       "original": {
