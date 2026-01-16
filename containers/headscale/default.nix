@@ -1,7 +1,6 @@
 {
   pkgs,
   config,
-  lib,
   ...
 }:
 let
@@ -24,11 +23,15 @@ in
         name = "headscale";
         tag = "nix-local";
         config = {
-          Entrypoint = [ "${lib.getExe pkgs.headscale}" ];
+          Entrypoint = [ "/bin/headscale" ];
           Cmd = [ "serve" ];
         };
+
+        copyToRoot = with pkgs; [
+          headscale
+          dockerTools.caCertificates
+        ];
       };
-      ports = [ "51820:51820/udp" ];
       volumes = [
         {
           hostPath = "${baseDir}/lib";
@@ -55,7 +58,7 @@ in
       environmentFiles = [ config.sops.secrets.headplane-env.path ];
       volumes = [
         {
-          hostPath = "${./headplane.yaml.yaml}";
+          hostPath = "${./headplane.yaml}";
           containerPath = "/etc/headplane/config.yaml";
           readOnly = true;
         }
