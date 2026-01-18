@@ -9,6 +9,7 @@
 
     ../../modules/cifs-client.nix
     ../../modules/wireguard.nix
+    ../../modules/tailscale.nix
     ../../modules/extra-network.nix
 
     ../../modules/desktops

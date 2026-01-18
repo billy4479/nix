@@ -1,7 +1,6 @@
 {
   flakeInputs,
-  config,
-  pkgs,
+  lib,
   ...
 }:
 {
@@ -18,6 +17,7 @@
     ./samba.nix
 
     ./wireguard.nix
+    ../../modules/tailscale.nix
 
     ../../modules/power-management
     ../../modules/graphics/intel.nix
@@ -33,5 +33,13 @@
     hostId = "d3cb129c";
     hostName = "serverone";
     interfaces.enp2s0.wakeOnLan.enable = true;
+  };
+
+  services.tailscale = {
+    extraSetFlags = [
+      "--advertise-routes=10.0.1.0/24"
+      "--advertise-exit-node"
+    ];
+    useRoutingFeatures = lib.mkForce "server";
   };
 }
