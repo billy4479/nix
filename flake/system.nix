@@ -67,4 +67,15 @@ createAndMergeHosts defaultOptions [
       ../system/hosts/serverone
     ];
   }
+  {
+    hostname = "vps-proxy";
+    args = {
+      isServer = true;
+      standaloneHomeManager = false;
+      bluetooth = false;
+    };
+    extraSystemModules = [
+      ../system/hosts/vps-proxy
+    ];
+  }
 ]

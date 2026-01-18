@@ -23,6 +23,11 @@
         forwardAgent = true;
         addKeysToAgent = "yes";
       };
+      vps-proxy = {
+        hostname = "87.106.25.93";
+        forwardAgent = true;
+        addKeysToAgent = "yes";
+      };
     };
   };
 }
