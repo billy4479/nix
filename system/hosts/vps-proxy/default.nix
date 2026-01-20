@@ -19,6 +19,8 @@
     };
   };
 
+  boot.loader.efi.efiSysMountPoint = "/boot/efi";
+
   users = {
     mutableUsers = false;
     users = {
@@ -47,4 +49,6 @@
   networking = {
     hostName = "vps-proxy";
   };
+
+  documentation.nixos.enable = false;
 }
