@@ -1,14 +1,15 @@
 {
   flakeInputs,
   pkgs,
+  lib,
   config,
   ...
 }:
 {
   imports = [
     ./hardware-configuration.nix
-    flakeInputs.disko.nixosModules.disko
-    ./disko.nix
+    # flakeInputs.disko.nixosModules.disko
+    # ./disko.nix
   ];
 
   sops.secrets.user_password.neededForUsers = true;
@@ -19,7 +20,15 @@
     };
   };
 
-  boot.loader.efi.efiSysMountPoint = "/boot/efi";
+  zramSwap.enable = true;
+  boot.loader.efi.efiSysMountPoint = "/boot";
+
+  swapDevices = [
+    {
+      size = 1024 * 2;
+      device = "/swapfile";
+    }
+  ];
 
   users = {
     mutableUsers = false;
