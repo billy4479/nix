@@ -21,7 +21,15 @@
   };
 
   zramSwap.enable = true;
-  boot.loader.efi.efiSysMountPoint = "/boot";
+
+  boot.loader.systemd-boot.enable = lib.mkForce false;
+  boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
+
+  boot.loader.grub = {
+    enable = true;
+    device = "/dev/vda";
+    useOSProber = false;
+  };
 
   swapDevices = [
     {
