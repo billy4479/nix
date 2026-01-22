@@ -7,6 +7,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./rathole.nix
   ];
 
   sops.secrets.user_password.neededForUsers = true;
