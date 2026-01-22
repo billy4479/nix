@@ -1,6 +1,7 @@
 {
   flakeInputs,
   pkgs,
+  lib,
   config,
   ...
 }:
@@ -19,6 +20,7 @@
   };
 
   zramSwap.enable = true;
+  services.smartd.enable = lib.mkForce false;
 
   users = {
     mutableUsers = false;
