@@ -351,10 +351,10 @@
     "secrets-repo": {
       "flake": false,
       "locked": {
-        "lastModified": 1769105107,
-        "narHash": "sha256-YKzTCWrinUuH4F7XqhAh3JLc9msjFLv/ysAqbJG8nZg=",
+        "lastModified": 1769109532,
+        "narHash": "sha256-ZRMBQCPSTclW7ewFpehKPRFqWDADkP7rg2/RX/hTSQo=",
         "ref": "master",
-        "rev": "58366bb1580cee21cee97c705f868c65d26562aa",
+        "rev": "935965ddd2debf59a47acd1efb9b754bcbc15829",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/nix-secrets.git"
