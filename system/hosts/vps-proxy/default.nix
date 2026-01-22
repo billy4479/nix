@@ -1,15 +1,12 @@
 {
   flakeInputs,
   pkgs,
-  lib,
   config,
   ...
 }:
 {
   imports = [
     ./hardware-configuration.nix
-    # flakeInputs.disko.nixosModules.disko
-    # ./disko.nix
   ];
 
   sops.secrets.user_password.neededForUsers = true;
@@ -21,22 +18,6 @@
   };
 
   zramSwap.enable = true;
-
-  boot.loader.systemd-boot.enable = lib.mkForce false;
-  boot.loader.efi.canTouchEfiVariables = lib.mkForce false;
-
-  boot.loader.grub = {
-    enable = true;
-    device = "/dev/vda";
-    useOSProber = false;
-  };
-
-  swapDevices = [
-    {
-      size = 1024 * 2;
-      device = "/swapfile";
-    }
-  ];
 
   users = {
     mutableUsers = false;
