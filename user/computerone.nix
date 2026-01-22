@@ -14,5 +14,7 @@
 
     ./modules/desktops
     ./modules/qt.nix
+
+    ./modules/scripts
   ];
 }

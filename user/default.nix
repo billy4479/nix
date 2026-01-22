@@ -15,7 +15,6 @@ in
 
   imports = [
     ./${extraConfig.hostname}.nix
-    ./modules/scripts
     ./modules/secrets.nix
   ];
 
