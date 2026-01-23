@@ -13,71 +13,65 @@ in
 
   sops.templates."gost.yaml" = {
     owner = config.users.users."container-${name}".name;
-    group = config.users.users.containers.group;
     content = # yaml
       ''
         services:
-        - name: nginx-http
-          addr: :80
-          handler:
-            type: rtcp
-          listener:
-            type: rtcp
-            chain: relay-chain
-          forwarder:
-            nodes:
-            - addr: 10.0.1.6:80
-          metadata:
-              proxyProtocol: 1
+          # Handles all TCP streams arriving via the tunnel
+          - name: client-tcp
+            addr: ":0"
+            handler:
+              type: rtcp
+            listener:
+              type: rtcp
+              chain: to-server-tunnel
+            forwarder:
+              nodes:
+                - name: nginx-http
+                  addr: "10.0.1.6:80"
+                  filter:
+                    host: "http.local"
 
-        - name: nginx-https
-          addr: :443
-          handler:
-            type: rtcp
-          listener:
-            type: rtcp
-            chain: relay-chain
-          forwarder:
-            nodes:
-            - addr: 10.0.1.6:443
-          metadata:
-              proxyProtocol: 1
+                - name: nginx-https
+                  addr: "10.0.1.6:443"
+                  filter:
+                    host: "https.local"
 
-        - name: minecraft-java
-          addr: :25565
-          handler:
-            type: rtcp
-          listener:
-            type: rtcp
-            chain: relay-chain
-          forwarder:
-            nodes:
-            - addr: 10.0.1.13:25565
-          metadata:
-              proxyProtocol: 1
+                - name: mc-java-local
+                  addr: "10.0.1.13:25565"
+                  filter:
+                    host: "mcjava.local"
 
-        - name: minecraft-bedrock
-          addr: :19132
-          handler:
-            type: rudp
-          listener:
-            type: rudp
-            chain: relay-chain
-          forwarder:
-            nodes:
-            - addr: 10.0.1.13:19132
-          metadata:
-              proxyProtocol: 1
+          # Handles all UDP datagrams arriving via the tunnel
+          - name: client-udp
+            addr: ":0"
+            handler:
+              type: rudp
+            listener:
+              type: rudp
+              chain: to-server-tunnel
+            forwarder:
+              nodes:
+                - name: mc-bedrock-local
+                  addr: "10.0.1.13:19132"
+                  filter:
+                    host: "mcbedrock.local"
 
         chains:
-        - name: relay-chain
-          hops:
-          - name: vps-relay
-            addr: 87.106.25.93:2333
-            node:
-              auth:
-                username: "${config.sops.placeholder."gost-credentials/username"}"
-                password: "${config.sops.placeholder."gost-credentials/password"}"
+          - name: to-server-tunnel
+            hops:
+              - name: hop-0
+                nodes:
+                  - name: tunnel
+                    addr: "87.106.25.93:2333"
+                    connector:
+                      type: tunnel
+                      auth:
+                        username: "${config.sops.placeholder."gost-credentials/username"}"
+                        password: "${config.sops.placeholder."gost-credentials/password"}"
+                      metadata:
+                        tunnel.id: "4d21094e-b74c-4916-86c1-d9fa36ea677b"
+                    dialer:
+                      type: tcp
       '';
   };
 

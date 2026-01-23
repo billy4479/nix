@@ -19,17 +19,91 @@
     content = # yaml
       ''
         services:
-        - name: service-relay
-          addr: :2333
-          handler:
-            type: relay
-            metadata:
-                proxyProtocol: 1
-            auth:
-              username: "${config.sops.placeholder."gost-credentials/username"}"
-              password: "${config.sops.placeholder."gost-credentials/password"}"
-          listener:
-            type: tcp 
+          # Tunnel control plane 
+          - name: tunnel-server
+            addr: ":2333"
+            handler:
+              type: tunnel
+              auth:
+                username: "${config.sops.placeholder."gost-credentials/username"}"
+                password: "${config.sops.placeholder."gost-credentials/password"}"
+              metadata:
+                tunnel.direct: true
+            listener:
+              type: tcp
+
+          # ===== Public services =====
+
+          - name: http
+            addr: ":80"
+            handler:
+              type: tcp
+              chain: tunnel-chain
+              metadata:
+                proxyProtocol: 2
+            listener:
+              type: tcp
+            forwarder:
+              nodes:
+                - name: http-up
+                  addr: "http.local"
+
+          - name: https
+            addr: ":443"
+            handler:
+              type: tcp
+              chain: tunnel-chain
+              metadata:
+                proxyProtocol: 2   
+            listener:
+              type: tcp
+            forwarder:
+              nodes:
+                - name: https-up
+                  addr: "https.local"
+
+          - name: mc-java
+            addr: ":25565"
+            handler:
+              type: tcp
+              chain: tunnel-chain
+              metadata:
+                proxyProtocol: 2  
+            listener:
+              type: tcp
+            forwarder:
+              nodes:
+                - name: mcjava-up
+                  addr: "mcjava.local"
+
+          - name: mc-bedrock
+            addr: ":19132"
+            handler:
+              type: udp
+              chain: tunnel-chain
+            listener:
+              type: udp
+            forwarder:
+              nodes:
+                - name: mcbedrock-up
+                  addr: "mcbedrock.local"
+
+        chains:
+          - name: tunnel-chain
+            hops:
+              - name: hop-0
+                nodes:
+                  - name: tunnel
+                    addr: "127.0.0.1:2333"
+                    connector:
+                      type: tunnel
+                      auth:
+                        username: "${config.sops.placeholder."gost-credentials/username"}"
+                        password: "${config.sops.placeholder."gost-credentials/password"}"
+                      metadata:
+                        tunnel.id: "4d21094e-b74c-4916-86c1-d9fa36ea677b"
+                    dialer:
+                      type: tcp
       '';
   };
 
