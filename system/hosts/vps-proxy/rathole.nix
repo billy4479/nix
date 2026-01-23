@@ -2,6 +2,15 @@
 {
   sops.secrets.rathole-credentials = { };
 
+  networking.firewall = {
+    allowedTCPPorts = [
+      80
+      443
+      25565
+    ];
+    allowedUDPPorts = [ 19132 ];
+  };
+
   services.rathole = {
     enable = true;
     role = "server";
