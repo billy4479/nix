@@ -7,8 +7,13 @@
       80
       443
       25565
+
+      2333
     ];
-    allowedUDPPorts = [ 19132 ];
+
+    allowedUDPPorts = [
+      19132
+    ];
   };
 
   services.rathole = {
