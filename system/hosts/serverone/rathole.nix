@@ -9,10 +9,10 @@
     credentialsFile = config.sops.secrets.rathole-credentials.path;
 
     settings.client = {
-      bind_addr = "0.0.0.0:2333";
+      remote_addr = "87.106.25.93:2333";
       transport = {
         type = "noise";
-        noise.rempote_public_key = "Sy21aaybZ2mWzGjRbX5bv5TP+BaXAO6L96iiySAtjxM=";
+        noise.remote_public_key = "Sy21aaybZ2mWzGjRbX5bv5TP+BaXAO6L96iiySAtjxM=";
       };
 
       services = {
