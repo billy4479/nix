@@ -1,0 +1,18 @@
+$TTL 60
+@          IN SOA   ns.polpetta.online. billy. (
+                        2025102901 ; serial (YYYYMMDDnn) — bump on changes
+                        1h         ; refresh
+                        15m        ; retry
+                        1w         ; expire
+                        1h )       ; negative caching
+
+           IN NS    ns.polpetta.online.
+
+ns         IN A     10.0.1.11
+
+@          IN CNAME billy4479.github.io.
+www        IN CNAME polpetta.online.
+quote-book IN CNAME cname.vercel-dns.com.
+
+*          IN A     10.0.1.6 
+
