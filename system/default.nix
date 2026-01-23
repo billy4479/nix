@@ -21,6 +21,7 @@
     file
     lsof
     usbutils # lsusb
+    net-tools
   ];
 
   services.smartd.enable = true;
