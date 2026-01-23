@@ -1,6 +1,6 @@
 $TTL 60
 @          IN SOA    ns.internal.polpetta.online. billy. (
-                        2025102901 ; serial (YYYYMMDDnn) — bump on changes
+                        2026012301 ; serial (YYYYMMDDnn) — bump on changes
                         1h         ; refresh
                         15m        ; retry
                         1w         ; expire
@@ -10,7 +10,15 @@ $TTL 60
 
 ns         IN A     192.168.2.21
 
-@          IN CNAME billy4479.github.io.
+@          IN A     185.199.108.153
+@          IN A     185.199.109.153
+@          IN A     185.199.110.153
+@          IN A     185.199.111.153
+@          IN AAAA  2606:50c0:8000::153
+@          IN AAAA  2606:50c0:8001::153
+@          IN AAAA  2606:50c0:8002::153
+@          IN AAAA  2606:50c0:8003::153
+
 www        IN CNAME polpetta.online.
 quote-book IN CNAME cname.vercel-dns.com.
 
