@@ -15,7 +15,6 @@
 
     ../../../containers/calendar-proxy.nix
 
-    ../../../containers/cloudflared.nix
     ../../../containers/certbot.nix
     ../../../containers/nginx
     ../../../containers/bind9
