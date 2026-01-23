@@ -262,5 +262,13 @@ in
         #!/bin/sh
         exec ${lib.getExe pkgs.xclip} -selection clipboard -o
       ''
+
   );
+
+  update-vps =
+    pkgs.writeScriptBin "update-vps"
+      # sh
+      ''
+        nix build
+      '';
 }

@@ -30,6 +30,7 @@
     ../../../containers/opencloud.nix
 
     ../../../containers/mc-runner
+    ../../../containers/gost.nix
   ];
 
   nixpkgs.overlays = [ flakeInputs.nix-snapshotter.overlays.default ];

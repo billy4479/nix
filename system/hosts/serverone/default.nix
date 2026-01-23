@@ -17,7 +17,6 @@
     ./samba.nix
 
     ./wireguard.nix
-    ./rathole.nix
     ../../modules/tailscale.nix
 
     ../../modules/power-management
