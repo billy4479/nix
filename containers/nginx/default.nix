@@ -4,8 +4,8 @@ let
   baseSSDDir = "/mnt/SSD/apps/${name}";
   certsDir = "/mnt/SSD/apps/certbot/config";
 
-  cloudflaredAddress = "10.0.1.131";
-  nginxConfig = pkgs.callPackage ./config.nix { inherit cloudflaredAddress; };
+  externalTrafficFrom = "10.0.1.131";
+  nginxConfig = pkgs.callPackage ./config.nix { inherit externalTrafficFrom; };
 in
 {
   nerdctl-containers.${name} = {

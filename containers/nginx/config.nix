@@ -1,7 +1,7 @@
 {
   stdenvNoCC,
 
-  cloudflaredAddress,
+  externalTrafficFrom,
   ...
 }:
 stdenvNoCC.mkDerivation {
@@ -20,6 +20,6 @@ stdenvNoCC.mkDerivation {
   postPatch = # sh
     ''
       find . -type f -exec \
-        sed -i 's/@@CLOUDFLARED_ADDRESS@@/${cloudflaredAddress}/g' {} \;
+        sed -i 's/@@EXTERNAL_TRAFFIC@@/${externalTrafficFrom}/g' {} \;
     '';
 }
