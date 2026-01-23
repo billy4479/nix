@@ -49,6 +49,7 @@
             	"Telescope",
             	"blink",
             	"fidget",
+            	"oil",
             }
 
             local function should_skip(ft)
