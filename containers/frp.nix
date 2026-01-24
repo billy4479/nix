@@ -18,7 +18,7 @@ in
         serverPort = 2333
 
         auth.method = "token"
-        auth.token = "${config.sops.placeholders."frp-token"}"
+        auth.token = "${config.sops.placeholder."frp-token"}"
 
         [[proxies]]
         name = "nginx_http"
