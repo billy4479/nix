@@ -26,7 +26,7 @@ in
         name = "nginx_http"
         type = "tcp"
         localIP = "10.0.1.6"
-        localPort = 80
+        localPort = 81
         remotePort = 80
         transport.proxyProtocolVersion = "v2"
 
@@ -34,7 +34,7 @@ in
         name = "nginx_https"
         type = "tcp"
         localIP = "10.0.1.6"
-        localPort = 443
+        localPort = 4443
         remotePort = 443
         transport.proxyProtocolVersion = "v2"
 
