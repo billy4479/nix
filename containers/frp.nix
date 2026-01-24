@@ -12,6 +12,8 @@ in
 
   sops.templates."frpc.toml" = {
     owner = config.users.users."container-${name}".name;
+    group = config.users.users.containers.group;
+
     content = # toml
       ''
         serverAddr = "87.106.25.93"

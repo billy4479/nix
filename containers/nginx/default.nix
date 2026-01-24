@@ -25,10 +25,6 @@ in
         readOnly = true;
       }
       {
-        hostPath = "${baseSSDDir}/logs";
-        containerPath = "/var/log/nginx";
-      }
-      {
         hostPath = certsDir;
         containerPath = "/certs/";
         readOnly = true;
