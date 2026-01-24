@@ -13,11 +13,10 @@
     ../../../containers/immich
     ../../../containers/qbittorrent.nix
 
-    ../../../containers/calendar-proxy.nix
-
     ../../../containers/certbot.nix
     ../../../containers/nginx
     ../../../containers/bind9
+    ../../../containers/frp.nix
 
     ../../../containers/radarr.nix
     ../../../containers/jackett.nix
@@ -30,7 +29,7 @@
     ../../../containers/opencloud.nix
 
     ../../../containers/mc-runner
-    ../../../containers/gost.nix
+    ../../../containers/calendar-proxy.nix
   ];
 
   nixpkgs.overlays = [ flakeInputs.nix-snapshotter.overlays.default ];

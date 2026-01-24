@@ -8,7 +8,7 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./gost.nix
+    ./frp.nix
   ];
 
   sops.secrets.user_password.neededForUsers = true;
