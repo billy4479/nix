@@ -23,12 +23,12 @@
 
     matchBlocks = {
       serverone = {
-        hostname = "10.0.0.1";
+        hostname = "internal.polpetta.online";
         forwardAgent = true;
         addKeysToAgent = "yes";
       };
       vps-proxy = {
-        hostname = "87.106.25.93";
+        hostname = "external.polpetta.online";
         forwardAgent = true;
         addKeysToAgent = "yes";
       };
