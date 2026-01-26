@@ -9,6 +9,7 @@
     useRoutingFeatures = "client";
     extraSetFlags = [
       "--accept-routes"
+      "--operator=${config.main-user.userName}"
     ];
     extraUpFlags = [
       "--login-server"

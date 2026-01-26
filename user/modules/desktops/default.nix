@@ -18,6 +18,8 @@
     autostart = true;
   };
 
+  services.tailscale-systray.enable = true;
+
   home.packages =
     with pkgs;
     [ pavucontrol ] ++ (if (extraConfig.wayland) then [ wl-clipboard ] else [ xclip ]);
