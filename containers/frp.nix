@@ -44,7 +44,9 @@ in
         localIP = "10.0.1.13"
         localPort = 25565
         remotePort = 25565
-        transport.proxyProtocolVersion = "v2"
+        # transport.proxyProtocolVersion = "v2"
+        # TODO: This in theory should be supported with mods, in practice I think we can ignore this
+        # https://modrinth.com/mod/proxy-protocol-support
 
         [[proxies]]
         name = "minecraft_bedrock"
