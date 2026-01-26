@@ -121,7 +121,6 @@
           sops
           age
 
-          wireguard-tools
           dig
 
           myPackages.packages.${system}.prefetch-all-images

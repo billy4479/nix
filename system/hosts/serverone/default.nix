@@ -16,7 +16,6 @@
     ./containers.nix
     ./samba.nix
 
-    ./wireguard.nix
     ../../modules/tailscale.nix
 
     ../../modules/power-management
