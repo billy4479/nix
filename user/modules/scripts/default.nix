@@ -1,5 +1,7 @@
 {
+  pkgs,
   lib,
+  config,
   extraConfig,
   ...
 }@args:
