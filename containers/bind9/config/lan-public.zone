@@ -24,3 +24,4 @@ quote-book IN CNAME cname.vercel-dns.com.
 
 *          IN A     192.168.2.21
 
+external   IN A     87.106.25.93
