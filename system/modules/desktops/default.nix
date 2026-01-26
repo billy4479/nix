@@ -1,4 +1,9 @@
-{ pkgs, extraConfig, ... }:
+{
+  pkgs,
+  flakeInputs,
+  extraConfig,
+  ...
+}:
 let
   desktop = extraConfig.desktop;
 in
@@ -43,6 +48,14 @@ in
   programs = {
     # https://discourse.nixos.org/t/error-gdbus-error-org-freedesktop-dbus-error-serviceunknown-the-name-ca-desrt-dconf-was-not-provided-by-any-service-files/29111/2
     dconf.enable = true;
+  };
+
+  users.users.${extraConfig.user.username}.openssh = {
+    authorizedKeys.keys = [
+      (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_computerone.pub")
+      (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_portatilo.pub")
+      (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_nord.pub")
+    ];
   };
 
 }

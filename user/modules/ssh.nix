@@ -1,9 +1,4 @@
-{
-  extraConfig,
-  flakeInputs,
-  config,
-  ...
-}:
+{ config, ... }:
 {
   sops.secrets = {
     ssh_key = {
@@ -11,15 +6,17 @@
     };
   };
 
-  users.users.${extraConfig.user.username}.openssh.authorizedKeys = [
-    (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_computerone.pub")
-    (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_portatilo.pub")
-    (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_nord.pub")
-  ];
+  services.ssh-agent = {
+    enable = true;
+    enableBashIntegration = true;
+    enableZshIntegration = true;
+  };
+
+  # Keys are set up in system/modules/desktops/default.nix
 
   programs.ssh = {
     enable = true;
-    startAgent = true;
+    enableDefaultConfig = false;
 
     matchBlocks = {
       serverone = {
@@ -31,6 +28,17 @@
         hostname = "external.polpetta.online";
         forwardAgent = true;
         addKeysToAgent = "yes";
+      };
+      "*" = {
+        # forwardAgent = false;
+        compression = false;
+        serverAliveInterval = 0;
+        serverAliveCountMax = 3;
+        hashKnownHosts = false;
+        userKnownHostsFile = "~/.ssh/known_hosts";
+        controlMaster = "no";
+        controlPath = "~/.ssh/master-%r@%n:%p";
+        controlPersist = "no";
       };
     };
   };
