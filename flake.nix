@@ -101,7 +101,7 @@
 
       packages.${system} = rec {
         nginx-config = pkgsForFlake.callPackage ./containers/nginx/config.nix {
-          cloudflaredAddress = "10.0.1.131";
+          externalTrafficFrom = "10.0.1.131";
         };
 
         bind9-hosts = pkgsForFlake.callPackage ./containers/bind9/hosts.nix { };
