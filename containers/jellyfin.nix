@@ -16,6 +16,11 @@ in
         userAccessible = true;
       }
       {
+        hostPath = "/mnt/HDD/generic";
+        containerPath = "/generic-media";
+        readOnly = true;
+      }
+      {
         hostPath = "${baseSSDDir}/config";
         containerPath = "/config";
       }
