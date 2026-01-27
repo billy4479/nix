@@ -1,5 +1,4 @@
 docker.io/jellyfin/jellyfin:latest
-docker.io/ubuntu/bind9:latest
 ghcr.io/immich-app/immich-server:v2
 ghcr.io/immich-app/immich-machine-learning:v2
 docker.io/valkey/valkey:8-alpine

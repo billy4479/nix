@@ -1,26 +1,37 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  ...
+}:
 let
   name = "bind9";
   baseDir = "/mnt/SSD/apps/${name}";
 
   hosts = pkgs.callPackage ./hosts.nix { };
   bindConfig = pkgs.callPackage ./config.nix { bind9-hosts = hosts; };
+  uid = toString config.users.users."container-${name}".uid;
+  gid = toString config.users.groups.containers.gid;
 in
 {
   nerdctl-containers.${name} = {
     imageToBuild = pkgs.nix-snapshotter.buildImage {
       name = "bind9";
       tag = "nix-local";
-      fromImage = pkgs.dockerTools.pullImage {
-        imageName = "ubuntu/bind9";
-        imageDigest = "sha256:360622f1481a577822b7a310cdca4e37c16c5d3af53a3e455a13e90cb234943f";
-        hash = "sha256-D5w04BL0PzVm2vER+h78bG0mP7ugwxK6kVs9rQUjwhA=";
-        finalImageName = "ubuntu/bind9";
-        finalImageTag = "latest";
-      };
-
-      copyToRoot = [ ./contents ];
-      config.Entrypoint = [ "/entrypoint.sh" ];
+      copyToRoot = [
+        (pkgs.writeTextDir "/etc/passwd" ''
+          bind:x:${uid}:${gid}:bind9 user:/var/empty:/run/current-system/sw/bin/nologin
+        '')
+        pkgs.dockerTools.binSh
+      ];
+      config.Entrypoint = [
+        (pkgs.writeScript "bind9-entrypoint"
+          # sh
+          ''
+            #!/bin/sh
+            exec ${pkgs.bind}/bin/named -u bind -g -c /etc/bind/named.conf
+          ''
+        )
+      ];
     };
 
     id = 11;
@@ -46,11 +57,6 @@ in
         readOnly = true;
       }
     ];
-
-    environment = {
-      "PUID" = "5000";
-      "PGID" = "5000";
-    };
 
     ports = [
       "53:53/tcp"

@@ -12,12 +12,25 @@ stdenvNoCC.mkDerivation rec {
 
   buildPhase = # sh
     ''
+      cat <<EOF >$out
+      $TTL 1H
+      @       IN      SOA     localhost. root.localhost. (
+                              1               ; Serial
+                              3H              ; Refresh
+                              1H              ; Retry
+                              1W              ; Expire
+                              1H )            ; Negative Cache TTL
+              IN      NS      localhost.
+
+      ; Block List
+      EOF
+
       grep "^0.0.0.0" ${src} |
         cut -d " " -f 2 |
         tail -n +2 |
         sort |
         grep -v "s.click.aliexpress.com" |
         grep -v "click.aliexpress.com" |
-        sed -r 's/(.*)/zone "\1" { type master; file "\/etc\/bind\/sinkhole.zone"; };/' >$out
+        sed -r 's/(.*)/\1 CNAME ./' >>$out
     '';
 }

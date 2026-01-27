@@ -49,13 +49,6 @@
     finalImageName = "docker.io/syncthing/syncthing";
     finalImageTag = "latest";
   };
-  "docker.io/ubuntu/bind9" = {
-    imageName = "docker.io/ubuntu/bind9";
-    imageDigest = "sha256:45d541e9688f2c9010d22a78200117b66ed2df31b78f3464876f7e6e15cfaf77";
-    hash = "sha256-XAhXuTfoNhlNsMYqx32xvIlPCHTOd1jYJALoI7qIgFk=";
-    finalImageName = "docker.io/ubuntu/bind9";
-    finalImageTag = "latest";
-  };
   "docker.io/valkey/valkey" = {
     imageName = "docker.io/valkey/valkey";
     imageDigest = "sha256:3c3ccc8571d4866ec5ac5ffb2519b6b6a1fdbf6b5ff5fdab075413026fbff273";

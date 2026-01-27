@@ -1,8 +1,0 @@
-$TTL 24h
-
-@       IN SOA ns.polpetta.online. billy. (
-               2003052800  86400  300  604800  3600 )
-
-@       IN      NS   ns.polpetta.com.
-@       IN      A    0.0.0.0
-*       IN      A    0.0.0.0
