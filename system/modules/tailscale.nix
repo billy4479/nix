@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, extraConfig, ... }:
 {
   sops.secrets.tailscale-key = { };
 
@@ -9,7 +9,7 @@
     useRoutingFeatures = "client";
     extraSetFlags = [
       "--accept-routes"
-      "--operator=${config.main-user.userName}"
+      "--operator=${extraConfig.user.username}"
     ];
     extraUpFlags = [
       "--login-server"
