@@ -235,11 +235,11 @@
         "server-tool": "server-tool"
       },
       "locked": {
-        "lastModified": 1768565978,
-        "narHash": "sha256-H4/+tXrw/2+LsFj36nBAkTzJ9w6aJFpv2/Mok/LIiTw=",
+        "lastModified": 1770206562,
+        "narHash": "sha256-rWUwvnEWG8c5719exHtZ6kT0yMma0bZeIHNFXH/Rg5Q=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "074e0d2a1ad3471f16be4ad4e3c219fda619c491",
+        "rev": "33ae10b093555108962f1ed8951729dcc96b75b7",
         "type": "github"
       },
       "original": {
