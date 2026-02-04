@@ -50,6 +50,7 @@
             	"blink",
             	"fidget",
             	"oil",
+            	"molten_output",
             }
 
             local function should_skip(ft)

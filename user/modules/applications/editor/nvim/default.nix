@@ -9,7 +9,7 @@
 
   programs.neovim = {
     enable = true;
-    extraLuaConfig = # lua
+    initLua = # lua
       ''
         vim.opt.nu = true
         vim.opt.relativenumber = true

@@ -5,6 +5,14 @@
   programs.neovim = {
     plugins = with pkgs.vimPlugins; [
       {
+        plugin = otter-nvim;
+        type = "lua";
+        config = # lua
+          ''
+            require("otter").setup()
+          '';
+      }
+      {
         plugin = molten-nvim;
         type = "lua";
         config = # lua
@@ -21,9 +29,12 @@
           ''
             local quarto = require("quarto")
             quarto.setup({
+            	debug = false,
+            	closePreviewOnExit = true,
             	lspFeatures = {
+            		enabled = true,
+            		chunks = "curly",
             		languages = { "python" },
-            		chunks = "all",
             		diagnostics = {
             			enabled = true,
             			triggers = { "BufWritePost" },
@@ -32,18 +43,15 @@
             			enabled = true,
             		},
             	},
-            	keymap = {
-            		hover = "H",
-            		definition = "gd",
-            		rename = "<leader>rn",
-            		references = "gr",
-            		format = "<leader>gf",
-            	},
             	codeRunner = {
             		enabled = true,
-            		default_method = "molten",
+            		default_method = "molten", -- "molten", "slime", "iron" or <function>
+            		ft_runners = {}, -- filetype to runner, ie. `{ python = "molten" }`.
+            		-- Takes precedence over `default_method`
+            		never_run = { "yaml" }, -- filetypes which are never sent to a code runner
             	},
             })
+            vim.keymap.set("n", "<leader>qp", quarto.quartoPreview, { silent = true, noremap = true })
 
             -- https://github.com/benlubas/molten-nvim/blob/main/docs/Notebook-Setup.md#lsp-features-with-quarto-nvim
             local runner = require("quarto.runner")
@@ -58,18 +66,18 @@
           '';
       }
 
-      {
-        plugin = jupytext-nvim;
-        type = "lua";
-        config = # lua
-          ''
-            require("jupytext").setup({
-            	style = "markdown",
-            	output_extension = "md",
-            	force_ft = "markdown",
-            })
-          '';
-      }
+      # {
+      #   plugin = jupytext-nvim;
+      #   type = "lua";
+      #   config = # lua
+      #     ''
+      #       require("jupytext").setup({
+      #       	style = "markdown",
+      #       	output_extension = "md",
+      #       	force_ft = "markdown",
+      #       })
+      #     '';
+      # }
       {
         plugin = image-nvim;
         type = "lua";
@@ -90,7 +98,7 @@
     extraPackages = with pkgs; [
       imagemagick # for image rendering
 
-      python3Packages.jupytext
+      # python3Packages.jupytext
     ];
     extraLuaPackages =
       ps: with ps; [

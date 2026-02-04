@@ -1,5 +1,3 @@
-require("quarto").activate()
-
 local kernel_path = vim.env.HOME .. "/.local/share/jupyter/runtime/"
 local find_kernels = function()
 	local kernels = {}
