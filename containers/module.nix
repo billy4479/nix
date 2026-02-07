@@ -165,7 +165,19 @@ in
           }
         ]
       );
-      systemd = lib.mkMerge (map (c: c.systemd) containerConfigs);
+      systemd = lib.mkMerge (
+        map (c: c.systemd) containerConfigs
+        ++ [
+          {
+            slices.all-containers = {
+              description = "Slice for all nerdctl containers";
+            };
+            targets.all-containers = {
+              wantedBy = [ "multi-user.target" ];
+            };
+          }
+        ]
+      );
     }
   );
 }

@@ -154,10 +154,6 @@ in
       dependencies = map (x: "nerdctl-${x}.service") dependsOn;
     in
     {
-      systemd.targets.all-containers = {
-        wantedBy = [ "multi-user.target" ];
-      };
-
       users.users."container-${name}" = {
         isSystemUser = true;
         name = "container-${uid}";
@@ -210,6 +206,7 @@ in
 
         serviceConfig = {
           Restart = "always";
+          Slice = "all-containers.slice";
         };
       };
     };
