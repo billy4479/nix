@@ -184,6 +184,8 @@ in
         partOf = [ "all-containers.target" ];
         wantedBy = [ "all-containers.target" ];
 
+        path = [ pkgs.iptables ];
+
         preStart = # sh
           ''
             ${volumeDirScript { inherit uid gid volumes; }}
