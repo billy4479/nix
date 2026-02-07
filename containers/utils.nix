@@ -198,8 +198,7 @@ in
 
         script = ''
           exec ${nerdctl} \
-            ${lib.concatStringsSep " \\\n  " allFlags} \
-            2>/dev/null >/dev/null 
+            ${lib.concatStringsSep " \\\n  " allFlags}
         '';
 
         postStop = # sh
