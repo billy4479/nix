@@ -112,7 +112,7 @@ let
           "--name ${name}"
           "--rm"
           "--pull never"
-          "--log-driver=journald"
+          # "--log-driver=journald"
           "--net=nerdctl-bridge"
           "--ip=${ip}"
           volumeFlags
