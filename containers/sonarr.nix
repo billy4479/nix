@@ -34,8 +34,9 @@ in
         containerPath = "/data";
         userAccessible = true;
         customPermissionScript = ''
-          currentPerm=$(stat -c %u:%g "${baseHDDDir}")
-          if [ "$currentPerm" != "5009:5000" ]; then
+          currentOwner=$(stat -c %u "${baseHDDDir}")
+          currentGroup=$(stat -c %g "${baseHDDDir}")
+          if [ "$currentGroup" != "5000" ] || { [ "$currentOwner" != "5007" ] && [ "$currentOwner" != "5009" ]; }; then
             echo "Fixing permissions for ${baseHDDDir} (non-recursive)"
             chown 5009:5000 "${baseHDDDir}"
             chmod g+rwX "${baseHDDDir}"
