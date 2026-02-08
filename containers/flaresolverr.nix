@@ -49,8 +49,7 @@ in
       }
     ];
 
-    tmpfs = [
-      "/tmp"
-    ];
+    # Aggressive stop timeout, otherwise it takes forever
+    stopTimeout = "2s";
   };
 }
