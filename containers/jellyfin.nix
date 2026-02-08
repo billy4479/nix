@@ -13,7 +13,7 @@ in
       {
         hostPath = baseHDDDir;
         containerPath = "/media";
-        userAccessible = true;
+        readOnly = true;
       }
       {
         hostPath = "/mnt/HDD/generic";
