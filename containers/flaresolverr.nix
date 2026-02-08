@@ -50,6 +50,6 @@ in
     ];
 
     # Aggressive stop timeout, otherwise it takes forever
-    stopTimeout = "2s";
+    stopTimeout = 2;
   };
 }

@@ -35,10 +35,8 @@ let
           if v.readOnly or false then
             ""
           else
-            # sh
-            ''
-              mkdir -p "${v.hostPath}"
-              ${
+            let
+              actualPermissionScript =
                 if v.customPermissionScript != null then
                   v.customPermissionScript
                 else
@@ -53,9 +51,13 @@ let
                     else
                       echo "Permissions for ${v.hostPath} are good"
                     fi
-                  ''
-              }
+                  '';
+            in
+            # sh
+            ''
+              mkdir -p "${v.hostPath}"
 
+              ${actualPermissionScript}
             ''
         ) volumes;
 
@@ -194,9 +196,13 @@ let
         serviceConfig = {
           Restart = "always";
           Slice = "all-containers.slice";
+          ExecStop =
+            "${nerdctl} --address ${address} --namespace ${namespace} stop ${name}"
+            + lib.optionalString (cfg.stopTimeout != null) " -t ${toString cfg.stopTimeout}";
         }
         // lib.optionalAttrs (cfg.stopTimeout != null) {
-          TimeoutStopSec = cfg.stopTimeout;
+          # Two seconds buffer to give some time to nerdctl to send sigkill
+          TimeoutStopSec = toString (cfg.stopTimeout + 2) + "s";
         };
       };
     };
@@ -320,9 +326,9 @@ in
             };
 
             stopTimeout = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
+              type = lib.types.nullOr lib.types.int;
               default = null;
-              description = "TimeoutStopSec for the systemd service.";
+              description = "Seconds before nerdctl sends kill to container.";
             };
           };
         }
