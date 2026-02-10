@@ -55,6 +55,13 @@ in
         localPort = 19132
         remotePort = 19132
         # transport.proxyProtocolVersion = "v2"
+
+        [[proxies]]
+        name = "stun"
+        type = "udp"
+        localIP = "10.0.1.15"
+        localPort = 3478
+        remotePort = 3478
       '';
   };
 

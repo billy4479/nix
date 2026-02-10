@@ -11,6 +11,7 @@ in
       2333
     ];
     allowedUDPPorts = [
+      3478
       19132
     ];
   };
@@ -31,7 +32,8 @@ in
           { start = 80, end = 80 },
           { start = 443, end = 443 },
           { start = 25565, end = 25565 },
-          { start = 19132, end = 19132 }
+          { start = 19132, end = 19132 },
+          { start = 3478, end = 3478 }
         ]
       '';
   };
