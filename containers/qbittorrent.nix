@@ -1,6 +1,24 @@
 { pkgs, lib, ... }:
 let
   name = "qbittorrent";
+  baseHDDDir = "/mnt/HDD/torrent";
+  configDir = "/mnt/SSD/apps/${name}";
+  setfacl = lib.getExe' pkgs.acl "setfacl";
+  sharedPermissionScript = # sh
+    ''
+      currentPerm=$(stat -c %u:%g "${baseHDDDir}")
+      desiredPerm="0:5000"
+      echo "Current permissions of ${baseHDDDir}: $currentPerm"
+      if [ "$currentPerm" != "$desiredPerm" ]; then
+        echo "Changing permissions for ${baseHDDDir}"
+        chown -R "$desiredPerm" "${baseHDDDir}"
+        chmod -R g+rwX "${baseHDDDir}"
+        chmod g+s "${baseHDDDir}"
+        ${setfacl} -R -m d:g:containers:rwX,g:containers:rwX "${baseHDDDir}"
+      else
+        echo "Permissions for ${baseHDDDir} are good"
+      fi
+    '';
 
   torrentingPort = "6881";
   webUiPort = "8080";
@@ -18,11 +36,12 @@ in
 
     volumes = [
       {
-        hostPath = "/mnt/HDD/torrent/${name}";
-        containerPath = "/data/${name}";
+        hostPath = baseHDDDir;
+        containerPath = "/data";
+        customPermissionScript = sharedPermissionScript;
       }
       {
-        hostPath = "/mnt/SSD/apps/${name}";
+        hostPath = configDir;
         containerPath = "/config";
       }
     ];

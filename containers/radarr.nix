@@ -3,6 +3,22 @@ let
   name = "radarr";
   baseHDDDir = "/mnt/HDD/torrent";
   configDir = "/mnt/SSD/apps/${name}";
+  setfacl = lib.getExe' pkgs.acl "setfacl";
+  sharedPermissionScript = # sh
+    ''
+      currentPerm=$(stat -c %u:%g "${baseHDDDir}")
+      desiredPerm="0:5000"
+      echo "Current permissions of ${baseHDDDir}: $currentPerm"
+      if [ "$currentPerm" != "$desiredPerm" ]; then
+        echo "Changing permissions for ${baseHDDDir}"
+        chown -R "$desiredPerm" "${baseHDDDir}"
+        chmod -R g+rwX "${baseHDDDir}"
+        chmod g+s "${baseHDDDir}"
+        ${setfacl} -R -m d:g:containers:rwX,g:containers:rwX "${baseHDDDir}"
+      else
+        echo "Permissions for ${baseHDDDir} are good"
+      fi
+    '';
 in
 {
   nerdctl-containers.${name} = {
@@ -32,6 +48,7 @@ in
       {
         hostPath = baseHDDDir;
         containerPath = "/data";
+        customPermissionScript = sharedPermissionScript;
       }
       {
         hostPath = configDir;
