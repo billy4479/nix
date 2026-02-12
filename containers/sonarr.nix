@@ -22,6 +22,8 @@ let
 in
 {
   nerdctl-containers.${name} = {
+    id = 9;
+
     imageToBuild = pkgs.nix-snapshotter.buildImage {
       inherit name;
       tag = "nix-local";
@@ -42,7 +44,8 @@ in
         (pkgs.writeTextDir "/etc/passwd" "container-5009:x:5009:5000:User for container sonarr:/var/empty:/run/current-system/sw/bin/nologin")
       ];
     };
-    id = 9;
+
+    dependsOn = [ "qbittorrent" ];
 
     volumes = [
       {
