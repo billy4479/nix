@@ -4,6 +4,7 @@
     "opencode-openai-codex-auth",
     "opencode-gemini-auth@latest"
   ],
+  "theme": "catppuccin-frappe",
   "provider": {
     "google": {
       "options": {
