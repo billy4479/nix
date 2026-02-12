@@ -1,7 +1,6 @@
 {
   stdenvNoCC,
 
-  externalTrafficFrom,
   ...
 }:
 stdenvNoCC.mkDerivation {
@@ -17,9 +16,4 @@ stdenvNoCC.mkDerivation {
       cp -r * $out
     '';
 
-  postPatch = # sh
-    ''
-      find . -type f -exec \
-        sed -i 's/@@EXTERNAL_TRAFFIC@@/${externalTrafficFrom}/g' {} \;
-    '';
 }

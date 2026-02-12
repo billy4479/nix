@@ -16,7 +16,7 @@
     ../../../containers/certbot.nix
     ../../../containers/nginx
     ../../../containers/bind9
-    ../../../containers/frp.nix
+    ../../../containers/wireguard.nix
 
     ../../../containers/radarr.nix
     ../../../containers/jackett.nix

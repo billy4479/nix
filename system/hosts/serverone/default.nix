@@ -14,6 +14,7 @@
     ./users.nix
 
     ./containers.nix
+    ./wireguard-routing.nix
     ./samba.nix
 
     ../../modules/tailscale.nix
