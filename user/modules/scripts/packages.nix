@@ -139,10 +139,21 @@ in
 
   );
 
-  update-vps =
-    pkgs.writeScriptBin "update-vps"
+  activate-system =
+    pkgs.writeScriptBin "activate-system"
       # sh
       ''
-        nix build
+        sudo nix-env -p /nix/var/nix/profiles/system --set "$1" && sudo /nix/var/nix/profiles/system/bin/switch-to-configuration switch
+      '';
+
+  build-host-and-copy =
+    let
+      outPath = "/tmp/nix-system";
+    in
+    pkgs.writeScriptBin "build-host-and-copy"
+      # sh
+      ''
+        rm -f ${outPath}
+        nix build .#nixosConfigurations.$1.config.system.build.toplevel --print-out-paths -o ${outPath} && nix copy --to ssh://$1 ${outPath}
       '';
 }
