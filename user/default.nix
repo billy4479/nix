@@ -16,25 +16,10 @@ in
   imports = [
     ./${extraConfig.hostname}.nix
     ./modules/secrets.nix
+    ./modules/scripts
   ];
 
   home.stateVersion = "23.11";
-
-  home.packages = with pkgs; [
-    # Shell utilities, not fundamental but still nice
-    fd
-    ripgrep
-    p7zip
-    zip
-    unzip
-    unrar-free
-    license-cli
-    bat-extras.batman
-    jq
-    pv
-
-    nixfmt
-  ];
 
   home.file."${config.home.homeDirectory}/.ssh/id_ed25519.pub" =
     lib.mkIf (builtins.pathExists public_key)

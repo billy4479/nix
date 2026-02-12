@@ -10,12 +10,19 @@ let
 in
 {
   home.packages =
-    with scripts;
-    [
-      mpv-url
-      open-document
-      clip-copy
-      clip-paste
-    ]
-    ++ lib.optionals (!extraConfig.wayland) [ dmenu-screenshot ];
+    if extraConfig.isServer then
+      [
+        scripts.activate-system
+      ]
+    else
+      with scripts;
+      [
+        mpv-url
+        open-document
+        clip-copy
+        clip-paste
+
+        build-host-and-copy
+      ]
+      ++ lib.optionals (!extraConfig.wayland) [ dmenu-screenshot ];
 }

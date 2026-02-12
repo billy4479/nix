@@ -18,9 +18,26 @@
     autostart = true;
   };
 
-  services.tailscale-systray.enable = true;
-
   home.packages =
     with pkgs;
-    [ pavucontrol ] ++ (if (extraConfig.wayland) then [ wl-clipboard ] else [ xclip ]);
+    [
+      fd
+      ripgrep
+      p7zip
+      zip
+      unzip
+      unrar-free
+      license-cli
+      bat-extras.batman
+      jq
+      pv
+
+      nixfmt
+    ]
+    ++ [
+      pavucontrol
+    ]
+    ++ (if (extraConfig.wayland) then [ wl-clipboard ] else [ xclip ]);
+
+  services.tailscale-systray.enable = true;
 }

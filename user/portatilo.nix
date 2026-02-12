@@ -13,6 +13,5 @@
     ./modules/wallpapers.nix
 
     ./modules/desktops
-    ./modules/scripts
   ];
 }
