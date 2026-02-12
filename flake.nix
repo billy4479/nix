@@ -124,6 +124,7 @@
           dig
 
           myPackages.packages.${system}.prefetch-all-images
+          nix-prefetch-docker
         ];
       };
     }
