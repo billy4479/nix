@@ -91,6 +91,13 @@
             	max_height = 15, -- ^
             	max_height_window_percentage = math.huge, -- this is necessary for a good experience
             	max_width_window_percentage = math.huge,
+
+            	integrations = {
+            		typst = {
+            			enabled = false,
+            			filetypes = { "typst" },
+            		},
+            	},
             })
           '';
       }
