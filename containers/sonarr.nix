@@ -32,17 +32,6 @@ in
       {
         hostPath = baseHDDDir;
         containerPath = "/data";
-        userAccessible = true;
-        customPermissionScript = ''
-          currentOwner=$(stat -c %u "${baseHDDDir}")
-          currentGroup=$(stat -c %g "${baseHDDDir}")
-          if [ "$currentGroup" != "5000" ] || { [ "$currentOwner" != "5007" ] && [ "$currentOwner" != "5009" ]; }; then
-            echo "Fixing permissions for ${baseHDDDir} (non-recursive)"
-            chown 5009:5000 "${baseHDDDir}"
-            chmod g+rwX "${baseHDDDir}"
-            ${lib.getExe' pkgs.acl "setfacl"} -m d:g:family:rwX,g:family:rwX "${baseHDDDir}"
-          fi
-        '';
       }
       {
         hostPath = configDir;

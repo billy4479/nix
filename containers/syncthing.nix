@@ -40,7 +40,6 @@
       {
         hostPath = "/mnt/HDD/apps/syncthing";
         containerPath = "/var/syncthing/Sync";
-        userAccessible = true;
       }
     ];
 

@@ -52,7 +52,6 @@ in
       {
         hostPath = worldDir;
         containerPath = "/world";
-        userAccessible = true;
       }
       {
         hostPath = "${./config.yml}";

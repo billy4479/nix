@@ -29,7 +29,6 @@ in
       {
         hostPath = downloadsDir;
         containerPath = "/downloads";
-        userAccessible = true;
       }
       {
         hostPath = configDir;

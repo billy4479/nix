@@ -36,12 +36,10 @@ in
         {
           hostPath = "${baseDir}/lib";
           containerPath = "/var/lib/headscale";
-          userAccessible = true;
         }
         {
           hostPath = "${baseDir}/run";
           containerPath = "/var/run/headscale";
-          userAccessible = true;
         }
         {
           hostPath = "${./headscale.yaml}";

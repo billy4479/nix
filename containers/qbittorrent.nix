@@ -20,16 +20,6 @@ in
       {
         hostPath = "/mnt/HDD/torrent/${name}";
         containerPath = "/data/${name}";
-        userAccessible = true;
-        customPermissionScript = ''
-          currentPerm=$(stat -c %u:%g "/mnt/HDD/torrent/${name}")
-          if [ "$currentPerm" != "5005:5000" ]; then
-            echo "Fixing permissions for /mnt/HDD/torrent/${name} (non-recursive)"
-            chown 5005:5000 "/mnt/HDD/torrent/${name}"
-            chmod g+rwX "/mnt/HDD/torrent/${name}"
-            ${lib.getExe' pkgs.acl "setfacl"} -m d:g:family:rwX,g:family:rwX "/mnt/HDD/torrent/${name}"
-          fi
-        '';
       }
       {
         hostPath = "/mnt/SSD/apps/${name}";

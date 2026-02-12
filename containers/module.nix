@@ -29,9 +29,6 @@ let
         }:
         lib.strings.concatMapStringsSep "\n" (
           v:
-          let
-            aclTarget = if v.userAccessible or false then "family" else "admin";
-          in
           if v.readOnly or false then
             ""
           else
@@ -47,7 +44,7 @@ let
                     if [ "$currentPerm" != "${uid}:${gid}" ]; then
                       echo "Changing permissions for ${v.hostPath}"
                       chown -R ${uid}:${gid} "${v.hostPath}"
-                      ${setfacl} -R -m d:g:${aclTarget}:rwX,g:${aclTarget}:rwX "${v.hostPath}"
+                      ${setfacl} -R -m d:g:admin:rwX,g:admin:rwX "${v.hostPath}"
                     else
                       echo "Permissions for ${v.hostPath} are good"
                     fi
@@ -252,10 +249,6 @@ in
                     hostPath = lib.mkOption { type = lib.types.str; };
                     containerPath = lib.mkOption { type = lib.types.str; };
                     readOnly = lib.mkOption {
-                      type = lib.types.bool;
-                      default = false;
-                    };
-                    userAccessible = lib.mkOption {
                       type = lib.types.bool;
                       default = false;
                     };
