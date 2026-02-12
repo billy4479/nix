@@ -31,20 +31,8 @@ in
       options = [ mount_options ];
     };
 
-    "/mnt/serverone/torrent" = {
-      device = "//${nas_address}/nas-torrent";
-      fsType = "cifs";
-      options = [ mount_options ];
-    };
-
     "/mnt/serverone/ssd-generic" = {
       device = "//${nas_address}/nas-ssd";
-      fsType = "cifs";
-      options = [ mount_options ];
-    };
-
-    "/mnt/serverone/minecraft" = {
-      device = "//${nas_address}/nas-mc";
       fsType = "cifs";
       options = [ mount_options ];
     };
