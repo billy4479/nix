@@ -108,5 +108,17 @@
           require("origami").setup({})
         '';
     }
+    {
+      plugin = render-markdown-nvim;
+      type = "lua";
+      config = # lua
+        ''
+          require("render-markdown").setup({
+          	latex = {
+          		enable = false,
+          	},
+          })
+        '';
+    }
   ];
 }
