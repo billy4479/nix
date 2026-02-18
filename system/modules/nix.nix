@@ -5,6 +5,10 @@
   ...
 }:
 {
+  imports = [
+    flakeInputs.determinate.nixosModules.default
+  ];
+
   nix = {
     gc = {
       automatic = true;
@@ -37,12 +41,15 @@
       substituters = [
         "https://nix-community.cachix.org"
         "https://cache.nixos.org/"
+        "https://install.determinate.systems"
       ]
       ++ (lib.optionals extraConfig.hasCuda [
         "https://cache.nixos-cuda.org"
       ]);
+
       trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
       ]
       ++ (lib.optionals extraConfig.hasCuda [
         "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="

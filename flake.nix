@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     catppuccin = {
       url = "github:catppuccin/nix";
