@@ -46,6 +46,7 @@
           	tinymist = {},
           	svelte = {},
           	jdtls = {},
+          	rust_analyzer = {},
           }
 
           for server, config in pairs(servers) do
@@ -151,6 +152,7 @@
         ''
           require("lint").linters_by_ft = {
           	go = { "golangcilint" },
+          	rust = { "clippy" },
           }
 
           vim.api.nvim_create_autocmd({ "BufWritePost" }, {
