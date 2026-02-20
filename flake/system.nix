@@ -46,8 +46,8 @@ createAndMergeHosts defaultOptions [
   {
     hostname = "computerone";
     args = {
-      desktop = "qtile";
-      wayland = false;
+      desktop = "niri";
+      # wayland = false;
       games = true;
       rotateMonitor = true;
       hasCuda = true;

@@ -73,6 +73,11 @@
         flake-utils.follows = "flake-utils";
       };
     };
+
+    niri = {
+      url = "github:sodiboo/niri-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

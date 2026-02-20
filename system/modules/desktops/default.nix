@@ -19,6 +19,8 @@ in
       [ ./kde.nix ]
     else if desktop == "qtile" then
       [ ./qtile.nix ]
+    else if desktop == "niri" then
+      [ ./niri.nix ]
     else
       throw "desktop ${desktop} is not supported"
   );
