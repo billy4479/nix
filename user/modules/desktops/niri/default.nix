@@ -7,6 +7,8 @@
 {
   imports = [
     flakeInputs.niri.homeModules.niri
+    ../../applications/noctalia.nix
+
     ../../applications/rofi.nix
     # ../../applications/pcmanfm.nix
     ../../applications/nemo.nix
@@ -50,6 +52,7 @@
 
         "Mod+B".action.spawn = "firefox";
         "Mod+C".action.spawn = lib.getExe pkgs.qalculate-gtk;
+        "Mod+E".action.spawn = "nemo";
 
         # Volume
         "XF86AudioRaiseVolume" = {
