@@ -2,78 +2,57 @@
 {
   "docker.io/certbot/dns-cloudflare" = {
     imageName = "docker.io/certbot/dns-cloudflare";
-    imageDigest = "sha256:aba913370a75668cf63d74b50b7484401d3c6666fc4ba2f6fed6eeae1ea6cd3e";
-    hash = "sha256-tLHl4g1z+EuY2Geg0orviySaRl8cs4zn0K1sN35mWz4=";
+    imageDigest = "sha256:742dbd2e61c8709b930712c38958386c3cb3928e09eeb1f1e490600c127e2edb";
+    hash = "sha256-0c5vnAKuZDR6AMZhzclM1JSZZLOE6Wr6ukXM2Qdv91w=";
     finalImageName = "docker.io/certbot/dns-cloudflare";
-    finalImageTag = "latest";
-  };
-  "docker.io/erisamoe/cloudflared" = {
-    imageName = "docker.io/erisamoe/cloudflared";
-    imageDigest = "sha256:ba08f4b19c1d04cce95cc692a32e51ecde65938a90d4d8d527635e7197d30ca0";
-    hash = "sha256-JwtN6+3EyhLuZpZzpRJWHmHYj4kAHnHFt/Xtr5frD/s=";
-    finalImageName = "docker.io/erisamoe/cloudflared";
     finalImageTag = "latest";
   };
   "docker.io/jellyfin/jellyfin" = {
     imageName = "docker.io/jellyfin/jellyfin";
-    imageDigest = "sha256:6d819e9ab067efcf712993b23455cc100ee5585919bb297ea5a109ac00cb626e";
-    hash = "sha256-kiGWe/RT9Zf8l8t2mXn3UgLyzX3QVAw/b+zoxuPG448=";
+    imageDigest = "sha256:333b647716631443a43c7fabac4b0c46b4e2f036bad19547e00958f10f721b85";
+    hash = "sha256-AnZWcBf+10Fo/9SEV4sO1bMtB0Bv4+tmg2nCs7F7uTM=";
     finalImageName = "docker.io/jellyfin/jellyfin";
     finalImageTag = "latest";
   };
   "docker.io/nginx" = {
     imageName = "docker.io/nginx";
-    imageDigest = "sha256:8491795299c8e739b7fcc6285d531d9812ce2666e07bd3dd8db00020ad132295";
-    hash = "sha256-Lqo5fEd7Qbdks3Ne68Ghjn9VZ36nW8C0UJGbsjAmpVc=";
+    imageDigest = "sha256:1d13701a5f9f3fb01aaa88cef2344d65b6b5bf6b7d9fa4cf0dca557a8d7702ba";
+    hash = "sha256-lOorH7JCC0o7vshxAR4ObWocOdWBQXdF8JgibKXYZd8=";
     finalImageName = "docker.io/nginx";
     finalImageTag = "alpine";
   };
   "docker.io/opencloudeu/opencloud-rolling" = {
     imageName = "docker.io/opencloudeu/opencloud-rolling";
-    imageDigest = "sha256:6e36a7be89e6ce121167c2633ac03fae54962d59efa1837e69720296041b8d87";
-    hash = "sha256-Q9OAmR8lBzQDu8lnCB54fhLl2J4aB9Bb8a4wKPWSEGg=";
+    imageDigest = "sha256:6229e937e32e5e114ddac81af7e851fb9346a818c58a36b784529d5503530f93";
+    hash = "sha256-J/zIICPjzjN35mVV8GGyXNU6wigTrH6iyeDs6MCcYCo=";
     finalImageName = "docker.io/opencloudeu/opencloud-rolling";
     finalImageTag = "latest";
   };
   "docker.io/qbittorrentofficial/qbittorrent-nox" = {
     imageName = "docker.io/qbittorrentofficial/qbittorrent-nox";
-    imageDigest = "sha256:41888f4e05646ace98aeaff01a7bbec714e2e6082ab273fd4af0d1210352ea2c";
-    hash = "sha256-4A32t9fGmkSuboG5vA6v56XtGXvLzmoBW5034/OQ9QY=";
+    imageDigest = "sha256:85fe2690f418dabffc4907276b3cdffcb7880c7114157b32f932d3b97bac45af";
+    hash = "sha256-hcOqAAHWSSoj2Zu1xvUt1igslTiA2+jYDAAAyhBosDI=";
     finalImageName = "docker.io/qbittorrentofficial/qbittorrent-nox";
-    finalImageTag = "latest";
-  };
-  "docker.io/syncthing/syncthing" = {
-    imageName = "docker.io/syncthing/syncthing";
-    imageDigest = "sha256:7ae77d066e9b81d3d8c312b2f9e1a874a5115680bfde90aff5fc9aece694ec93";
-    hash = "sha256-p+GxBUg1pagteBkjhiRWGsQ7ly02sRyCT6q1mwTiQiI=";
-    finalImageName = "docker.io/syncthing/syncthing";
     finalImageTag = "latest";
   };
   "docker.io/valkey/valkey" = {
     imageName = "docker.io/valkey/valkey";
-    imageDigest = "sha256:3c3ccc8571d4866ec5ac5ffb2519b6b6a1fdbf6b5ff5fdab075413026fbff273";
-    hash = "sha256-flxG/+cVUb2SW3zG4M2rwnNvsG3L5l8AS8AdX5lQ34g=";
+    imageDigest = "sha256:918228e4ff7da6b3a4213cb18067f6e09d9f0503d0a08868699ba227cff71861";
+    hash = "sha256-fhgcy22eSIK1gdO9aM03BH3+ZTbXz29gMv8Uqpum28U=";
     finalImageName = "docker.io/valkey/valkey";
     finalImageTag = "8-alpine";
   };
-  "docker.stirlingpdf.com/stirlingtools/stirling-pdf" = {
-    imageName = "docker.stirlingpdf.com/stirlingtools/stirling-pdf";
-    imageDigest = "sha256:e8b96ebd749ee6c087f853c31fbbb79dc35bb08792bdd5ef0e72e74f5b209ea1";
-    hash = "sha256-V4ZjitNBBI4ipdUWmwLHN0kXuFcDM2fV7BLbEXAF8PU=";
-    finalImageName = "docker.stirlingpdf.com/stirlingtools/stirling-pdf";
-    finalImageTag = "latest";
-  };
   "ghcr.io/immich-app/immich-machine-learning" = {
     imageName = "ghcr.io/immich-app/immich-machine-learning";
-    imageDigest = "sha256:b3deefd1826f113824e9d7bc30d905e7f823535887d03f869330946b6db3b44a";
-    hash = "sha256-AJuW39itpju1kuFZpZ2BgQpsQcujgYZlrM73ee+Vrps=";
+    imageDigest = "sha256:b213fa3c82d27a21a299c46ffbb38a091f18384db1ad67d409a3b34fe0fce556";
+    hash = "sha256-konqos4roaayfGPUNnQH9RWsWjxzqpq5vAS8e3l2ZxI=";
     finalImageName = "ghcr.io/immich-app/immich-machine-learning";
     finalImageTag = "v2";
   };
   "ghcr.io/immich-app/immich-server" = {
     imageName = "ghcr.io/immich-app/immich-server";
-    imageDigest = "sha256:e6a6298e67ae077808fdb7d8d5565955f60b0708191576143fc02d30ab1389d1";
-    hash = "sha256-Rig1lw6YZvtpPbLmAFyR+KONEIGDSsDWzCXGQXQdLIE=";
+    imageDigest = "sha256:aa163d2e1cc2b16a9515dd1fef901e6f5231befad7024f093d7be1f2da14341a";
+    hash = "sha256-ecugkZxbyAq0A6gS2cRoukstbeaEovSPZ39Lj/2SU0k=";
     finalImageName = "ghcr.io/immich-app/immich-server";
     finalImageTag = "v2";
   };
@@ -83,27 +62,6 @@
     hash = "sha256-YNxadMZRLd2Wky6UvZFTcJ+KXFxg51E4zPdEAG7HtPk=";
     finalImageName = "ghcr.io/immich-app/postgres";
     finalImageTag = "14-vectorchord0.4.3-pgvectors0.2.0";
-  };
-  "lscr.io/linuxserver/jackett" = {
-    imageName = "lscr.io/linuxserver/jackett";
-    imageDigest = "sha256:05ccaa4f57b7736231263f619ab43e8f0b4193655a8b3dec0e3403838175fd01";
-    hash = "sha256-EpRepMvzGCf3BdvPp06xgTKpfbgw522jG3KxSnN2rDI=";
-    finalImageName = "lscr.io/linuxserver/jackett";
-    finalImageTag = "latest";
-  };
-  "lscr.io/linuxserver/radarr" = {
-    imageName = "lscr.io/linuxserver/radarr";
-    imageDigest = "sha256:6c0948b42c149e36bb3dbc0b64d36c77b2d3c9dccf1b424c4f72af1e57ba0c21";
-    hash = "sha256-HKzZmwlnC0sFjn48f5hTLX3Hi5bCwaFMBk7Y8vQI9jk=";
-    finalImageName = "lscr.io/linuxserver/radarr";
-    finalImageTag = "latest";
-  };
-  "lscr.io/linuxserver/sonarr" = {
-    imageName = "lscr.io/linuxserver/sonarr";
-    imageDigest = "sha256:8b9f2138ec50fc9e521960868f79d2ad0d529bc610aef19031ea8ff80b54c5e0";
-    hash = "sha256-0WTY5dP+EpqbmjN9MWJv7levplcBvWGr5Kr8mkt/Do8=";
-    finalImageName = "lscr.io/linuxserver/sonarr";
-    finalImageTag = "latest";
   };
   "ghcr.io/tale/headplane" = {
     imageName = "ghcr.io/tale/headplane";
