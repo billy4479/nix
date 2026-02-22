@@ -247,7 +247,7 @@
       };
 
       layout = {
-        gaps = 0;
+        gaps = 8;
         focus-ring = {
           enable = true;
           width = 1;
