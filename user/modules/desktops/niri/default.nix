@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  extraConfig,
   flakeInputs,
   ...
 }:
@@ -140,14 +141,10 @@
         "Mod+WheelScrollUp".action.focus-window-up-or-column-left = { };
         "Mod+WheelScrollDown".action.focus-window-down-or-column-right = { };
 
-        "Mod+Period".action.focus-monitor-next = { };
+        "Mod+Comma".action.focus-monitor-next = { };
+        "Mod+Ctrl+Comma".action.move-window-to-monitor-next = { };
 
         # Move
-        "Mod+Ctrl+Left".action.move-column-left = { };
-        "Mod+Ctrl+Down".action.move-window-down = { };
-        "Mod+Ctrl+Up".action.move-window-up = { };
-        "Mod+Ctrl+Right".action.move-column-right = { };
-
         "Mod+Ctrl+H".action.move-column-left = { };
         "Mod+Ctrl+J".action.move-window-down = { };
         "Mod+Ctrl+K".action.move-window-up = { };
@@ -183,7 +180,7 @@
 
         # "Mod+C".action.center-column = { };
         # "Mod+Ctrl+C".action.center-visible-columns = { };
-        "Mod+Ctrl+C".action.switch-preset-column-width = { };
+        "Mod+Space".action.switch-preset-column-width = { };
 
         # Screenshots
         "Print".action.screenshot = { };
@@ -231,7 +228,7 @@
           };
 
           position = {
-            x = 1080;
+            x = if extraConfig.rotateMonitor then 1080 else 1920;
             y = 0;
           };
         };
@@ -241,7 +238,7 @@
             height = 1080;
             refresh = 74.986;
           };
-          transform.rotation = 90;
+          transform.rotation = if extraConfig.rotateMonitor then 90 else 0;
           position = {
             x = 0;
             y = 0;
@@ -289,6 +286,14 @@
       };
 
       screenshot-path = "~/Pictures/Screenshots/%Y-%m-%d_%H-%M-%S.png";
+
+      window-rules = [
+        {
+          default-column-width = {
+            proportion = 2. / 3.;
+          };
+        }
+      ];
     };
   };
 }
