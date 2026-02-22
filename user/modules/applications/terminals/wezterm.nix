@@ -18,7 +18,7 @@
 
           -- Fix for font not rendering: see https://github.com/wez/wezterm/issues/5990
           -- Either uncomment below or run `fc-cache -rvf`.
-          config.front_end = "WebGpu"
+          -- config.front_end = "WebGpu"
 
           config.audible_bell = "Disabled"
           config.default_cursor_style = "SteadyBar"
