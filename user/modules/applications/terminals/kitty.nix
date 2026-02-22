@@ -19,6 +19,9 @@
       update_check_interval = 0;
 
       clear_all_shortcuts = true;
+
+      active_tab_background = "#a6d189";
+      tab_bar_style = "powerline";
     };
     keybindings =
       let
@@ -29,9 +32,13 @@
         "ctrl+minus" = "change_font_size all -2.0";
         "ctrl+0" = "change_font_size all 0";
 
+        "ctrl+shift+c" = "copy_to_clipboard";
+        "ctrl+shift+v" = "paste_from_clipboard";
+
         "${leader}t" = "new_tab";
         "${leader}n" = "next_tab";
         "${leader}p" = "previous_tab";
+        "${leader}+r" = "set_tab_title";
 
         "${leader}l" = "next_layout";
         "${leader}shift+t" = "new_window";
