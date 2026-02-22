@@ -31,7 +31,7 @@
       binds = {
         "Mod+Shift+Slash".action.show-hotkey-overlay = { };
 
-        "Mod+Return".action.spawn = "wezterm";
+        "Mod+Return".action.spawn = "kitty";
         "Mod+Shift+Return".action.spawn = [
           "rofi"
           "-show"
