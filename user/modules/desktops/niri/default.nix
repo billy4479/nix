@@ -219,32 +219,36 @@
         };
       };
 
-      outputs = {
-        "DP-1" = {
-          mode = {
-            width = 2560;
-            height = 1440;
-            refresh = 169.831;
-          };
+      outputs =
+        if extraConfig.hostname == "computerone" then
+          {
+            "DP-1" = {
+              mode = {
+                width = 2560;
+                height = 1440;
+                refresh = 169.831;
+              };
 
-          position = {
-            x = if extraConfig.rotateMonitor then 1080 else 1920;
-            y = 0;
-          };
-        };
-        "DP-2" = {
-          mode = {
-            width = 1920;
-            height = 1080;
-            refresh = 74.986;
-          };
-          transform.rotation = if extraConfig.rotateMonitor then 90 else 0;
-          position = {
-            x = 0;
-            y = 0;
-          };
-        };
-      };
+              position = {
+                x = if extraConfig.rotateMonitor then 1080 else 1920;
+                y = 0;
+              };
+            };
+            "DP-2" = {
+              mode = {
+                width = 1920;
+                height = 1080;
+                refresh = 74.986;
+              };
+              transform.rotation = if extraConfig.rotateMonitor then 90 else 0;
+              position = {
+                x = 0;
+                y = 0;
+              };
+            };
+          }
+        else
+          { };
 
       layout = {
         gaps = 8;

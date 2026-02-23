@@ -38,7 +38,9 @@ createAndMergeHosts defaultOptions [
   }
   {
     hostname = "portatilo";
-    args = { };
+    args = {
+      desktop = "niri";
+    };
     extraSystemModules = [
       ../system/hosts/portatilo
     ];

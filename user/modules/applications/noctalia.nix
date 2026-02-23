@@ -1,4 +1,4 @@
-{ flakeInputs, ... }:
+{ flakeInputs, config, ... }:
 {
   imports = [
     flakeInputs.noctalia.homeModules.default
@@ -177,7 +177,7 @@
       wallpaper = {
         enabled = true;
         overviewEnabled = false;
-        directory = "";
+        directory = "${config.xdg.userDirs.pictures}/wallpapers";
         monitorDirectories = [ ];
         enableMultiMonitorDirectories = false;
         showHiddenFiles = false;
