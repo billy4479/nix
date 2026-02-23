@@ -1,4 +1,4 @@
-{ ... }:
+{ extraConfig, ... }:
 {
   catppuccin.kitty.enable = true;
   programs.kitty = {
@@ -13,8 +13,8 @@
       enable_audio_bell = false;
       window_padding_width = 0;
       confirm_os_window_close = 0;
-      background_opacity = 1;
-      # background_opacity = if extraConfig.desktop == "kde" then "1" else "0.85";
+      # background_opacity = 1;
+      background_opacity = if extraConfig.desktop == "kde" then "1" else "0.85";
       shell = "zsh";
       update_check_interval = 0;
 
@@ -35,13 +35,13 @@
         "ctrl+shift+c" = "copy_to_clipboard";
         "ctrl+shift+v" = "paste_from_clipboard";
 
-        "${leader}t" = "new_tab";
+        "${leader}t" = "launch --cwd=current --type=tab";
         "${leader}n" = "next_tab";
         "${leader}p" = "previous_tab";
         "${leader}+r" = "set_tab_title";
 
         "${leader}l" = "next_layout";
-        "${leader}shift+t" = "new_window";
+        "${leader}shift+t" = "launch --cwd=current";
       };
   };
 }
