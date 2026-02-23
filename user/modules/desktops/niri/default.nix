@@ -4,7 +4,10 @@
   extraConfig,
   flakeInputs,
   ...
-}:
+}@args:
+let
+  scripts = import ../../scripts/packages.nix args;
+in
 {
   imports = [
     flakeInputs.niri.homeModules.niri
@@ -54,6 +57,8 @@
         "Mod+B".action.spawn = "firefox";
         "Mod+C".action.spawn = lib.getExe pkgs.qalculate-gtk;
         "Mod+E".action.spawn = "nemo";
+        "Mod+D".action.spawn = lib.getExe scripts.open-document;
+        "Mod+Y".action.spawn = lib.getExe scripts.mpv-url;
 
         # Volume
         "XF86AudioRaiseVolume" = {
