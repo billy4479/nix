@@ -5,7 +5,10 @@
     enable = true;
     font = {
       name = (import ../../fonts/names.nix).mono;
-      size = 16;
+
+      # turns out this is the perfect size to fit 100 vim columns
+      # on 2/3 of the screen of portatiolo
+      size = 15;
     };
     shellIntegration.enableZshIntegration = true;
     settings = {
@@ -28,8 +31,8 @@
         leader = "ctrl+a>";
       in
       {
-        "ctrl+equal" = "change_font_size all +2.0";
-        "ctrl+minus" = "change_font_size all -2.0";
+        "ctrl+equal" = "change_font_size all +1.0";
+        "ctrl+minus" = "change_font_size all -1.0";
         "ctrl+0" = "change_font_size all 0";
 
         "ctrl+shift+c" = "copy_to_clipboard";
