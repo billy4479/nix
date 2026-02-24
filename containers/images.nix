@@ -7,13 +7,6 @@
     finalImageName = "docker.io/certbot/dns-cloudflare";
     finalImageTag = "latest";
   };
-  "docker.io/jellyfin/jellyfin" = {
-    imageName = "docker.io/jellyfin/jellyfin";
-    imageDigest = "sha256:333b647716631443a43c7fabac4b0c46b4e2f036bad19547e00958f10f721b85";
-    hash = "sha256-AnZWcBf+10Fo/9SEV4sO1bMtB0Bv4+tmg2nCs7F7uTM=";
-    finalImageName = "docker.io/jellyfin/jellyfin";
-    finalImageTag = "latest";
-  };
   "docker.io/nginx" = {
     imageName = "docker.io/nginx";
     imageDigest = "sha256:1d13701a5f9f3fb01aaa88cef2344d65b6b5bf6b7d9fa4cf0dca557a8d7702ba";

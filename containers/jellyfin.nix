@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, lib, ... }:
 let
   name = "jellyfin";
   baseHDDDir = "/mnt/HDD/torrent";
@@ -6,7 +6,23 @@ let
 in
 {
   nerdctl-containers.${name} = {
-    imageToPull = "docker.io/jellyfin/jellyfin";
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
+
+      config = {
+        entrypoint = [ (lib.getExe pkgs.jellyfin) ];
+        cmd = [
+          "--datadir=/config"
+          "--cachedir=/cache"
+        ];
+      };
+
+      copyToRoot = with pkgs.dockerTools; [
+        caCertificates
+      ];
+    };
+
     id = 10;
 
     volumes = [
