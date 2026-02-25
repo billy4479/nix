@@ -7,6 +7,14 @@
 }@args:
 let
   scripts = import ../../scripts/packages.nix args;
+  noctaliaIpc =
+    x:
+    [
+      "noctalia-shell"
+      "ipc"
+      "call"
+    ]
+    ++ (lib.strings.splitString " " x);
 in
 {
   imports = [
@@ -35,30 +43,19 @@ in
         "Mod+Shift+Slash".action.show-hotkey-overlay = { };
 
         "Mod+Return".action.spawn = "kitty";
-        "Mod+Shift+Return".action.spawn = [
-          "rofi"
-          "-show"
-          "drun"
-          "-display-drun"
-          "Run: "
-          "-drun-display-format"
-          "{name}"
-        ];
-        "Mod+Ctrl+Shift+Return".action.spawn = [
-          "rofi"
-          "-show"
-          "run"
-          "-display-run"
-          "Run: "
-          "-run-display-format"
-          "{name}"
-        ];
+        "Mod+Shift+Return".action.spawn = noctaliaIpc "launcher toggle";
+        "Mod+Ctrl+Shift+Return".action.spawn = noctaliaIpc "launcher command";
+        "Mod+Period".action.spawn = noctaliaIpc "launcher emoji";
+        "Mod+V".action.spawn = noctaliaIpc "launcher clipboard";
 
         "Mod+B".action.spawn = "firefox";
         "Mod+C".action.spawn = lib.getExe pkgs.qalculate-gtk;
         "Mod+E".action.spawn = "nemo";
         "Mod+D".action.spawn = lib.getExe scripts.open-document;
         "Mod+Y".action.spawn = lib.getExe scripts.mpv-url;
+
+        "Mod+L".action.spawn = noctaliaIpc "lockScreen lock";
+        "Mod+Q".action.spawn = noctaliaIpc "sessionMenu toggle";
 
         # Volume
         "XF86AudioRaiseVolume" = {
@@ -175,13 +172,13 @@ in
         "Mod+Shift+Equal".action.set-window-height = "+10%";
 
         # Floating
-        "Mod+V".action.toggle-window-floating = { };
-        "Mod+Shift+V".action.switch-focus-between-floating-and-tiling = { };
+        "Mod+F".action.toggle-window-floating = { };
+        # "Mod+Shift+V".action.switch-focus-between-floating-and-tiling = { };
 
         # Layout tweaks
-        "Mod+F".action.maximize-column = { };
-        "Mod+Shift+F".action.fullscreen-window = { };
-        "Mod+M".action.maximize-window-to-edges = { };
+        "Mod+M".action.maximize-column = { };
+        "Mod+Shift+M".action.fullscreen-window = { };
+        # "Mod+M".action.maximize-window-to-edges = { };
 
         # "Mod+C".action.center-column = { };
         # "Mod+Ctrl+C".action.center-visible-columns = { };
