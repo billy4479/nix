@@ -16,7 +16,7 @@ in
     ../../applications/rofi.nix
     # ../../applications/pcmanfm.nix
     ../../applications/nemo.nix
-    ../../services/dunst.nix
+    # ../../services/dunst.nix
     ../../services/gammastep.nix
     ../../services/kdeconnect.nix
     ../../services/lxqt-policykit.nix
