@@ -524,12 +524,12 @@
       mOnHover = "#232634"; # crust
       mOutline = "#292c3c"; # mantle??
       mPrimary = "#a6da95"; # accent - green
-      mSecondary = "#f5a97f"; # idk -peack
+      mSecondary = "#b5bfe2"; # idk - subtext 1
       mShadow = "#232634"; # crust
       mSurface = "#24273a"; # base
-      mHover = "#8bd5ca"; # idk - teal
+      mHover = "#626880"; # idk - surface 2
       mSurfaceVariant = "#414559"; # surface 0
-      mTertiary = "#8bd5ca"; # idk - teal
+      mTertiary = "#e5c890"; # idk - yellow
     };
   };
 }
