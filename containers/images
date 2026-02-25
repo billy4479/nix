@@ -2,6 +2,7 @@ ghcr.io/immich-app/immich-server:v2
 ghcr.io/immich-app/immich-machine-learning:v2
 docker.io/valkey/valkey:8-alpine
 ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+docker.io/nginx:alpine
 docker.io/certbot/dns-cloudflare:latest
 docker.io/qbittorrentofficial/qbittorrent-nox:latest
 docker.io/opencloudeu/opencloud-rolling:latest
