@@ -51,7 +51,7 @@ let
       };
 
       specialArgs = {
-        extraConfig = builtins.removeAttrs (lib.recursiveUpdate defaultedArgs {
+        extraConfig = removeAttrs (lib.recursiveUpdate defaultedArgs {
           catppuccinColors = mkCatppuccinColors defaultedArgs.catppuccin;
           inherit hostname;
         }) [ "catppuccin" ];
@@ -70,12 +70,6 @@ let
         inputs.plasma-manager.homeModules.plasma-manager
         inputs.spicetify-nix.homeManagerModules.default
         inputs.sops-nix.homeManagerModules.sops
-
-        {
-          # Not sure why we need thise here too
-          # https://nix-community.github.io/home-manager/options.xhtml#opt-nixpkgs.config
-          nixpkgs.config = nixpkgsConfig;
-        }
 
         ../user
       ];
@@ -108,7 +102,13 @@ let
             "${user.username}@${hostname}" = inputs.home-manager.lib.homeManagerConfiguration {
               inherit pkgs;
               extraSpecialArgs = specialArgs;
-              modules = defaultHomeManagerModules;
+              modules = defaultHomeManagerModules ++ [
+                {
+                  # Not sure why we need thise here too
+                  # https://nix-community.github.io/home-manager/options.xhtml#opt-nixpkgs.config
+                  nixpkgs.config = nixpkgsConfig;
+                }
+              ];
             };
           }
         else

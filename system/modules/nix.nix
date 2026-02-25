@@ -56,6 +56,4 @@
       ]);
     };
   };
-  # Enable unfree
-  nixpkgs.config.allowUnfree = true;
 }
