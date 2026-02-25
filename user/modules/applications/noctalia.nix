@@ -232,7 +232,7 @@
         pinnedApps = [ ];
         useApp2Unit = false;
         sortByMostUsed = true;
-        terminalCommand = "alacritty -e";
+        terminalCommand = "kitty -e";
         customLaunchPrefixEnabled = false;
         customLaunchPrefix = "";
         viewMode = "list";
