@@ -11,8 +11,10 @@
 
     settings = {
       global = {
-        "hosts allow" = "192.168.2.0/24 10.0.0.0/8 100.0.0.0/8";
+        "hosts allow" = "192.168.2.0/24 100.64.0.0/10";
         "hosts deny" = "0.0.0.0/0";
+        "server min protocol" = "SMB3_00";
+        "server signing" = "mandatory";
       };
 
       "nas-hdd" = {
