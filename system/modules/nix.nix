@@ -40,8 +40,8 @@
 
       substituters = [
         "https://nix-community.cachix.org"
-        "https://cache.nixos.org/"
         "https://install.determinate.systems"
+        "https://cache.nixos.org/"
       ]
       ++ (lib.optionals extraConfig.hasCuda [
         "https://cache.nixos-cuda.org"
