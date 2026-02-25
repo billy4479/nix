@@ -33,8 +33,6 @@
         "flakes"
       ];
 
-      trusted-users = [ "billy" ];
-
       auto-optimise-store = true;
       warn-dirty = false;
 
