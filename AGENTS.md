@@ -11,6 +11,8 @@ You can ssh into any other system (as an unpriviliged user) by running `ssh <HOS
 
 Deployment of each system and secret management is responsibility of the user only, do not worry about it.
 
+To validate your changes you can use `nix build .#nixosConfigurations.<HOSTNAME>.config.system.build.toplevel` which builds the system you specified.
+
 Documentation lives in the `docs` folder, consult it only if you think it might be relevant to your current task.
 Make sure you keep the docs up to date.
 
