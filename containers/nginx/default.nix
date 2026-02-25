@@ -1,7 +1,6 @@
 { pkgs, ... }:
 let
   name = "nginx";
-  baseSSDDir = "/mnt/SSD/apps/${name}";
   certsDir = "/mnt/SSD/apps/certbot/config";
 
   externalTrafficFrom = "10.0.1.131";
@@ -11,7 +10,6 @@ in
   nerdctl-containers.${name} = {
     imageToPull = "docker.io/nginx";
     id = 6;
-    runByUser = false; # We need to bind port 80 and 433
 
     volumes = [
       {
@@ -29,6 +27,10 @@ in
         containerPath = "/certs/";
         readOnly = true;
       }
+    ];
+
+    extraOptions = [
+      "--cap-add=CAP_NET_BIND_SERVICE"
     ];
 
     ports = [
