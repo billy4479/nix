@@ -20,7 +20,7 @@ in
       wantedBy = [ "timers.target" ];
       timerConfig = {
         OnBootSec = "5m";
-        OnUnitAcriveSec = "12h";
+        OnUnitActiveSec = "12h";
         RandomizedDelaySec = "1h";
         Persistent = true;
         Unit = "certbot-renew.service";
