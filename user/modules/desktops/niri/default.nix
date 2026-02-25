@@ -33,6 +33,35 @@ in
     ../../services/udiskie.nix
   ];
 
+  services.swayidle = {
+    enable = true;
+    events.before-sleep = lib.strings.concatStringsSep " " (noctaliaIpc "lockScreen lock");
+    # TODO: implement for computerone
+    timeouts = lib.optionals (extraConfig.hostname == "portatilo") [
+      {
+        timeout = 5 * 60;
+        command = "${pkgs.writeShellScript "power-off-screen"
+          # sh
+          ''
+            noctalia-shell ipc call lockScreen lock &&
+              niri msg output eDP-1 off
+          ''
+        }";
+        resumeCommand = "niri msg output eDP-1 on";
+      }
+      {
+        timeout = 10 * 60;
+        command = "${pkgs.writeShellScript "suspend-if-not-powered"
+          # sh
+          ''
+            [ "$(cat /sys/class/power_supply/AC*/online 2>/dev/null)" = 0 ] &&
+              noctalia-shell ipc call sessionMenu lockAndSuspend
+          ''
+        }";
+      }
+    ];
+  };
+
   programs.niri = {
     enable = true;
     package = pkgs.niri;
