@@ -12,6 +12,7 @@
     ./modules/nix.nix
     ./modules/secrets.nix
     ./modules/sensors.nix
+    ./modules/ssh.nix
   ]
   ++ lib.optional extraConfig.bluetooth ./modules/bluetooth.nix;
 

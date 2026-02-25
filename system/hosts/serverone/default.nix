@@ -22,12 +22,6 @@
     ../../modules/graphics/intel.nix
   ];
 
-  services = {
-    openssh = {
-      enable = true;
-    };
-  };
-
   networking = {
     hostId = "d3cb129c";
     hostName = "serverone";

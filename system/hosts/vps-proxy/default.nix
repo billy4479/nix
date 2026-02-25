@@ -13,12 +13,6 @@
 
   sops.secrets.user_password.neededForUsers = true;
 
-  services = {
-    openssh = {
-      enable = true;
-    };
-  };
-
   zramSwap.enable = true;
   services.smartd.enable = lib.mkForce false;
 

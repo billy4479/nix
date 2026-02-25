@@ -40,7 +40,6 @@ in
     gvfs.enable = true;
     udisks2.enable = true;
     printing.enable = true;
-    openssh.enable = true;
   };
 
   security.polkit.enable = true;
