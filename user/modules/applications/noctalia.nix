@@ -1,7 +1,16 @@
-{ flakeInputs, config, ... }:
+{
+  pkgs,
+  flakeInputs,
+  config,
+  ...
+}:
 {
   imports = [
     flakeInputs.noctalia.homeModules.default
+  ];
+
+  home.packages = [
+    pkgs.wtype
   ];
 
   programs.noctalia-shell = {
@@ -213,8 +222,8 @@
         favorites = [ ];
       };
       appLauncher = {
-        enableClipboardHistory = false;
-        autoPasteClipboard = false;
+        enableClipboardHistory = true;
+        autoPasteClipboard = true;
         enableClipPreview = true;
         clipboardWrapText = true;
         clipboardWatchTextCommand = "wl-paste --type text --watch cliphist store";
