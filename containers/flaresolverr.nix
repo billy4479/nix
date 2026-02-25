@@ -30,7 +30,7 @@ in
       copyToRoot = with pkgs; [
         dockerTools.caCertificates
 
-        xorg.xvfb
+        xvfb
         coreutils
         fontconfig
         noto-fonts
