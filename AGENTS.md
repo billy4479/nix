@@ -13,6 +13,23 @@ Deployment of each system and secret management is responsibility of the user on
 
 To validate your changes you can use `nix build .#nixosConfigurations.<HOSTNAME>.config.system.build.toplevel` which builds the system you specified.
 
+When you need to embed another language in a nix file (for example for writing shell scripts or lua configs) you should annotate which language you're using:
+```nix
+
+{
+  aShellScript = # sh
+    ''
+      echo hi
+    '';
+  aLuaConfig = # lua
+    ''
+      function hello()
+          print("hello")
+      end
+    '';
+}
+```
+
 Documentation lives in the `docs` folder, consult it only if you think it might be relevant to your current task.
 Make sure you keep the docs up to date.
 
