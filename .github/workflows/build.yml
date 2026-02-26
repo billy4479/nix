@@ -1,0 +1,75 @@
+name: Build NixOS configurations
+
+on:
+  push:
+
+jobs:
+  build-system:
+    name: Build system (${{ matrix.host }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host:
+          - computerone
+          - portatilo
+          - serverone
+          - vps-proxy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key for secrets repo
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.NIX_SECRETS_DEPLOY_KEY }}
+
+      - name: Add github.com to known hosts
+        run: ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Set up Nix magic cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Build ${{ matrix.host }}
+        run: |
+          nix build \
+            --print-build-logs \
+            ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
+
+  build-home:
+    name: Build home (${{ matrix.host }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        host:
+          - portatilo
+          - computerone
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key for secrets repo
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.NIX_SECRETS_DEPLOY_KEY }}
+
+      - name: Add github.com to known hosts
+        run: ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Set up Nix magic cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Build billy@${{ matrix.host }}
+        run: |
+          nix build \
+            --print-build-logs \
+            '.#homeConfigurations."billy@${{ matrix.host }}".activationPackage'
