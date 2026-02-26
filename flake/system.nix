@@ -28,15 +28,6 @@ let
 in
 createAndMergeHosts defaultOptions [
   {
-    hostname = "nixbox";
-    args = {
-      bluetooth = false;
-    };
-    extraSystemModules = [
-      ../system/hosts/vm
-    ];
-  }
-  {
     hostname = "portatilo";
     args = {
       desktop = "niri";
