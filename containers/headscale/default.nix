@@ -8,7 +8,6 @@ let
   baseDir = "/mnt/SSD/apps/${name}";
 in
 {
-  networking.firewall.allowedUDPPorts = [ 51820 ];
   boot.kernel.sysctl = {
     "net.ipv4.ip_forward" = 1;
     "net.ipv6.conf.all.forwarding" = 1;
