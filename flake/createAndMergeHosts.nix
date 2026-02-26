@@ -81,6 +81,9 @@ let
         modules = [
           ../system
           inputs.sops-nix.nixosModules.sops
+          {
+            nixpkgs.config = nixpkgsConfig;
+          }
         ]
         ++ lib.optionals (!specialArgs.extraConfig.standaloneHomeManager) [
           inputs.home-manager.nixosModules.home-manager
