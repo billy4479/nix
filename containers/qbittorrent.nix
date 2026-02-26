@@ -46,9 +46,7 @@ in
       }
     ];
 
-    ports = [
-      "${torrentingPort}:${torrentingPort}/tcp"
-      "${torrentingPort}:${torrentingPort}/udp"
-    ];
+    # Torrenting port is forwarded through WireGuard via vps-proxy,
+    # no host port binding needed.
   };
 }
