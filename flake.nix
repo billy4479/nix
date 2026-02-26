@@ -111,9 +111,7 @@
       formatter.${system} = pkgsForFlake.nixfmt;
 
       packages.${system} = rec {
-        nginx-config = pkgsForFlake.callPackage ./containers/nginx/config.nix {
-          externalTrafficFrom = "10.0.1.131";
-        };
+        nginx-config = pkgsForFlake.callPackage ./containers/nginx/config.nix { };
 
         bind9-hosts = pkgsForFlake.callPackage ./containers/bind9/hosts.nix { };
         bind9-config = pkgsForFlake.callPackage ./containers/bind9/config.nix { inherit bind9-hosts; };

@@ -8,7 +8,7 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./frp.nix
+    ./wireguard.nix
   ];
 
   sops.secrets.user_password.neededForUsers = true;

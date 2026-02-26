@@ -38,6 +38,5 @@ Always keep this table in sync when adding new containers.
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
 | Immich (DB) | 130 | 10.0.1.130 |
-| frp | 131 | 10.0.1.131 |
 | Certbot | 132 | 10.0.1.132 |
 | Flaresolverr | 133 | 10.0.1.133 |
