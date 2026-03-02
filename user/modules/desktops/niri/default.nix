@@ -83,7 +83,7 @@ in
         "Mod+D".action.spawn = lib.getExe scripts.open-document;
         "Mod+Y".action.spawn = lib.getExe scripts.mpv-url;
 
-        "Mod+L".action.spawn = noctaliaIpc "lockScreen lock";
+        "Mod+Shift+L".action.spawn = noctaliaIpc "lockScreen lock";
         "Mod+Q".action.spawn = noctaliaIpc "sessionMenu toggle";
 
         # Volume
