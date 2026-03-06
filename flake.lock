@@ -142,6 +142,33 @@
         "type": "github"
       }
     },
+    "ff": {
+      "inputs": {
+        "flake-utils": [
+          "myPackages",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "myPackages",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1772793594,
+        "narHash": "sha256-ATQ7/p8nFvbCpqdPIjesDSbtboV7xIe8O+peM3GiQxI=",
+        "ref": "master",
+        "rev": "3fa046ff0d423ac9af2b7a89678070535e9f238f",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/ff.git"
+      },
+      "original": {
+        "ref": "master",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/ff.git"
+      }
+    },
     "firefox-ui-fix": {
       "flake": false,
       "locked": {
@@ -345,6 +372,7 @@
     "myPackages": {
       "inputs": {
         "calendar-proxy": "calendar-proxy",
+        "ff": "ff",
         "flake-utils": [
           "flake-utils"
         ],
@@ -355,11 +383,11 @@
         "server-tool": "server-tool"
       },
       "locked": {
-        "lastModified": 1771618884,
-        "narHash": "sha256-Y4xKAIwMlLDTzC+LtxLuOqN6+6KnCZ7w7XfcVIlThqI=",
+        "lastModified": 1772793916,
+        "narHash": "sha256-Ju0Vl5JobcE3cIWIueoH8Cj61GO164vjt5cy6SMKC3c=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "d5ee7e4f5bc9f8e0de3614be70efd9991ac8c2ef",
+        "rev": "c84b83b76fca5357a08e3f596e8a012750d79b81",
         "type": "github"
       },
       "original": {
