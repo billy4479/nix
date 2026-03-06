@@ -35,6 +35,7 @@ Always keep this table in sync when adding new containers.
 | opencloud | 14 | 10.0.1.14 |
 | headscale | 15 | 10.0.1.15 |
 | headplane | 16 | 10.0.1.16 |
+| ff | 17 | 10.0.1.17 |
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
 | Immich (DB) | 130 | 10.0.1.130 |

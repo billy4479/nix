@@ -30,6 +30,7 @@
 
     ../../../containers/mc-runner
     ../../../containers/calendar-proxy.nix
+    ../../../containers/ff.nix
   ];
 
   nixpkgs.overlays = [ flakeInputs.nix-snapshotter.overlays.default ];
