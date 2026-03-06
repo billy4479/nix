@@ -25,4 +25,6 @@ in
         build-host-and-copy
       ]
       ++ lib.optionals (!extraConfig.wayland) [ dmenu-screenshot ];
+
+  sops.secrets = if extraConfig.isServer then { } else { nix-signing-key = { }; };
 }

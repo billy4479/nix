@@ -154,6 +154,8 @@ in
       # sh
       ''
         rm -f ${outPath}
-        nix build .#nixosConfigurations.$1.config.system.build.toplevel --print-out-paths -o ${outPath} && nix copy --to ssh://$1 ${outPath}
+        nix build .#nixosConfigurations.$1.config.system.build.toplevel --print-out-paths -o ${outPath} &&
+          nix store sign --key-file ${config.sops.secrets.nix-signing-key.path} --recursive ${outPath} &&
+          nix copy --to ssh://$1 ${outPath}
       '';
 }
