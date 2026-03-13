@@ -9,9 +9,19 @@ let
     # Keep history
     "privacy.clearOnShutdown.history" = false;
     "privacy.clearOnShutdown.downloads" = false;
+    "privacy.clearOnShutdown.cache" = false;
+    "privacy.clearOnShutdown.cookies" = false;
+    "privacy.clearOnShutdown_v2.cookiesAndStorage" = false;
+    "privacy.clearOnShutdown_v2.cache" = false;
+    "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads" = false;
     "services.sync.prefs.sync-seen.privacy.clearOnShutdown.downloads" = false;
+    "services.sync.prefs.sync-seen.privacy.clearOnShutdown.cache" = false;
+    "services.sync.prefs.sync-seen.privacy.clearOnShutdown.cookies" = false;
     "services.sync.prefs.sync-seen.privacy.clearOnShutdown.history" = false;
     "services.sync.prefs.sync-seen.privacy.clearOnShutdown.offlineApps" = false;
+    "services.sync.prefs.sync-seen.privacy.clearOnShutdown_v2.cookiesAndStorage" = false;
+    "services.sync.prefs.sync-seen.privacy.clearOnShutdown_v2.cache" = false;
+    "services.sync.prefs.sync-seen.privacy.clearOnShutdown_v2.browsingHistoryAndDownloads" = false;
 
     # Disable password manager
     "services.sync.engine.passwords" = false;
