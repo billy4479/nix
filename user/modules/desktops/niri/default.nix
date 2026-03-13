@@ -328,6 +328,13 @@ in
             proportion = 2. / 3.;
           };
         }
+        {
+          matches = [
+            { app-id = "org.keepassxc.KeePassXC"; }
+          ];
+          open-floating = true;
+          open-focused = true;
+        }
       ];
     };
   };
