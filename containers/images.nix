@@ -2,22 +2,22 @@
 {
   "docker.io/certbot/dns-cloudflare" = {
     imageName = "docker.io/certbot/dns-cloudflare";
-    imageDigest = "sha256:742dbd2e61c8709b930712c38958386c3cb3928e09eeb1f1e490600c127e2edb";
-    hash = "sha256-0c5vnAKuZDR6AMZhzclM1JSZZLOE6Wr6ukXM2Qdv91w=";
+    imageDigest = "sha256:587d1d445ab308fb897af923f8ea570ba278445fd64a335303a65fe2a81d209c";
+    hash = "sha256-PXRuC4uyQmQ+DBV///ATkC5FJg6pp6EIeOby9SInAT0=";
     finalImageName = "docker.io/certbot/dns-cloudflare";
     finalImageTag = "latest";
   };
   "docker.io/nginx" = {
     imageName = "docker.io/nginx";
-    imageDigest = "sha256:1d13701a5f9f3fb01aaa88cef2344d65b6b5bf6b7d9fa4cf0dca557a8d7702ba";
-    hash = "sha256-lOorH7JCC0o7vshxAR4ObWocOdWBQXdF8JgibKXYZd8=";
+    imageDigest = "sha256:f46cb72c7df02710e693e863a983ac42f6a9579058a59a35f1ae36c9958e4ce0";
+    hash = "sha256-0i0R8caKmGN0rPipbuhtczhGaWZcJgIjCpoPrwtL0Cg=";
     finalImageName = "docker.io/nginx";
     finalImageTag = "alpine";
   };
   "docker.io/opencloudeu/opencloud-rolling" = {
     imageName = "docker.io/opencloudeu/opencloud-rolling";
-    imageDigest = "sha256:6229e937e32e5e114ddac81af7e851fb9346a818c58a36b784529d5503530f93";
-    hash = "sha256-J/zIICPjzjN35mVV8GGyXNU6wigTrH6iyeDs6MCcYCo=";
+    imageDigest = "sha256:c840de29b7287da070ffc9d5eb52a1b291a046877402bf70f387ccf56c820aee";
+    hash = "sha256-Bq2zRaIW1ZLBrBDdDu9X7vEmYLuUGR1xdN5G0nl2Q/4=";
     finalImageName = "docker.io/opencloudeu/opencloud-rolling";
     finalImageTag = "latest";
   };
@@ -30,8 +30,8 @@
   };
   "docker.io/valkey/valkey" = {
     imageName = "docker.io/valkey/valkey";
-    imageDigest = "sha256:918228e4ff7da6b3a4213cb18067f6e09d9f0503d0a08868699ba227cff71861";
-    hash = "sha256-fhgcy22eSIK1gdO9aM03BH3+ZTbXz29gMv8Uqpum28U=";
+    imageDigest = "sha256:cb3339abbd6e18942cd8ac3349f0c371a82ba5b6204b242563ba299e7956cbd0";
+    hash = "sha256-8+8IcU7MWzZFcRkyEALDkx1coT2RFyvP+Mv7ATAn1A8=";
     finalImageName = "docker.io/valkey/valkey";
     finalImageTag = "8-alpine";
   };
@@ -58,8 +58,8 @@
   };
   "ghcr.io/tale/headplane" = {
     imageName = "ghcr.io/tale/headplane";
-    imageDigest = "sha256:74bec8f23ce57f235574b7b3e809a0d9ca500947da45dac485b5132fa4cc9fab";
-    hash = "sha256-mXTKT4UWxEnaIyMKePaRzQCrFGRu/hsdNsbMXKNZSPg=";
+    imageDigest = "sha256:cfb0807609198f90b9793e46e3b243b257bcdcef032847a3204d10201435b8dc";
+    hash = "sha256-46X6zrWJ+gc57UGLsVCJJHya9CH1ktxG73BHmoKMlN8=";
     finalImageName = "ghcr.io/tale/headplane";
     finalImageTag = "latest";
   };
