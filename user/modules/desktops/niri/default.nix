@@ -331,6 +331,7 @@ in
         {
           matches = [
             { app-id = "org.keepassxc.KeePassXC"; }
+            { app-id = "qalculate-gtk"; }
           ];
           open-floating = true;
           open-focused = true;
