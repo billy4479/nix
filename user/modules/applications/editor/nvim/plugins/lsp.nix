@@ -37,7 +37,7 @@
           	lua_ls = {},
           	nixd = {},
           	gopls = {},
-          	basedpyright = {},
+          	pylsp = {},
           	r_language_server = {},
           	zls = {},
           	clangd = {},
