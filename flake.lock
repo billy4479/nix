@@ -10,10 +10,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1774614651,
-        "narHash": "sha256-gLXWArRyCnohJ7Vygh7nFC9CS0GrfRM+ewAgsng8dvE=",
+        "lastModified": 1774626205,
+        "narHash": "sha256-4Z/MRMG70O4ieeQiIxoYO3SMiZX5m1dFS49hj1xZE9A=",
         "ref": "master",
-        "rev": "4617f84f10e217f9db0f5bc1bd3252639e1a8c2d",
+        "rev": "71758a2cd929e08a654d556b2497971ab2cececd",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/calendar-proxy-v2.git"
