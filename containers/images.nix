@@ -9,8 +9,8 @@
   };
   "docker.io/nginx" = {
     imageName = "docker.io/nginx";
-    imageDigest = "sha256:f46cb72c7df02710e693e863a983ac42f6a9579058a59a35f1ae36c9958e4ce0";
-    hash = "sha256-0i0R8caKmGN0rPipbuhtczhGaWZcJgIjCpoPrwtL0Cg=";
+    imageDigest = "sha256:e7257f1ef28ba17cf7c248cb8ccf6f0c6e0228ab9c315c152f9c203cd34cf6d1";
+    hash = "sha256-tz/Qz9dRk3rP7A58BCpLDOLDQtTbowRBQo2zp8uWGnA=";
     finalImageName = "docker.io/nginx";
     finalImageTag = "alpine";
   };
@@ -37,15 +37,15 @@
   };
   "ghcr.io/immich-app/immich-machine-learning" = {
     imageName = "ghcr.io/immich-app/immich-machine-learning";
-    imageDigest = "sha256:b213fa3c82d27a21a299c46ffbb38a091f18384db1ad67d409a3b34fe0fce556";
-    hash = "sha256-konqos4roaayfGPUNnQH9RWsWjxzqpq5vAS8e3l2ZxI=";
+    imageDigest = "sha256:33b17015c3d14f2565e9b8cd36b48a70027b14b5cd20da7fbfff21a370b0309c";
+    hash = "sha256-cZHzVYYh2jxdQpULuGCFc3ZYVvN8ZqXE9SFiGW5FUQk=";
     finalImageName = "ghcr.io/immich-app/immich-machine-learning";
     finalImageTag = "v2";
   };
   "ghcr.io/immich-app/immich-server" = {
     imageName = "ghcr.io/immich-app/immich-server";
-    imageDigest = "sha256:aa163d2e1cc2b16a9515dd1fef901e6f5231befad7024f093d7be1f2da14341a";
-    hash = "sha256-ecugkZxbyAq0A6gS2cRoukstbeaEovSPZ39Lj/2SU0k=";
+    imageDigest = "sha256:0cc1f82953d9598eb9e9dd11cbde1f50fe54f9c46c4506b089e8ad7bfc9d1f0c";
+    hash = "sha256-6pjaixcCiASqq0m9rJ6jtAC5t3BdVSGUrhUxnQQp4a4=";
     finalImageName = "ghcr.io/immich-app/immich-server";
     finalImageTag = "v2";
   };
