@@ -1,5 +1,12 @@
-{ pkgs, extraPkgs, ... }:
+{
+  pkgs,
+  flakeInputs,
+  extraConfig,
+  ...
+}:
 let
+  spicetifyPkgs = flakeInputs.spicetify-nix.legacyPackages.${extraConfig.system};
+
   # Spotify urls - Thanks to https://community.spotify.com/t5/Desktop-Linux/Guide-Play-Spotify-links-in-running-client/td-p/4647308
   # Pair with https://greasyfork.org/en/scripts/38920-spotify-open-in-app
   spotify-open = pkgs.makeDesktopItem {
@@ -23,10 +30,10 @@ in
   home.packages = [ spotify-open ];
   programs.spicetify = {
     enable = true;
-    theme = extraPkgs.spicetifyPkgs.themes.catppuccin;
-    colorScheme = "frappe";
+    theme = spicetifyPkgs.themes.catppuccin;
+    colorScheme = extraConfig.catppuccinColors.flavor;
 
-    enabledExtensions = with extraPkgs.spicetifyPkgs.extensions; [
+    enabledExtensions = with spicetifyPkgs.extensions; [
       fullAppDisplay
       shuffle
     ];

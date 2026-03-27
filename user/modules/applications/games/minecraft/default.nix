@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  extraPkgs,
   extraConfig,
   config,
   ...
@@ -21,14 +20,15 @@ in
       ++ (if cfg.enableClient then [ pkgs.prismlauncher ] else [ ])
       ++ (
         if cfg.enableServer then
+          with pkgs;
           [
-            extraPkgs.my-packages.server-tool
+            server-tool
 
-            # extraPkgs.my-packages.packwiz-installer # TODO: uncomment this once i figure out the grale build
-            pkgs.packwiz
+            # extraPkgs.my-packages.packwiz-installer # TODO: uncomment this once i figure out the gradle build
+            packwiz
 
             # Yes, I use cloudflare tunnels to play minecraft
-            pkgs.cloudflared
+            cloudflared
           ]
         else
           [ ]

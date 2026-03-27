@@ -1,7 +1,6 @@
 {
   pkgs,
   config,
-  extraPkgs,
   ...
 }:
 let
@@ -15,8 +14,13 @@ in
       inherit name;
       tag = "nix-local";
 
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        calendar-proxy
+      ];
+
       config.entrypoint = [
-        "${extraPkgs.my-packages.calendar-proxy}/bin/calendar-proxy"
+        "/bin/calendar-proxy-v2"
       ];
     };
     id = 4;
@@ -24,6 +28,7 @@ in
     environment = {
       PORT = "4479";
       ENV = "prod";
+      DONT_LOAD_DOTENV = "1";
     };
 
     environmentFiles = [ config.sops.secrets.calendar-proxy-env.path ];

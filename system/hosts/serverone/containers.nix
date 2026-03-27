@@ -33,8 +33,6 @@
     ../../../containers/ff.nix
   ];
 
-  nixpkgs.overlays = [ flakeInputs.nix-snapshotter.overlays.default ];
-
   environment.systemPackages = [
     pkgs.nerdctl
     pkgs.cni-plugins

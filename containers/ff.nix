@@ -1,6 +1,5 @@
 {
   pkgs,
-  extraPkgs,
   ...
 }:
 let
@@ -14,9 +13,9 @@ in
       inherit name;
       tag = "nix-local";
 
-      copyToRoot = [
-        pkgs.dockerTools.caCertificates
-        extraPkgs.my-packages.ff
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        ff
       ];
 
       config.entrypoint = [ "/bin/ff" ];

@@ -1,13 +1,15 @@
 {
   pkgs,
   lib,
-  extraPkgs,
   extraConfig,
+  flakeInputs,
   ...
 }:
 let
   font = (import ../../../fonts/names.nix).mono;
   fontStr = "'${font}', 'Ubuntu Mono', monospace";
+
+  vscode-extensions = flakeInputs.nix-vscode-extensions.extensions.${extraConfig.system};
 in
 {
   catppuccin.vscode.profiles.default = {
@@ -30,7 +32,7 @@ in
     package = pkgs.vscodium;
     profiles.default = {
       extensions = (
-        with extraPkgs.vscode-extensions.vscode-marketplace-release;
+        with vscode-extensions.vscode-marketplace-release;
         [
           # Theme
           catppuccin.catppuccin-vsc-icons

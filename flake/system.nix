@@ -1,7 +1,8 @@
 {
   system,
   inputs,
-}@args:
+  overlays,
+}:
 let
   defaultOptions = {
     desktop = "kde";
@@ -24,7 +25,7 @@ let
     };
   };
 
-  createAndMergeHosts = import ./createAndMergeHosts.nix args;
+  createAndMergeHosts = import ./createAndMergeHosts.nix { inherit system inputs overlays; };
 in
 createAndMergeHosts defaultOptions [
   {

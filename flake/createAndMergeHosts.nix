@@ -1,6 +1,7 @@
 {
   system,
   inputs,
+  overlays,
 }:
 let
   lib = inputs.nixpkgs.lib;
@@ -47,21 +48,15 @@ let
 
       pkgs = import inputs.nixpkgs {
         config = nixpkgsConfig;
-        inherit system;
+        inherit system overlays;
       };
 
       specialArgs = {
         extraConfig = removeAttrs (lib.recursiveUpdate defaultedArgs {
           catppuccinColors = mkCatppuccinColors defaultedArgs.catppuccin;
-          inherit hostname;
+          inherit hostname system;
         }) [ "catppuccin" ];
 
-        extraPkgs = {
-          vscode-extensions = inputs.nix-vscode-extensions.extensions.${system};
-          spicetifyPkgs = inputs.spicetify-nix.legacyPackages.${system};
-          my-packages = inputs.myPackages.packages.${system};
-          inherit (inputs) catppuccin-vsc;
-        };
         flakeInputs = inputs;
       };
 
@@ -82,7 +77,10 @@ let
           ../system
           inputs.sops-nix.nixosModules.sops
           {
-            nixpkgs.config = nixpkgsConfig;
+            nixpkgs = {
+              config = nixpkgsConfig;
+              inherit overlays;
+            };
           }
         ]
         ++ lib.optionals (!specialArgs.extraConfig.standaloneHomeManager) [
@@ -109,7 +107,10 @@ let
                 {
                   # Not sure why we need thise here too
                   # https://nix-community.github.io/home-manager/options.xhtml#opt-nixpkgs.config
-                  nixpkgs.config = nixpkgsConfig;
+                  nixpkgs = {
+                    config = nixpkgsConfig;
+                    inherit overlays;
+                  };
                 }
               ];
             };

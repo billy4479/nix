@@ -3,26 +3,26 @@
     "calendar-proxy": {
       "inputs": {
         "flake-utils": [
-          "myPackages",
           "flake-utils"
         ],
         "nixpkgs": [
-          "myPackages",
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1768153641,
-        "narHash": "sha256-rnKi2TUEs5foaSnoWwEGfsIgnfnrIrMSe00OGAe7aCI=",
-        "owner": "billy4479",
-        "repo": "calendar-proxy",
-        "rev": "7a40c2484479ecf568714813558e076a77b53afc",
-        "type": "github"
+        "lastModified": 1774614651,
+        "narHash": "sha256-gLXWArRyCnohJ7Vygh7nFC9CS0GrfRM+ewAgsng8dvE=",
+        "ref": "master",
+        "rev": "4617f84f10e217f9db0f5bc1bd3252639e1a8c2d",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/calendar-proxy-v2.git"
       },
       "original": {
-        "owner": "billy4479",
-        "repo": "calendar-proxy",
-        "type": "github"
+        "ref": "master",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/calendar-proxy-v2.git"
       }
     },
     "catppuccin": {
@@ -42,26 +42,6 @@
       "original": {
         "owner": "catppuccin",
         "repo": "nix",
-        "type": "github"
-      }
-    },
-    "catppuccin-vsc": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1763921090,
-        "narHash": "sha256-2WprxeG8rOxqnWr4nIA59arkUqH1Up6ZsbruMyis7QE=",
-        "owner": "catppuccin",
-        "repo": "vscode",
-        "rev": "bbe095f1c147152e45a8dc2399212fd8301af904",
-        "type": "github"
-      },
-      "original": {
-        "owner": "catppuccin",
-        "repo": "vscode",
         "type": "github"
       }
     },
@@ -145,11 +125,9 @@
     "ff": {
       "inputs": {
         "flake-utils": [
-          "myPackages",
           "flake-utils"
         ],
         "nixpkgs": [
-          "myPackages",
           "nixpkgs"
         ]
       },
@@ -347,11 +325,9 @@
     "mc-runner": {
       "inputs": {
         "flake-utils": [
-          "myPackages",
           "flake-utils"
         ],
         "nixpkgs": [
-          "myPackages",
           "nixpkgs"
         ]
       },
@@ -371,23 +347,19 @@
     },
     "myPackages": {
       "inputs": {
-        "calendar-proxy": "calendar-proxy",
-        "ff": "ff",
         "flake-utils": [
           "flake-utils"
         ],
-        "mc-runner": "mc-runner",
         "nixpkgs": [
           "nixpkgs"
-        ],
-        "server-tool": "server-tool"
+        ]
       },
       "locked": {
-        "lastModified": 1773242002,
-        "narHash": "sha256-IwqgtEajnbvzO0+nyFxo1NtZry/mt+0NPLNKNc1lwaQ=",
+        "lastModified": 1774612438,
+        "narHash": "sha256-sQXdAe8M2lyJsB2iiZsbIJVo9PsxD4/R8xiZRwHyV3U=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "70c290a980fb55af59da1ee639023a15a8f8e004",
+        "rev": "b326c61210c80015a8aaec7b5fe40d73e0f5fbd4",
         "type": "github"
       },
       "original": {
@@ -695,13 +667,15 @@
     },
     "root": {
       "inputs": {
+        "calendar-proxy": "calendar-proxy",
         "catppuccin": "catppuccin",
-        "catppuccin-vsc": "catppuccin-vsc",
         "determinate": "determinate",
         "disko": "disko",
+        "ff": "ff",
         "firefox-ui-fix": "firefox-ui-fix",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
+        "mc-runner": "mc-runner",
         "myPackages": "myPackages",
         "niri": "niri",
         "nix-snapshotter": "nix-snapshotter",
@@ -710,6 +684,7 @@
         "noctalia": "noctalia",
         "plasma-manager": "plasma-manager",
         "secrets-repo": "secrets-repo",
+        "server-tool": "server-tool",
         "sops-nix": "sops-nix",
         "spicetify-nix": "spicetify-nix"
       }
@@ -735,11 +710,9 @@
     "server-tool": {
       "inputs": {
         "flake-utils": [
-          "myPackages",
           "flake-utils"
         ],
         "nixpkgs": [
-          "myPackages",
           "nixpkgs"
         ]
       },

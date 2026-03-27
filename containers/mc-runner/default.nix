@@ -1,6 +1,5 @@
 {
   pkgs,
-  extraPkgs,
   config,
   ...
 }:
@@ -13,20 +12,22 @@ in
   sops.secrets.mc-runner-env = { };
 
   nerdctl-containers.${name} = {
+    id = 13;
+
     imageToBuild = pkgs.nix-snapshotter.buildImage {
       name = "mc-runner";
       tag = "nix-local";
 
-      copyToRoot = [
-        pkgs.dockerTools.caCertificates
-        pkgs.restic
-        extraPkgs.my-packages.mc-runner
-        extraPkgs.my-packages.mc-java
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        restic
+
+        mc-runner
+        mc-java
       ];
 
       config.entrypoint = [ "/bin/mc-runner" ];
     };
-    id = 13;
 
     environment = {
       DONT_LOAD_DOTENV = "yes";

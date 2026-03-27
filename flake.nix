@@ -23,11 +23,6 @@
       };
     };
 
-    catppuccin-vsc = {
-      url = "github:catppuccin/vscode";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -66,14 +61,6 @@
       flake = false;
     };
 
-    myPackages = {
-      url = "github:billy4479/nix-packages";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
-    };
-
     niri = {
       url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -82,6 +69,47 @@
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # My flakes
+    myPackages = {
+      url = "github:billy4479/nix-packages";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+
+    calendar-proxy = {
+      url = "git+ssh://git@github.com/billy4479/calendar-proxy-v2.git?ref=master&shallow=1";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+
+    server-tool = {
+      url = "github:billy4479/server-tool";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+
+    mc-runner = {
+      url = "github:billy4479/mc-runner";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+
+    ff = {
+      url = "git+ssh://git@github.com/billy4479/ff.git?ref=master&shallow=1";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
     };
   };
 
@@ -96,13 +124,28 @@
 
       pkgsForFlake = import nixpkgs {
         # config.allowUnfree = true;
-        inherit system;
+        inherit system overlays;
       };
+
+      overlays = [
+        (
+          final: prev:
+          {
+            inherit (inputs.ff.packages.${system}) ff;
+            inherit (inputs.mc-runner.packages.${system}) mc-runner mc-java;
+            inherit (inputs.server-tool.packages.${system}) server-tool;
+            inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
+          }
+          // inputs.myPackages.packages.${system}
+        )
+        inputs.nix-snapshotter.overlays.default
+      ];
 
       hosts = import ./flake/system.nix {
         inherit
           system
           inputs
+          overlays
           ;
       };
 
