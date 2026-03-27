@@ -15,6 +15,8 @@
         "hosts deny" = "0.0.0.0/0";
         "server min protocol" = "SMB3_00";
         "server signing" = "mandatory";
+
+        "disable netbios" = "yes";
       };
 
       "nas-hdd" = {
