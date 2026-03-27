@@ -2,6 +2,7 @@
 {
   programs.git = {
     enable = true;
+    signing.format = null;
     settings = {
       user = {
         email =
@@ -19,7 +20,6 @@
       color.ui = true;
       init.defaultBranch = "master";
     };
-
   };
 
   programs.delta = {
