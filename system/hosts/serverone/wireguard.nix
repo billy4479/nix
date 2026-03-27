@@ -12,6 +12,8 @@ let
   serveroneWgAddr = "10.100.0.2/30";
   vpsWgAddr = "10.100.0.1";
 
+  containerBridge = "nerdctl0";
+
   # VPS public IP and WireGuard port
   vpsPublicAddr = "87.106.25.93";
   vpsWgPort = 51820;
@@ -42,6 +44,7 @@ let
       ${iptables} -t mangle -A PREROUTING -s ${addr} -j MARK --set-mark ${toString fwMark}
       ${iptables} -t mangle -A PREROUTING -s ${addr} -d 10.0.0.0/8 -j MARK --set-mark 0
       ${iptables} -t mangle -A PREROUTING -s ${addr} -d 192.168.0.0/16 -j MARK --set-mark 0
+      ${iptables} -t mangle -A PREROUTING -s ${addr} -d 100.64.0.0/10 -j MARK --set-mark 0
     '') wgRoutedContainers;
 
   unmarkRules = lib.concatMapStringsSep "\n" (
@@ -51,15 +54,17 @@ let
       ${iptables} -t mangle -D PREROUTING -s ${addr} -j MARK --set-mark ${toString fwMark} || true
       ${iptables} -t mangle -D PREROUTING -s ${addr} -d 10.0.0.0/8 -j MARK --set-mark 0 || true
       ${iptables} -t mangle -D PREROUTING -s ${addr} -d 192.168.0.0/16 -j MARK --set-mark 0 || true
+      ${iptables} -t mangle -D PREROUTING -s ${addr} -d 100.64.0.0/10 -j MARK --set-mark 0 || true
     '') wgRoutedContainers;
 in
 {
-  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+  boot.kernel.sysctl."net.ipv4.ip_forward" = lib.mkDefault 1;
 
   sops.secrets."wireguard-key" = { };
 
   networking.wireguard.interfaces.${wgInterface} = {
     ips = [ serveroneWgAddr ];
+    allowedIPsAsRoutes = false;
     privateKeyFile = config.sops.secrets."wireguard-key".path;
 
     peers = [
@@ -92,6 +97,10 @@ in
         # SNAT outbound container traffic leaving via WireGuard
         ${iptables} -t nat -A POSTROUTING -o ${wgInterface} -s 10.0.1.0/24 -j MASQUERADE
 
+        # Forwarding rules between WireGuard tunnel and container bridge
+        ${iptables} -A FORWARD -i ${wgInterface} -o ${containerBridge} -d 10.0.1.0/24 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+        ${iptables} -A FORWARD -i ${containerBridge} -o ${wgInterface} -s 10.0.1.0/24 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+
         # Routing table that sends marked traffic via WireGuard
         ${ip} route replace default via ${vpsWgAddr} dev ${wgInterface} table ${toString rtTable}
         ${ip} rule add fwmark ${toString fwMark} table ${toString rtTable} priority 100 || true
@@ -103,6 +112,8 @@ in
         ${iptables} -t mangle -D PREROUTING -m connmark --mark ${toString fwMark} -j CONNMARK --restore-mark || true
         ${unmarkRules}
         ${iptables} -t nat -D POSTROUTING -o ${wgInterface} -s 10.0.1.0/24 -j MASQUERADE || true
+        ${iptables} -D FORWARD -i ${wgInterface} -o ${containerBridge} -d 10.0.1.0/24 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT || true
+        ${iptables} -D FORWARD -i ${containerBridge} -o ${wgInterface} -s 10.0.1.0/24 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT || true
         ${ip} rule del fwmark ${toString fwMark} table ${toString rtTable} || true
         ${ip} route flush table ${toString rtTable} || true
       '';
