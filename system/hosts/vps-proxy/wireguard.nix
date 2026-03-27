@@ -90,6 +90,10 @@ let
 in
 {
   networking.firewall = {
+    # WireGuard and DNATed traffic can look asymmetric to strict rpfilter.
+    # Keep source validation, but in loose mode to avoid false drops.
+    checkReversePath = "loose";
+
     allowedTCPPorts = tcpPorts;
     allowedUDPPorts = udpPorts ++ [ wgPort ];
   };

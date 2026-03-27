@@ -94,9 +94,6 @@ in
         # Local subnet traffic is exempted so web UIs stay accessible directly.
         ${markRules}
 
-        # SNAT outbound container traffic leaving via WireGuard
-        ${iptables} -t nat -A POSTROUTING -o ${wgInterface} -s 10.0.1.0/24 -j MASQUERADE
-
         # Forwarding rules between WireGuard tunnel and container bridge
         ${iptables} -A FORWARD -i ${wgInterface} -o ${containerBridge} -d 10.0.1.0/24 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
         ${iptables} -A FORWARD -i ${containerBridge} -o ${wgInterface} -s 10.0.1.0/24 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
@@ -111,7 +108,6 @@ in
         ${iptables} -t mangle -D PREROUTING -i ${wgInterface} -j CONNMARK --set-mark ${toString fwMark} || true
         ${iptables} -t mangle -D PREROUTING -m connmark --mark ${toString fwMark} -j CONNMARK --restore-mark || true
         ${unmarkRules}
-        ${iptables} -t nat -D POSTROUTING -o ${wgInterface} -s 10.0.1.0/24 -j MASQUERADE || true
         ${iptables} -D FORWARD -i ${wgInterface} -o ${containerBridge} -d 10.0.1.0/24 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT || true
         ${iptables} -D FORWARD -i ${containerBridge} -o ${wgInterface} -s 10.0.1.0/24 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT || true
         ${ip} rule del fwmark ${toString fwMark} table ${toString rtTable} || true
