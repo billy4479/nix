@@ -16,4 +16,15 @@
   ];
 
   networking.hostName = "portatilo";
+
+  swapDevices = [
+    {
+      device = "/swapfile";
+      options = [
+        "defaults"
+        "nofail"
+      ];
+      size = 32 * 1024;
+    }
+  ];
 }
