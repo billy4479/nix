@@ -31,6 +31,7 @@
     ../../../containers/mc-runner
     ../../../containers/calendar-proxy.nix
     ../../../containers/ff.nix
+    ../../../containers/giuoco-del-divertimento.nix
   ];
 
   environment.systemPackages = [

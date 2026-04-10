@@ -88,6 +88,14 @@
       };
     };
 
+    giuoco-del-divertimento = {
+      url = "git+ssh://git@github.com/billy4479/giuoco-del-divertimento.git?ref=master&shallow=1";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+
     server-tool = {
       url = "github:billy4479/server-tool";
       inputs = {
@@ -135,6 +143,7 @@
             inherit (inputs.mc-runner.packages.${system}) mc-runner mc-java;
             inherit (inputs.server-tool.packages.${system}) server-tool;
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
+            inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
           }
           // inputs.myPackages.packages.${system}
         )

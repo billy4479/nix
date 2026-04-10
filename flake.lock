@@ -281,6 +281,31 @@
         "url": "https://flakehub.com/f/cachix/git-hooks.nix/0.1.941"
       }
     },
+    "giuoco-del-divertimento": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775830499,
+        "narHash": "sha256-W+xlXALluYE65lCHKg6/aPtRxPEpT6QdZrhl6fnkt3A=",
+        "ref": "master",
+        "rev": "10908cec2b674e4fae8578a89f2dc053cd55666d",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/giuoco-del-divertimento.git"
+      },
+      "original": {
+        "ref": "master",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/giuoco-del-divertimento.git"
+      }
+    },
     "globset": {
       "inputs": {
         "nixpkgs-lib": [
@@ -658,6 +683,7 @@
         "ff": "ff",
         "firefox-ui-fix": "firefox-ui-fix",
         "flake-utils": "flake-utils",
+        "giuoco-del-divertimento": "giuoco-del-divertimento",
         "home-manager": "home-manager",
         "mc-runner": "mc-runner",
         "myPackages": "myPackages",
