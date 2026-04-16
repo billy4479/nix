@@ -8,8 +8,6 @@
 
   services.ssh-agent = {
     enable = true;
-    enableBashIntegration = true;
-    enableZshIntegration = true;
   };
 
   # Keys are set up in system/modules/desktops/default.nix
