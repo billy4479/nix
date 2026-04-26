@@ -21,6 +21,7 @@ in
         open-document
         clip-copy
         clip-paste
+        flatten
 
         build-host-and-copy
       ]

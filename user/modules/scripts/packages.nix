@@ -158,4 +158,133 @@ in
           nix store sign --key-file ${config.sops.secrets.nix-signing-key.path} --recursive ${outPath} -Lv &&
           nix copy --to ssh://$1 ${outPath} -Lv
       '';
+
+  flatten =
+    pkgs.writeScriptBin "flatten"
+      # sh
+      ''
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        usage() {
+            cat <<'EOF'
+        Usage: flatten [-v] PATH
+
+        Options:
+          -v    Verbose extraction when PATH is an archive
+
+        Behavior:
+          - If PATH is a directory, flatten its files into PATH_flattened
+          - If PATH is an archive, extract it with 7z into a temp directory, then flatten
+          - Archive extraction is not recursive
+          - Directory structure is not preserved
+          - Filename conflicts are resolved by appending _N before the extension
+        EOF
+        }
+
+        verbose=0
+
+        while getopts ":v" opt; do
+            case "$opt" in
+                v) verbose=1 ;;
+                *) usage; exit 1 ;;
+            esac
+        done
+        shift $((OPTIND - 1))
+
+        if [[ $# -ne 1 ]]; then
+            usage
+            exit 1
+        fi
+
+        input_path=$1
+
+        if [[ ! -e "$input_path" ]]; then
+            echo "Error: path does not exist: $input_path" >&2
+            exit 1
+        fi
+
+        if ! command -v 7z >/dev/null 2>&1; then
+            echo "Error: 7z is required but not installed or not in PATH." >&2
+            exit 1
+        fi
+
+        cleanup() {
+            if [[ -n "${"tmpdir:-"}" && -d "${"tmpdir:-"}" ]]; then
+                rm -rf -- "$tmpdir"
+            fi
+        }
+        trap cleanup EXIT
+
+        is_archive() {
+            local path=$1
+            # Test archive integrity/listability with 7z.
+            # Treat it as an archive only if 7z can recognize it.
+            7z l -ba -- "$path" >/dev/null 2>&1
+        }
+
+        resolve_conflict() {
+            local dest_dir=$1
+            local filename=$2
+            local base ext candidate n
+
+            if [[ "$filename" == *.* && "$filename" != .* ]]; then
+                base=''${filename%.*}
+                ext=.''${filename##*.}
+            else
+                base=$filename
+                ext=
+            fi
+
+            candidate="$dest_dir/$filename"
+            n=1
+            while [[ -e "$candidate" ]]; do
+                candidate="$dest_dir/''${base}_$n$ext"
+                n=$((n + 1))
+            done
+
+            printf '%s\n' "$candidate"
+        }
+
+        flatten_from_dir() {
+            local src_dir=$1
+            local out_dir=$2
+
+            # Find all regular files under src_dir, excluding anything already inside out_dir.
+            find "$src_dir" -type f ! -path "$out_dir/*" -print0 |
+            while IFS= read -r -d "" file; do
+                local name target
+                name=$(basename "$file")
+                target=$(resolve_conflict "$out_dir" "$name")
+                mv -- "$file" "$target"
+            done
+        }
+
+        source_dir=""
+        output_dir="''${input_path}_flattened"
+
+        if [[ -e "$output_dir" ]]; then
+            echo "Error: destination already exists: $output_dir" >&2
+            exit 1
+        fi
+
+        mkdir -p -- "$output_dir"
+
+        if [[ -d "$input_path" ]]; then
+            source_dir=$input_path
+            flatten_from_dir "$source_dir" "$output_dir"
+        elif is_archive "$input_path"; then
+            tmpdir=$(mktemp -d)
+            if [[ $verbose -eq 1 ]]; then
+                7z x -bb1 -o"$tmpdir" -- "$input_path"
+            else
+                7z x -bd -bso0 -bsp0 -o"$tmpdir" -- "$input_path" >/dev/null
+            fi
+            source_dir=$tmpdir
+            flatten_from_dir "$source_dir" "$output_dir"
+        else
+            echo "Error: input is neither a directory nor a recognized archive: $input_path" >&2
+            exit 1
+        fi
+      '';
 }
