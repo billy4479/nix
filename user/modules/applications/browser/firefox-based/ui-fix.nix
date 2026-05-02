@@ -1,16 +1,15 @@
 {
   extraConfig,
   flakeInputs,
+  config,
   ...
 }:
 let
   srcs = flakeInputs.firefox-ui-fix;
-
-  # TODO: support librewolf too
-  profilePath = ".mozilla/firefox/${extraConfig.user.username}";
 in
 {
-  home.file."${profilePath}/icons".source = "${srcs}/icons";
+  home.file."${config.programs.firefox.configPath}/${extraConfig.user.username}/icons".source =
+    "${srcs}/icons";
 
   programs.firefox.profiles.${extraConfig.user.username} = {
     extraConfig =

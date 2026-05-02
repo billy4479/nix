@@ -1,7 +1,13 @@
-{ aboutConfig, extraConfig, ... }:
+{
+  aboutConfig,
+  extraConfig,
+  config,
+  ...
+}:
 {
   programs.firefox = {
     enable = true;
+    configPath = "${config.xdg.configHome}/mozilla/firefox";
     profiles.${extraConfig.user.username} = {
       id = 0;
       search = {
