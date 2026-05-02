@@ -7,7 +7,7 @@
 {
   programs.firefox = {
     enable = true;
-    configPath = "${config.xdg.configHome}/mozilla/firefox";
+    configPath = "${config.home.homeDirectory}/.mozilla/firefox";
     profiles.${extraConfig.user.username} = {
       id = 0;
       search = {
