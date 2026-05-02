@@ -42,40 +42,60 @@ in
     enable = true;
     extraArgs = [ "-d" ];
     events.before-sleep = lib.strings.concatStringsSep " " (noctaliaIpc "lockScreen lock");
-    # TODO: implement for computerone
-    timeouts = lib.optionals (extraConfig.hostname == "portatilo") [
-      {
-        timeout = 2 * 60;
-        command = "${pkgs.writeShellScript "dim-screen"
-          # sh
-          ''
-            ${brightnessctl} --save && ${brightnessctl} set 25%
-          ''
-        }";
-        resumeCommand = "${brightnessctl} --restore";
-      }
-      {
-        timeout = 3 * 60;
-        command = "${pkgs.writeShellScript "power-off-screen"
-          # sh
-          ''
-            ${noctaliaCmd} ipc call lockScreen lock &&
-              ${niriCmd} msg output eDP-1 off
-          ''
-        }";
-        resumeCommand = "${niriCmd} msg output eDP-1 on";
-      }
-      {
-        timeout = 10 * 60;
-        command = "${pkgs.writeShellScript "suspend-if-not-powered"
-          # sh
-          ''
-            [ "$(cat /sys/class/power_supply/AC*/online 2>/dev/null)" = 0 ] &&
-              ${noctaliaCmd} ipc call sessionMenu lockAndSuspend
-          ''
-        }";
-      }
-    ];
+    timeouts =
+      let
+        dim-screen = timeout: {
+          inherit timeout;
+          command = "${pkgs.writeShellScript "dim-screen"
+            # sh
+            ''
+              ${brightnessctl} --save && ${brightnessctl} set 25%
+            ''
+          }";
+          resumeCommand = "${brightnessctl} --restore";
+        };
+        power-off-screen = timeout: outputs: {
+          inherit timeout;
+          command = "${pkgs.writeShellScript "power-off-screen" (
+            # sh
+            ''
+              ${noctaliaCmd} ipc call lockScreen lock &&
+            ''
+            + (lib.strings.concatMapStringsSep " && " (output: "${niriCmd} msg output ${output} off") outputs)
+          )}";
+          resumeCommand = "${pkgs.writeShellScript "power-on-screen" (
+            lib.strings.concatMapStringsSep " && " (output: "${niriCmd} msg output ${output} on") outputs
+          )}";
+
+        };
+
+        suspend-if-not-powered = timeout: {
+          inherit timeout;
+          command = "${pkgs.writeShellScript "suspend-if-not-powered"
+            # sh
+            ''
+              [ "$(cat /sys/class/power_supply/AC*/online 2>/dev/null)" = 0 ] &&
+                ${noctaliaCmd} ipc call sessionMenu lockAndSuspend
+            ''
+          }";
+        };
+      in
+
+      if (extraConfig.hostname == "portatilo") then
+        [
+          (dim-screen (2 * 60))
+          (power-off-screen (3 * 60) [ "eDP-1" ])
+          (suspend-if-not-powered (10 * 60))
+        ]
+      else if (extraConfig.hostname == "computerone") then
+        [
+          (power-off-screen (3 * 60) [
+            "DP-1"
+            "DP-2"
+          ])
+        ]
+      else
+        [ ];
   };
 
   programs.niri = {
