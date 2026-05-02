@@ -9,6 +9,10 @@
 
   programs.neovim = {
     enable = true;
+
+    withPython3 = false;
+    withRuby = false;
+
     initLua = # lua
       ''
         vim.opt.nu = true
