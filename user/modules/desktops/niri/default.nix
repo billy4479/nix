@@ -353,6 +353,8 @@ in
           open-focused = true;
         }
       ];
+
+      spawn-at-startup = [ { command = [ noctaliaCmd ]; } ];
     };
   };
 }
