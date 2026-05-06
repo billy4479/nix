@@ -47,4 +47,15 @@
       "x-systemd.mount-timeout=1s"
     ];
   };
+
+  swapDevices = [
+    {
+      device = "/swapfile";
+      options = [
+        "defaults"
+        "nofail"
+      ];
+      size = 64 * 1024;
+    }
+  ];
 }
