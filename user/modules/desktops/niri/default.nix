@@ -89,7 +89,7 @@ in
         ]
       else if (extraConfig.hostname == "computerone") then
         [
-          (power-off-screen (3 * 60) [
+          (power-off-screen (10 * 60) [
             "DP-1"
             "DP-2"
           ])
