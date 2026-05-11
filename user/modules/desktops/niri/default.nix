@@ -363,6 +363,11 @@ in
           default-column-width = {
             proportion = 2. / 3.;
           };
+
+          background-effect = {
+            blur = true;
+            xray = false;
+          };
         }
         {
           matches = [
@@ -371,6 +376,18 @@ in
           ];
           open-floating = true;
           open-focused = true;
+        }
+
+      ];
+
+      layer-rules = [
+        {
+          matches = [
+            { namespace = "^noctalia-(background|launcher-overlay|dock)-.*$"; }
+          ];
+          background-effect = {
+            xray = false;
+          };
         }
       ];
 

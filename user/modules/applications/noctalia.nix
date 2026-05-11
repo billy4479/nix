@@ -25,9 +25,9 @@
         density = "default";
         showOutline = false;
         showCapsule = true;
-        capsuleOpacity = 1;
+        # capsuleOpacity = 1;
         capsuleColorKey = "none";
-        backgroundOpacity = 1;
+        # backgroundOpacity = 1;
         useSeparateOpacity = false;
         floating = false;
         marginVertical = 4;
