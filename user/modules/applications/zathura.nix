@@ -11,6 +11,9 @@
         font = (import ../fonts/names.nix).sans;
         guioptions = "none";
         database = "sqlite";
+
+        default-bg = "rgba(48,52,70,0.85)";
+        recolor-lightcolor = "rgba(0,0,0,0)";
       };
     };
   };
