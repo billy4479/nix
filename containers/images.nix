@@ -2,50 +2,50 @@
 {
   "docker.io/certbot/dns-cloudflare" = {
     imageName = "docker.io/certbot/dns-cloudflare";
-    imageDigest = "sha256:587d1d445ab308fb897af923f8ea570ba278445fd64a335303a65fe2a81d209c";
-    hash = "sha256-PXRuC4uyQmQ+DBV///ATkC5FJg6pp6EIeOby9SInAT0=";
+    imageDigest = "sha256:f90db06a98b61bd221fe5a9688d0bb975b444760ef677cb4369ffc2a8a16e579";
+    hash = "sha256-fs2sypgjqjYdN7u9z/3N8koXBx8echRjCzlQcYbaXfc=";
     finalImageName = "docker.io/certbot/dns-cloudflare";
     finalImageTag = "latest";
   };
   "docker.io/nginx" = {
     imageName = "docker.io/nginx";
-    imageDigest = "sha256:e7257f1ef28ba17cf7c248cb8ccf6f0c6e0228ab9c315c152f9c203cd34cf6d1";
-    hash = "sha256-tz/Qz9dRk3rP7A58BCpLDOLDQtTbowRBQo2zp8uWGnA=";
+    imageDigest = "sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de";
+    hash = "sha256-gEy9FhUtin1MN5WNMODuMOwg2zy3+KqNyi8VfhqObG8=";
     finalImageName = "docker.io/nginx";
     finalImageTag = "alpine";
   };
   "docker.io/opencloudeu/opencloud-rolling" = {
     imageName = "docker.io/opencloudeu/opencloud-rolling";
-    imageDigest = "sha256:c840de29b7287da070ffc9d5eb52a1b291a046877402bf70f387ccf56c820aee";
-    hash = "sha256-Bq2zRaIW1ZLBrBDdDu9X7vEmYLuUGR1xdN5G0nl2Q/4=";
+    imageDigest = "sha256:235b5d988729aa821bd068bbdc60175270b05bd5fefa77b6d0e2ec5aeadccd0b";
+    hash = "sha256-qYh3D6SGyOHqgKce0dzRjv40qdshWHhbWiVTsomRIXM=";
     finalImageName = "docker.io/opencloudeu/opencloud-rolling";
     finalImageTag = "latest";
   };
   "docker.io/qbittorrentofficial/qbittorrent-nox" = {
     imageName = "docker.io/qbittorrentofficial/qbittorrent-nox";
-    imageDigest = "sha256:85fe2690f418dabffc4907276b3cdffcb7880c7114157b32f932d3b97bac45af";
-    hash = "sha256-hcOqAAHWSSoj2Zu1xvUt1igslTiA2+jYDAAAyhBosDI=";
+    imageDigest = "sha256:84818ffc8006e9d67486e84042a422f7751c44d79a3e2c2df74a296789c2c2b6";
+    hash = "sha256-FFUSqc2MfsbQN4Xk2vi1PbYhAGQf5dkLAzywswMIb+g=";
     finalImageName = "docker.io/qbittorrentofficial/qbittorrent-nox";
     finalImageTag = "latest";
   };
   "docker.io/valkey/valkey" = {
     imageName = "docker.io/valkey/valkey";
-    imageDigest = "sha256:cb3339abbd6e18942cd8ac3349f0c371a82ba5b6204b242563ba299e7956cbd0";
-    hash = "sha256-8+8IcU7MWzZFcRkyEALDkx1coT2RFyvP+Mv7ATAn1A8=";
+    imageDigest = "sha256:b027235326507cfdade9b6684056ec1d0b0c0757412e628245129b5d7b788618";
+    hash = "sha256-XmTflpR6puxTjbwIWT9oTC0MpWZ5LwF6i+uLZQOZr20=";
     finalImageName = "docker.io/valkey/valkey";
     finalImageTag = "8-alpine";
   };
   "ghcr.io/immich-app/immich-machine-learning" = {
     imageName = "ghcr.io/immich-app/immich-machine-learning";
-    imageDigest = "sha256:33b17015c3d14f2565e9b8cd36b48a70027b14b5cd20da7fbfff21a370b0309c";
-    hash = "sha256-cZHzVYYh2jxdQpULuGCFc3ZYVvN8ZqXE9SFiGW5FUQk=";
+    imageDigest = "sha256:a2501141440f10516d329fdfba2c68082e19eb9ba6016c061ac80d23beadf7f3";
+    hash = "sha256-rKH14ViGDBnYdUL6erxO3StbvCCwe7K9GSxEsUb2LXQ=";
     finalImageName = "ghcr.io/immich-app/immich-machine-learning";
     finalImageTag = "v2";
   };
   "ghcr.io/immich-app/immich-server" = {
     imageName = "ghcr.io/immich-app/immich-server";
-    imageDigest = "sha256:0cc1f82953d9598eb9e9dd11cbde1f50fe54f9c46c4506b089e8ad7bfc9d1f0c";
-    hash = "sha256-6pjaixcCiASqq0m9rJ6jtAC5t3BdVSGUrhUxnQQp4a4=";
+    imageDigest = "sha256:c15bff75068effb03f4355997d03dc7e0fc58720c2b54ad6f7f10d1bc57efaa5";
+    hash = "sha256-q8ZFDOTI4DxrPEWAmmpjZwkOUUaUOuy995LirkjyVdE=";
     finalImageName = "ghcr.io/immich-app/immich-server";
     finalImageTag = "v2";
   };
