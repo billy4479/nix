@@ -392,6 +392,8 @@ in
       ];
 
       spawn-at-startup = [ { command = [ noctaliaCmd ]; } ];
+
+      hotkey-overlay.skip-at-startup = true;
     };
   };
 }
