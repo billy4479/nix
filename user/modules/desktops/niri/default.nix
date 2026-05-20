@@ -277,6 +277,7 @@ in
           scroll-method = "two-finger";
           tap = true;
           tap-button-map = "left-right-middle";
+          accel-speed = if (extraConfig.hostname == "computerone") then 0.6 else 0;
         };
 
         focus-follows-mouse.enable = true;
