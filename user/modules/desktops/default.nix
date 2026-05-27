@@ -15,11 +15,6 @@
     ++ lib.optionals (extraConfig.desktop == "qtile") [ ./qtile ]
     ++ lib.optionals (extraConfig.desktop == "niri") [ ./niri ];
 
-  programs.keepassxc = {
-    enable = true;
-    autostart = true;
-  };
-
   home.packages =
     with pkgs;
     [

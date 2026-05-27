@@ -19,6 +19,7 @@
     ./terminals/wezterm.nix
     ./tmux.nix
     ./zathura.nix
+    ./keepassxc.nix
   ];
 
   home.packages = with pkgs; [
