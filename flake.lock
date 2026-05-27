@@ -132,10 +132,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1773241960,
-        "narHash": "sha256-4S2mK/9/jlbSNQaU3N5CkocEsS0Gk4vjabW5aXAxPKQ=",
+        "lastModified": 1779907911,
+        "narHash": "sha256-5g2/bre2U0Gj6WbfLFnkcC8AhMjA/EP9gy+DdGGkYmE=",
         "ref": "master",
-        "rev": "09ba7e8b774f90a77ee5f1b72c6923242062946d",
+        "rev": "af478a1e9a1db31743433ab8aadf0bb3ed2578f7",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/ff.git"
@@ -291,10 +291,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1775830499,
-        "narHash": "sha256-W+xlXALluYE65lCHKg6/aPtRxPEpT6QdZrhl6fnkt3A=",
+        "lastModified": 1779907306,
+        "narHash": "sha256-PQMewX4KrhkgvQX8YtNL9Hy5fOwJToUfJBGd09MC09k=",
         "ref": "master",
-        "rev": "10908cec2b674e4fae8578a89f2dc053cd55666d",
+        "rev": "9e7c08b4c3a6e64021af69248263c63d6823b474",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/giuoco-del-divertimento.git"
@@ -357,11 +357,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1768565846,
-        "narHash": "sha256-i2sszs37gun1LoRmbwwwiJvicbcQeO+OWNjUgSlXMPE=",
+        "lastModified": 1779903332,
+        "narHash": "sha256-kBgq1JVoq5i0EEBBV0f+yq+RB7KqoH/GLo2uDANMnSA=",
         "owner": "billy4479",
         "repo": "mc-runner",
-        "rev": "d188c83a916b5f64042d47859093073df7c2b630",
+        "rev": "667f747857107629fe91bd4d8b89c9a8a4c90747",
         "type": "github"
       },
       "original": {
