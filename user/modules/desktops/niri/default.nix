@@ -369,6 +369,18 @@ in
             blur = true;
             xray = false;
           };
+
+          clip-to-geometry = true;
+          geometry-corner-radius =
+            let
+              radius = 8.0;
+            in
+            {
+              bottom-left = radius;
+              bottom-right = radius;
+              top-left = radius;
+              top-right = radius;
+            };
         }
         {
           matches = [
