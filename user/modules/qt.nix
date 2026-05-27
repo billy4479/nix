@@ -27,11 +27,11 @@ in
 
   home.packages =
     (with pkgs; [
-      libsForQt5.qt5ct
+      # libsForQt5.qt5ct
       qt6Packages.qt6ct
 
       darkly
-      darkly-qt5
+      # darkly-qt5
     ])
     ++ [ papirus.package ];
 
