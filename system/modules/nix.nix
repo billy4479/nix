@@ -16,8 +16,6 @@
     };
 
     # Make the nixpkgs flake input be used for various nix commands
-    # https://github.com/TLATER/dotfiles/blob/master/nixos-config/default.nix
-    nixPath = [ "nixpkgs=${flakeInputs.nixpkgs}" ];
     registry.nixpkgs = {
       from = {
         id = "nixpkgs";
