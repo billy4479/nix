@@ -32,7 +32,3 @@ When you need to embed another language in a nix file (for example for writing s
 
 Documentation lives in the `docs` folder, consult it only if you think it might be relevant to your current task.
 Make sure you keep the docs up to date.
-
-IMPORTANT: if during any task you are confused about something you should report it to the user by modifying the AGENTS.md file, so that future agents will not make the same mistakes.
-
-
