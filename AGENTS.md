@@ -1,4 +1,6 @@
-# AGENTS.md
+# My Nix Flake
+
+## What is it
 
 In this repository lives a Nix Flake which manages 4 NixOS + home-manager systems:
 - `computerone` is my main desktop PC.
@@ -9,9 +11,22 @@ In this repository lives a Nix Flake which manages 4 NixOS + home-manager system
 You can check the hostname to detect on which system you are running on.
 You can ssh into any other system (as an unpriviliged user) by running `ssh <HOSTNAME>`.
 
+## Building and validation
+
 Deployment of each system and secret management is responsibility of the user only, do not worry about it.
 
-To validate your changes you can use `nix build .#nixosConfigurations.<HOSTNAME>.config.system.build.toplevel` which builds the system you specified.
+To validate your changes you can use 
+```sh
+nix build .#nixosConfigurations.HOSTNAME.config.system.build.toplevel
+```
+which builds the system you specified. 
+
+In non-server machines (i.e. `computerone` and `portatilo`) home-manager is installed standalone, therefore to build non-system changes you should use
+```sh
+nix build .#homeConfigurations.USERNAME@HOSTNAME.activationPackage
+```
+
+## Style
 
 When you need to embed another language in a nix file (for example for writing shell scripts or lua configs) you should annotate which language you're using:
 ```nix
@@ -29,6 +44,8 @@ When you need to embed another language in a nix file (for example for writing s
     '';
 }
 ```
+
+## Documentation
 
 Documentation lives in the `docs` folder, consult it only if you think it might be relevant to your current task.
 Make sure you keep the docs up to date.
