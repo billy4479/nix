@@ -3,6 +3,8 @@
 import type { Plugin } from "@opencode-ai/plugin"
 
 export const DirenvPlugin: Plugin = async ({ client, $ }) => {
+  let notified = false
+
   const notify = async (message: string, variant: "info" | "success" | "error") => {
     try {
       await client.tui.showToast({ body: { message, variant } })
@@ -11,31 +13,43 @@ export const DirenvPlugin: Plugin = async ({ client, $ }) => {
     }
   }
 
+  const log = async (level: "info" | "error", message: string, extra: Record<string, unknown>) => {
+    try {
+      await client.app.log({
+        body: {
+          service: "direnv",
+          level,
+          message,
+          extra,
+        },
+      })
+    } catch {
+      // Logging is best-effort too.
+    }
+  }
+
   return {
     async "shell.env"(input, output) {
+      const shouldNotify = !notified
+      notified = true
+
       try {
-        await notify("direnv: loading .envrc", "info")
-        const localEnv = await $`direnv export json`.cwd(input.cwd).json();
+        if (shouldNotify) await notify("direnv: loading .envrc", "info")
+
+        const text = await $`direnv export json`.cwd(input.cwd).text()
+        if (text.trim() === "") {
+          if (shouldNotify) await notify("direnv: .envrc loaded", "success")
+          await log("info", ".envrc already loaded", { cwd: input.cwd })
+          return
+        }
+
+        const localEnv = JSON.parse(text)
         Object.assign(output.env, localEnv)
-        await notify("direnv: .envrc loaded", "success")
-        client.app.log({
-          body: {
-            service: "direnv",
-            level: "info",
-            message: ".envrc loaded",
-            extra: { DIRENV_FILE: localEnv.DIRENV_FILE, cwd: input.cwd },
-          },
-        })
+        if (shouldNotify) await notify("direnv: .envrc loaded", "success")
+        await log("info", ".envrc loaded", { DIRENV_FILE: localEnv.DIRENV_FILE, cwd: input.cwd })
       } catch (err) {
-        await notify("direnv: .envrc failed to load", "error")
-        client.app.log({
-          body: {
-            service: "direnv",
-            level: "error",
-            message: ".envrc failed to load",
-            extra: { cwd: input.cwd, err },
-          },
-        })
+        if (shouldNotify) await notify("direnv: .envrc failed to load", "error")
+        await log("error", ".envrc failed to load", { cwd: input.cwd, err })
       }
     },
   }
