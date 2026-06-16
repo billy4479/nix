@@ -21,6 +21,7 @@ in
         open-document
         clip-copy
         clip-paste
+        list-desktop-files
         flatten
 
         build-host-and-copy

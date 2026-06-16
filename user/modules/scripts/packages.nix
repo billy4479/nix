@@ -139,6 +139,21 @@ in
 
   );
 
+  list-desktop-files =
+    pkgs.writeScriptBin "list-desktop-files"
+      # sh
+      ''
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        IFS=:
+        for dir in ''${XDG_DATA_DIRS:-/usr/local/share:/usr/share}; do
+          if [ -d "$dir/applications" ]; then
+            ${pkgs.findutils}/bin/find -L "$dir/applications" -name "*.desktop"
+          fi
+        done
+      '';
+
   activate-system =
     pkgs.writeScriptBin "activate-system"
       # sh
