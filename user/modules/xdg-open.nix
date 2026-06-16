@@ -28,6 +28,7 @@
         "x-scheme-handler/tg" = "org.telegram.desktop.desktop";
         "application/pdf" = "org.pwmt.zathura.desktop";
         "text/plain" = "org.kde.kate.desktop";
+        "image/svg+xml" = "org.inkscape.Inkscape.desktop";
       }
       // imgTypesAttrSet;
     };
