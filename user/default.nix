@@ -31,6 +31,11 @@ in
     EDITOR = "nvim";
   };
 
+  catppuccin = {
+    enable = true;
+    autoEnable = false;
+  };
+
   programs.home-manager.enable = true;
   manual.manpages.enable = false; # TODO: this fixes the warning about `options.json`
   news.display = "silent";
