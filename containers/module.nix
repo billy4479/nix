@@ -195,8 +195,9 @@ let
           RestartSec = "30s";
           Slice = "all-containers.slice";
           ExecStop =
-            "${nerdctl} --address ${address} --namespace ${namespace} stop ${name}"
-            + lib.optionalString (cfg.stopTimeout != null) " -t ${toString cfg.stopTimeout}";
+            "-${nerdctl} --address ${address} --namespace ${namespace} stop"
+            + lib.optionalString (cfg.stopTimeout != null) " -t ${toString cfg.stopTimeout}"
+            + " ${name}";
         }
         // lib.optionalAttrs (cfg.stopTimeout != null) {
           # Two seconds buffer to give some time to nerdctl to send sigkill
