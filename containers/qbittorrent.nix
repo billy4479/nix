@@ -27,6 +27,7 @@ in
   nerdctl-containers.${name} = {
     imageToPull = "docker.io/qbittorrentofficial/qbittorrent-nox";
     id = 5;
+    useNginx = true;
 
     environment = {
       "QBT_LEGAL_NOTICE" = "confirm";

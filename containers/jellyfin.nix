@@ -24,6 +24,7 @@ in
     };
 
     id = 10;
+    useNginx = true;
 
     volumes = [
       {

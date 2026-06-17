@@ -10,6 +10,7 @@ in
   nerdctl-containers."immich-server" = {
     imageToPull = "ghcr.io/immich-app/immich-server";
     id = 3;
+    useNginx = true;
     volumes = [
       {
         hostPath = "${baseHDDDir}/upload";

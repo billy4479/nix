@@ -13,6 +13,7 @@ in
 
   nerdctl-containers.${name} = {
     id = 13;
+    useNginx = true;
 
     imageToBuild = pkgs.nix-snapshotter.buildImage {
       name = "mc-runner";

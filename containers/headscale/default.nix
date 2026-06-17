@@ -18,6 +18,7 @@ in
   nerdctl-containers = {
     headscale = {
       id = 15;
+      useNginx = true;
       imageToBuild = pkgs.nix-snapshotter.buildImage {
         name = "headscale";
         tag = "nix-local";
@@ -50,6 +51,7 @@ in
 
     headplane = {
       id = 16;
+      useNginx = true;
       imageToPull = "ghcr.io/tale/headplane";
       dependsOn = [ "headscale" ];
       environmentFiles = [ config.sops.secrets.headplane-env.path ];

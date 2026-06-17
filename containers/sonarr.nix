@@ -23,6 +23,7 @@ in
 {
   nerdctl-containers.${name} = {
     id = 9;
+    useNginx = true;
 
     imageToBuild = pkgs.nix-snapshotter.buildImage {
       inherit name;
@@ -45,7 +46,10 @@ in
       ];
     };
 
-    dependsOn = [ "qbittorrent" ];
+    dependsOn = [
+      "qbittorrent"
+      "jackett"
+    ];
 
     volumes = [
       {

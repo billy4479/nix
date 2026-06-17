@@ -88,5 +88,10 @@ in
         readOnly = true;
       }
     ];
+
+    dependsOn = [
+      "nginx"
+      "mc-runner"
+    ];
   };
 }

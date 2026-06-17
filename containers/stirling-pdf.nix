@@ -60,6 +60,7 @@ in
     };
 
     id = 12;
+    useNginx = true;
 
     environment = {
       DISABLE_ADDITIONAL_FEATURES = "true";

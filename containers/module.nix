@@ -130,7 +130,20 @@ let
       );
 
       # Dependencies
-      dependencies = map (x: "nerdctl-${x}.service") cfg.dependsOn;
+      bind9Dns = lib.optionalString (config.nerdctl-containers ? bind9) (
+        "10.0.1.${toString config.nerdctl-containers.bind9.id}"
+      );
+      inferredDependencies =
+        lib.optional (name != "bind9" && bind9Dns != "" && cfg.dns == bind9Dns) "bind9"
+        ++ lib.optional (name != "nginx" && cfg.useNginx && config.nerdctl-containers ? nginx) "nginx"
+        ++ lib.optional (
+          config.nerdctl-containers ? headscale && !(lib.elem name [
+            "bind9"
+            "nginx"
+            "headscale"
+          ])
+        ) "headscale";
+      dependencies = map (x: "nerdctl-${x}.service") (lib.unique (cfg.dependsOn ++ inferredDependencies));
     in
     {
       users.users."container-${name}" = {
@@ -241,6 +254,12 @@ in
               type = lib.types.attrsOf lib.types.str;
               default = { };
               description = "Container labels.";
+            };
+
+            useNginx = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+              description = "Whether this container is served through the nginx reverse proxy.";
             };
 
             extraOptions = lib.mkOption {

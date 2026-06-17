@@ -14,6 +14,29 @@ If you decide to pull an image you should add it to `../containers/images` and u
 nix-prefetch-docker --os linux --arch amd64 --image-tag TAG --image-name IMAGE_URL
 ```
 
+## Startup Dependencies
+
+Container ordering is controlled by the `dependsOn`, `dns`, and `useNginx` options in `../containers/module.nix`.
+
+Use `dependsOn = [ "other-container" ];` for explicit application dependencies. This generates systemd ordering and requirement dependencies on `nerdctl-other-container.service`.
+
+Containers using the default bind9 DNS server automatically start after `bind9`. This applies when `dns` points to the bind9 container IP. Set `dns = null;` only for containers that should not use container DNS.
+
+Set `useNginx = true;` for containers served through the nginx reverse proxy. These containers automatically start after `nginx`. Since nginx uses bind9 DNS, this also places them after bind9.
+
+`headscale` is intentionally prioritized after the public entrypoint stack. The effective base ordering is:
+```text
+bind9 -> nginx -> headscale -> other containers
+```
+
+All containers except `bind9`, `nginx`, and `headscale` automatically start after `headscale` when it exists. This keeps headscale available before the rest of the application stack starts.
+
+Current media stack ordering:
+```text
+flaresolverr -> jackett -> sonarr/radarr
+qbittorrent -> sonarr/radarr
+```
+
 ## Container Mapping
 
 Always keep this table in sync when adding new containers.

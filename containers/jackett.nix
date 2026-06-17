@@ -24,6 +24,8 @@ in
     };
 
     id = 8;
+    useNginx = true;
+    dependsOn = [ "flaresolverr" ];
 
     volumes = [
       {

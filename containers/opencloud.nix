@@ -15,6 +15,7 @@ in
   nerdctl-containers.${name} = {
     imageToPull = "docker.io/opencloudeu/opencloud-rolling";
     id = 14;
+    useNginx = true;
 
     environment = {
       "OC_INSECURE" = "false";

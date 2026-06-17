@@ -9,6 +9,7 @@ in
 {
   nerdctl-containers.${name} = {
     id = 17;
+    useNginx = true;
     imageToBuild = pkgs.nix-snapshotter.buildImage {
       inherit name;
       tag = "nix-local";

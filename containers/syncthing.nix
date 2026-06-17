@@ -44,5 +44,6 @@
     ];
 
     id = 2;
+    useNginx = true;
   };
 }

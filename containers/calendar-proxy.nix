@@ -24,6 +24,7 @@ in
       ];
     };
     id = 4;
+    useNginx = true;
 
     environment = {
       PORT = "4479";
