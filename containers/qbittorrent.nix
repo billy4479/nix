@@ -1,6 +1,7 @@
 { pkgs, lib, ... }:
 let
   name = "qbittorrent";
+  id = 5;
   baseHDDDir = "/mnt/HDD/torrent";
   configDir = "/mnt/SSD/apps/${name}";
   setfacl = lib.getExe' pkgs.acl "setfacl";
@@ -25,12 +26,24 @@ let
 in
 {
   nerdctl-containers.${name} = {
-    imageToPull = "docker.io/qbittorrentofficial/qbittorrent-nox";
-    id = 5;
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
+
+      config = {
+        env = [
+          "HOME=/config"
+          "QBT_CONFIRM_LEGAL_NOTICE=TRUE"
+          "QBT_PROFILE=/config"
+        ];
+        entrypoint = [ (lib.getExe pkgs.qbittorrent-nox) ];
+      };
+    };
+
+    inherit id;
     useNginx = true;
 
     environment = {
-      "QBT_LEGAL_NOTICE" = "confirm";
       "QBT_TORRENTING_PORT" = torrentingPort;
       "QBT_WEBUI_PORT" = webUiPort;
     };

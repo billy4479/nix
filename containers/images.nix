@@ -21,13 +21,6 @@
     finalImageName = "docker.io/opencloudeu/opencloud-rolling";
     finalImageTag = "latest";
   };
-  "docker.io/qbittorrentofficial/qbittorrent-nox" = {
-    imageName = "docker.io/qbittorrentofficial/qbittorrent-nox";
-    imageDigest = "sha256:84818ffc8006e9d67486e84042a422f7751c44d79a3e2c2df74a296789c2c2b6";
-    hash = "sha256-FFUSqc2MfsbQN4Xk2vi1PbYhAGQf5dkLAzywswMIb+g=";
-    finalImageName = "docker.io/qbittorrentofficial/qbittorrent-nox";
-    finalImageTag = "latest";
-  };
   "docker.io/valkey/valkey" = {
     imageName = "docker.io/valkey/valkey";
     imageDigest = "sha256:b027235326507cfdade9b6684056ec1d0b0c0757412e628245129b5d7b788618";
