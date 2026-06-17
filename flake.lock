@@ -483,11 +483,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781342557,
-        "narHash": "sha256-fhyUBMDYqjRqJDESIBKsqsHqSPCvJrV2ZLe9sAmbBWU=",
+        "lastModified": 1781724037,
+        "narHash": "sha256-ruKywL7c7qoc8Yx6AdqdjT0WvkgB2fG2/WLPRojVPaM=",
         "owner": "billy4479",
         "repo": "nix-snapshotter",
-        "rev": "aa9a3512af55af41e018ab4394e9b86a2192b601",
+        "rev": "ed9e29954292aef08ce19d69351704a86691e1f1",
         "type": "github"
       },
       "original": {
