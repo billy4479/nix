@@ -7,13 +7,6 @@
     finalImageName = "docker.io/certbot/dns-cloudflare";
     finalImageTag = "latest";
   };
-  "docker.io/nginx" = {
-    imageName = "docker.io/nginx";
-    imageDigest = "sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de";
-    hash = "sha256-gEy9FhUtin1MN5WNMODuMOwg2zy3+KqNyi8VfhqObG8=";
-    finalImageName = "docker.io/nginx";
-    finalImageTag = "alpine";
-  };
   "docker.io/opencloudeu/opencloud-rolling" = {
     imageName = "docker.io/opencloudeu/opencloud-rolling";
     imageDigest = "sha256:235b5d988729aa821bd068bbdc60175270b05bd5fefa77b6d0e2ec5aeadccd0b";

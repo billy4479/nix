@@ -8,8 +8,24 @@ let
 in
 {
   nerdctl-containers.${name} = {
-    imageToPull = "docker.io/nginx";
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
+
+      config = {
+        entrypoint = [ "${pkgs.nginx}/bin/nginx" ];
+      };
+    };
+
     id = 6;
+    cmd = [
+      "-e"
+      "/dev/stdout"
+      "-c"
+      "/etc/nginx/nginx.conf"
+      "-g"
+      "daemon off;"
+    ];
 
     volumes = [
       {
@@ -23,6 +39,11 @@ in
         readOnly = true;
       }
       {
+        hostPath = "${pkgs.nginx}/conf/mime.types";
+        containerPath = "/etc/nginx/mime.types";
+        readOnly = true;
+      }
+      {
         hostPath = certsDir;
         containerPath = "/certs/";
         readOnly = true;
@@ -31,6 +52,7 @@ in
 
     extraOptions = [
       "--cap-add=CAP_NET_BIND_SERVICE"
+      "--ulimit=nofile=65535:65535"
     ];
 
     ports = [
