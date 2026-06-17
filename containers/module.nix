@@ -192,6 +192,7 @@ let
 
         serviceConfig = {
           Restart = "always";
+          RestartSec = "30s";
           Slice = "all-containers.slice";
           ExecStop =
             "${nerdctl} --address ${address} --namespace ${namespace} stop ${name}"
@@ -200,6 +201,11 @@ let
         // lib.optionalAttrs (cfg.stopTimeout != null) {
           # Two seconds buffer to give some time to nerdctl to send sigkill
           TimeoutStopSec = toString (cfg.stopTimeout + 2) + "s";
+        };
+
+        unitConfig = {
+          StartLimitIntervalSec = "10min";
+          StartLimitBurst = 5;
         };
       };
     };
