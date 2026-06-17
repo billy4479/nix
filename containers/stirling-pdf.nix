@@ -39,8 +39,7 @@ in
 
           (python3.withPackages (p: [
             p.opencv-python-headless
-            # FIXME: seems broken in the new nix version
-            # p.weasyprint
+            p.weasyprint
 
             p.pillow
             p.pdf2image
