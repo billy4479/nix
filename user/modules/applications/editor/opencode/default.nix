@@ -1,4 +1,9 @@
-{ pkgs, config, ... }:
+{
+  pkgs,
+  config,
+  flakeInputs,
+  ...
+}:
 let
 
   svelte-ai-tools = pkgs.fetchFromGitHub {
@@ -23,6 +28,7 @@ let
 
       "${svelte-ai-tools}/tools/skills"
       "${marimo-pair}/skills"
+      "${flakeInputs.nix-docs-extractor}/skills"
     ];
 
     postBuild = # sh
@@ -33,7 +39,10 @@ let
 
 in
 {
-  home.packages = [ pkgs.opencode ];
+  home.packages = with pkgs; [
+    opencode
+    nix-docs-extractor
+  ];
   home.file = {
     "${config.xdg.configHome}/opencode" = {
       source = ./config;

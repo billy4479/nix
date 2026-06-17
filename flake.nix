@@ -121,6 +121,14 @@
         flake-utils.follows = "flake-utils";
       };
     };
+
+    nix-docs-extractor = {
+      url = "github:billy4479/nix-docs-extractor";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
   };
 
   outputs =
@@ -146,6 +154,7 @@
             inherit (inputs.server-tool.packages.${system}) server-tool;
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
             inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
+            nix-docs-extractor = inputs.nix-docs-extractor.packages.${system}.default;
           }
           // inputs.myPackages.packages.${system}
         )

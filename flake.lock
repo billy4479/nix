@@ -473,6 +473,29 @@
         "url": "https://flakehub.com/f/DeterminateSystems/nix-src/%2A"
       }
     },
+    "nix-docs-extractor": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781717641,
+        "narHash": "sha256-eKn5MKR+6XkwWVJJaBJzxI9vXHcGkiD8quJA0lPgFw4=",
+        "owner": "billy4479",
+        "repo": "nix-docs-extractor",
+        "rev": "58b2809db926c054b6f42d268a1fdd7442050932",
+        "type": "github"
+      },
+      "original": {
+        "owner": "billy4479",
+        "repo": "nix-docs-extractor",
+        "type": "github"
+      }
+    },
     "nix-snapshotter": {
       "inputs": {
         "flake-compat": "flake-compat_2",
@@ -689,6 +712,7 @@
         "mc-runner": "mc-runner",
         "myPackages": "myPackages",
         "niri": "niri",
+        "nix-docs-extractor": "nix-docs-extractor",
         "nix-snapshotter": "nix-snapshotter",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs_3",
