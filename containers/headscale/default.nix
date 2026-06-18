@@ -1,5 +1,6 @@
 {
   pkgs,
+  lib,
   config,
   ...
 }:
@@ -52,7 +53,17 @@ in
     headplane = {
       id = 16;
       useNginx = true;
-      imageToPull = "ghcr.io/tale/headplane";
+      imageToBuild = pkgs.nix-snapshotter.buildImage {
+        name = "headplane";
+        tag = "nix-local";
+
+        copyToRoot = [
+          pkgs.dockerTools.caCertificates
+        ];
+
+        config.entrypoint = [ (lib.getExe pkgs.headplane) ];
+      };
+
       dependsOn = [ "headscale" ];
       environmentFiles = [ config.sops.secrets.headplane-env.path ];
       volumes = [
