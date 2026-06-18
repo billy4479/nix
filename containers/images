@@ -1,4 +1,2 @@
 ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
 docker.io/certbot/dns-cloudflare:latest
-docker.io/opencloudeu/opencloud-rolling:latest
-ghcr.io/tale/headplane:latest

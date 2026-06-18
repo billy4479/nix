@@ -2,38 +2,10 @@
 {
   "docker.io/certbot/dns-cloudflare" = {
     imageName = "docker.io/certbot/dns-cloudflare";
-    imageDigest = "sha256:f90db06a98b61bd221fe5a9688d0bb975b444760ef677cb4369ffc2a8a16e579";
-    hash = "sha256-fs2sypgjqjYdN7u9z/3N8koXBx8echRjCzlQcYbaXfc=";
+    imageDigest = "sha256:4231f04709b3ed4f457c939bdf2942bd9be603e28fe0eeb9c2c223a313302869";
+    hash = "sha256-/OWbgMm9OmPzH4oPooVmkcUIsCgLQQ6eQHpbIWVZo7Q=";
     finalImageName = "docker.io/certbot/dns-cloudflare";
     finalImageTag = "latest";
-  };
-  "docker.io/opencloudeu/opencloud-rolling" = {
-    imageName = "docker.io/opencloudeu/opencloud-rolling";
-    imageDigest = "sha256:235b5d988729aa821bd068bbdc60175270b05bd5fefa77b6d0e2ec5aeadccd0b";
-    hash = "sha256-qYh3D6SGyOHqgKce0dzRjv40qdshWHhbWiVTsomRIXM=";
-    finalImageName = "docker.io/opencloudeu/opencloud-rolling";
-    finalImageTag = "latest";
-  };
-  "docker.io/valkey/valkey" = {
-    imageName = "docker.io/valkey/valkey";
-    imageDigest = "sha256:b027235326507cfdade9b6684056ec1d0b0c0757412e628245129b5d7b788618";
-    hash = "sha256-XmTflpR6puxTjbwIWT9oTC0MpWZ5LwF6i+uLZQOZr20=";
-    finalImageName = "docker.io/valkey/valkey";
-    finalImageTag = "8-alpine";
-  };
-  "ghcr.io/immich-app/immich-machine-learning" = {
-    imageName = "ghcr.io/immich-app/immich-machine-learning";
-    imageDigest = "sha256:a2501141440f10516d329fdfba2c68082e19eb9ba6016c061ac80d23beadf7f3";
-    hash = "sha256-rKH14ViGDBnYdUL6erxO3StbvCCwe7K9GSxEsUb2LXQ=";
-    finalImageName = "ghcr.io/immich-app/immich-machine-learning";
-    finalImageTag = "v2";
-  };
-  "ghcr.io/immich-app/immich-server" = {
-    imageName = "ghcr.io/immich-app/immich-server";
-    imageDigest = "sha256:c15bff75068effb03f4355997d03dc7e0fc58720c2b54ad6f7f10d1bc57efaa5";
-    hash = "sha256-q8ZFDOTI4DxrPEWAmmpjZwkOUUaUOuy995LirkjyVdE=";
-    finalImageName = "ghcr.io/immich-app/immich-server";
-    finalImageTag = "v2";
   };
   "ghcr.io/immich-app/postgres" = {
     imageName = "ghcr.io/immich-app/postgres";
@@ -41,12 +13,5 @@
     hash = "sha256-YNxadMZRLd2Wky6UvZFTcJ+KXFxg51E4zPdEAG7HtPk=";
     finalImageName = "ghcr.io/immich-app/postgres";
     finalImageTag = "14-vectorchord0.4.3-pgvectors0.2.0";
-  };
-  "ghcr.io/tale/headplane" = {
-    imageName = "ghcr.io/tale/headplane";
-    imageDigest = "sha256:cfb0807609198f90b9793e46e3b243b257bcdcef032847a3204d10201435b8dc";
-    hash = "sha256-46X6zrWJ+gc57UGLsVCJJHya9CH1ktxG73BHmoKMlN8=";
-    finalImageName = "ghcr.io/tale/headplane";
-    finalImageTag = "latest";
   };
 }
