@@ -1,14 +1,26 @@
 {
+  pkgs,
+  lib,
   config,
   ...
 }:
 let
   baseHDDDir = "/mnt/HDD/apps/immich";
-  version = "v2";
+  name = "immich-server";
 in
 {
-  nerdctl-containers."immich-server" = {
-    imageToPull = "ghcr.io/immich-app/immich-server";
+  nerdctl-containers.${name} = {
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
+
+      copyToRoot = [
+        pkgs.dockerTools.caCertificates
+      ];
+
+      config.entrypoint = [ (lib.getExe pkgs.immich) ];
+    };
+
     id = 3;
     useNginx = true;
     volumes = [
@@ -46,12 +58,12 @@ in
 
       DB_HOSTNAME = "10.0.1.130";
       REDIS_HOSTNAME = "10.0.1.129";
-      IMMICH_VERSION = version;
       IMMICH_MACHINE_LEARNING_URL = "http://10.0.1.128:3003";
     };
     dependsOn = [
       "immich-redis"
       "immich-database"
+      "immich-ml"
     ];
   };
 }

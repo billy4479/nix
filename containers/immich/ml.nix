@@ -1,12 +1,23 @@
-{ ... }:
+{ pkgs, lib, ... }:
 let
   baseHDDDir = "/mnt/HDD/apps/immich";
-  version = "v2";
+  name = "immich-ml";
 in
 {
-  nerdctl-containers.immich-machine-learning = {
+  nerdctl-containers.${name} = {
     id = 128;
-    imageToPull = "ghcr.io/immich-app/immich-machine-learning";
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
+
+      copyToRoot = [
+        pkgs.dockerTools.caCertificates
+        pkgs.dockerTools.binSh
+      ];
+
+      config.entrypoint = [ (lib.getExe pkgs.immich-machine-learning) ];
+
+    };
     volumes = [
       {
         hostPath = "${baseHDDDir}/model-cache";
@@ -14,7 +25,6 @@ in
       }
     ];
     environment = {
-      IMMICH_VERSION = version;
       MACHINE_LEARNING_CACHE_FOLDER = "/cache";
 
       HF_HOME = "/cache/hf";
