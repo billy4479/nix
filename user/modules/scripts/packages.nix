@@ -168,10 +168,21 @@ in
     pkgs.writeScriptBin "build-host-and-copy"
       # sh
       ''
+        set -euo pipefail
+
+        host="$1"
+        shift
+
         rm -f ${outPath}
-        nix build .#nixosConfigurations.$1.config.system.build.toplevel --print-out-paths -o ${outPath} -Lv &&
-          nix store sign --key-file ${config.sops.secrets.nix-signing-key.path} --recursive ${outPath} -Lv &&
-          nix copy --to ssh://$1 ${outPath} -Lv
+
+        nix build ".#nixosConfigurations.$host.config.system.build.toplevel" "$@" --print-out-paths -o ${outPath}
+
+        nix store sign \
+          --key-file ${config.sops.secrets.nix-signing-key.path} \
+          --recursive ${outPath} \
+          "$@"
+
+        nix copy --to "ssh://$host" ${outPath} "$@"
       '';
 
   flatten =
