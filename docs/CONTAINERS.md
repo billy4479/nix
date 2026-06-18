@@ -33,7 +33,7 @@ All containers except `bind9`, `nginx`, and `headscale` automatically start afte
 
 Current media stack ordering:
 ```text
-flaresolverr -> jackett -> sonarr/radarr
+byparr -> jackett -> sonarr/radarr
 qbittorrent -> sonarr/radarr
 ```
 
@@ -65,4 +65,4 @@ Always keep this table in sync when adding new containers.
 | Immich (DB) | 130 | 10.0.1.130 |
 | frp | 131 | 10.0.1.131 |
 | Certbot | 132 | 10.0.1.132 |
-| Flaresolverr | 133 | 10.0.1.133 |
+| Byparr | 134 | 10.0.1.134 |

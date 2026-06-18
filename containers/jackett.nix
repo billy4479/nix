@@ -25,7 +25,7 @@ in
 
     id = 8;
     useNginx = true;
-    dependsOn = [ "flaresolverr" ];
+    dependsOn = [ "byparr" ];
 
     volumes = [
       {

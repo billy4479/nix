@@ -21,7 +21,7 @@
     ../../../containers/radarr.nix
     ../../../containers/jackett.nix
     ../../../containers/sonarr.nix
-    ../../../containers/flaresolverr.nix
+    ../../../containers/byparr.nix
 
     ../../../containers/jellyfin.nix
 
