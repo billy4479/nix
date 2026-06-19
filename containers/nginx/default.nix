@@ -13,8 +13,10 @@ in
       tag = "nix-local";
 
       config = {
-        entrypoint = [ "${pkgs.nginx}/bin/nginx" ];
+        entrypoint = [ "/bin/nginx" ];
       };
+
+      copyToRoot = [ pkgs.nginx ]; # This is needed so that `certbot-renew` finds the nginx binary
     };
 
     id = 6;
