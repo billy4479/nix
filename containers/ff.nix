@@ -26,6 +26,7 @@ in
       PORT = "4479";
       ENVIRONMENT = "production";
       ORIGIN = "https://ff.internal.polpetta.online";
+      FF_DATA_PATH = "/data";
     };
 
     volumes = [
