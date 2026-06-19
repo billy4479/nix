@@ -18,6 +18,8 @@ in
           "0.0.0.0"
           "--protected-mode"
           "no"
+          "--dir"
+          "/data"
         ];
       };
     };
