@@ -49,3 +49,9 @@ When you need to embed another language in a nix file (for example for writing s
 
 Documentation lives in the `docs` folder, consult it only if you think it might be relevant to your current task.
 Make sure you keep the docs up to date.
+
+## Running commands
+
+If you need to run some commmand which isn't install you can fall back to using a `nix shell`.
+
+When you ssh into a remote host you do not have root access, however you can ask the user to run a privileged command for you.
