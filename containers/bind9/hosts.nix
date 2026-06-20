@@ -4,16 +4,16 @@ stdenvNoCC.mkDerivation rec {
   version = "1.0.0";
 
   src = fetchurl {
-    url = "https://raw.githubusercontent.com/StevenBlack/hosts/2b274d002ccbb49407f1b43091417b041b947d28/hosts";
-    hash = "sha256-dmqKd8m1JFzTDXjeZUYnbvZNX/xqMiXYFRJFveq7Nlc=";
+    url = "https://raw.githubusercontent.com/StevenBlack/hosts/f0c1e878685f647bac77f6ed81980379318ee7c3/hosts";
+    hash = "sha256-fySXABWhkH15oyHAaBRlobmF2j5RlpxlTSWTC9sBN98=";
   };
 
   dontUnpack = true;
 
   buildPhase = # sh
     ''
-      cat <<EOF >$out
-      $TTL 1H
+      echo '$TTL 1H' >$out
+      cat <<EOF >>$out
       @       IN      SOA     localhost. root.localhost. (
                               1               ; Serial
                               3H              ; Refresh
