@@ -16,15 +16,13 @@ in
         entrypoint = [ "/bin/nginx" ];
       };
 
-      copyToRoot = [ pkgs.nginx ]; # This is needed so that `certbot-renew` finds the nginx binary
+      copyToRoot = [ pkgs.nginx ];
     };
 
     id = 6;
     cmd = [
       "-e"
       "/dev/stdout"
-      "-c"
-      "/etc/nginx/nginx.conf"
       "-g"
       "daemon off;"
     ];
@@ -32,7 +30,7 @@ in
     volumes = [
       {
         hostPath = "${nginxConfig}/nginx.conf";
-        containerPath = "/etc/nginx/nginx.conf";
+        containerPath = "${pkgs.nginx}/conf/nginx.conf";
         readOnly = true;
       }
       {
