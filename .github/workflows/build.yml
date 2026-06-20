@@ -40,9 +40,6 @@ jobs:
             extra-substituters = https://nix-community.cachix.org https://catppuccin.cachix.org https://install.determinate.systems https://cache.nixos.org/ https://cache.nixos-cuda.org
             extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= computerone-1:FwphMHwxn0KLInwuouQcqsNn4J5fkzJNAd4QlJa4Lk8= portatilo-1:KM4PhszcXObDUqfnN0BZNwnya6B+2br39PURy8hy6nA= cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M=
 
-      - name: Set up Nix magic cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
-
       - name: Build ${{ matrix.host }}
         run: |
           nix build \
@@ -82,9 +79,6 @@ jobs:
             # Extracted with: nix eval --json '.#nixosConfigurations.computerone.config.nix.settings.{substituters,trusted-public-keys}'
             extra-substituters = https://nix-community.cachix.org https://catppuccin.cachix.org https://install.determinate.systems https://cache.nixos.org/ https://cache.nixos-cuda.org
             extra-trusted-public-keys = nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU= cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= computerone-1:FwphMHwxn0KLInwuouQcqsNn4J5fkzJNAd4QlJa4Lk8= portatilo-1:KM4PhszcXObDUqfnN0BZNwnya6B+2br39PURy8hy6nA= cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M=
-
-      - name: Set up Nix magic cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Build billy@${{ matrix.host }}
         run: |
