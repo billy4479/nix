@@ -155,6 +155,25 @@
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
             inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
             nix-docs-extractor = inputs.nix-docs-extractor.packages.${system}.default;
+
+            immich = prev.immich.overrideAttrs (old: {
+              postInstall =
+                (old.postInstall or "")
+                + # sh
+                  ''
+                    for processor in "$out"/lib/node_modules/immich/node_modules/.pnpm/fluent-ffmpeg@*/node_modules/fluent-ffmpeg/lib/processor.js; do
+                      substituteInPlace "$processor" \
+                        --replace-fail \
+                          'emitEnd(err, stdoutRing.get(), stderrRing.get());' \
+                          'emitEnd(err, stdoutRing && stdoutRing.get(), stderrRing && stderrRing.get());'
+                    done
+
+                    substituteInPlace "$out"/lib/node_modules/immich/dist/services/plugin.service.js \
+                      --replace-fail \
+                        'if (currentPlugin != null && currentPlugin.version === manifest.version) {' \
+                        'if (currentPlugin != null && currentPlugin.version === manifest.version && currentPlugin.wasmPath === `''${basePath}/''${manifest.wasm.path}`) {'
+                  '';
+            });
           }
           // inputs.myPackages.packages.${system}
         )

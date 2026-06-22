@@ -55,10 +55,20 @@ in
 
       DB_USERNAME = "postgres";
       DB_DATABASE_NAME = "immich";
+      DB_PORT = "5432";
 
       DB_HOSTNAME = "10.0.1.130";
       REDIS_HOSTNAME = "10.0.1.129";
+      REDIS_PORT = "6379";
+
+      IMMICH_HOST = "0.0.0.0";
+      IMMICH_PORT = "2283";
+      IMMICH_MEDIA_LOCATION = "/usr/src/app/upload";
+      IMMICH_BUILD_DATA = "${pkgs.immich}/lib/node_modules/immich/build";
       IMMICH_MACHINE_LEARNING_URL = "http://10.0.1.128:3003";
+
+      FFMPEG_PATH = lib.getExe pkgs.jellyfin-ffmpeg;
+      FFPROBE_PATH = lib.getExe' pkgs.jellyfin-ffmpeg "ffprobe";
     };
     dependsOn = [
       "immich-redis"
