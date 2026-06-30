@@ -16,6 +16,7 @@
     ./containers.nix
     ./samba.nix
 
+    ../../modules/smartd.nix
     ../../modules/tailscale.nix
 
     ../../modules/power-management

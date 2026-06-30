@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 {
   # Flags for zfs volumes (is there a way to set them in nix?):
   # - mountpoint=/mnt/whatever
@@ -18,14 +18,7 @@
     ];
   };
 
-  environment.systemPackages = [ pkgs.smartmontools ];
-
   services = {
-    smartd = {
-      enable = true;
-      # TODO: add notifications
-    };
-
     zfs = {
       autoScrub = {
         enable = true;
