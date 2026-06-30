@@ -8,6 +8,7 @@
     ../../modules/graphics/nvidia.nix
 
     ../../modules/cifs-client.nix
+    ../../modules/smartd.nix
     ../../modules/tailscale.nix
     ../../modules/extra-network.nix
 

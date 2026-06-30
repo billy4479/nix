@@ -25,8 +25,6 @@
     net-tools
   ];
 
-  services.smartd.enable = true;
-
   programs.zsh.enable = true;
   # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.zsh.enableCompletion
   environment.pathsToLink = [ "/share/zsh" ];
