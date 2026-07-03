@@ -1,0 +1,21 @@
+use_default_settings: true
+
+general:
+  instance_name: "SearXNG"
+  enable_metrics: false
+
+search:
+  safe_search: 0
+  autocomplete: "duckduckgo"
+  favicon_resolver: "duckduckgo"
+  formats:
+    - html
+    - json
+
+server:
+  bind_address: "0.0.0.0"
+  port: 8888
+  base_url: "https://searxng.internal.polpetta.online/"
+  limiter: false
+  image_proxy: true
+  method: "GET"

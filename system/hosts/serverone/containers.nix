@@ -1,5 +1,4 @@
 {
-  flakeInputs,
   pkgs,
   ...
 }:
@@ -27,6 +26,7 @@
 
     ../../../containers/stirling-pdf.nix
     ../../../containers/opencloud.nix
+    ../../../containers/searxng
 
     ../../../containers/mc-runner
     ../../../containers/calendar-proxy.nix
