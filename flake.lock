@@ -383,11 +383,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1781975556,
-        "narHash": "sha256-XzPjc8U8hqAc2moljeNsIQKfbbbZEzHlNg5g8AjqYXI=",
+        "lastModified": 1783104247,
+        "narHash": "sha256-JCvDxnblxu2NyG84OhY+iKkAFwHFTexAYVS4GLCXU+c=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "7183b51ff3eae59fb872f029c0ec87823bbc731f",
+        "rev": "4095a27a79971567282d1f1809fde15c9f43e905",
         "type": "github"
       },
       "original": {
@@ -782,10 +782,10 @@
     "secrets-repo": {
       "flake": false,
       "locked": {
-        "lastModified": 1782816620,
-        "narHash": "sha256-QRbHrZJKdnpjxwI5gXBq63v593y0mh/bxU2P0sTnxhI=",
+        "lastModified": 1783100545,
+        "narHash": "sha256-T9pBlPRxOUjr8mw4LkwgL+b7FHgmjYcQi7+DALb1Vds=",
         "ref": "master",
-        "rev": "55424088e5f0055f5937146572a92f2660bd8279",
+        "rev": "be510e72581c7debfc500afc5f7f04fcb7bb1b33",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/nix-secrets.git"
