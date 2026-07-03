@@ -3,6 +3,18 @@
   "plugin": [
     "opencode-gemini-auth@latest",
   ],
+  "mcp": {
+    "searxng": {
+      "type": "local",
+      "command": [
+        "mcp-searxng"
+      ],
+      "environment": {
+        "SEARXNG_URL": "https://searxng.internal.polpetta.online"
+      },
+      "enabled": true
+    }
+  },
   "theme": "catppuccin-frappe",
   "provider": {
     "google": {

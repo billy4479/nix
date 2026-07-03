@@ -5,6 +5,20 @@
   ...
 }:
 let
+  opencodeWrapped = pkgs.symlinkJoin {
+    name = "opencode";
+    paths = [ pkgs.opencode ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+
+    postBuild =
+      let
+        path = pkgs.lib.makeBinPath [
+          pkgs.mcp-searxng
+          pkgs.nix-docs-extractor
+        ];
+      in
+      ''wrapProgram "$out/bin/opencode" --prefix PATH : ${path}'';
+  };
 
   svelte-ai-tools = pkgs.fetchFromGitHub {
     repo = "ai-tools";
@@ -39,10 +53,7 @@ let
 
 in
 {
-  home.packages = with pkgs; [
-    opencode
-    nix-docs-extractor
-  ];
+  home.packages = [ opencodeWrapped ];
   home.file = {
     "${config.xdg.configHome}/opencode" = {
       source = ./config;
