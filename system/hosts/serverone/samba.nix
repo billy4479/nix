@@ -5,6 +5,14 @@
   ...
 }:
 {
+  # This fixes chrooting to reinstall the system, as otherwise we fail to set smb passwords
+  system.activationScripts.makeSambaLock = {
+    deps = [ "specialfs" ];
+    text = # sh
+      ''
+        ${pkgs.coreutils}/bin/mkdir -p /run/lock/samba
+      '';
+  };
   services.samba = {
     enable = true;
     openFirewall = true;
