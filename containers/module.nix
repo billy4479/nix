@@ -17,6 +17,7 @@ let
       gid = "5000";
 
       nerdctl = lib.getExe pkgs.nerdctl;
+      ctr = lib.getExe' pkgs.containerd "ctr";
 
       # Volume creation
       setfacl = lib.getExe' pkgs.acl "setfacl";
@@ -130,14 +131,15 @@ let
       );
 
       # Dependencies
-      bind9Dns = lib.optionalString (config.nerdctl-containers ? bind9) (
-        "10.0.1.${toString config.nerdctl-containers.bind9.id}"
-      );
+      bind9Dns = lib.optionalString (
+        config.nerdctl-containers ? bind9
+      ) "10.0.1.${toString config.nerdctl-containers.bind9.id}";
       inferredDependencies =
         lib.optional (name != "bind9" && bind9Dns != "" && cfg.dns == bind9Dns) "bind9"
         ++ lib.optional (name != "nginx" && cfg.useNginx && config.nerdctl-containers ? nginx) "nginx"
         ++ lib.optional (
-          config.nerdctl-containers ? headscale && !(lib.elem name [
+          config.nerdctl-containers ? headscale
+          && !(lib.elem name [
             "bind9"
             "nginx"
             "headscale"
@@ -188,7 +190,27 @@ let
             ${nerdctl} stop ${name} 2>/dev/null >/dev/null || true
             ${nerdctl} rm ${name} 2>/dev/null >/dev/null || true
 
-            ${loadToContainerd}/bin/copy-to-containerd
+            loadedImageMarker="$STATE_DIRECTORY/loaded-image"
+            loaded_image=$(cat "$loadedImageMarker" 2>/dev/null || true)
+            image_changed=false
+            image_missing=false
+
+            if [ "$loaded_image" != "${nixImage}" ]; then
+              image_changed=true
+            fi
+
+            if ! ${ctr} --address ${address} --namespace ${namespace} images inspect ${imageName} >/dev/null 2>/dev/null; then
+              image_missing=true
+            fi
+
+            if [ "$image_changed" = true ] || [ "$image_missing" = true ]; then
+              echo "Loading image ${imageName} from ${nixImage} since image_changed=$image_changed and image_missing=$image_missing"
+              ${nerdctl} --address ${address} --namespace ${namespace} rmi ${imageName} || true
+              ${loadToContainerd}/bin/copy-to-containerd
+              printf '%s\n' "${nixImage}" >"$loadedImageMarker"
+            else
+              echo "Image ${imageName} is already loaded from ${nixImage}"
+            fi
           '';
 
         script = ''
@@ -198,15 +220,14 @@ let
 
         postStop = # sh
           ''
-            echo "Unloading image"
             ${nerdctl} --address ${address} --namespace ${namespace} rm -f ${name} 2>/dev/null >/dev/null || true
-            ${nerdctl} --address ${address} --namespace ${namespace} rmi -f ${imageName} 2>/dev/null >/dev/null || true
           '';
 
         serviceConfig = {
           Restart = "always";
           RestartSec = "30s";
           Slice = "all-containers.slice";
+          StateDirectory = "nerdctl-containers/${name}";
           ExecStop =
             "-${nerdctl} --address ${address} --namespace ${namespace} stop"
             + lib.optionalString (cfg.stopTimeout != null) " -t ${toString cfg.stopTimeout}"
