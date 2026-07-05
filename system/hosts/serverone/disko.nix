@@ -1,16 +1,15 @@
+# device ids are imported from the secrets repo
 {
-  # TODO: i dont want to use /dev/sdX in the future,
-  # but at the same time i dont want to post on github my disks serial numbers
   disko.devices = {
     disk = {
       root = {
         type = "disk";
-        device = "/dev/sda";
+        # device = "/dev/sda";
         content = {
           type = "gpt";
           partitions = {
             EFI = {
-              size = "256M";
+              size = "4G";
               type = "EF00";
               content = {
                 type = "filesystem";
@@ -31,7 +30,7 @@
       };
       HDD_1 = {
         type = "disk";
-        device = "/dev/sdd";
+        # device = "/dev/sdd";
         content = {
           type = "gpt";
           partitions = {
@@ -47,7 +46,7 @@
       };
       HDD_2 = {
         type = "disk";
-        device = "/dev/sde";
+        # device = "/dev/sde";
         content = {
           type = "gpt";
           partitions = {
@@ -63,7 +62,7 @@
       };
       HDD_3 = {
         type = "disk";
-        device = "/dev/sdf";
+        # device = "/dev/sdf";
         content = {
           type = "gpt";
           partitions = {
@@ -79,7 +78,7 @@
       };
       SSD_1 = {
         type = "disk";
-        device = "/dev/sdb";
+        # device = "/dev/sdb";
         content = {
           type = "gpt";
           partitions = {
@@ -95,7 +94,7 @@
       };
       SSD_2 = {
         type = "disk";
-        device = "/dev/sdc";
+        # device = "/dev/sdc";
         content = {
           type = "gpt";
           partitions = {
@@ -127,31 +126,21 @@
           mountpoint = "none";
           xattr = "sa";
 
-          compression = "lz4";
+          compression = "zfs";
           "com.sun:auto-snapshot" = "false";
         };
 
         datasets = {
-          "local" = {
-            type = "zfs_fs";
-            options.mountpoint = "none";
-          };
-          "local/home" = {
-            type = "zfs_fs";
-            mountpoint = "/home";
-            # Used by services.zfs.autoSnapshot options.
-            options."com.sun:auto-snapshot" = "true";
-          };
-          "local/nix" = {
+          "nix" = {
             type = "zfs_fs";
             mountpoint = "/nix";
             options."com.sun:auto-snapshot" = "false";
           };
-          "local/root" = {
+          "root" = {
             type = "zfs_fs";
             mountpoint = "/";
             options."com.sun:auto-snapshot" = "false";
-            postCreateHook = "zfs list -t snapshot -H -o name | grep -E '^zroot/local/root@blank$' || zfs snapshot zroot/local/root@blank";
+            postCreateHook = "zfs list -t snapshot -H -o name | grep -E '^zroot/root@blank$' || zfs snapshot zroot/root@blank";
           };
         };
       };

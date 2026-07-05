@@ -6,13 +6,17 @@
 {
   imports = [
     ./hardware-configuration.nix
+
     flakeInputs.disko.nixosModules.disko
-    flakeInputs.nix-snapshotter.nixosModules.default
     ./disko.nix
+    {
+      disko.devices.disk = import "${flakeInputs.secrets-repo}/serverone-disks.nix";
+    }
     ./storage.nix
 
     ./users.nix
 
+    flakeInputs.nix-snapshotter.nixosModules.default
     ./containers.nix
     ./samba.nix
 
