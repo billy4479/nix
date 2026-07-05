@@ -10,7 +10,7 @@
       "environment": {
         "SEARXNG_URL": "https://searxng.internal.polpetta.online"
       },
-      "enabled": true
+      "enabled": false
     }
   },
   "theme": "catppuccin-frappe",
