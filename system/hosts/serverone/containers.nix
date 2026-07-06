@@ -48,6 +48,27 @@
     nixSnapshotterIntegration = true;
   };
 
+  networking.firewall = {
+    # serverone is a Tailscale subnet router for the nerdctl bridge. Packets
+    # addressed to container IPs are forwarded, so allowedUDPPorts/allowedTCPPorts
+    # do not apply; accept tailscale0 -> nerdctl0 and allow the replies back.
+    # Loose reverse-path filtering is needed because Tailscale routes live in a
+    # policy routing table and strict rpfilter can drop these packets before FORWARD.
+    checkReversePath = "loose";
+    extraCommands = # sh
+      ''
+        iptables -C FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null ||
+          iptables -I FORWARD 1 -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT
+        iptables -C FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null ||
+          iptables -I FORWARD 1 -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+      '';
+    extraStopCommands = # sh
+      ''
+        iptables -D FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null || true
+        iptables -D FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
+      '';
+  };
+
   environment.etc = {
     "nerdctl/nerdctl.toml".text = # toml
       ''
