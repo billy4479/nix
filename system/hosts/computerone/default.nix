@@ -17,9 +17,10 @@
 
   networking.hostName = "computerone";
 
-  boot.supportedFilesystems = [ "zfs" ];
-  boot.zfs.forceImportRoot = false;
-  networking.hostId = "2b1efe27";
+  # FIXME: Re-enable ZFS when zfs-kernel is no longer marked broken in nixpkgs.
+  # boot.supportedFilesystems = [ "zfs" ];
+  # boot.zfs.forceImportRoot = false;
+  # networking.hostId = "2b1efe27";
 
   fileSystems = {
     "/".options = [
