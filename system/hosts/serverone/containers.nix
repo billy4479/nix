@@ -29,6 +29,7 @@
     ../../../containers/searxng
 
     ../../../containers/mc-runner
+    ../../../containers/lunamultiplayer-server.nix
     ../../../containers/calendar-proxy.nix
     ../../../containers/ff.nix
     ../../../containers/giuoco-del-divertimento.nix

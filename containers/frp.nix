@@ -57,6 +57,13 @@ in
         # transport.proxyProtocolVersion = "v2"
 
         [[proxies]]
+        name = "lunamultiplayer"
+        type = "udp"
+        localIP = "10.0.1.20"
+        localPort = 8800
+        remotePort = 8800
+
+        [[proxies]]
         name = "stun"
         type = "udp"
         localIP = "10.0.1.15"
@@ -92,6 +99,7 @@ in
     dependsOn = [
       "nginx"
       "mc-runner"
+      "lunamultiplayer-server"
     ];
   };
 }
