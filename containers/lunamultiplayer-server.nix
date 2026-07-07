@@ -26,6 +26,8 @@ in
       LUNAMULTIPLAYER_DIR = "/data";
     };
 
+    extraOptions = [ "--stop-signal=SIGINT" ];
+
     # Recommended generated config values:
     # Config/ConnectionSettings.xml: Port = 8800, Upnp = false
     # Config/WebsiteSettings.xml: EnableWebsite = true, Port = 8900
