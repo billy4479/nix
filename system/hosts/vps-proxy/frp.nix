@@ -25,6 +25,7 @@ in
       ''
         bindAddr = "0.0.0.0"
         bindPort = 2333
+        udpPacketSize = 4096
 
         auth.method = "token"
         auth.token = "${config.sops.placeholder."frp-token"}"

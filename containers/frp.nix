@@ -18,6 +18,7 @@ in
       ''
         serverAddr = "87.106.25.93"
         serverPort = 2333
+        udpPacketSize = 4096
 
         auth.method = "token"
         auth.token = "${config.sops.placeholder."frp-token"}"
