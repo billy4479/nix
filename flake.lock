@@ -383,11 +383,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1783432988,
-        "narHash": "sha256-8nhDPFUHDtd8xYyaWilh29FBkv7wITRB9fOxEjdl6k4=",
+        "lastModified": 1783454839,
+        "narHash": "sha256-v2MPeiuhfjubJ0kBtZnTnkvmv4kyEuHrSeki6j9E2mo=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "31fc9d2a51b189d104b884e3401b4ea715197d82",
+        "rev": "115ea24cba24c0b9636edbbfe1fc73c413b904b6",
         "type": "github"
       },
       "original": {
