@@ -16,6 +16,7 @@ in
 
       copyToRoot = [
         pkgs.dockerTools.caCertificates
+        pkgs.coreutils
       ];
 
       config.entrypoint = [ (lib.getExe pkgs.immich) ];
@@ -67,6 +68,10 @@ in
       IMMICH_BUILD_DATA = "${pkgs.immich}/lib/node_modules/immich/build";
       IMMICH_MACHINE_LEARNING_URL = "http://10.0.1.128:3003";
 
+      PATH = lib.makeBinPath [
+        pkgs.coreutils
+        pkgs.jellyfin-ffmpeg
+      ];
       FFMPEG_PATH = lib.getExe pkgs.jellyfin-ffmpeg;
       FFPROBE_PATH = lib.getExe' pkgs.jellyfin-ffmpeg "ffprobe";
     };
