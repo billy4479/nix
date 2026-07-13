@@ -138,6 +138,8 @@
       ...
     }@inputs:
     let
+      lib = nixpkgs.lib;
+
       system = "x86_64-linux";
 
       pkgsForFlake = import nixpkgs {
@@ -193,6 +195,32 @@
       formatter.${system} = pkgsForFlake.nixfmt;
 
       packages.${system} = rec {
+        all-systems =
+          let
+            mkLink =
+              name: target: # sh
+              ''
+                ln -s ${target} "$out/${name}"
+              '';
+
+            systemLinks = lib.mapAttrsToList (
+              hostname: config: mkLink "${hostname}-system" config.config.system.build.toplevel
+            ) hosts.nixosConfigurations;
+
+            homeLinks = lib.mapAttrsToList (
+              homeName: config:
+              let
+                hostname = lib.last (lib.splitString "@" homeName);
+              in
+              mkLink "${hostname}-home" config.activationPackage
+            ) hosts.homeConfigurations;
+          in
+          pkgsForFlake.runCommand "all-systems" { } # sh
+            ''
+              mkdir "$out"
+              ${lib.concatStrings (systemLinks ++ homeLinks)}
+            '';
+
         nginx-config = pkgsForFlake.callPackage ./containers/nginx/config.nix {
           externalTrafficFrom = "10.0.1.131";
         };
