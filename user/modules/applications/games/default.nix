@@ -14,7 +14,6 @@
 
     programs.minecraft = {
       enableClient = true;
-      enableServer = true;
     };
   };
 }

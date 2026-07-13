@@ -774,7 +774,6 @@
         "noctalia": "noctalia",
         "plasma-manager": "plasma-manager",
         "secrets-repo": "secrets-repo",
-        "server-tool": "server-tool",
         "sops-nix": "sops-nix",
         "spicetify-nix": "spicetify-nix"
       }
@@ -795,29 +794,6 @@
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/nix-secrets.git"
-      }
-    },
-    "server-tool": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1738607787,
-        "narHash": "sha256-jbuJBOfXYQQGmrfZ/CitDrni9tRRp8UZNAjijwz48GQ=",
-        "owner": "billy4479",
-        "repo": "server-tool",
-        "rev": "c980a1ac538a29721864469db0e01aad342aa8bf",
-        "type": "github"
-      },
-      "original": {
-        "owner": "billy4479",
-        "repo": "server-tool",
-        "type": "github"
       }
     },
     "sops-nix": {

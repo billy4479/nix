@@ -11,28 +11,10 @@ in
 {
   options.programs.minecraft = {
     enableClient = lib.mkEnableOption "Enable Minecraft Client";
-    enableServer = lib.mkEnableOption "Enable Minecraft Server";
   };
 
   config = lib.mkIf extraConfig.games {
-    home.packages =
-      [ ]
-      ++ (if cfg.enableClient then [ pkgs.prismlauncher ] else [ ])
-      ++ (
-        if cfg.enableServer then
-          with pkgs;
-          [
-            server-tool
-
-            # extraPkgs.my-packages.packwiz-installer # TODO: uncomment this once i figure out the gradle build
-            packwiz
-
-            # Yes, I use cloudflare tunnels to play minecraft
-            cloudflared
-          ]
-        else
-          [ ]
-      );
+    home.packages = [ ] ++ (if cfg.enableClient then [ pkgs.prismlauncher ] else [ ]);
 
     # Yeah, yeah, this is not plasma, but same config file format
     programs.plasma = lib.mkIf cfg.enableClient {

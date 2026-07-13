@@ -98,14 +98,6 @@
       };
     };
 
-    server-tool = {
-      url = "github:billy4479/server-tool";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
-    };
-
     mc-runner = {
       url = "github:billy4479/mc-runner";
       inputs = {
@@ -153,7 +145,6 @@
           {
             inherit (inputs.ff.packages.${system}) ff;
             inherit (inputs.mc-runner.packages.${system}) mc-runner mc-java;
-            inherit (inputs.server-tool.packages.${system}) server-tool;
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
             inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
             nix-docs-extractor = inputs.nix-docs-extractor.packages.${system}.default;
@@ -161,20 +152,21 @@
             immich = prev.immich.overrideAttrs (old: {
               postInstall =
                 (old.postInstall or "")
-                + # sh
-                  ''
-                    for processor in "$out"/lib/node_modules/immich/node_modules/.pnpm/fluent-ffmpeg@*/node_modules/fluent-ffmpeg/lib/processor.js; do
-                      substituteInPlace "$processor" \
-                        --replace-fail \
-                          'emitEnd(err, stdoutRing.get(), stderrRing.get());' \
-                          'emitEnd(err, stdoutRing && stdoutRing.get(), stderrRing && stderrRing.get());'
-                    done
-
-                    substituteInPlace "$out"/lib/node_modules/immich/dist/services/plugin.service.js \
+                +
+                # sh
+                ''
+                  for processor in "$out"/lib/node_modules/immich/node_modules/.pnpm/fluent-ffmpeg@*/node_modules/fluent-ffmpeg/lib/processor.js; do
+                    substituteInPlace "$processor" \
                       --replace-fail \
-                        'if (currentPlugin != null && currentPlugin.version === manifest.version) {' \
-                        'if (currentPlugin != null && currentPlugin.version === manifest.version && currentPlugin.wasmPath === `''${basePath}/''${manifest.wasm.path}`) {'
-                  '';
+                      'emitEnd(err, stdoutRing.get(), stderrRing.get());' \
+                      'emitEnd(err, stdoutRing && stdoutRing.get(), stderrRing && stderrRing.get());'
+                  done
+
+                  substituteInPlace "$out"/lib/node_modules/immich/dist/services/plugin.service.js \
+                    --replace-fail \
+                    'if (currentPlugin != null && currentPlugin.version === manifest.version) {' \
+                    'if (currentPlugin != null && currentPlugin.version === manifest.version && currentPlugin.wasmPath === `''${basePath}/''${manifest.wasm.path}`) {'
+                '';
             });
           }
           // inputs.myPackages.packages.${system}
