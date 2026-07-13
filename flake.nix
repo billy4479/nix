@@ -161,11 +161,6 @@
                       'emitEnd(err, stdoutRing.get(), stderrRing.get());' \
                       'emitEnd(err, stdoutRing && stdoutRing.get(), stderrRing && stderrRing.get());'
                   done
-
-                  substituteInPlace "$out"/lib/node_modules/immich/dist/services/plugin.service.js \
-                    --replace-fail \
-                    'if (currentPlugin != null && currentPlugin.version === manifest.version) {' \
-                    'if (currentPlugin != null && currentPlugin.version === manifest.version && currentPlugin.wasmPath === `''${basePath}/''${manifest.wasm.path}`) {'
                 '';
             });
           }
