@@ -8,6 +8,7 @@ let
 in
 {
   home.pointerCursor = {
+    enable = true;
     inherit (cursor) name package;
     inherit size;
     gtk.enable = true;
