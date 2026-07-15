@@ -18,8 +18,11 @@ in
         ];
       };
 
-      copyToRoot = with pkgs.dockerTools; [
-        caCertificates
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        intel-media-driver
+        intel-vaapi-driver
+        vpl-gpu-rt
       ];
     };
 
@@ -46,6 +49,11 @@ in
         containerPath = "/cache";
       }
     ];
+
+    environment = {
+      LIBVA_DRIVER_NAME = "iHD";
+      LIBVA_DRIVER_PATH = "${pkgs.intel-media-driver}/lib/dri:${pkgs.intel-vaapi-driver}/lib/dri";
+    };
 
     extraOptions = [
       "--device=/dev/dri:/dev/dri"
