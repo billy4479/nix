@@ -3,6 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # TEMPORARY: remove once NixOS/nixpkgs#547916 reaches nixos-unstable.
+    nixpkgs-magnetic-catppuccin.url = "github:NixOS/nixpkgs/pull/547916/head";
     flake-utils.url = "github:numtide/flake-utils";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
@@ -143,6 +145,10 @@
         (
           final: prev:
           {
+            # TEMPORARY: magnetic-catppuccin-gtk was removed in NixOS/nixpkgs#544598.
+            magnetic-catppuccin-gtk =
+              inputs.nixpkgs-magnetic-catppuccin.legacyPackages.${system}.magnetic-catppuccin-gtk;
+
             inherit (inputs.ff.packages.${system}) ff;
             inherit (inputs.mc-runner.packages.${system}) mc-runner mc-java;
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
