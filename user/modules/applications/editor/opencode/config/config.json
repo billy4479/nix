@@ -8,7 +8,8 @@
         "mcp-searxng"
       ],
       "environment": {
-        "SEARXNG_URL": "https://searxng.internal.polpetta.online"
+        "SEARXNG_URL": "https://searxng.internal.polpetta.online",
+        "BYPARR_URL": "https://byparr.internal.polpetta.online"
       },
       "enabled": true
     }
