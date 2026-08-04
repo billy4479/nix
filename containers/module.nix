@@ -10,11 +10,20 @@ let
   makeContainer =
     name: cfg:
     assert (cfg.id >= 2 && cfg.id <= 255);
+    assert (!cfg.privateNixStore.enable || cfg.privateNixStore.hostPath != null);
+    assert (!cfg.privateNixStore.enable || cfg.privateNixStore.seedPackages != [ ]);
     let
       ip = "10.0.1.${toString cfg.id}";
       uidInt = 5000 + cfg.id;
       uid = toString uidInt;
       gid = "5000";
+
+      privateNixStoreVolume = lib.optional cfg.privateNixStore.enable {
+        hostPath = "${cfg.privateNixStore.hostPath}/nix";
+        containerPath = "/nix";
+        customPermissionScript = ":";
+      };
+      volumes = cfg.volumes ++ privateNixStoreVolume;
 
       nerdctl = lib.getExe pkgs.nerdctl;
       ctr = lib.getExe' pkgs.containerd "ctr";
@@ -87,7 +96,7 @@ let
       # Flags Construction
       volumeFlags = map (
         v: "-v \"${v.hostPath}:${v.containerPath}:${if v.readOnly or false then "ro" else "rw"}\""
-      ) cfg.volumes;
+      ) volumes;
 
       tmpfsFlags = map (t: "--tmpfs ${t}") cfg.tmpfs;
       envFlags = lib.mapAttrsToList (n: v: "-e ${n}=\"${v}\"") (
@@ -124,6 +133,7 @@ let
         ++ lib.optional cfg.runByUser "--user ${uid}:${gid}"
         ++ lib.optional (cfg.dns != null) "--dns=${cfg.dns}"
         ++ lib.optional (cfg.entrypoint != null) "--entrypoint \"${cfg.entrypoint}\""
+        ++ lib.optional (cfg.workingDirectory != null) "--workdir \"${cfg.workingDirectory}\""
         ++ [
           imageName
         ]
@@ -180,15 +190,67 @@ let
           let
             volumeDirScriptApplied = volumeDirScript {
               inherit uid gid;
-              volumes = cfg.volumes;
+              inherit volumes;
             };
+            privateNixStoreInit = lib.optionalString cfg.privateNixStore.enable (
+              let
+                nix = lib.getExe pkgs.nix;
+                nixStore = lib.getExe' pkgs.nix "nix-store";
+                seedPaths = map toString cfg.privateNixStore.seedPackages;
+                seedArgs = lib.escapeShellArgs seedPaths;
+              in
+              # sh
+              ''
+                privateStoreRoot=${lib.escapeShellArg cfg.privateNixStore.hostPath}
+                privateStoreUrl="local?root=$privateStoreRoot&require-sigs=false"
+
+                mkdir -p \
+                  "$privateStoreRoot/nix/store" \
+                  "$privateStoreRoot/nix/var/log/nix" \
+                  "$privateStoreRoot/nix/var/nix/gcroots"
+
+                # Store paths must not inherit the host application's admin ACL;
+                # Nix rejects build outputs writable by users other than the owner.
+                ${setfacl} -b -k \
+                  "$privateStoreRoot" \
+                  "$privateStoreRoot/nix" \
+                  "$privateStoreRoot/nix/store"
+                ${setfacl} -R -b -k "$privateStoreRoot/nix/var"
+                chmod g-s \
+                  "$privateStoreRoot" \
+                  "$privateStoreRoot/nix" \
+                  "$privateStoreRoot/nix/store"
+                chmod -R g-s "$privateStoreRoot/nix/var"
+
+                echo "Copying the ${name} runtime closure into its private Nix store"
+                ${nix} --extra-experimental-features "nix-command flakes" \
+                  copy --to "$privateStoreUrl" ${seedArgs}
+
+                seedNumber=0
+                for seedPath in ${seedArgs}; do
+                  seedNumber=$((seedNumber + 1))
+                  rootLink="$privateStoreRoot/nix/var/nix/gcroots/container-seed-$seedNumber"
+                  rm -f "$rootLink"
+                  ${nixStore} --store "$privateStoreUrl" \
+                    --add-root "$rootLink" --realise "$seedPath" >/dev/null
+                done
+
+                # This is a single-user store. Its owner must be able to remove
+                # obsolete paths during GC as well as add newly built paths.
+                chown -R ${uid}:${gid} "$privateStoreRoot/nix/store"
+                chown -R ${uid}:${gid} \
+                  "$privateStoreRoot/nix/var/log/nix" \
+                  "$privateStoreRoot/nix/var/nix"
+              ''
+            );
           in
           # sh
           ''
             ${volumeDirScriptApplied}
-
             ${nerdctl} stop ${name} 2>/dev/null >/dev/null || true
             ${nerdctl} rm ${name} 2>/dev/null >/dev/null || true
+
+            ${privateNixStoreInit}
 
             loadedImageMarker="$STATE_DIRECTORY/loaded-image"
             loaded_image=$(cat "$loadedImageMarker" 2>/dev/null || true)
@@ -351,6 +413,32 @@ in
               type = lib.types.listOf lib.types.str;
               default = [ ];
               description = "Command to run in the container.";
+            };
+
+            workingDirectory = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Working directory for the container process.";
+            };
+
+            privateNixStore = lib.mkOption {
+              description = "Private Nix store mounted at /nix inside the container.";
+              default = { };
+              type = lib.types.submodule {
+                options = {
+                  enable = lib.mkEnableOption "a private Nix store for this container";
+                  hostPath = lib.mkOption {
+                    type = lib.types.nullOr lib.types.str;
+                    default = null;
+                    description = "Host directory containing the private Nix root.";
+                  };
+                  seedPackages = lib.mkOption {
+                    type = lib.types.listOf lib.types.package;
+                    default = [ ];
+                    description = "Packages copied into and rooted in the private store before startup.";
+                  };
+                };
+              };
             };
 
             entrypoint = lib.mkOption {

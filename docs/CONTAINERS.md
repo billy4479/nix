@@ -60,6 +60,9 @@ Always keep this table in sync when adding new containers.
 | headplane | 16 | 10.0.1.16 |
 | ff | 17 | 10.0.1.17 |
 | giuoco-del-divertimento | 18 | 10.0.1.18 |
+| SearXNG | 19 | 10.0.1.19 |
+| Luna Multiplayer | 20 | 10.0.1.20 |
+| OpenChamber | 21 | 10.0.1.21 |
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
 | Immich (DB) | 130 | 10.0.1.130 |

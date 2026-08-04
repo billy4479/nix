@@ -31,6 +31,7 @@
         openssh.authorizedKeys.keys = [
           (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_computerone.pub")
           (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_portatilo.pub")
+          (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/openchamber.pub")
         ];
 
         extraGroups = [

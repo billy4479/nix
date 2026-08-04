@@ -27,6 +27,7 @@
     ../../../containers/stirling-pdf.nix
     ../../../containers/opencloud.nix
     ../../../containers/searxng
+    ../../../containers/openchamber
 
     ../../../containers/mc-runner
     ../../../containers/lunamultiplayer-server.nix

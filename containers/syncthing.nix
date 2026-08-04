@@ -50,6 +50,14 @@
         hostPath = "/mnt/HDD/apps/syncthing";
         containerPath = "/var/syncthing/Sync";
       }
+      {
+        hostPath = "/mnt/SSD/apps/openchamber/workspaces/code";
+        containerPath = "/var/syncthing/Sync/code";
+      }
+      {
+        hostPath = "/mnt/SSD/apps/openchamber/workspaces/nix";
+        containerPath = "/var/syncthing/Sync/nix";
+      }
     ];
 
     id = 2;
