@@ -32,12 +32,15 @@
     serviceConfig.Type = "oneshot";
     script = # sh
       ''
-        ${pkgs.cups}/bin/lpadmin \
+        if ! ${pkgs.cups}/bin/lpadmin \
           -p hp-laserjet-mfp-m28w \
           -D "HP LaserJet MFP M28w" \
           -E \
           -v ipp://192.168.2.180/ipp/print \
-          -m everywhere
+          -m everywhere; then
+          echo "Printer unavailable; skipping CUPS queue configuration"
+          exit 0
+        fi
         ${pkgs.cups}/bin/cupsenable hp-laserjet-mfp-m28w
         ${pkgs.cups}/bin/cupsaccept hp-laserjet-mfp-m28w
         ${pkgs.cups}/bin/lpoptions -d hp-laserjet-mfp-m28w
