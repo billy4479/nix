@@ -41,6 +41,15 @@ in
         RemainAfterExit = true;
         User = "root";
       };
+
+      requires = [
+        "nerdctl-certbot.service"
+        "nerdctl-nginx.service"
+      ];
+      after = [
+        "nerdctl-certbot.service"
+        "nerdctl-nginx.service"
+      ];
     };
   };
 
