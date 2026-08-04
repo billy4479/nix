@@ -14,5 +14,10 @@
       "enabled": true
     }
   },
+  "permission": {
+    "external_directory": {
+      "/nix/store/**": "allow"
+    }
+  },
   "theme": "catppuccin-frappe",
 }
