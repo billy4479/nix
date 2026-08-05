@@ -13,6 +13,7 @@ let
         path = pkgs.lib.makeBinPath [
           pkgs.mcp-searxng
           pkgs.nix-docs-extractor
+          pkgs.liteparse
         ];
       in
       ''wrapProgram "$out/bin/opencode" --prefix PATH : ${path}'';
