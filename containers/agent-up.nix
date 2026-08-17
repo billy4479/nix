@@ -35,7 +35,7 @@ in
     environment = {
       AGENTUP_LISTEN = ":3000";
       AGENTUP_DATA_DIR = "/data";
-      AGENTUP_MAX_UPLOAD_SIZE = "5242880"; # 5 MiB
+      AGENTUP_MAX_UPLOAD_SIZE = "10485760"; # 10 MiB
     };
   };
 }
