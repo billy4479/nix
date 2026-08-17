@@ -145,10 +145,6 @@
         (
           final: prev:
           {
-            # TEMPORARY: magnetic-catppuccin-gtk was removed in NixOS/nixpkgs#544598.
-            magnetic-catppuccin-gtk =
-              inputs.nixpkgs-magnetic-catppuccin.legacyPackages.${system}.magnetic-catppuccin-gtk;
-
             inherit (inputs.ff.packages.${system}) ff;
             inherit (inputs.mc-runner.packages.${system}) mc-runner mc-java;
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
