@@ -29,6 +29,8 @@ in
     services."certbot-renew" = {
       script = # sh
         ''
+          sleep 60 # HACK: wait for certbot container to be up
+
           ${lib.getExe pkgs.nerdctl} exec certbot certbot -v renew \
             --dns-cloudflare-propagation-seconds 60 \
             --dns-cloudflare \
