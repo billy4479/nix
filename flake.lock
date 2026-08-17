@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786996072,
-        "narHash": "sha256-Xw1n+Hed6E2My2mKQal2UeePhRpUbI9VBMjey4S1K94=",
+        "lastModified": 1786997590,
+        "narHash": "sha256-gZLaTRQJpPD4cJ8zpLENCXd2/r6aJd0uNrMfDvwijAE=",
         "owner": "billy4479",
         "repo": "agent-up",
-        "rev": "3df67d9676ed0e590d2fd8eeeaca637107a6b2e7",
+        "rev": "7f7b0a607980c6032becaf74a4ed43918a2444bd",
         "type": "github"
       },
       "original": {
