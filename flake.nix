@@ -84,6 +84,14 @@
       };
     };
 
+    agent-up = {
+      url = "github:billy4479/agent-up";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+
     calendar-proxy = {
       url = "git+ssh://git@github.com/billy4479/calendar-proxy-v2.git?ref=master&shallow=1";
       inputs = {
@@ -149,6 +157,7 @@
             inherit (inputs.mc-runner.packages.${system}) mc-runner mc-java;
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
             inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
+            inherit (inputs.agent-up.packages.${system}) agent-up agent-up-server;
             nix-docs-extractor = inputs.nix-docs-extractor.packages.${system}.default;
 
             immich = prev.immich.overrideAttrs (old: {

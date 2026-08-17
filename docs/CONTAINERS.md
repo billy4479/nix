@@ -63,6 +63,7 @@ Always keep this table in sync when adding new containers.
 | SearXNG | 19 | 10.0.1.19 |
 | Luna Multiplayer | 20 | 10.0.1.20 |
 | OpenChamber | 21 | 10.0.1.21 |
+| AgentUp | 22 | 10.0.1.22 |
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
 | Immich (DB) | 130 | 10.0.1.130 |

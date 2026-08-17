@@ -34,6 +34,7 @@
     ../../../containers/calendar-proxy.nix
     ../../../containers/ff.nix
     ../../../containers/giuoco-del-divertimento.nix
+    ../../../containers/agent-up.nix
   ];
 
   environment.systemPackages = [

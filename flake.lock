@@ -1,5 +1,28 @@
 {
   "nodes": {
+    "agent-up": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786988832,
+        "narHash": "sha256-OxEWQzNL0TWP2yAnWHXwUyw+hKBk+N8Pt1rel0JJFE8=",
+        "owner": "billy4479",
+        "repo": "agent-up",
+        "rev": "b6c21ab3e4be01ab1a02dabaab0efd0439590cb6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "billy4479",
+        "repo": "agent-up",
+        "type": "github"
+      }
+    },
     "calendar-proxy": {
       "inputs": {
         "flake-utils": [
@@ -771,6 +794,7 @@
     },
     "root": {
       "inputs": {
+        "agent-up": "agent-up",
         "calendar-proxy": "calendar-proxy",
         "catppuccin": "catppuccin",
         "determinate": "determinate",

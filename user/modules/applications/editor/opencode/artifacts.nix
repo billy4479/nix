@@ -14,9 +14,15 @@ let
           pkgs.mcp-searxng
           pkgs.nix-docs-extractor
           pkgs.liteparse
+          pkgs.agent-up
         ];
       in
-      ''wrapProgram "$out/bin/opencode" --prefix PATH : ${path}'';
+      # sh
+      ''
+        wrapProgram "$out/bin/opencode" \
+          --prefix PATH : ${path} \
+          --set AGENTUP_URL "https://agent-up.internal.polpetta.online"
+      '';
   };
 
   svelte-ai-tools = pkgs.fetchFromGitHub {
@@ -40,6 +46,7 @@ let
       "${svelte-ai-tools}/tools/skills"
       "${marimo-pair}/skills"
       "${flakeInputs.nix-docs-extractor}/skills"
+      "${flakeInputs.agent-up}/skills"
     ];
 
     postBuild = # sh
