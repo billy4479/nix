@@ -90,11 +90,11 @@ let
         containers:x:5000:openchamber
         nogroup:x:65534:
       '')
-      # This is needed otherwise git complains about syncthing owning the files
+      # libgit2 does not support Git's safe.directory path globs, so trust all
+      # repositories in this dedicated development container.
       (pkgs.writeTextDir "/etc/gitconfig" ''
         [safe]
-          directory = /workspace/nix
-          directory = /workspace/code/*
+          directory = *
       '')
       (pkgs.writeTextDir "/etc/ssh/ssh_known_hosts" ''
         github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl

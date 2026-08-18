@@ -76,11 +76,13 @@ Syncthing still sees `~/Sync/code` and `~/Sync/nix`, so its folder configuration
 does not change. The nested mounts only change the physical storage backing
 those paths. OpenChamber receives access through explicit ACLs without changing
 Syncthing's ownership. Because Git does not consider ACLs when checking
-repository ownership, the container's system Git configuration marks
-`/workspace/nix` and repositories below `/workspace/code` as safe. The existing
-HDD data must be copied to the SSD before deploying this configuration. Build
-outputs, `.direnv`, dependency directories, and other generated artifacts
-should normally be excluded with Syncthing ignore patterns.
+repository ownership, the container's system Git configuration marks all
+repositories as safe. A global rule is necessary because Nix's libgit2 does not
+support Git's `safe.directory` path globs. This exception is confined to the
+dedicated development container. The existing HDD data must be copied to the
+SSD before deploying this configuration. Build outputs, `.direnv`, dependency
+directories, and other generated artifacts should normally be excluded with
+Syncthing ignore patterns.
 
 ## Secrets
 
