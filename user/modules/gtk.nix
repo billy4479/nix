@@ -39,7 +39,7 @@
         accent = [ extraConfig.catppuccinColors.accent ];
         tweaks = [ extraConfig.catppuccinColors.flavor ];
       };
-      name = "Catppuccin-GTK-${extraConfig.catppuccinColors.upper.accent}-Dark-${extraConfig.catppuccinColors.upper.flavor}";
+      name = "Catppuccin-GTK-${extraConfig.catppuccinColors.upper.flavor}-${extraConfig.catppuccinColors.upper.accent}-Dark";
     };
   };
 }
