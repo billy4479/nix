@@ -11,7 +11,7 @@ in
   sops.secrets."frp-token" = { };
 
   sops.templates."frpc.toml" = {
-    owner = config.users.users."container-${name}".name;
+    owner = "container-${toString config.nerdctl-containers.${name}.uid}";
     group = config.users.users.containers.group;
 
     content = # toml

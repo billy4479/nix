@@ -61,6 +61,9 @@
     ];
 
     id = 2;
+    # OpenChamber and Syncthing must both own synchronized workspace files so
+    # that permission synchronization does not revoke either service's access.
+    uid = 5021;
     useNginx = true;
   };
 }

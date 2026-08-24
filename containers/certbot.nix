@@ -11,7 +11,7 @@ let
 in
 {
   sops.secrets.cloudflare-dns-token = {
-    owner = config.users.users."container-${name}".name;
+    owner = "container-${toString config.nerdctl-containers.${name}.uid}";
     group = config.users.users.containers.group;
   };
 

@@ -14,7 +14,7 @@ let
     assert (!cfg.privateNixStore.enable || cfg.privateNixStore.seedPackages != [ ]);
     let
       ip = "10.0.1.${toString cfg.id}";
-      uidInt = 5000 + cfg.id;
+      uidInt = cfg.uid;
       uid = toString uidInt;
       gid = "5000";
 
@@ -158,12 +158,12 @@ let
       dependencies = map (x: "nerdctl-${x}.service") (lib.unique (cfg.dependsOn ++ inferredDependencies));
     in
     {
-      users.users."container-${name}" = {
+      users.users."container-${uid}" = {
         isSystemUser = true;
         name = "container-${uid}";
         uid = uidInt;
         group = "containers";
-        description = "User for container ${name}";
+        description = "User for container UID ${uid}";
         createHome = false;
       };
 
@@ -318,7 +318,14 @@ in
           options = {
             id = lib.mkOption {
               type = lib.types.int;
-              description = "Container ID (must be between 2 and 255). used for IP address and UID.";
+              description = "Container ID (must be between 2 and 255), used for its IP address.";
+            };
+
+            uid = lib.mkOption {
+              type = lib.types.int;
+              default = 5000 + config.id;
+              defaultText = lib.literalExpression "5000 + config.id";
+              description = "UID used to run the container and own its writable volumes.";
             };
 
             imageToPull = lib.mkOption {
@@ -388,7 +395,7 @@ in
             runByUser = lib.mkOption {
               type = lib.types.bool;
               default = true;
-              description = "Whether to run as a user (uid=5000+id).";
+              description = "Whether to run the container with its configured UID and the containers GID.";
             };
 
             environment = lib.mkOption {

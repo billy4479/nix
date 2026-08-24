@@ -74,9 +74,18 @@ are also mounted over Syncthing's existing paths:
 
 Syncthing still sees `~/Sync/code` and `~/Sync/nix`, so its folder configuration
 does not change. The nested mounts only change the physical storage backing
-those paths. OpenChamber receives access through explicit ACLs without changing
-Syncthing's ownership. Because Git does not consider ACLs when checking
-repository ownership, the container's system Git configuration marks all
+those paths. Syncthing and OpenChamber both run as UID 5021, so either service
+can read, update, and change the mode of files created by the other. Their
+containers and bind mounts remain separate: OpenChamber cannot see Syncthing's
+configuration or its other synchronized folders. Syncthing runs without Linux
+capabilities and with `no-new-privileges`. Do not enable the `ignorePerms`
+folder option, that would stop executable bit synchronization.
+
+On the first deployment after switching to the shared UID, Syncthing's volume
+setup recursively changes its configuration, synchronized data, and workspace
+ownership from UID 5002 to UID 5021. This can take some time on a large tree.
+Because Git does not consider ACLs when checking repository ownership, the
+container's system Git configuration marks all
 repositories as safe. A global rule is necessary because Nix's libgit2 does not
 support Git's `safe.directory` path globs. This exception is confined to the
 dedicated development container. The existing HDD data must be copied to the

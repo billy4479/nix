@@ -9,7 +9,7 @@ let
 
   hosts = pkgs.callPackage ./hosts.nix { };
   bindConfig = pkgs.callPackage ./config.nix { bind9-hosts = hosts; };
-  uid = toString config.users.users."container-${name}".uid;
+  uid = toString config.nerdctl-containers.${name}.uid;
   gid = toString config.users.groups.containers.gid;
 in
 {

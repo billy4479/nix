@@ -107,7 +107,6 @@ let
   };
 
   setfacl = lib.getExe' pkgs.acl "setfacl";
-  find = lib.getExe pkgs.findutils;
   sshConfig = pkgs.writeText "openchamber-ssh-config" ''
     Host github.com
       User git
@@ -133,16 +132,6 @@ let
       IdentitiesOnly yes
       StrictHostKeyChecking accept-new
   '';
-  workspacePermissions = # sh
-    ''
-      test -d "${workspaceDir}/code"
-      test -d "${workspaceDir}/nix"
-      ${setfacl} -m u:${uidString}:rwx "${workspaceDir}"
-      ${setfacl} -R -m u:${uidString}:rwX \
-        "${workspaceDir}/code" "${workspaceDir}/nix"
-      ${find} "${workspaceDir}/code" "${workspaceDir}/nix" -type d \
-        -exec ${setfacl} -m d:u:${uidString}:rwx {} +
-    '';
 in
 {
   sops.secrets = {
@@ -156,7 +145,7 @@ in
   };
 
   nerdctl-containers.${name} = {
-    inherit id;
+    inherit id uid;
     useNginx = true;
     workingDirectory = "/workspace";
 
@@ -245,7 +234,6 @@ in
       {
         hostPath = workspaceDir;
         containerPath = "/workspace";
-        customPermissionScript = workspacePermissions;
       }
       {
         hostPath = "${baseDir}/tmp";
