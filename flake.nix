@@ -122,11 +122,12 @@
       };
     };
 
-    nix-docs-extractor = {
-      url = "github:billy4479/nix-docs-extractor";
+    read-nix-docs = {
+      url = "github:billy4479/read-nix-docs";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-utils.follows = "flake-utils";
+        home-manager.follows = "home-manager";
       };
     };
   };
@@ -168,7 +169,7 @@
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
             inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
             inherit (inputs.agent-up.packages.${system}) agent-up agent-up-server;
-            nix-docs-extractor = inputs.nix-docs-extractor.packages.${system}.default;
+            read-nix-docs = inputs.read-nix-docs.packages.${system}.default;
 
             immich = prev.immich.overrideAttrs (old: {
               postInstall =

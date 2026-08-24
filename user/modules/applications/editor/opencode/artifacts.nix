@@ -12,7 +12,7 @@ let
       let
         path = pkgs.lib.makeBinPath [
           pkgs.mcp-searxng
-          pkgs.nix-docs-extractor
+          pkgs.read-nix-docs
           pkgs.liteparse
           pkgs.agent-up
         ];
@@ -45,7 +45,7 @@ let
       ./skills
       "${svelte-ai-tools}/tools/skills"
       "${marimo-pair}/skills"
-      "${flakeInputs.nix-docs-extractor}/skills"
+      "${flakeInputs.read-nix-docs}/skills"
       "${flakeInputs.agent-up}/skills"
     ];
 
