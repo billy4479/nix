@@ -3,8 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    # TEMPORARY: remove once NixOS/nixpkgs#547916 reaches nixos-unstable.
-    nixpkgs-magnetic-catppuccin.url = "github:NixOS/nixpkgs/pull/547916/head";
     flake-utils.url = "github:numtide/flake-utils";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 

@@ -596,22 +596,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-magnetic-catppuccin": {
-      "locked": {
-        "lastModified": 1785630658,
-        "narHash": "sha256-QUIZnTTRasDQRhuJKaEtRUwnCPr1QaQjCMq90Uyd23w=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "f443c19ffe48287c4577abec4eae2ad0fa381bea",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "pull/547916/head",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-regression": {
       "locked": {
         "lastModified": 1643052045,
@@ -811,7 +795,6 @@
         "nix-snapshotter": "nix-snapshotter",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs_3",
-        "nixpkgs-magnetic-catppuccin": "nixpkgs-magnetic-catppuccin",
         "noctalia": "noctalia",
         "plasma-manager": "plasma-manager",
         "secrets-repo": "secrets-repo",
