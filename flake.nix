@@ -149,6 +149,18 @@
         inherit system overlays;
       };
 
+      lazyNixPrefetchDocker =
+        pkgsForFlake.writeShellScriptBin "nix-prefetch-docker" # sh
+          ''
+            exec nix run ${nixpkgs}#nix-prefetch-docker -- "$@"
+          '';
+
+      lazyPrefetchAllImages =
+        pkgsForFlake.writeShellScriptBin "prefetch-all-images" # sh
+          ''
+            exec ${myPackages}/prefetch-all-images/prefetch-all-images "$@"
+          '';
+
       overlays = [
         (
           final: prev:
@@ -242,8 +254,8 @@
 
           dig
 
-          myPackages.packages.${system}.prefetch-all-images
-          nix-prefetch-docker
+          lazyPrefetchAllImages
+          lazyNixPrefetchDocker
         ];
       };
     }
