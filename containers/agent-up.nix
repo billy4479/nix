@@ -36,7 +36,7 @@ in
       AGENTUP_LISTEN = ":3000";
       AGENTUP_DATA_DIR = "/data";
       AGENTUP_MAX_UPLOAD_SIZE = "10485760"; # 10 MiB
-      AGENTUP_UPLOAD_TTL = "30d";
+      AGENTUP_UPLOAD_TTL = "${toString (30 * 24)}h";
     };
   };
 }
