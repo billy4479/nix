@@ -23,11 +23,16 @@
     lsof
     usbutils # lsusb
     net-tools
+    sysstat
   ];
 
   programs.zsh.enable = true;
   # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.zsh.enableCompletion
   environment.pathsToLink = [ "/share/zsh" ];
+
+  boot.kernel.sysctl = {
+    "kernel.task_delayacct" = 1; # for iostat
+  };
 
   system.stateVersion = "23.11";
 }
