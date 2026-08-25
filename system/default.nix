@@ -20,10 +20,12 @@
   environment.systemPackages = with pkgs; [
     neovim
     file
+
     lsof
     usbutils # lsusb
     net-tools
-    sysstat
+    sysstat # iostat
+    iotop
   ];
 
   programs.zsh.enable = true;
@@ -31,7 +33,7 @@
   environment.pathsToLink = [ "/share/zsh" ];
 
   boot.kernel.sysctl = {
-    "kernel.task_delayacct" = 1; # for iostat
+    "kernel.task_delayacct" = 1; # for iotop
   };
 
   system.stateVersion = "23.11";
