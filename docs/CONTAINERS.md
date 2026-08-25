@@ -14,6 +14,21 @@ If you decide to pull an image you should add it to `../containers/images` and u
 nix-prefetch-docker --os linux --arch amd64 --image-tag TAG --image-name IMAGE_URL
 ```
 
+## Process privileges
+
+The container module drops every Linux capability and sets
+`no-new-privileges` by default. Add only capabilities required by the service:
+
+```nix
+capabilities = [ "CAP_NET_BIND_SERVICE" ];
+```
+
+Currently only nginx and bind9 need that capability to listen on ports below
+1024. Bind9 starts directly as its configured container UID rather than
+starting as root and changing users. Do not put capability or security flags in
+`extraOptions`; use the module options so the effective policy remains
+declarative and can be validated.
+
 ## Startup Dependencies
 
 Container ordering is controlled by the `dependsOn`, `dns`, and `useNginx` options in `../containers/module.nix`.

@@ -28,14 +28,14 @@ in
           # sh
           ''
             #!/bin/sh
-            exec ${pkgs.bind}/bin/named -u bind -g -c /etc/bind/named.conf
+            exec ${pkgs.bind}/bin/named -g -c /etc/bind/named.conf
           ''
         )
       ];
     };
 
     id = 11;
-    runByUser = false; # Bind apparently _expects_ to be run as root
+    capabilities = [ "CAP_NET_BIND_SERVICE" ];
     dns = null;
 
     volumes = [

@@ -204,8 +204,6 @@ in
 
     extraOptions = [
       "--read-only"
-      "--cap-drop=ALL"
-      "--security-opt=no-new-privileges"
       "--pids-limit=2048"
     ];
     tmpfs = [ ];

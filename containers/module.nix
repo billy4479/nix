@@ -108,6 +108,7 @@ let
       envFileFlags = map (f: "--env-file \"${f}\"") cfg.environmentFiles;
       labelFlags = lib.mapAttrsToList (n: v: "-l ${n}=\"${v}\"") cfg.labels;
       portFlags = map (p: "-p ${p}") cfg.ports;
+      capabilityFlags = map (capability: "--cap-add=${capability}") cfg.capabilities;
       cmdFlag = lib.strings.concatMapStringsSep " " (x: "\"${x}\"") cfg.cmd;
 
       allFlags = lib.flatten (
@@ -122,15 +123,18 @@ let
           # "--log-driver=journald"
           "--net=nerdctl-bridge"
           "--ip=${ip}"
+          "--cap-drop=ALL"
           volumeFlags
           tmpfsFlags
           envFlags
           envFileFlags
           labelFlags
           portFlags
+          capabilityFlags
           cfg.extraOptions
         ]
         ++ lib.optional cfg.runByUser "--user ${uid}:${gid}"
+        ++ lib.optional cfg.noNewPrivileges "--security-opt=no-new-privileges"
         ++ lib.optional (cfg.dns != null) "--dns=${cfg.dns}"
         ++ lib.optional (cfg.entrypoint != null) "--entrypoint \"${cfg.entrypoint}\""
         ++ lib.optional (cfg.workingDirectory != null) "--workdir \"${cfg.workingDirectory}\""
@@ -358,6 +362,12 @@ in
               description = "Extra flags for nerdctl run.";
             };
 
+            capabilities = lib.mkOption {
+              type = lib.types.listOf (lib.types.strMatching "CAP_[A-Z0-9_]+");
+              default = [ ];
+              description = "Linux capabilities to add after dropping the default capability set.";
+            };
+
             volumes = lib.mkOption {
               type = lib.types.listOf (
                 lib.types.submodule {
@@ -396,6 +406,12 @@ in
               type = lib.types.bool;
               default = true;
               description = "Whether to run the container with its configured UID and the containers GID.";
+            };
+
+            noNewPrivileges = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = "Whether to prevent the container processes from gaining privileges through exec.";
             };
 
             environment = lib.mkOption {

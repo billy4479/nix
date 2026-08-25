@@ -50,10 +50,8 @@ in
       }
     ];
 
-    extraOptions = [
-      "--cap-add=CAP_NET_BIND_SERVICE"
-      "--ulimit=nofile=65535:65535"
-    ];
+    capabilities = [ "CAP_NET_BIND_SERVICE" ];
+    extraOptions = [ "--ulimit=nofile=65535:65535" ];
 
     ports = [
       "80:80/tcp"
