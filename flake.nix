@@ -236,6 +236,7 @@
 
         bind9-hosts = pkgsForFlake.callPackage ./containers/bind9/hosts.nix { };
         bind9-config = pkgsForFlake.callPackage ./containers/bind9/config.nix { inherit bind9-hosts; };
+        exec-in-container = hosts.nixosConfigurations.serverone.config.system.build.execInContainer;
       };
 
       devShells.${system}.default = pkgsForFlake.mkShell {

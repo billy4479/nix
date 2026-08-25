@@ -1,7 +1,21 @@
 {
+  config,
+  lib,
   pkgs,
   ...
 }:
+let
+  deniedExecContainers = [ ];
+  allowedExecContainerConfigs = removeAttrs config.nerdctl-containers deniedExecContainers;
+  allowedExecContainers = lib.mapAttrs (_: container: container.uid) allowedExecContainerConfigs;
+  safeExecCapabilities = [ "CAP_NET_BIND_SERVICE" ];
+  hasSecurityOption =
+    option:
+    builtins.match "--(cap-add|cap-drop|privileged|security-opt)(=.*|[[:space:]].*)?" option != null;
+  execInContainer = pkgs.callPackage ../../../containers/exec-in-container {
+    allowedContainers = allowedExecContainers;
+  };
+in
 {
   imports = [
     ../../../containers/module.nix
@@ -38,8 +52,64 @@
   ];
 
   environment.systemPackages = [
+    execInContainer
     pkgs.nerdctl
     pkgs.cni-plugins
+  ];
+
+  assertions = [
+    {
+      assertion = lib.all (name: builtins.hasAttr name config.nerdctl-containers) deniedExecContainers;
+      message = "Every denied exec container must exist in nerdctl-containers.";
+    }
+    {
+      assertion = lib.all (name: builtins.match "[a-zA-Z0-9][a-zA-Z0-9_.-]*" name != null) (
+        builtins.attrNames allowedExecContainers
+      );
+      message = "Container names exposed by exec-in-container must be valid nerdctl names.";
+    }
+    {
+      assertion = lib.all (uid: uid > 0 && uid <= 2147483647) (builtins.attrValues allowedExecContainers);
+      message = "Container UIDs exposed by exec-in-container must be positive signed 32-bit integers.";
+    }
+    {
+      assertion = lib.all (container: container.runByUser) (
+        builtins.attrValues allowedExecContainerConfigs
+      );
+      message = "Containers exposed by exec-in-container must run as their configured non-root user.";
+    }
+    {
+      assertion = lib.all (container: container.noNewPrivileges) (
+        builtins.attrValues allowedExecContainerConfigs
+      );
+      message = "Containers exposed by exec-in-container must set no-new-privileges.";
+    }
+    {
+      assertion = lib.all (
+        container: lib.subtractLists safeExecCapabilities container.capabilities == [ ]
+      ) (builtins.attrValues allowedExecContainerConfigs);
+      message = "Containers with privilege-changing capabilities must be denied exec-in-container access.";
+    }
+    {
+      assertion = lib.all (container: !lib.any hasSecurityOption container.extraOptions) (
+        builtins.attrValues allowedExecContainerConfigs
+      );
+      message = "Containers exposed by exec-in-container must configure security through module options.";
+    }
+  ];
+
+  system.build.execInContainer = execInContainer;
+
+  security.sudo.extraRules = [
+    {
+      users = [ "billy" ];
+      commands = [
+        {
+          command = "/run/current-system/sw/bin/exec-in-container";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
   ];
 
   services.nix-snapshotter = {

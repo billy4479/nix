@@ -118,6 +118,54 @@ The mounted SSH configuration provides `computerone`, `portatilo`, `serverone`,
 and `vps-proxy` aliases. Agents can therefore connect with `ssh HOSTNAME`
 without relying on Tailscale MagicDNS inside the container.
 
+## Executing commands in server containers
+
+OpenChamber can run a command as the configured non-root user of an existing
+server container:
+
+```sh
+ssh serverone sudo /run/current-system/sw/bin/exec-in-container openchamber nix store gc
+ssh serverone sudo /run/current-system/sw/bin/exec-in-container nginx nginx -s reload
+```
+
+The wrapper is also exposed as the flake package
+`.#exec-in-container`. Its server build derives the container names and UIDs
+from `nerdctl-containers`, fixes the GID to 5000, and embeds the exact nerdctl
+store path. Every configured container is allowed unless its name appears in
+`deniedExecContainers` in `system/hosts/serverone/containers.nix`. Adding a
+container therefore grants this access by default. Evaluation fails if an
+allowed container runs as root, disables `no-new-privileges`, or adds a
+privilege-changing capability.
+
+The wrapper clears its environment and directly replaces itself with nerdctl.
+It fixes the containerd socket, namespace, UID, and GID, and places `--` before
+the requested command. It cannot create, remove, reconfigure, or run a
+privileged container. The container module drops capabilities by default, and
+only the low-port bind capability is accepted for an exposed container. The
+wrapper does not allocate a TTY or attach standard input.
+
+The sudo permission belongs to `billy`, so every SSH key authorized for that
+account can use the wrapper. Sudo logs the invocation, including its arguments.
+Do not put credentials in command-line arguments.
+
+This permission gives OpenChamber arbitrary command execution as each allowed
+container UID. Container isolation still depends on that container's mounts,
+namespaces, devices, capabilities, sockets, and credentials. In particular,
+the wrapper does not protect data exposed through a container's existing bind
+mounts.
+
+After deployment, verify the runtime identity and privilege state in a regular
+container:
+
+```sh
+sudo /run/current-system/sw/bin/exec-in-container openchamber sh -c \
+  'id -u; id -g; grep -E "^(CapEff|CapPrm|NoNewPrivs):" /proc/self/status'
+```
+
+The expected UID and GID are 5021 and 5000, both capability fields are zero,
+and `NoNewPrivs` is 1. Nginx and bind9 instead retain only
+`CAP_NET_BIND_SERVICE`, represented by capability mask `0000000000000400`.
+
 ## Configuration
 
 The `openchamber-web` package is overridden to use the same customized OpenCode
