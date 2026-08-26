@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   name = "byparr";
   id = 134;
@@ -16,13 +16,39 @@ in
       tag = "nix-local";
 
       config = {
-        entrypoint = [ "${pkgs.byparr}/bin/byparr" ];
+        entrypoint = [
+          (pkgs.writeShellScript "byparr-entrypoint" # sh
+            ''
+              export PATH=${
+                lib.makeBinPath [
+                  pkgs.xorg.xkbcomp
+                  pkgs.coreutils
+                ]
+              }
+              mkdir -p /tmp/.X11-unix
+              chmod 1777 /tmp/.X11-unix
+              ${pkgs.xvfb}/bin/Xvfb :99 \
+                -screen 0 1920x1080x24 \
+                -xkbdir ${pkgs.xkeyboard_config}/share/X11/xkb &
+              xvfbPid=$!
+              until [ -S /tmp/.X11-unix/X99 ]; do
+                kill -0 "$xvfbPid" 2>/dev/null || exit 1
+                sleep 0.1
+              done
+              exec ${lib.getExe pkgs.byparr}
+            ''
+          )
+        ];
       };
 
       copyToRoot = [
         pkgs.byparr
         pkgs.coreutils
+        pkgs.dockerTools.binSh
         pkgs.dockerTools.caCertificates
+        pkgs.fontconfig
+        pkgs.noto-fonts
+        pkgs.xvfb
         (pkgs.writeTextDir "/etc/passwd" ''
           root:x:0:0:root:/root:/bin/sh
           container-${uidString}:x:${uidString}:5000:User for container ${name}:/var/empty:/bin/sh
@@ -41,6 +67,8 @@ in
       PORT = "8191";
       HOME = "/tmp/byparr-home";
       BYPARR_CACHE_DIR = "/cache";
+      DISPLAY = ":99";
+      FONTCONFIG_FILE = "${pkgs.fontconfig.out}/etc/fonts/fonts.conf";
     };
 
     volumes = [
