@@ -4,12 +4,6 @@
   ...
 }:
 {
-  # For QUIC
-  boot.kernel.sysctl = {
-    "net.core.rmem_max" = 7500000;
-    "net.core.wmem_max" = 7500000;
-  };
-
   # TODO: Not sure if this is needed
   networking.firewall = {
     allowedTCPPorts = [ 22000 ];
