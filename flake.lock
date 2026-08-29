@@ -155,10 +155,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1783935701,
-        "narHash": "sha256-csEImN5rGfRixWlvJp5nXXVHyncyAdqDasFUHn8Iiog=",
+        "lastModified": 1788041183,
+        "narHash": "sha256-UPYIf3kRLD2pr3CKNvXIdV++ZjLlxH+DoMWm16u8hW0=",
         "ref": "master",
-        "rev": "91f5f343d327057fe48287897c4302e483ede53c",
+        "rev": "b50347beb25fb9d9e4d253cd4b2b6cff78219a29",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/ff.git"
@@ -406,11 +406,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1787592646,
-        "narHash": "sha256-0DouyiuYxTKdb6En5m0RTo2gjkVdUlH1yN8E4Mloal4=",
+        "lastModified": 1788038998,
+        "narHash": "sha256-IfHyl/NO24Xy+1+H07XSoqkEvQYNdF8pr0+qAJthXO0=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "3ca720059ac59562969657e1fdc7ddf52be1dc5b",
+        "rev": "aac8bf75b8afd85bd24c651afba94f13e8aa70af",
         "type": "github"
       },
       "original": {
