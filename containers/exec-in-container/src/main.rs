@@ -1,5 +1,6 @@
 use std::env;
 use std::ffi::{OsStr, OsString};
+use std::fs;
 use std::os::unix::process::CommandExt;
 use std::process::{Command, ExitCode};
 
@@ -7,6 +8,22 @@ const NERDCTL: &str = env!("NERDCTL_PATH");
 const CONTAINERD_ADDRESS: &str = env!("CONTAINERD_ADDRESS");
 const CONTAINERD_NAMESPACE: &str = env!("CONTAINERD_NAMESPACE");
 const ALLOWED_CONTAINERS: &str = env!("ALLOWED_CONTAINERS");
+
+fn is_root() -> bool {
+    fs::read_to_string("/proc/self/status")
+        .ok()
+        .and_then(|status| {
+            status.lines().find_map(|line| {
+                line.strip_prefix("Uid:")?
+                    .split_whitespace()
+                    .nth(1)?
+                    .parse::<u32>()
+                    .ok()
+                    .map(|euid| euid == 0)
+            })
+        })
+        .unwrap_or(false)
+}
 
 fn user_for(container: &OsStr) -> Option<&'static str> {
     let container = container.to_str()?;
@@ -40,6 +57,10 @@ fn nerdctl_command(
 }
 
 fn main() -> ExitCode {
+    if !is_root() {
+        eprintln!("exec-in-container: must be run as root (use sudo)");
+        return ExitCode::from(77);
+    }
     let mut args = env::args_os().skip(1);
     let Some(container) = args.next() else {
         eprintln!("exec-in-container: no container supplied");
@@ -106,6 +127,11 @@ mod tests {
             command.get_envs().collect::<Vec<_>>(),
             [(OsStr::new("NERDCTL_TOML"), Some(OsStr::new("/dev/null")))]
         );
+    }
+
+    #[test]
+    fn effective_uid_is_parsed_from_proc() {
+        assert!(!is_root());
     }
 
     #[test]
