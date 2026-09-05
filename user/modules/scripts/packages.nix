@@ -185,6 +185,34 @@ in
         nix copy --to "ssh://$host" ${outPath} "$@"
       '';
 
+  notify-me =
+    pkgs.writeScriptBin "notify-me"
+      # sh
+      ''
+        #!/bin/sh
+        set -eu
+
+        if [ "$#" -gt 0 ]; then
+          message=$*
+        else
+          message=$(cat)
+        fi
+
+        if [ -z "$message" ]; then
+          echo "notify-me: empty message" >&2
+          exit 1
+        fi
+
+        . ${config.sops.secrets.smartd-telegram-env.path}
+
+        ${lib.getExe pkgs.curl} --fail --silent --show-error \
+          --request POST \
+          "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+          --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+          --data-urlencode "text=$message" \
+          > /dev/null
+      '';
+
   flatten =
     pkgs.writeScriptBin "flatten"
       # sh
