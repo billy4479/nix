@@ -10,7 +10,9 @@ let
   baseHDDDir = "/mnt/HDD/apps/immich";
 in
 {
-  sops.secrets.immichEnv = lib.mkIf (options ? nerdctl-containers) { };
+  sops.secrets.immichAppEnv = lib.mkIf (options ? nerdctl-containers) {
+    restartUnits = [ "nerdctl-${name}.service" ];
+  };
 
   polpetta.services.${name} = {
     container = {
@@ -49,15 +51,10 @@ in
         }
       ];
       environmentFiles = [
-        config.sops.secrets.immichEnv.path
+        config.sops.secrets.immichAppEnv.path
       ];
       environment = {
-        # TODO: determine which one are superfluous
-        POSTGRES_USER = "postgres";
-        POSTGRES_DB = "immich";
-        POSTGRES_INITDB_ARGS = "--data-checksums";
-
-        DB_USERNAME = "postgres";
+        DB_USERNAME = "immich";
         DB_DATABASE_NAME = "immich";
         DB_PORT = "5432";
 
@@ -80,7 +77,7 @@ in
       };
       dependsOn = [
         "immich-redis"
-        "immich-database"
+        "postgresql"
         "immich-ml"
       ];
     };

@@ -107,6 +107,9 @@ qbittorrent -> sonarr/radarr
 
 Always keep this table in sync when adding new containers.
 
+The shared PostgreSQL container is initialized and migrated according to
+[`POSTGRESQL_MIGRATION.md`](./POSTGRESQL_MIGRATION.md).
+
 | Container | ID | IP Address |
 |-----------|----|----|
 | Syncthing | 2 | 10.0.1.2 |
@@ -134,7 +137,7 @@ Always keep this table in sync when adding new containers.
 | tsidp | 25 | 10.0.1.25 |
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
-| Immich (DB) | 130 | 10.0.1.130 |
+| PostgreSQL | 130 | 10.0.1.130 |
 | frp | 131 | 10.0.1.131 |
 | Certbot | 132 | 10.0.1.132 |
 | Byparr | 134 | 10.0.1.134 |

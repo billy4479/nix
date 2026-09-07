@@ -28,7 +28,7 @@ in
 
     ../../../services/services/syncthing.nix
     ../../../services/services/immich-server.nix
-    ../../../services/services/immich-database.nix
+    ../../../services/services/postgresql
     ../../../services/services/immich-ml.nix
     ../../../services/services/immich-redis.nix
     ../../../services/services/qbittorrent.nix

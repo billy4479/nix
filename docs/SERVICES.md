@@ -57,8 +57,7 @@ polpetta.services.<name> = {
 ```
 
 One container per service: multi-container applications are split into one
-service file each (e.g. `immich-server`, `immich-database`, `immich-ml`,
-`immich-redis`). Plumbing containers declare no `web` and no public `raw`
+service file each (e.g. `immich-server`, `immich-ml`, `immich-redis`). Plumbing containers declare no `web` and no public `raw`
 ports; they may still declare private raw ports to make a listen port
 addressable or probed (e.g. `immich-redis` probes 6379). Inter-container
 wiring is unchanged (`dependsOn`, hardcoded IPs in environment).
@@ -159,7 +158,7 @@ name):
     container = {
       # imageToBuild, volumes, environmentFiles, environment, dependsOn ...
       id = 3;
-      dependsOn = [ "immich-database" "immich-redis" "immich-ml" ];
+      dependsOn = [ "postgresql" "immich-redis" "immich-ml" ];
     };
 
     web = {
@@ -177,7 +176,7 @@ name):
 }
 ```
 
-Plumbing companion (`immich-database.nix`): same minus the `web` block.
+Plumbing companion (`immich-redis.nix`): same minus the `web` block.
 
 `services/services/mc-runner/` — public web + several raw ports + DNS record:
 

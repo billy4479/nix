@@ -30,6 +30,7 @@ in
         }
       ];
       id = 129;
+      stopTimeout = 120;
     };
 
     # The listen port is implicit in the valkey image; declare it so it can
