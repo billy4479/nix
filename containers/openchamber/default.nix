@@ -49,14 +49,32 @@ let
         nix
         openssh
         p7zip
+        poppler-utils
         patch
         procps
-        python3
         ripgrep
         util-linux
         which
         xz
         zstd
+
+        (python3.withPackages (
+          p: with p; [
+            numpy
+            scipy
+            sympy
+
+            pandas
+            matplotlib
+
+            pillow
+
+            pypdf
+
+            requests
+            beautifulsoup4
+          ]
+        ))
       ]
       ++ [
         openchamber
