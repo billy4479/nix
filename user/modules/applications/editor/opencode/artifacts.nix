@@ -10,12 +10,57 @@ let
 
     postBuild =
       let
-        path = pkgs.lib.makeBinPath [
-          pkgs.mcp-searxng
-          pkgs.read-nix-docs
-          pkgs.liteparse
-          pkgs.agent-up
-        ];
+        path = pkgs.lib.makeBinPath (
+          with pkgs;
+          [
+            mcp-searxng
+            read-nix-docs
+            liteparse
+            agent-up
+
+            curl
+            diffutils
+            fd
+            file
+            findutils
+            gawk
+            gh
+            git
+            gnugrep
+            gnumake
+            gnused
+            gnutar
+            gzip
+            jq
+            p7zip
+            poppler-utils
+            patch
+            procps
+            ripgrep
+            util-linux
+            which
+            xz
+            zstd
+
+            (python3.withPackages (
+              p: with p; [
+                numpy
+                scipy
+                sympy
+
+                pandas
+                matplotlib
+
+                pillow
+
+                pypdf
+
+                requests
+                beautifulsoup4
+              ]
+            ))
+          ]
+        );
       in
       # sh
       ''

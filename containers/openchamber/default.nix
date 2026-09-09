@@ -30,51 +30,10 @@ let
       [
         bashInteractive
         coreutils
-        curl
-        diffutils
         direnv
-        fd
-        file
-        findutils
-        gawk
-        gh
-        git
-        gnugrep
-        gnumake
-        gnused
-        gnutar
-        gzip
-        jq
         less
-        nix
         openssh
-        p7zip
-        poppler-utils
-        patch
-        procps
-        ripgrep
-        util-linux
-        which
-        xz
-        zstd
-
-        (python3.withPackages (
-          p: with p; [
-            numpy
-            scipy
-            sympy
-
-            pandas
-            matplotlib
-
-            pillow
-
-            pypdf
-
-            requests
-            beautifulsoup4
-          ]
-        ))
+        nix
       ]
       ++ [
         openchamber
