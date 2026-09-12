@@ -1,19 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": [ ],
-  "mcp": {
-    "searxng": {
-      "type": "local",
-      "command": [
-        "mcp-searxng"
-      ],
-      "environment": {
-        "SEARXNG_URL": "https://searxng.internal.polpetta.online",
-        "BYPARR_URL": "https://byparr.internal.polpetta.online"
-      },
-      "enabled": true
-    }
-  },
   "permission": {
     "external_directory": {
       "/nix/store/**": "allow"
