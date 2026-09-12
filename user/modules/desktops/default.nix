@@ -29,10 +29,10 @@
       jq
       pv
 
-      nixfmt
-    ]
-    ++ [
       pavucontrol
+
+      nixfmt
+      read-nix-docs
     ]
     ++ (if (extraConfig.wayland) then [ wl-clipboard ] else [ xclip ]);
 
