@@ -13,7 +13,8 @@ let
         path = pkgs.lib.makeBinPath (
           with pkgs;
           [
-            mcp-searxng
+            # mcp-searxng
+            searxng-cli
             read-nix-docs
             liteparse
             agent-up
@@ -66,7 +67,9 @@ let
       ''
         wrapProgram "$out/bin/opencode" \
           --prefix PATH : ${path} \
-          --set AGENTUP_URL "https://agent-up.internal.polpetta.online"
+          --set AGENTUP_URL "https://agent-up.internal.polpetta.online" \
+          --set SEARXNG_BASE_URL "https://searxng.internal.polpetta.online" \
+          --set SEARXNG_SAFE_SEARCH 0
       '';
   };
 
