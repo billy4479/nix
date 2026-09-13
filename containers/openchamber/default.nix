@@ -34,6 +34,7 @@ let
         less
         openssh
         nix
+        git
       ]
       ++ [
         openchamber
