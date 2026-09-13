@@ -406,11 +406,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1789235188,
-        "narHash": "sha256-4/Lvzi+VMzmDRlTUGfFsWtDmdVM/KyZXp/QD/MUw3aI=",
+        "lastModified": 1789291172,
+        "narHash": "sha256-08BYShQB8CDw1dqWxcKMe7FjIQsCLb4fpDHivCpMOWY=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "9caaedfd8277e0efe8f6471e00d57bcd8f476b7e",
+        "rev": "3442ac2d013e27bec192595f19f4b27104d30e1e",
         "type": "github"
       },
       "original": {
