@@ -35,6 +35,7 @@ let
         openssh
         nix
         git
+        tini
       ]
       ++ [
         openchamber
@@ -138,7 +139,11 @@ in
         caCertificates
       ];
 
-      config.entrypoint = [ "/bin/openchamber" ];
+      config.entrypoint = [
+        "/bin/tini"
+        "--"
+        "/bin/openchamber"
+      ];
     };
 
     privateNixStore = {

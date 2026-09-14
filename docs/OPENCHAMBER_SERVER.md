@@ -3,7 +3,8 @@
 OpenChamber runs in the `openchamber` nerdctl container and is available
 internally at `https://openchamber.internal.polpetta.online`. The container uses
 UID 5021 and the shared containers GID 5000. OpenChamber starts and manages its
-OpenCode backend inside the same container.
+OpenCode backend inside the same container. Tini runs as PID 1 to forward
+signals and reap orphaned child processes.
 
 Clients can also connect directly over the tailnet at `10.0.1.21:3000`.
 OpenChamber UI authentication remains mandatory because the application
