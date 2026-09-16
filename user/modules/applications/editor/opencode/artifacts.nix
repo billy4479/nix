@@ -55,6 +55,7 @@ let
                 pillow
 
                 pypdf
+                pyyaml
 
                 requests
                 beautifulsoup4
