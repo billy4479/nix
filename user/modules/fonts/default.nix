@@ -1,7 +1,6 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
-    apple-fonts
     google-sans
 
     corefonts
