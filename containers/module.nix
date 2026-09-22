@@ -241,7 +241,12 @@ let
 
                 # This is a single-user store. Its owner must be able to remove
                 # obsolete paths during GC as well as add newly built paths.
-                chown -R ${uid}:${gid} "$privateStoreRoot/nix/store"
+                # `nix copy` above runs as root, so fix up only the entries it
+                # may have created rather than rewriting ownership of the whole
+                # store on every start.
+                find "$privateStoreRoot/nix/store" -mindepth 1 -maxdepth 1 \
+                  ! -user ${uid} -print0 |
+                  xargs -r -0 chown -R ${uid}:${gid}
                 chown -R ${uid}:${gid} \
                   "$privateStoreRoot/nix/var/log/nix" \
                   "$privateStoreRoot/nix/var/nix"
