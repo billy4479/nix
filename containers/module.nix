@@ -241,9 +241,12 @@ let
 
                 # This is a single-user store. Its owner must be able to remove
                 # obsolete paths during GC as well as add newly built paths.
-                # `nix copy` above runs as root, so fix up only the entries it
-                # may have created rather than rewriting ownership of the whole
-                # store on every start.
+                # `nix copy` above runs as root, so fix up only what it may have
+                # touched rather than rewriting ownership of the whole store on
+                # every start: the store directory itself, which Nix re-owns to
+                # root:nixbld whenever root opens the store, and the top-level
+                # entries a copy may have created.
+                chown ${uid}:${gid} "$privateStoreRoot/nix/store"
                 find "$privateStoreRoot/nix/store" -mindepth 1 -maxdepth 1 \
                   ! -user ${uid} -print0 |
                   xargs -r -0 chown -R ${uid}:${gid}
