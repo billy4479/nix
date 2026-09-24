@@ -71,7 +71,7 @@ let
         rules = [
           {
             alert = "ZfsPoolUsageWarning";
-            expr = "zfs_pool_capacity_ratio > 0.80";
+            expr = "zfs_pool_allocated_bytes / zfs_pool_size_bytes > 0.80";
             for = "10m";
             labels.severity = "warning";
             annotations = {
@@ -81,7 +81,7 @@ let
           }
           {
             alert = "ZfsPoolUsageCritical";
-            expr = "zfs_pool_capacity_ratio > 0.90";
+            expr = "zfs_pool_allocated_bytes / zfs_pool_size_bytes > 0.90";
             for = "10m";
             labels.severity = "critical";
             annotations = {
@@ -237,6 +237,9 @@ let
           done
         } > "$tmp"
 
+        # mktemp creates the file 0600 root-owned; node_exporter runs as the
+        # node-exporter user and would never read it.
+        chmod 644 "$tmp"
         mv "$tmp" "$dir/zpool.prom"
       '';
 
@@ -425,6 +428,9 @@ in
     enable = true;
     extraOptions = [
       "--containerd=/run/containerd/containerd.sock"
+      # cAdvisor only watches the "k8s.io" namespace by default, our
+      # containers live in the "default" one.
+      "--containerd-namespace=default"
     ];
   };
 

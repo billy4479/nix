@@ -56,9 +56,9 @@ Notes:
 - node_exporter's `systemd` collector is **not** enabled upstream by default;
   it is explicitly enabled here, together with the textfile collector pointed
   at `/run/prometheus-node-exporter`.
-- zfs_exporter provides pool usage and pool health
-  (`zfs_pool_capacity_ratio`, `zfs_pool_health`, ...); node_exporter's
-  built-in `zfs` collector provides ARC stats (`node_zfs_arc_*`).
+- zfs_exporter provides pool usage and pool health (`zfs_pool_allocated_bytes`
+  / `zfs_pool_size_bytes`, `zfs_pool_health`, ...); node_exporter's built-in
+  `zfs` collector provides ARC stats (`node_zfs_arc_*`).
 - zfs_exporter has no scrub metrics, so `prometheus-zpool-textfile` (a
   oneshot service run every 15 minutes by a timer, as root) parses
   `zpool status` and writes `zpool_scrub_state`, `zpool_scrub_last_completed_seconds`

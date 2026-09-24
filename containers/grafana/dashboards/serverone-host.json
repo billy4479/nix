@@ -255,7 +255,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "zfs_pool_capacity_ratio{job=\"zfs\"} * 100",
+          "expr": "zfs_pool_allocated_bytes{job=\"zfs\"} / zfs_pool_size_bytes{job=\"zfs\"} * 100",
           "legendFormat": "{{pool}}",
           "range": true,
           "refId": "A"
