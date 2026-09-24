@@ -63,13 +63,6 @@ in
         localIP = "10.0.1.20"
         localPort = 8800
         remotePort = 8800
-
-        [[proxies]]
-        name = "stun"
-        type = "udp"
-        localIP = "10.0.1.15"
-        localPort = 3478
-        remotePort = 3478
       '';
   };
 
