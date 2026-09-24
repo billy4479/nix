@@ -1,10 +1,13 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }:
 let
   hostName = config.networking.hostName;
+
+  cfg = config.services.smartd.telegramNotify;
 
   telegramNotify =
     pkgs.writeShellScript "smartd-telegram-notify" # sh
@@ -33,31 +36,53 @@ let
           --data-urlencode "text=$message" \
           > /dev/null
       '';
+
+  # When telegramNotify is disabled (e.g. serverone, where SMART failures
+  # are reported by smartctl_exporter through Alertmanager instead) the
+  # self-test schedule is kept but no mailer/exec hook is configured.
+  autodetectedArgs =
+    "-a -o on -S on -s (S/../../7/02|L/../01/./03)"
+    + lib.optionalString cfg.enable " -m <nomailer> -M exec ${telegramNotify}";
 in
 {
-  assertions = [
-    {
-      assertion = hostName != "vps-proxy";
-      message = "The smartd module must not be imported on vps-proxy.";
-    }
-  ];
+  options.services.smartd.telegramNotify = {
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Whether to send SMART failure notifications through Telegram.
 
-  sops.secrets.smartd-telegram-env = { };
-
-  services.smartd = {
-    enable = true;
-
-    notifications = {
-      mail.enable = false;
-      wall.enable = false;
-      x11.enable = false;
-    };
-
-    defaults = {
-      monitored = "-a";
-      autodetected = "-a -o on -S on -s (S/../../7/02|L/../01/./03) -m <nomailer> -M exec ${telegramNotify}";
+        Requires the `smartd-telegram-env` sops secret (KEY=VALUE file with
+        TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID).
+      '';
     };
   };
 
-  environment.systemPackages = [ pkgs.smartmontools ];
+  config = {
+    assertions = [
+      {
+        assertion = hostName != "vps-proxy";
+        message = "The smartd module must not be imported on vps-proxy.";
+      }
+    ];
+
+    sops.secrets.smartd-telegram-env = lib.mkIf cfg.enable { };
+
+    services.smartd = {
+      enable = true;
+
+      notifications = {
+        mail.enable = false;
+        wall.enable = false;
+        x11.enable = false;
+      };
+
+      defaults = {
+        monitored = "-a";
+        autodetected = autodetectedArgs;
+      };
+    };
+
+    environment.systemPackages = [ pkgs.smartmontools ];
+  };
 }
