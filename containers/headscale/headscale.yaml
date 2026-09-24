@@ -108,7 +108,9 @@ derp:
     # This flag can be used, so the DERP map entry for the embedded DERP server is not written automatically,
     # it enables the creation of your very own DERP map entry using a locally available file with the parameter DERP.paths
     # If you enable the DERP server and set this to false, it is required to add the DERP server to the DERP map using DERP.paths
-    automatically_add_embedded_derp_region: true
+    # Set to false: the advertised map is hand written in derp-custom.yaml, which splits
+    # the region into a relay node and a STUN-only node on vps-proxy (see docs/DERP.md)
+    automatically_add_embedded_derp_region: false
 
     # For better connection stability (especially when using an Exit-Node and DNS is not working),
     # it is possible to optionally add the public IPv4 and IPv6 address to the Derp-Map using:
@@ -127,7 +129,8 @@ derp:
   #
   # paths:
   #   - /etc/headscale/derp-example.yaml
-  paths: []
+  paths:
+    - /etc/headscale/derp-custom.yaml
 
   # If enabled, a worker will be set up to periodically
   # refresh the given sources and update the derpmap

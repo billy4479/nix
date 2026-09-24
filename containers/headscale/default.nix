@@ -47,6 +47,11 @@ in
           containerPath = "/etc/headscale/config.yaml";
           readOnly = true;
         }
+        {
+          hostPath = "${./derp-custom.yaml}";
+          containerPath = "/etc/headscale/derp-custom.yaml";
+          readOnly = true;
+        }
       ];
     };
 

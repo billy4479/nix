@@ -1,0 +1,34 @@
+# Custom DERP map advertised to tailnet clients by headscale
+# (mounted at /etc/headscale/derp-custom.yaml, see derp.paths in config.yaml).
+#
+# Region 999 is split in two nodes which share the same public endpoint
+# (vps-proxy, 87.106.25.93, behind headscale.polpetta.online):
+#
+# - `999a` is the DERP relay, reached over TCP 443 through the frp tunnel
+#   and nginx. STUN is disabled for it (`stunport: -1` means clients never
+#   STUN this node): UDP forwarded through frp would be re-originated by
+#   the frpc container, so clients would learn 10.0.1.131 as their endpoint.
+# - `999b` is STUN-only (`stunonly: true`), served by the `derper-stun`
+#   systemd service running directly on vps-proxy, where UDP packets keep
+#   the real client source IPs.
+#
+# NOTE: keys must be lowercase, headscale parses this file with
+# yaml.Unmarshal into tailcfg.DERPMap.
+regions:
+  999:
+    regionid: 999
+    regioncode: headscale
+    regionname: Headscale Embedded DERP
+    nodes:
+      - name: 999a
+        regionid: 999
+        hostname: headscale.polpetta.online
+        ipv4: 87.106.25.93
+        derpport: 443
+        stunport: -1
+      - name: 999b
+        regionid: 999
+        hostname: headscale.polpetta.online
+        ipv4: 87.106.25.93
+        stunonly: true
+        stunport: 3478
