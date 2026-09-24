@@ -9,6 +9,7 @@
   imports = [
     ./hardware-configuration.nix
     ./frp.nix
+    ./derper-stun.nix
   ];
 
   sops.secrets.user_password.neededForUsers = true;

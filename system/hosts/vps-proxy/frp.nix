@@ -11,9 +11,10 @@ in
       2333
     ];
     allowedUDPPorts = [
-      3478
       8800
       19132
+      # Not tunneled by frps, served by the local derper-stun service
+      3478
     ];
   };
 
@@ -35,8 +36,7 @@ in
           { start = 443, end = 443 },
           { start = 25565, end = 25565 },
           { start = 8800, end = 8800 },
-          { start = 19132, end = 19132 },
-          { start = 3478, end = 3478 }
+          { start = 19132, end = 19132 }
         ]
       '';
   };
