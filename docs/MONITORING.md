@@ -96,7 +96,7 @@ Alertmanager; severities are `warning` and `critical`.
 | `ZfsPoolDegraded` | `zfs_pool_health == 1` for 5m | warning |
 | `ZfsPoolFailed` | `zfs_pool_health >= 2` for 1m | critical |
 | `ZfsDataErrors` | `zpool status` reports permanent errors for 5m | critical |
-| `ZfsScrubOverdue` | last scrub older than 21 days for 1h | warning |
+| `ZfsScrubOverdue` | last scrub older than 35 days for 1h | warning |
 | `SmartDeviceFailing` | `smartctl_device_smart_status == 0` for 5m | critical |
 | `SmartCriticalWarning` | `smartctl_device_critical_warning != 0` for 5m | critical |
 | `SmartDeviceHot` | drive > 60°C for 10m | warning |
@@ -104,8 +104,14 @@ Alertmanager; severities are `warning` and `critical`.
 | `CertificateExpiringSoon` | cert expiry < 14 days | warning |
 
 `ZfsScrubOverdue` only fires once at least one scrub has completed (the
-metric is absent otherwise). There is currently no scheduled scrub on
-serverone; run `zpool scrub <pool>` manually or add a timer.
+metric is absent otherwise, e.g. while the very first scrub is still
+running). Scrubs are scheduled by `services.zfs.autoScrub`
+(`system/hosts/serverone/storage.nix`): `zfs-scrub.timer` fires monthly on
+the 1st with up to 6h of random delay and is persistent, so the longest
+healthy gap between two scrubs is ~31 days. The 35-day threshold therefore
+only fires when a scheduled scrub failed to run or complete. While a scrub
+is in progress (`zpool_scrub_state == 1`) the metric temporarily
+disappears and the alert resolves on its own.
 
 ## Dashboards
 
