@@ -121,12 +121,16 @@ let
           }
           {
             alert = "ZfsScrubOverdue";
-            expr = "time() - zpool_scrub_last_completed_seconds > 21 * 24 * 3600 and zpool_scrub_state == 0";
+            # storage.nix schedules a scrub on the 1st of every month with up
+            # to 6h of random delay, so the longest healthy gap between two
+            # scrubs is ~31 days. 35 days therefore only fires when a
+            # scheduled scrub failed to run or complete.
+            expr = "time() - zpool_scrub_last_completed_seconds > 35 * 24 * 3600 and zpool_scrub_state == 0";
             for = "1h";
             labels.severity = "warning";
             annotations = {
               summary = "Scrub overdue on ZFS pool {{ $labels.pool }}";
-              description = "The last scrub on pool {{ $labels.pool }} completed more than 21 days ago.";
+              description = "The last scrub on pool {{ $labels.pool }} completed more than 35 days ago (monthly scrub expected).";
             };
           }
         ];
