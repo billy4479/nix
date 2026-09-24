@@ -458,6 +458,15 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": { "text": "OK", "color": "green" },
+                "1": { "text": "FAILED", "color": "red" }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -486,9 +495,9 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "count(node_systemd_unit_state{job=\"node\", state=\"failed\", name!~\"(user@|session-\\\\d+\\\\.scope).*\"} == 1) or vector(0)",
+          "expr": "max by (name) (node_systemd_unit_state{job=\"node\", state=\"failed\", name!~\"(user@|session-\\\\d+\\\\.scope).*\"} == 1) or vector(0)",
           "instant": true,
-          "legendFormat": "failed units",
+          "legendFormat": "{{name}}",
           "refId": "A"
         }
       ],

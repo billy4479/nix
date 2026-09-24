@@ -73,7 +73,7 @@ Notes:
 | `node` | node_exporter (CPU, memory, disks, network, hwmon temps, systemd units, ZFS ARC) |
 | `smartctl` | SMART health/temperatures for all drives |
 | `zfs` | pool usage, health, fragmentation |
-| `cadvisor` | per-container CPU/memory from `containerd` |
+| `cadvisor` | per-container CPU/memory from `containerd`; the scrape job relabels `container_label_nerdctl_name` into a `container` label and drops the bulky `container_label_*` labels |
 | `nginx` | stub_status via nginx-exporter (request rate, connections) |
 | `blackbox-http` | HTTP probes against every service container with a web UI |
 | `blackbox-tcp` | TCP probes: bind9 (53), immich valkey (6379), immich postgres (5432) |
@@ -133,9 +133,11 @@ State persists in `/mnt/SSD/apps/grafana/lib` (mounted at `/var/lib/grafana`).
 ## Adding a new container to probing
 
 1. Give it an id/IP following `CONTAINERS.md`.
-2. If it has a web UI, add `http://10.0.1.<id>:<port>` to `httpProbeTargets`
-   in `system/hosts/serverone/monitoring.nix`; otherwise add `10.0.1.<id>:<port>`
-   to `tcpProbeTargets`.
+2. If it has a web UI, add `{ name = "<service>"; url = "http://10.0.1.<id>:<port>"; }`
+   to `httpProbeTargets` in `system/hosts/serverone/monitoring.nix`; otherwise
+   add `{ name = "<service>"; address = "10.0.1.<id>:<port>"; }` to
+   `tcpProbeTargets`. The `name` becomes the `service` label shown on the
+   dashboards and in the `ContainerDown` alert.
 3. If it should be reachable through nginx, add the usual map entry in
    `containers/nginx/config/nginx.conf`.
 

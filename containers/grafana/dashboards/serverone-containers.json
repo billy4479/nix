@@ -26,8 +26,8 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\", name!=\"\"}[5m]))",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (container) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\", container!=\"\"}[5m]))",
+          "legendFormat": "{{container}}",
           "range": true,
           "refId": "A"
         }
@@ -54,8 +54,8 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (name) (container_memory_usage_bytes{job=\"cadvisor\", name!=\"\"})",
-          "legendFormat": "{{name}}",
+          "expr": "sum by (container) (container_memory_usage_bytes{job=\"cadvisor\", container!=\"\"})",
+          "legendFormat": "{{container}}",
           "range": true,
           "refId": "A"
         }
@@ -187,7 +187,7 @@
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
           "expr": "probe_duration_seconds{job=\"blackbox-http\"}",
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{service}}",
           "range": true,
           "refId": "A"
         }
@@ -361,7 +361,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "count(container_last_seen{job=\"cadvisor\", name!=\"\"})",
+          "expr": "count(container_last_seen{job=\"cadvisor\", container!=\"\"})",
           "legendFormat": "running containers",
           "range": true,
           "refId": "A"

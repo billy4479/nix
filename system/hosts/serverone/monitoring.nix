@@ -175,7 +175,7 @@ let
             for = "5m";
             labels.severity = "critical";
             annotations = {
-              summary = "{{ $labels.instance }} is unreachable";
+              summary = "{{ $labels.service }} is unreachable";
               description = "The blackbox probe against {{ $labels.instance }} has been failing for more than 5 minutes.";
             };
           }
@@ -264,34 +264,45 @@ let
   # Services with a web UI, probed with the http_2xx module. Keep in sync
   # with the table in docs/CONTAINERS.md.
   httpProbeTargets = [
-    "http://10.0.1.2:8384" # syncthing
-    "http://10.0.1.3:2283" # immich
-    "http://10.0.1.4:4479" # calendar-proxy
-    "http://10.0.1.5:8080" # qbittorrent
-    "http://10.0.1.7:7878" # radarr
-    "http://10.0.1.8:9117" # jackett
-    "http://10.0.1.9:8989" # sonarr
-    "http://10.0.1.10:8096" # jellyfin
-    "http://10.0.1.12:8080" # stirling-pdf
-    "http://10.0.1.13:4479" # mc-runner
-    "http://10.0.1.14:9200" # opencloud
-    "http://10.0.1.15:8080" # headscale
-    "http://10.0.1.16:3000" # headplane
-    "http://10.0.1.17:4479" # ff
-    "http://10.0.1.18:4479" # giuoco-del-divertimento
-    "http://10.0.1.19:8888" # searxng
-    "http://10.0.1.20:8900" # lunamultiplayer
-    "http://10.0.1.21:3000" # openchamber
-    "http://10.0.1.22:3000" # agent-up
-    "http://10.0.1.23:3000" # grafana
-    "http://10.0.1.134:8191" # byparr
+    { name = "syncthing"; url = "http://10.0.1.2:8384"; }
+    { name = "immich"; url = "http://10.0.1.3:2283"; }
+    { name = "calendar-proxy"; url = "http://10.0.1.4:4479"; }
+    { name = "qbittorrent"; url = "http://10.0.1.5:8080"; }
+    { name = "radarr"; url = "http://10.0.1.7:7878"; }
+    { name = "jackett"; url = "http://10.0.1.8:9117"; }
+    { name = "sonarr"; url = "http://10.0.1.9:8989"; }
+    { name = "jellyfin"; url = "http://10.0.1.10:8096"; }
+    { name = "stirling-pdf"; url = "http://10.0.1.12:8080"; }
+    { name = "mc-runner"; url = "http://10.0.1.13:4479"; }
+    { name = "opencloud"; url = "http://10.0.1.14:9200"; }
+    { name = "headscale"; url = "http://10.0.1.15:8080"; }
+    { name = "headplane"; url = "http://10.0.1.16:3000"; }
+    { name = "ff"; url = "http://10.0.1.17:4479"; }
+    { name = "giuoco-del-divertimento"; url = "http://10.0.1.18:4479"; }
+    { name = "searxng"; url = "http://10.0.1.19:8888"; }
+    { name = "lunamultiplayer"; url = "http://10.0.1.20:8900"; }
+    { name = "openchamber"; url = "http://10.0.1.21:3000"; }
+    { name = "agent-up"; url = "http://10.0.1.22:3000"; }
+    { name = "grafana"; url = "http://10.0.1.23:3000"; }
+    { name = "byparr"; url = "http://10.0.1.134:8191"; }
   ];
 
   tcpProbeTargets = [
-    "10.0.1.11:53" # bind9
-    "10.0.1.129:6379" # immich-valkey
-    "10.0.1.130:5432" # immich-postgres
+    { name = "bind9"; address = "10.0.1.11:53"; }
+    { name = "immich-valkey"; address = "10.0.1.129:6379"; }
+    { name = "immich-postgres"; address = "10.0.1.130:5432"; }
   ];
+
+  # Each probe target carries a `service` label so the dashboards and the
+  # ContainerDown alert can show a human-readable name.
+  probeStaticConfigs = probeAttr: targets: map (
+    t: {
+      targets = [ t.${probeAttr} ];
+      labels = {
+        service = t.name;
+      };
+    }
+  ) targets;
 in
 {
   # The shared telegram-bot secret block (token + chat id) lives once per
@@ -371,6 +382,19 @@ in
         static_configs = [
           { targets = [ "127.0.0.1:8080" ]; }
         ];
+        # The containerd factory exposes the real container name only as
+        # the `container_label_nerdctl_name` label; copy it into a lean
+        # `container` label and drop the bulky labels from every sample.
+        metric_relabel_configs = [
+          {
+            source_labels = [ "container_label_nerdctl_name" ];
+            target_label = "container";
+          }
+          {
+            action = "labeldrop";
+            regex = "container_label_.*";
+          }
+        ];
       }
       {
         job_name = "nginx";
@@ -384,9 +408,7 @@ in
         params = {
           module = [ "http_2xx" ];
         };
-        static_configs = [
-          { targets = httpProbeTargets; }
-        ];
+        static_configs = probeStaticConfigs "url" httpProbeTargets;
         relabel_configs = blackboxRelabelConfigs;
       }
       {
@@ -395,9 +417,7 @@ in
         params = {
           module = [ "tcp_connect" ];
         };
-        static_configs = [
-          { targets = tcpProbeTargets; }
-        ];
+        static_configs = probeStaticConfigs "address" tcpProbeTargets;
         relabel_configs = blackboxRelabelConfigs;
       }
       {
