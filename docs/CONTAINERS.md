@@ -131,6 +131,7 @@ Always keep this table in sync when adding new containers.
 | OpenChamber | 21 | 10.0.1.21 |
 | AgentUp | 22 | 10.0.1.22 |
 | Grafana | 23 | 10.0.1.23 |
+| tsidp | 24 | 10.0.1.24 |
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
 | Immich (DB) | 130 | 10.0.1.130 |
