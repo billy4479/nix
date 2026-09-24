@@ -148,10 +148,10 @@ automatically.
 `services.smartd.telegramNotify.enable` (default `true`). serverone sets it
 to `false`: self-tests keep running, but smartd no longer notifies Telegram
 directly — SMART failures now arrive through
-smartctl_exporter → Prometheus → Alertmanager. computerone and portatilo are
-unaffected and still use the direct Telegram notification, so the
-`smartd-telegram-env` secret is only declared where notifications are
-enabled.
+smartctl_exporter → Prometheus → Alertmanager. computerone and portatilo
+still use the direct Telegram notification, reading the same shared
+`telegram-bot` secret block, so the telegram secrets are only declared where
+notifications are enabled.
 
 ## Secrets the user must add
 

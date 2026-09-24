@@ -32,5 +32,8 @@ in
 
   sops.secrets =
     lib.optionalAttrs (!extraConfig.isServer) { nix-signing-key = { }; }
-    // lib.optionalAttrs (extraConfig.hostname != "vps-proxy") { smartd-telegram-env = { }; };
+    // lib.optionalAttrs (extraConfig.hostname != "vps-proxy") {
+      telegram-bot-token.key = "telegram-bot/token";
+      telegram-bot-chat-id.key = "telegram-bot/chat-id";
+    };
 }

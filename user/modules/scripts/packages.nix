@@ -203,12 +203,13 @@ in
           exit 1
         fi
 
-        . ${config.sops.secrets.smartd-telegram-env.path}
+        token="$(cat ${config.sops.secrets.telegram-bot-token.path})"
+        chat_id="$(cat ${config.sops.secrets.telegram-bot-chat-id.path})"
 
         ${lib.getExe pkgs.curl} --fail --silent --show-error \
           --request POST \
-          "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-          --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+          "https://api.telegram.org/bot$token/sendMessage" \
+          --data-urlencode "chat_id=$chat_id" \
           --data-urlencode "text=$message" \
           > /dev/null
       '';

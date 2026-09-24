@@ -14,7 +14,8 @@ let
       ''
         set -eu
 
-        . ${config.sops.secrets.smartd-telegram-env.path}
+        token="$(cat ${config.sops.secrets.telegram-bot-token.path})"
+        chat_id="$(cat ${config.sops.secrets.telegram-bot-chat-id.path})"
 
         message="$(${pkgs.coreutils}/bin/cat <<EOF
         SMART alert from ${hostName}
@@ -31,8 +32,8 @@ let
 
         ${pkgs.curl}/bin/curl --fail --silent --show-error \
           --request POST \
-          "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-          --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
+          "https://api.telegram.org/bot$token/sendMessage" \
+          --data-urlencode "chat_id=$chat_id" \
           --data-urlencode "text=$message" \
           > /dev/null
       '';
@@ -52,8 +53,8 @@ in
       description = ''
         Whether to send SMART failure notifications through Telegram.
 
-        Requires the `smartd-telegram-env` sops secret (KEY=VALUE file with
-        TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID).
+        Requires the `telegram-bot` sops secret block (nested `token` and
+        `chat-id` keys), shared with the other Telegram consumers.
       '';
     };
   };
@@ -66,7 +67,10 @@ in
       }
     ];
 
-    sops.secrets.smartd-telegram-env = lib.mkIf cfg.enable { };
+    sops.secrets = lib.mkIf cfg.enable {
+      telegram-bot-token.key = "telegram-bot/token";
+      telegram-bot-chat-id.key = "telegram-bot/chat-id";
+    };
 
     services.smartd = {
       enable = true;
