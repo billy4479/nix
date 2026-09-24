@@ -21,12 +21,17 @@
     ./containers.nix
     ./samba.nix
 
+    ./monitoring.nix
+
     ../../modules/smartd.nix
     ../../modules/tailscale.nix
 
     ../../modules/power-management
     ../../modules/graphics/intel.nix
   ];
+
+  # SMART failures are reported through smartctl_exporter -> Alertmanager.
+  services.smartd.telegramNotify.enable = false;
 
   networking = {
     hostId = "d3cb129c";

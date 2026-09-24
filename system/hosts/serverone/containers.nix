@@ -49,6 +49,7 @@ in
     ../../../containers/ff.nix
     ../../../containers/giuoco-del-divertimento.nix
     ../../../containers/agent-up.nix
+    ../../../containers/grafana
   ];
 
   environment.systemPackages = [
