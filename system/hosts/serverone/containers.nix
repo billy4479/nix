@@ -55,7 +55,7 @@ in
     ../../../services/services/grafana
     ../../../services/services/headscale
     ../../../services/services/headplane
-    ../../../services/services/tsidp
+    ../../../services/services/tsidp.nix
   ];
 
   environment.systemPackages = [

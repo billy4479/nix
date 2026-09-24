@@ -24,7 +24,7 @@ in
 
   polpetta.services.${name} = {
     container = {
-      id = 24;
+      id = 25;
 
       imageToBuild = pkgs.nix-snapshotter.buildImage {
         inherit name;
