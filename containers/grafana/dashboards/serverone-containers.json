@@ -13,7 +13,7 @@
         "defaults": {
           "custom": { "drawStyle": "line", "fillOpacity": 10, "lineWidth": 1, "showPoints": "never" },
           "min": 0,
-          "unit": "short"
+          "unit": "percent"
         },
         "overrides": []
       },
@@ -26,7 +26,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum by (container) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\", container!=\"\"}[5m]))",
+          "expr": "sum by (container) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\", container!=\"\"}[5m])) * 100",
           "legendFormat": "{{container}}",
           "range": true,
           "refId": "A"
