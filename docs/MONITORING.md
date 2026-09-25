@@ -75,7 +75,7 @@ Notes:
 | `zfs` | pool usage, health, fragmentation |
 | `cadvisor` | per-container CPU/memory from `containerd`; the scrape job relabels `container_label_nerdctl_name` into a `container` label and drops the bulky `container_label_*` labels |
 | `nginx` | stub_status via nginx-exporter (request rate, connections) |
-| `blackbox-http` | HTTP probes against every service container with a web UI |
+| `blackbox-http` | HTTP probes against every service container with a web UI. The `http_2xx` module is the default; calendar-proxy and agent-up use `http_unauth` instead, since their only unauthenticated answers are 401 (no token) and 404 (no such route) but those still prove the HTTP server is alive (5xx still fails the probe). headplane is probed at `/admin` since `/` does not exist |
 | `blackbox-tcp` | TCP probes: bind9 (53), immich valkey (6379), immich postgres (5432) |
 | `blackbox-https` | HTTPS probe of the nginx container pinning the
   `grafana.internal.polpetta.online` vhost/SNI — used to watch the wildcard

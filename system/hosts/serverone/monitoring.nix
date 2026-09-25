@@ -9,7 +9,9 @@ let
 
   # Blackbox probe modules: plain http for the container web UIs, an
   # https module pinning the grafana internal vhost (used to watch the
-  # wildcard certificate) and a plain tcp module for non-http services.
+  # wildcard certificate), an http module for services whose only unauth
+  # answers are 401/404 (which still prove the HTTP server is alive) and a
+  # plain tcp module for non-http services.
   blackboxConfig = yamlFormat.generate "blackbox-exporter.yml" {
     modules = {
       http_2xx = {
@@ -17,6 +19,16 @@ let
         timeout = "5s";
         http = {
           preferred_ip_protocol = "ip4";
+        };
+      };
+      http_unauth = {
+        prober = "http";
+        timeout = "5s";
+        http = {
+          preferred_ip_protocol = "ip4";
+          # blackbox_exporter only accepts literal status codes here; 401 is
+          # calendar-proxy without a token, 404 is agent-up on /.
+          valid_status_codes = [ 200 401 404 ];
         };
       };
       https_internal = {
@@ -249,7 +261,8 @@ let
 
   # Relabeling boilerplate for scraping the blackbox exporter: the target
   # moves into the `target` query parameter and the exporter address is set
-  # statically.
+  # statically. Targets may carry a `module` label to select a probe module
+  # other than the job default.
   blackboxRelabelConfigs = [
     {
       source_labels = [ "__address__" ];
@@ -260,17 +273,23 @@ let
       target_label = "instance";
     }
     {
+      source_labels = [ "module" ];
+      regex = "(.+)";
+      target_label = "__param_module";
+    }
+    {
       target_label = "__address__";
       replacement = "127.0.0.1:9115";
     }
   ];
 
-  # Services with a web UI, probed with the http_2xx module. Keep in sync
-  # with the table in docs/CONTAINERS.md.
+  # Services with a web UI, probed with the http_2xx module unless they
+  # specify a `module` or a non-root `url`. Keep in sync with the table in
+  # docs/CONTAINERS.md.
   httpProbeTargets = [
     { name = "syncthing"; url = "http://10.0.1.2:8384"; }
     { name = "immich"; url = "http://10.0.1.3:2283"; }
-    { name = "calendar-proxy"; url = "http://10.0.1.4:4479"; }
+    { name = "calendar-proxy"; url = "http://10.0.1.4:4479"; module = "http_unauth"; }
     { name = "qbittorrent"; url = "http://10.0.1.5:8080"; }
     { name = "radarr"; url = "http://10.0.1.7:7878"; }
     { name = "jackett"; url = "http://10.0.1.8:9117"; }
@@ -280,13 +299,13 @@ let
     { name = "mc-runner"; url = "http://10.0.1.13:4479"; }
     { name = "opencloud"; url = "http://10.0.1.14:9200"; }
     { name = "headscale"; url = "http://10.0.1.15:8080"; }
-    { name = "headplane"; url = "http://10.0.1.16:3000"; }
+    { name = "headplane"; url = "http://10.0.1.16:3000/admin"; }
     { name = "ff"; url = "http://10.0.1.17:4479"; }
     { name = "giuoco-del-divertimento"; url = "http://10.0.1.18:4479"; }
     { name = "searxng"; url = "http://10.0.1.19:8888"; }
     { name = "lunamultiplayer"; url = "http://10.0.1.20:8900"; }
     { name = "openchamber"; url = "http://10.0.1.21:3000"; }
-    { name = "agent-up"; url = "http://10.0.1.22:3000"; }
+    { name = "agent-up"; url = "http://10.0.1.22:3000"; module = "http_unauth"; }
     { name = "grafana"; url = "http://10.0.1.23:3000"; }
     { name = "byparr"; url = "http://10.0.1.134:8191"; }
   ];
@@ -298,12 +317,15 @@ let
   ];
 
   # Each probe target carries a `service` label so the dashboards and the
-  # ContainerDown alert can show a human-readable name.
+  # ContainerDown alert can show a human-readable name. An optional `module`
+  # label selects the blackbox module for that target.
   probeStaticConfigs = probeAttr: targets: map (
     t: {
       targets = [ t.${probeAttr} ];
       labels = {
         service = t.name;
+      } // lib.optionalAttrs (t ? module) {
+        module = t.module;
       };
     }
   ) targets;
