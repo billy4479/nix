@@ -41,8 +41,11 @@ let
   # When telegramNotify is disabled (e.g. serverone, where SMART failures
   # are reported by smartctl_exporter through Alertmanager instead) the
   # self-test schedule is kept but no mailer/exec hook is configured.
+  # Long self-test on the 15th: must not coincide with the monthly
+  # autoScrub (1st of the month), otherwise the HDDs get ~10h of
+  # continuous full-surface reads and overheat.
   autodetectedArgs =
-    "-a -o on -S on -s (S/../../7/02|L/../01/./03)"
+    "-a -o on -S on -s (S/../../7/02|L/../15/./03)"
     + lib.optionalString cfg.enable " -m <nomailer> -M exec ${telegramNotify}";
 in
 {
