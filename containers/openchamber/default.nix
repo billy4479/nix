@@ -29,11 +29,6 @@ let
     ''
       echo openchamber-container
     '';
-  coreutilsNoHostname = pkgs.coreutils.overrideAttrs (old: {
-    postInstall = (old.postInstall or "") + ''
-      rm -f $out/bin/hostname
-    '';
-  });
 
   runtime = pkgs.buildEnv {
     name = "openchamber-container-runtime";
@@ -41,8 +36,7 @@ let
       with pkgs;
       [
         bashInteractive
-        coreutilsNoHostname
-        fakeHostname
+        coreutils
         direnv
         less
         openssh
@@ -58,6 +52,9 @@ let
       "/bin"
       "/share"
     ];
+    postBuild = ''
+      ln -sfn ${fakeHostname}/bin/hostname "$out/bin/hostname"
+    '';
   };
 
   nixConfig = pkgs.writeTextDir "/etc/nix/nix.conf" ''
