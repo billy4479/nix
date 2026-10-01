@@ -24,14 +24,19 @@
     ./monitoring.nix
 
     ../../modules/smartd.nix
+    ../../modules/zfs-scrub-notify.nix
     ../../modules/tailscale.nix
 
     ../../modules/power-management
     ../../modules/graphics/intel.nix
   ];
 
-  # SMART failures are reported through smartctl_exporter -> Alertmanager.
+  # SMART failures are reported through smartctl_exporter -> Alertmanager;
+  # maintenance pings (long self-test and scrub start/finish) go straight
+  # to Telegram instead.
   services.smartd.telegramNotify.enable = false;
+  services.smartd.longTestNotify.enable = true;
+  services.zfs.scrubTelegramNotify.enable = true;
 
   networking = {
     hostId = "d3cb129c";

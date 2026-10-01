@@ -166,6 +166,33 @@ still use the direct Telegram notification, reading the same shared
 `telegram-bot` secret block, so the telegram secrets are only declared where
 notifications are enabled.
 
+## Maintenance notifications
+
+serverone additionally pings Telegram when storage maintenance runs
+(independent from Alertmanager, which keeps handling failures):
+
+- **ZFS scrub** (`system/modules/zfs-scrub-notify.nix`,
+  `services.zfs.scrubTelegramNotify.enable`): hooks `ExecStartPre` /
+  `ExecStopPost` into the stock `zfs-scrub.service` (which runs
+  `zpool scrub -w`, so service success means the scrub completed). A
+  message is sent when the scrub starts and when it finishes, including the
+  per-pool `scan: scrub repaired ... with N errors` line; a failed or
+  interrupted scrub sends a failure message instead.
+- **Long SMART self-test** (`services.smartd.longTestNotify.enable` in
+  `system/modules/smartd.nix`): smartd has no hook for test start/finish,
+  so the long test is taken out of the smartd `-s` schedule and run by
+  `smart-long-test.timer` at the same slot (15th of the month, 03:00,
+  `Persistent` to survive downtime). The service issues
+  `smartctl -t long` on every SMART-capable device `smartctl --scan`
+  finds, sends a start message, polls the self-test logs every 5 minutes
+  until no device reports a test in progress (gives up after 24h) and then
+  reports each device's latest self-test log entry. Short tests stay on
+  the smartd schedule (Saturdays 02:00) and computerone/portatilo keep
+  running their long tests through smartd without notifications.
+
+Run the long test manually with `systemctl start smart-long-test`; a scrub
+notification test can be done the same way by starting `zfs-scrub`.
+
 ## Secrets the user must add
 
 The following keys must be present in `serverone.yaml` of the nix-secrets
@@ -173,7 +200,7 @@ repo (deployment of secrets is manual, as usual):
 
 | Key | Used by | Notes |
 |-----|---------|-------|
-| `telegram-bot` | Alertmanager Telegram receiver | shared block with `token` and `chat-id` (numeric id, rendered unquoted into the config); the nested keys `telegram-bot/token` and `telegram-bot/chat-id` are selected with sops `key` |
+| `telegram-bot` | Alertmanager Telegram receiver, smartd long-test and ZFS scrub notifications | shared block with `token` and `chat-id` (numeric id, rendered unquoted into the config); the nested keys `telegram-bot/token` and `telegram-bot/chat-id` are selected with sops `key` |
 | `grafana` | Grafana | block with `admin-password` (admin login) and `secret-key`; both rendered into the `grafana-env` sops template |
 
 `sops-nix` renders the two environment files (`alertmanager-telegram-env`
