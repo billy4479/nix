@@ -23,11 +23,13 @@
         "x-scheme-handler/tg" = "org.telegram.desktop.desktop";
         "application/pdf" = "org.pwmt.zathura.desktop";
         "text/plain" = "org.kde.kate.desktop";
+        "text/markdown" = "firefox.desktop";
       };
       defaultApplications = {
         "x-scheme-handler/tg" = "org.telegram.desktop.desktop";
         "application/pdf" = "org.pwmt.zathura.desktop";
         "text/plain" = "org.kde.kate.desktop";
+        "text/markdown" = "firefox.desktop";
         "image/svg+xml" = "org.inkscape.Inkscape.desktop";
       }
       // imgTypesAttrSet;
