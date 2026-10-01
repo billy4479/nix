@@ -406,8 +406,14 @@ in
 
             tmpfs = lib.mkOption {
               type = lib.types.listOf lib.types.str;
-              default = [ "/tmp" ];
-              description = "List of tmpfs mounts.";
+              default = [ "/tmp:size=128m" ];
+              description = ''
+                List of tmpfs mounts. tmpfs lives in RAM and counts towards the
+                container's memory usage, so /tmp is capped by default: several
+                applications (jackett's updater, byparr's solve artifacts) never
+                clean up their own temporary files. Raise it per-container when
+                an application legitimately needs more.
+              '';
             };
 
             runByUser = lib.mkOption {

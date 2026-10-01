@@ -27,6 +27,11 @@ in
     useNginx = true;
     dependsOn = [ "byparr" ];
 
+    # Jackett's self-updater cannot install updates over the read-only nix
+    # store, but still downloads and extracts each new release into /tmp:
+    # it once accumulated >1GB of tmpfs. Updates are disabled in
+    # ServerConfig.json; the default tmpfs cap bounds any future leak.
+
     volumes = [
       {
         hostPath = downloadsDir;

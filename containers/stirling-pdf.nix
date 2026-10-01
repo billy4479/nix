@@ -60,6 +60,9 @@ in
     };
 
     id = 12;
+
+    # Conversions spike tmp usage (libreoffice/poppler/JVM temp files).
+    tmpfs = [ "/tmp:size=512m" ];
     useNginx = true;
 
     environment = {

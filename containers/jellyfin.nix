@@ -29,6 +29,10 @@ in
     id = 10;
     useNginx = true;
 
+    # Steady-state usage is ~130MB and concurrent transcodes can spike well
+    # beyond that during long viewing sessions.
+    tmpfs = [ "/tmp:size=1g" ];
+
     volumes = [
       {
         hostPath = baseHDDDir;

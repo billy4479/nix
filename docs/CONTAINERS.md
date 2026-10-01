@@ -29,6 +29,21 @@ starting as root and changing users. Do not put capability or security flags in
 `extraOptions`; use the module options so the effective policy remains
 declarative and can be validated.
 
+## tmpfs
+
+`/tmp` is mounted as a tmpfs capped at 128MB by default. tmpfs lives in RAM and
+counts towards the container's memory usage, and some applications never clean
+up their own temporary files (jackett's self-updater once accumulated >1GB of
+downloaded release archives this way). Raise the cap per-container when an
+application legitimately needs more scratch space:
+
+```nix
+tmpfs = [ "/tmp:size=512m" ];
+```
+
+Current overrides: byparr (1g), jellyfin (1g), stirling-pdf (512m).
+openchamber opts out entirely with `tmpfs = [ ];`.
+
 ## Startup Dependencies
 
 Container ordering is controlled by the `dependsOn`, `dns`, and `useNginx` options in `../containers/module.nix`.

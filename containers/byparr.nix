@@ -78,5 +78,9 @@ in
       }
     ];
 
+    # Chromium temp files plus one leftover zip per solved request add up
+    # (~600MB over a week); tmpfs is wiped on restart, this bounds it until
+    # then so solves fail loudly instead of eating RAM.
+    tmpfs = [ "/tmp:size=1g" ];
   };
 }
