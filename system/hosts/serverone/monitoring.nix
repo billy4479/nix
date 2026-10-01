@@ -211,7 +211,9 @@ let
   };
 
   # zfs_exporter has no scrub metrics, so parse `zpool status` into the
-  # node_exporter textfile collector instead (runs as root).
+  # node_exporter textfile collector instead (runs as root). It also emits
+  # per-pool IO counters, which is why the timer runs at one minute: any
+  # coarser and the rates would be too jumpy for the dashboard.
   zpoolTextfileScript =
     pkgs.writeShellScript "prometheus-zpool-textfile" # sh
       ''
@@ -250,6 +252,17 @@ let
               err=1
             fi
             printf 'zpool_data_errors{pool="%s"} %d\n' "$pool" "$err"
+          done
+
+          # zfs_exporter has no IO metrics either; `zpool iostat -pH` gives
+          # per-pool counters (ops and bytes, cumulative since boot) which
+          # Prometheus turns into rates. Columns: name alloc free reads
+          # writes read_bytes write_bytes.
+          zpool iostat -pH | while read -r pool _ _ reads writes rbytes wbytes; do
+            printf 'zpool_io_reads_total{pool="%s"} %s\n' "$pool" "$reads"
+            printf 'zpool_io_writes_total{pool="%s"} %s\n' "$pool" "$writes"
+            printf 'zpool_io_read_bytes_total{pool="%s"} %s\n' "$pool" "$rbytes"
+            printf 'zpool_io_write_bytes_total{pool="%s"} %s\n' "$pool" "$wbytes"
           done
         } > "$tmp"
 
@@ -508,7 +521,7 @@ in
   };
 
   systemd.services.prometheus-zpool-textfile = {
-    description = "Export zpool scrub and error status to the node_exporter textfile collector";
+    description = "Export zpool scrub, error and IO status to the node_exporter textfile collector";
     after = [ "prometheus-node-exporter.service" ];
     serviceConfig = {
       Type = "oneshot";
@@ -526,7 +539,7 @@ in
     wantedBy = [ "timers.target" ];
     timerConfig = {
       OnBootSec = "5min";
-      OnUnitActiveSec = "15min";
+      OnUnitActiveSec = "1min";
     };
   };
 

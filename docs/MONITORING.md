@@ -59,10 +59,14 @@ Notes:
 - zfs_exporter provides pool usage and pool health (`zfs_pool_allocated_bytes`
   / `zfs_pool_size_bytes`, `zfs_pool_health`, ...); node_exporter's built-in
   `zfs` collector provides ARC stats (`node_zfs_arc_*`).
-- zfs_exporter has no scrub metrics, so `prometheus-zpool-textfile` (a
-  oneshot service run every 15 minutes by a timer, as root) parses
+- zfs_exporter has no scrub or IO metrics, so `prometheus-zpool-textfile` (a
+  oneshot service run every minute by a timer, as root) parses
   `zpool status` and writes `zpool_scrub_state`, `zpool_scrub_last_completed_seconds`
-  and `zpool_data_errors` into the node_exporter textfile directory.
+  and `zpool_data_errors` into the node_exporter textfile directory, plus
+  per-pool IO counters (`zpool_io_reads_total`, `zpool_io_writes_total`,
+  `zpool_io_read_bytes_total`, `zpool_io_write_bytes_total`) parsed from
+  `zpool iostat -pH`. The one-minute cadence exists so the IO counters give
+  smooth rates; scrub/error status comes along for free.
 - The Grafana image is not pulled; `containers/grafana` builds it from
   `pkgs.grafana` via `nix-snapshotter.buildImage` (tag `grafana:nix-local`).
 
@@ -70,7 +74,7 @@ Notes:
 
 | Job | What |
 |-----|------|
-| `node` | node_exporter (CPU, memory, disks, network, hwmon temps, systemd units, ZFS ARC) |
+| `node` | node_exporter (CPU, memory, disks, network, hwmon temps, systemd units, ZFS ARC, per-pool ZFS IO from the textfile collector) |
 | `smartctl` | SMART health/temperatures for all drives |
 | `zfs` | pool usage, health, fragmentation |
 | `cadvisor` | per-container CPU/memory from `containerd`; the scrape job relabels `container_label_nerdctl_name` into a `container` label and drops the bulky `container_label_*` labels |
@@ -119,8 +123,9 @@ Provisioned from `containers/grafana/dashboards/` into the "serverone"
 folder, datasource uid `prometheus`:
 
 - **serverone host** (`uid: serverone-host`): CPU, load, memory, hwmon
-  temperatures, disk usage + IO, network, ZFS pool usage, ARC size/hit ratio,
-  scrub state, SMART health and temperatures, failed systemd units.
+  temperatures, disk usage + IO, network, ZFS pool usage, ZFS pool IO/IOPS,
+  ARC size/hit ratio, scrub state, SMART health and temperatures, failed
+  systemd units.
 - **serverone containers** (`uid: serverone-containers`): per-container CPU
   and memory (cAdvisor), HTTP/TCP service up/down tables, probe durations and
   status codes, TLS certificate time remaining, nginx request rate and
