@@ -23,13 +23,26 @@ let
     opencode = artifacts.package;
   };
 
+  # OpenChamber identifies the container as `openchamber-container` instead of
+  # the ephemeral hostname assigned by nerdctl.
+  fakeHostname = pkgs.writeShellScriptBin "hostname" # sh
+    ''
+      echo openchamber-container
+    '';
+  coreutilsNoHostname = pkgs.coreutils.overrideAttrs (old: {
+    postInstall = (old.postInstall or "") + ''
+      rm -f $out/bin/hostname
+    '';
+  });
+
   runtime = pkgs.buildEnv {
     name = "openchamber-container-runtime";
     paths =
       with pkgs;
       [
         bashInteractive
-        coreutils
+        coreutilsNoHostname
+        fakeHostname
         direnv
         less
         openssh
