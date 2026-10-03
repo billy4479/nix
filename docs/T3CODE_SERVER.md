@@ -22,8 +22,9 @@ revoked from the web UI's connection settings or with `t3 auth`.
 The container runtime provides the provider CLIs on `PATH`:
 
 - `opencode` is the customized build from
-  `user/modules/applications/editor/opencode/artifacts.nix`, injected into
-  the `t3code` package through the same override pattern as openchamber-web.
+  `user/modules/applications/editor/opencode/artifacts.nix`; it, `claude` and
+  `codex` (both from nixpkgs) are on the container's `PATH`, which is where
+  t3 discovers provider CLIs.
 - `claude` and `codex` come from nixpkgs (`claude-code`, `codex`).
 
 On the first container start, the non-declarative OpenCode state

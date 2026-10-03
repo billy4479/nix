@@ -24,9 +24,9 @@ let
   artifacts = import ../../user/modules/applications/editor/opencode/artifacts.nix {
     inherit pkgs flakeInputs;
   };
-  t3code = pkgs.t3code.override {
-    opencode = artifacts.package;
-  };
+  # Provider CLIs (opencode plus the nixpkgs claude-code and codex in the
+  # runtime below) reach t3 through the container's PATH.
+  t3code = pkgs.t3code;
 
   # T3 Code identifies the container as `t3code-container` instead of the
   # ephemeral hostname assigned by nerdctl.
