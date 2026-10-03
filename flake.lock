@@ -402,15 +402,16 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1790243119,
-        "narHash": "sha256-9oZNonpyZwshgaMpPPVjL612gpo2HWZyjakY5mfFHm8=",
-        "owner": "billy4479",
+        "lastModified": 1791037725,
+        "narHash": "sha256-icsBEpz8leFm2lp78LbVr3EuHBMlpFReP2iltAE1j14=",
+        "owner": "billy4479-bot",
         "repo": "nix-packages",
-        "rev": "43ff10262b48b79d3ffd25a6704d6803dd8831b6",
+        "rev": "b261c93a19c1afd6d298d6ee70c39660f26b60ee",
         "type": "github"
       },
       "original": {
-        "owner": "billy4479",
+        "owner": "billy4479-bot",
+        "ref": "t3code",
         "repo": "nix-packages",
         "type": "github"
       }

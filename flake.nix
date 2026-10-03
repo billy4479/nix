@@ -75,7 +75,9 @@
 
     # My flakes
     myPackages = {
-      url = "github:billy4479/nix-packages";
+      # FIXME: repoint at github:billy4479/nix-packages once the t3code PR
+      # (billy4479/nix-packages#1) is merged.
+      url = "github:billy4479-bot/nix-packages/t3code";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-utils.follows = "flake-utils";

@@ -42,6 +42,7 @@ in
     ../../../containers/opencloud.nix
     ../../../containers/searxng
     ../../../containers/openchamber
+    ../../../containers/t3code
 
     ../../../containers/mc-runner
     ../../../containers/lunamultiplayer-server.nix
