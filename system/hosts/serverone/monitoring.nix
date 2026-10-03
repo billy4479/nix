@@ -320,6 +320,7 @@ let
     { name = "openchamber"; url = "http://10.0.1.21:3000"; }
     { name = "agent-up"; url = "http://10.0.1.22:3000"; module = "http_unauth"; }
     { name = "grafana"; url = "http://10.0.1.23:3000"; }
+    { name = "t3code"; url = "http://10.0.1.24:3000"; module = "http_unauth"; }
     { name = "byparr"; url = "http://10.0.1.134:8191"; }
   ];
 

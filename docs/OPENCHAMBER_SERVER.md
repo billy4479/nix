@@ -1,5 +1,10 @@
 # OpenChamber Server
 
+> **Status: legacy fallback.** T3 Code is being deployed alongside OpenChamber
+> as the new agent control surface; see T3CODE_SERVER.md. This container stays
+> running unchanged until the migration is complete, then it is removed
+> (checklist at the end of T3CODE_SERVER.md).
+
 OpenChamber runs in the `openchamber` nerdctl container and is available
 internally at `https://openchamber.internal.polpetta.online`. The container uses
 UID 5021 and the shared containers GID 5000. OpenChamber starts and manages its
