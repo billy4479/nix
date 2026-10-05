@@ -109,6 +109,8 @@ let
       labelFlags = lib.mapAttrsToList (n: v: "-l ${n}=\"${v}\"") cfg.labels;
       portFlags = map (p: "-p ${p}") cfg.ports;
       capabilityFlags = map (capability: "--cap-add=${capability}") cfg.capabilities;
+      memoryFlags = lib.optional (cfg.memory != null) "--memory ${cfg.memory}";
+      cpuFlags = lib.optional (cfg.cpus != null) "--cpus ${toString cfg.cpus}";
       cmdFlag = lib.strings.concatMapStringsSep " " (x: "\"${x}\"") cfg.cmd;
 
       allFlags = lib.flatten (
@@ -131,6 +133,8 @@ let
           labelFlags
           portFlags
           capabilityFlags
+          memoryFlags
+          cpuFlags
           cfg.extraOptions
         ]
         ++ lib.optional cfg.runByUser "--user ${uid}:${gid}"
@@ -374,6 +378,25 @@ in
               type = lib.types.listOf (lib.types.strMatching "CAP_[A-Z0-9_]+");
               default = [ ];
               description = "Linux capabilities to add after dropping the default capability set.";
+            };
+
+            memory = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = ''
+                Hard memory limit for the container, passed to nerdctl
+                `--memory` (e.g. "8g"). Processes exceeding it are OOM killed.
+                tmpfs mounts count towards this limit.
+              '';
+            };
+
+            cpus = lib.mkOption {
+              type = lib.types.nullOr (lib.types.either lib.types.int lib.types.float);
+              default = null;
+              description = ''
+                Number of CPUs the container may use, passed to nerdctl
+                `--cpus` (e.g. 4 or 1.5).
+              '';
             };
 
             volumes = lib.mkOption {

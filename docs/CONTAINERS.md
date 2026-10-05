@@ -29,6 +29,21 @@ starting as root and changing users. Do not put capability or security flags in
 `extraOptions`; use the module options so the effective policy remains
 declarative and can be validated.
 
+## Resource limits
+
+Set per-container CPU and memory limits with the module options:
+
+```nix
+memory = "8g"; # hard limit, passed to nerdctl --memory
+cpus = 4;      # fraction of total CPU time, passed to nerdctl --cpus
+```
+
+`memory` is enforced by the kernel: processes exceeding it are OOM killed, and
+tmpfs mounts (see below) count towards it. `cpus` throttles rather than
+reserves: the container cannot use more than that share, but idle capacity
+stays available to the rest of the system. Currently only openchamber (8g / 4
+cpus) sets these.
+
 ## tmpfs
 
 `/tmp` is mounted as a tmpfs capped at 128MB by default. tmpfs lives in RAM and

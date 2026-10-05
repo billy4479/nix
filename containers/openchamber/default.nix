@@ -199,6 +199,8 @@ in
       "--read-only"
       "--pids-limit=2048"
     ];
+    memory = "8g";
+    cpus = 4;
     tmpfs = [ ];
 
     volumes = [
