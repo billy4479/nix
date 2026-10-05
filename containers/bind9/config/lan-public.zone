@@ -1,6 +1,6 @@
 $TTL 60
 @          IN SOA    ns.internal.polpetta.online. billy. (
-                        2026012301 ; serial (YYYYMMDDnn) — bump on changes
+                        2026100501 ; serial (YYYYMMDDnn) — bump on changes
                         1h         ; refresh
                         15m        ; retry
                         1w         ; expire
@@ -25,3 +25,7 @@ quote-book IN CNAME cname.vercel-dns.com.
 *          IN A     192.168.2.21
 
 external   IN A     87.106.25.93
+
+; DERP relay + STUN (derper on vps-proxy). Explicit so the wildcard above
+; does not shadow it; must match the public (DNS-only) record.
+derp       IN A     87.106.25.93
