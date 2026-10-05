@@ -402,11 +402,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1790243119,
-        "narHash": "sha256-9oZNonpyZwshgaMpPPVjL612gpo2HWZyjakY5mfFHm8=",
+        "lastModified": 1791200169,
+        "narHash": "sha256-icsBEpz8leFm2lp78LbVr3EuHBMlpFReP2iltAE1j14=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "43ff10262b48b79d3ffd25a6704d6803dd8831b6",
+        "rev": "a8cafdb6cc0dacd2c3c673398bea4a7e026bac00",
         "type": "github"
       },
       "original": {
