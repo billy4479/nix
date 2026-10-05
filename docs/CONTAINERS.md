@@ -29,6 +29,29 @@ starting as root and changing users. Do not put capability or security flags in
 `extraOptions`; use the module options so the effective policy remains
 declarative and can be validated.
 
+## Seccomp
+
+By default nerdctl applies containerd's default seccomp profile, which blocks
+`clone`/`unshare` with namespace flags and the mount syscalls. Containers that
+need to create their own namespaces (for example the Nix sandbox in
+openchamber) can set `seccompProfile` to a JSON profile:
+
+```nix
+seccompProfile = ./seccomp-profile.json;
+```
+
+The module passes it as `--security-opt seccomp=<path>`. A seccomp profile
+only gates which syscalls may be issued; the kernel still enforces capability
+checks. Allowing namespace and mount syscalls therefore lets an unprivileged
+container do only what any local user may already do (create user namespaces
+and mount inside them), without granting any capability. Vendor the profile by
+generating it from containerd's own `contrib/seccomp` Go source (matching the
+containerd version on the host) and adding the needed syscalls; see
+`containers/openchamber/seccomp-profile.json` for the current example.
+Containers with a `seccompProfile` stay exec-able through exec-in-container:
+unlike capabilities, a profile is part of the reviewed policy rather than a
+privilege grant.
+
 ## Resource limits
 
 Set per-container CPU and memory limits with the module options:
