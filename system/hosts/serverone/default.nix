@@ -16,6 +16,7 @@
     ./storage.nix
 
     ./users.nix
+    ./ssh.nix
 
     flakeInputs.nix-snapshotter.nixosModules.default
     ./containers.nix

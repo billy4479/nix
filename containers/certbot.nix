@@ -15,6 +15,10 @@ in
     group = config.users.users.containers.group;
   };
 
+  # Key accepted by vps-proxy for billy, used to push the wildcard cert over
+  # for the DERP relay (see system/hosts/vps-proxy/derper-derp.nix).
+  sops.secrets.derp-cert-sync-ssh-key = { };
+
   systemd = {
     timers."certbot-renew" = {
       wantedBy = [ "timers.target" ];
@@ -27,6 +31,7 @@ in
       };
     };
     services."certbot-renew" = {
+      path = [ pkgs.openssh ];
       script = # sh
         ''
           sleep 60 # HACK: wait for certbot container to be up
@@ -37,6 +42,28 @@ in
             --dns-cloudflare-credentials /cloudflare.ini
 
           ${lib.getExe pkgs.nerdctl} exec nginx nginx -s reload
+
+          # Ship the (wildcard) cert to vps-proxy for the DERP relay, which
+          # installs and activates it via a path unit. Only push on actual
+          # change so the remote relay is not restarted needlessly. The gate
+          # tracks the private key: certbot generates a fresh key on every
+          # renewal, so a changed key == renewed cert.
+          #
+          # This runs as root, which has no ssh aliases: use the public name
+          # external.polpetta.online (host key pinned in ../system/hosts/
+          # serverone/ssh.nix, resolves to the vps from every DNS view).
+          key=${config.sops.secrets.derp-cert-sync-ssh-key.path}
+          dest=billy@external.polpetta.online
+          live=${baseSSDDir}/config/live/polpetta.online
+          opts=(-i "$key" -o IdentitiesOnly=yes)
+          if ! ssh "''${opts[@]}" "$dest" \
+              'cmp -s - derp-certs/derp.polpetta.online.key' \
+              < "$live/privkey.pem"; then
+            scp -q "''${opts[@]}" "$live/fullchain.pem" \
+              "$dest:derp-certs/derp.polpetta.online.crt"
+            scp -q "''${opts[@]}" "$live/privkey.pem" \
+              "$dest:derp-certs/derp.polpetta.online.key"
+          fi
         '';
       serviceConfig = {
         Type = "oneshot";
