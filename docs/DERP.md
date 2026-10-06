@@ -84,17 +84,19 @@ certificate issued by certbot on serverone (DNS-01 via Cloudflare). Renewals
 are pushed to the vps automatically:
 
 1. `certbot-renew.service` on serverone renews and reloads nginx as before,
-   then compares the private key against the copy on vps-proxy (`cmp` over
-   ssh as `billy@external.polpetta.online`, host key pinned in
-   system/hosts/serverone/ssh.nix, key `derp-cert-sync-ssh-key` from sops)
-   and, if changed, scps both files into `/home/billy/derp-certs/`.
+   then fetches the private key copy from vps-proxy over ssh (as
+   `billy@external.polpetta.online`, host key pinned in
+   system/hosts/serverone/ssh.nix, key `derp-cert-sync-ssh-key` from sops),
+   compares it locally against the fresh one and, if changed, scps both
+   files into `/home/billy/derp-certs/`.
 2. On vps-proxy a systemd path unit (`derper-derp-cert-sync.path`) watches
    the staging dir, checks the cert/key pair actually match, installs the
    files into `/var/lib/derper-derp/` and restarts the relay.
 
-The push is gated on the remote `cmp` so the unchanged-cert case (the timer
-runs every 12h) does not restart the relay; the gate tracks the private key,
-which certbot regenerates on every renewal. derper loads the certificate at
+The push is gated on a local comparison of the fetched key, so the
+unchanged-cert case (the timer runs every 12h) does not restart the relay;
+the gate tracks the private key, which certbot regenerates on every renewal.
+derper loads the certificate at
 startup (`-certmode=manual`), so until a first push succeeds the
 `derper-derp` service will stay in its restart loop.
 
@@ -141,7 +143,7 @@ Quick checks:
    until the first cert push).
 4. Deploy `serverone` (headscale starts advertising the new map, frpc stops
    forwarding STUN). Kick the first push with
-   `sudo systemctl start certbot-renew.service` — the remote `cmp` fails
-   against the missing copy, so it always pushes on first run.
+   `sudo systemctl start certbot-renew.service` — the fetch comes back
+   empty against the missing copy, so it always pushes on first run.
 
 Rolling back means reverting both ends, same order (vps-proxy last).

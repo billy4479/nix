@@ -42,9 +42,10 @@ in
           # The two files are pushed by separate scp runs, so refuse to
           # install a mismatched (e.g. partially pushed) pair: keep the
           # currently installed certs, which stay valid until renewal.
-          if ! cmp -s \
-            <(openssl x509 -in "$crt" -noout -pubkey) \
-            <(openssl pkey -in "$key" -pubout); then
+          # String compare instead of cmp: the service PATH has no diffutils.
+          crt_pub=$(openssl x509 -in "$crt" -noout -pubkey)
+          key_pub=$(openssl pkey -in "$key" -pubout)
+          if [ -z "$crt_pub" ] || [ "$crt_pub" != "$key_pub" ]; then
             echo "staged cert/key pair mismatch, skipping install" >&2
             exit 1
           fi

@@ -56,9 +56,12 @@ in
           dest=billy@external.polpetta.online
           live=${baseSSDDir}/config/live/polpetta.online
           opts=(-i "$key" -o IdentitiesOnly=yes)
-          if ! ssh "''${opts[@]}" "$dest" \
-              'cmp -s - derp-certs/derp.polpetta.online.key' \
-              < "$live/privkey.pem"; then
+          # Fetch the remote key and compare locally: the vps may not have
+          # diffutils (cmp) available to a non-interactive ssh shell. If the
+          # fetch fails the comparison just fails, which pushes — safe.
+          remote_key=$(ssh "''${opts[@]}" "$dest" \
+            'cat derp-certs/derp.polpetta.online.key' 2>/dev/null || true)
+          if [ "$remote_key" != "$(cat "$live/privkey.pem")" ]; then
             scp -q "''${opts[@]}" "$live/fullchain.pem" \
               "$dest:derp-certs/derp.polpetta.online.crt"
             scp -q "''${opts[@]}" "$live/privkey.pem" \
