@@ -210,13 +210,6 @@ in
       "--pids-limit=2048"
     ];
     inherit seccompProfile;
-
-    # The Nix sandbox mounts procfs and sysfs from inside the user namespace
-    # it creates; the kernel rejects any procfs/sysfs mount from a user
-    # namespace while runc's default masked paths cover parts of /proc and
-    # /sys (mount_too_revealing), so they must go. seccompProfile only allows
-    # the raw mount(2) syscall nix uses; masked paths were the real blocker.
-    maskSystemPaths = false;
     memory = "8g";
     cpus = 4;
     tmpfs = [ ];

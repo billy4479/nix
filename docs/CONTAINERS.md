@@ -52,19 +52,6 @@ Containers with a `seccompProfile` stay exec-able through exec-in-container:
 unlike capabilities, a profile is part of the reviewed policy rather than a
 privilege grant.
 
-## Masked paths
-
-The runtime covers parts of /proc and /sys with read-only or empty mounts
-(/proc/acpi, /proc/asound, /sys/firmware, ...). The kernel refuses procfs and
-sysfs mounts issued from a user namespace while those covers exist
-(`mount_too_revealing`), which blocks software that creates its own user
-namespace and mounts procfs from inside it — most notably the Nix sandbox.
-Containers that need that set `maskSystemPaths = false`, which passes
-`--security-opt systempaths=unconfined` and removes the covers entirely.
-This drops an information-hiding layer (hardware details become readable)
-but grants no privileges: sensitive procfs and sysfs access still requires
-capabilities the container does not have.
-
 ## Resource limits
 
 Set per-container CPU and memory limits with the module options:

@@ -62,13 +62,10 @@ The container ships a custom seccomp profile
 (`containers/openchamber/seccomp-profile.json`, set via the module's
 `seccompProfile` option) that allows the namespace, mount, `chroot`,
 `umount2`, and `sethostname` syscalls the Nix sandbox needs in user-namespace
-mode, and sets `maskSystemPaths = false` because the kernel rejects procfs
-and sysfs mounts from user namespaces while the runtime's default masked
-paths cover parts of /proc and /sys (`mount_too_revealing`). Neither grants
-capabilities. The profile's `nix.conf` also sets `sandbox-fallback = false`,
-so a sandbox failure aborts the build instead of silently building
-unsandboxed. After deployment, verify that sandboxed builds actually run
-sandboxed:
+mode. The profile gates syscalls only; no capabilities are granted. Its
+`nix.conf` also sets `sandbox-fallback = false`, so a sandbox failure aborts
+the build instead of silently building unsandboxed. After deployment, verify
+that sandboxed builds actually run sandboxed:
 
 ```sh
 nerdctl exec openchamber nix build --no-link --option sandbox-fallback false nixpkgs#hello
