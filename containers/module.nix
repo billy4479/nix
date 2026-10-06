@@ -109,9 +109,6 @@ let
       labelFlags = lib.mapAttrsToList (n: v: "-l ${n}=\"${v}\"") cfg.labels;
       portFlags = map (p: "-p ${p}") cfg.ports;
       capabilityFlags = map (capability: "--cap-add=${capability}") cfg.capabilities;
-      seccompFlag = lib.optional (
-        cfg.seccompProfile != null
-      ) "--security-opt seccomp=${cfg.seccompProfile}";
       memoryFlags = lib.optional (cfg.memory != null) "--memory ${cfg.memory}";
       cpuFlags = lib.optional (cfg.cpus != null) "--cpus ${toString cfg.cpus}";
       cmdFlag = lib.strings.concatMapStringsSep " " (x: "\"${x}\"") cfg.cmd;
@@ -136,7 +133,6 @@ let
           labelFlags
           portFlags
           capabilityFlags
-          seccompFlag
           memoryFlags
           cpuFlags
           cfg.extraOptions
@@ -382,20 +378,6 @@ in
               type = lib.types.listOf (lib.types.strMatching "CAP_[A-Z0-9_]+");
               default = [ ];
               description = "Linux capabilities to add after dropping the default capability set.";
-            };
-
-            seccompProfile = lib.mkOption {
-              type = lib.types.nullOr lib.types.path;
-              default = null;
-              description = ''
-                Path to a JSON seccomp profile passed as `--security-opt
-                seccomp`. A profile only gates which syscalls may be issued;
-                the kernel still enforces capability checks, so allowing
-                namespace/mount syscalls lets unprivileged processes do what
-                any local user may do (e.g. create user namespaces) without
-                granting capabilities. Set this instead of raw `--security-opt`
-                flags so the effective policy stays declarative and auditable.
-              '';
             };
 
             memory = lib.mkOption {

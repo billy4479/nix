@@ -60,21 +60,11 @@ let
   nixConfig = pkgs.writeTextDir "/etc/nix/nix.conf" ''
     experimental-features = nix-command flakes
     sandbox = true
-    sandbox-fallback = false
     build-users-group =
     warn-dirty = false
     max-jobs = 2
     cores = 2
   '';
-
-  # Generated from containerd 2.3.5's contrib/seccomp DefaultProfile for a
-  # process with no capabilities (what nerdctl applies by default), with the
-  # syscalls required by the Nix sandbox's user-namespace mode allowed:
-  # clone, unshare, mount, umount2, chroot, sethostname. Seccomp only gates
-  # syscall entry; the kernel still requires capabilities for everything
-  # except namespaces the process creates itself, so this grants no host
-  # privileges. See docs/CONTAINERS.md.
-  seccompProfile = ./seccomp-profile.json;
 
   identityFiles = pkgs.symlinkJoin {
     name = "openchamber-container-identity";
@@ -209,7 +199,6 @@ in
       "--read-only"
       "--pids-limit=2048"
     ];
-    inherit seccompProfile;
     memory = "8g";
     cpus = 4;
     tmpfs = [ ];

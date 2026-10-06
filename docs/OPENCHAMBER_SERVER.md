@@ -58,23 +58,16 @@ nerdctl exec openchamber nix store gc
 Build scratch space is persisted at `/mnt/SSD/apps/openchamber/tmp` instead of a
 tmpfs so large Nix builds do not consume server memory.
 
-The container ships a custom seccomp profile
-(`containers/openchamber/seccomp-profile.json`, set via the module's
-`seccompProfile` option) that allows the namespace, mount, `chroot`,
-`umount2`, and `sethostname` syscalls the Nix sandbox needs in user-namespace
-mode. The profile gates syscalls only; no capabilities are granted. Its
-`nix.conf` also sets `sandbox-fallback = false`, so a sandbox failure aborts
-the build instead of silently building unsandboxed. After deployment, verify
-that sandboxed builds actually run sandboxed:
+After the first deployment, verify that containerd's seccomp policy permits
+the unprivileged user and mount namespaces required by the Nix sandbox:
 
 ```sh
-nerdctl exec openchamber nix build --no-link --option sandbox-fallback false nixpkgs#hello
+nerdctl exec openchamber nix build --no-link nixpkgs#hello
 nerdctl exec openchamber nix shell nixpkgs#hello -c hello
 ```
 
 Do not grant `--privileged` or broad host capabilities if sandbox creation
-fails; extend the seccomp profile narrowly instead (regenerate it from
-containerd's `contrib/seccomp` source, see docs/CONTAINERS.md).
+fails; adjust the runtime's namespace/seccomp policy narrowly instead.
 
 ## Workspaces
 
