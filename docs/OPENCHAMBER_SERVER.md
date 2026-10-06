@@ -58,16 +58,22 @@ nerdctl exec openchamber nix store gc
 Build scratch space is persisted at `/mnt/SSD/apps/openchamber/tmp` instead of a
 tmpfs so large Nix builds do not consume server memory.
 
-After the first deployment, verify that containerd's seccomp policy permits
-the unprivileged user and mount namespaces required by the Nix sandbox:
+Sandboxing is deliberately disabled in this container (`sandbox = false`).
+Making the Nix sandbox work here requires widening the container's runtime
+policy — a seccomp profile allowing user namespaces and mounts, plus unmasked
+/proc and /sys so procfs can be mounted from the build's user namespace. That
+trade-off (kernel attack surface and host hardware information disclosure)
+was judged not worth it. Builds run unsandboxed with the container's UID; the
+private store mount and the read-only rootfs provide the remaining
+isolation. Do not try to re-enable sandboxing; see AGENTS.md at the
+repository root.
+
+To check that builds work after a deployment:
 
 ```sh
 nerdctl exec openchamber nix build --no-link nixpkgs#hello
 nerdctl exec openchamber nix shell nixpkgs#hello -c hello
 ```
-
-Do not grant `--privileged` or broad host capabilities if sandbox creation
-fails; adjust the runtime's namespace/seccomp policy narrowly instead.
 
 ## Workspaces
 

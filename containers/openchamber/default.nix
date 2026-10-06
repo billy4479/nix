@@ -59,7 +59,10 @@ let
 
   nixConfig = pkgs.writeTextDir "/etc/nix/nix.conf" ''
     experimental-features = nix-command flakes
-    sandbox = true
+    # Deliberately disabled: a working sandbox would require widening this
+    # container's runtime policy (seccomp namespace syscalls plus unmasked
+    # /proc and /sys). See AGENTS.md at the repository root.
+    sandbox = false
     build-users-group =
     warn-dirty = false
     max-jobs = 2
