@@ -112,6 +112,9 @@ let
       seccompFlag = lib.optional (
         cfg.seccompProfile != null
       ) "--security-opt seccomp=${cfg.seccompProfile}";
+      systemPathsFlag = lib.optional (
+        !cfg.maskSystemPaths
+      ) "--security-opt systempaths=unconfined";
       memoryFlags = lib.optional (cfg.memory != null) "--memory ${cfg.memory}";
       cpuFlags = lib.optional (cfg.cpus != null) "--cpus ${toString cfg.cpus}";
       cmdFlag = lib.strings.concatMapStringsSep " " (x: "\"${x}\"") cfg.cmd;
@@ -137,6 +140,7 @@ let
           portFlags
           capabilityFlags
           seccompFlag
+          systemPathsFlag
           memoryFlags
           cpuFlags
           cfg.extraOptions
@@ -467,6 +471,22 @@ in
               type = lib.types.bool;
               default = true;
               description = "Whether to prevent the container processes from gaining privileges through exec.";
+            };
+
+            maskSystemPaths = lib.mkOption {
+              type = lib.types.bool;
+              default = true;
+              description = ''
+                Whether to apply the runtime's default masked and read-only
+                paths for /proc and /sys. The kernel refuses procfs and sysfs
+                mounts issued from user namespaces while other mounts cover
+                parts of them (mount_too_revealing), so containers that mount
+                procfs or sysfs from inside their own user namespace — such as
+                the Nix sandbox — need this disabled. Disabling it drops an
+                information-hiding layer: hardware information (/proc/acpi,
+                /proc/asound, /sys/firmware) becomes readable, but privileged
+                access still requires capabilities the container does not have.
+              '';
             };
 
             environment = lib.mkOption {
