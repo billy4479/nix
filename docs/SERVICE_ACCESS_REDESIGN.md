@@ -94,7 +94,7 @@ deny  all;
 
 This means:
 
-- traffic arriving through FRP is denied for internal hosts;
+- traffic arriving through FRP is denied for internal hosts (this includes the :4443 public edge path since the hotfix that added a `*.internal.polpetta.online` server block on `4443 ssl proxy_protocol`; before it, internal names on :4443 fell through to the public wildcard vhost and were served);
 - LAN clients are broadly trusted;
 - tailnet clients are broadly trusted;
 - nginx does not know which Headscale user owns a tailnet IP;
