@@ -6,7 +6,13 @@ Containers with a DNS entry have ids from 2 to 127, other non-public facing cont
 
 ## Creating a new container
 
-To create containers use the nix module at `../containers/module.nix`.
+User-facing services are defined through the `polpetta.services` API — see
+`SERVICES.md`. One service file under `../services/services/` declares the
+container plus how it is exposed (domain, access tier, raw ports).
+
+The containers under `../containers/` are infrastructure only (the engine,
+nginx, bind9, frp, certbot) and set `nerdctl-containers` directly.
+
 Prefer building an image from nix packages rather then pulling one.
 
 If you decide to pull an image you should add it to `../containers/images` and update `../containers/images.nix` using
@@ -71,7 +77,7 @@ Use `dependsOn = [ "other-container" ];` for explicit application dependencies. 
 
 Containers using the default bind9 DNS server automatically start after `bind9`. This applies when `dns` points to the bind9 container IP. Set `dns = null;` only for containers that should not use container DNS.
 
-Set `useNginx = true;` for containers served through the nginx reverse proxy. These containers automatically start after `nginx`. Since nginx uses bind9 DNS, this also places them after bind9.
+Declaring a `web` endpoint on a service automatically sets `useNginx` on its container; these containers automatically start after `nginx`.
 
 `headscale` is intentionally prioritized after the public entrypoint stack. The effective base ordering is:
 ```text
@@ -93,7 +99,7 @@ Always keep this table in sync when adding new containers.
 | Container | ID | IP Address |
 |-----------|----|----|
 | Syncthing | 2 | 10.0.1.2 |
-| Immich (Server) | 3 | 10.0.1.3 |
+| Immich | 3 | 10.0.1.3 |
 | Calendar Proxy | 4 | 10.0.1.4 |
 | qBittorrent | 5 | 10.0.1.5 |
 | nginx | 6 | 10.0.1.6 |
@@ -116,7 +122,6 @@ Always keep this table in sync when adding new containers.
 | Grafana | 23 | 10.0.1.23 |
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
-| Immich (DB) | 130 | 10.0.1.130 |
-| frp | 131 | 10.0.1.131 |
+| Immich (DB) | 130 | 10.0.1.130 || frp | 131 | 10.0.1.131 |
 | Certbot | 132 | 10.0.1.132 |
 | Byparr | 134 | 10.0.1.134 |

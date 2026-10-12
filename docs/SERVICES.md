@@ -1,20 +1,18 @@
 # `polpetta.services` — service definition API
 
-Design for the replacement of the current `nerdctl-containers` + hand-written
-nginx/frp configuration. Under this API a single service file declares its
-container, where it is reachable (domain), and who can reach it (access tier);
-the nginx vhost, the frp tunnels, the vps firewall openings and the bind9
-records are generated from that declaration.
+Under this API a single service file declares its container, where it is
+reachable (domain), and who can reach it (access tier); the nginx vhost, the
+frp tunnels, the vps firewall openings and the bind9 records are generated
+from that declaration.
 
 ## Layout
 
 ```
 services/
   module.nix              # polpetta.services option + all generators
-  nginx-snippets/         # per-tier ACL and shared nginx snippets
   services/
     immich.nix            # one file per service: container + exposure
-    grafana/              # directory only when support files exist
+    grafana/              # directory when support files exist
       default.nix
       dashboards/
 ```
@@ -91,12 +89,15 @@ wildcards `*.polpetta.online` to the vps.
 
 | Target              | Generated from                                   |
 |---------------------|--------------------------------------------------|
-| nginx vhost         | `web`: one explicit server block (listen 443 + 4443 proxy_protocol, TLS/headers snippets, tier ACL, `extraConfig` in `location /`) |
+| nginx vhost         | `web`: one explicit server block (listen 443 + 4443 proxy_protocol, TLS/headers snippets, tier ACL, `extraConfig` in `location /`) plus the `map $host $backend` entries it proxies through |
 | frpc proxies        | `raw` entries with `access = "public"`           |
-| frps `allowPorts` + vps firewall | `raw` entries with `access = "public"` (`remotePort`) |
-| bind9 zone records  | `raw` entries with `record` (→ container IP, lan/wg views) |
-| nerdctl `ports`     | `web`/`raw` endpoints                            |
+| frps `allowPorts` + vps firewall | `raw` entries with `access = "public"` (`remotePort`; allowPorts ranges are proto-agnostic and deduplicated) |
+| bind9 zone records  | `raw` entries with `record` (→ container IP, wg/tailnet view) |
 | `useNginx` ordering | presence of `web` (auto-set on the mirrored container) |
+
+Container `ports` (host publishing, e.g. LAN minecraft) stay explicit on the
+container: publishing a web endpoint's port on the host would bypass the nginx
+ACLs.
 
 The nginx 80/443 edge forwards, the frps bind port/token and the static
 zone/SOA data stay hand-written: they are infrastructure, not per-service.
@@ -117,11 +118,19 @@ addressable by name.
 
 ## Host wiring
 
-- Both serverone and vps-proxy import the service files (explicit import
-  lists). vps-proxy only consumes the frps/firewall side.
-- serverone sets `polpetta.services.exposeContainers = true`, which mirrors
-  each `container` into `nerdctl-containers.<name>` (service name = container
-  name) and keeps the existing dependency inference (bind9, nginx, headscale).
+- Both serverone and vps-proxy import all the service files (explicit import
+  lists). vps-proxy only consumes the frps/firewall projection.
+- Any container runs only where `containers/module.nix` is imported: each
+  service's `container` is mirrored into `nerdctl-containers.<name>` (service
+  name = container name) there, which keeps the existing dependency inference
+  (bind9, nginx, headscale).
+- Service files must therefore stay importable on hosts without containers:
+  gate host-specific definitions (sops secrets, sysctls, firewall) on the
+  same structural test the module uses:
+
+  ```nix
+  sops.secrets.my-service-env = lib.mkIf (options ? nerdctl-containers) { };
+  ```
 
 ## Examples
 
@@ -152,7 +161,7 @@ addressable by name.
 
 Plumbing companion (`immich-db.nix`): same minus the `web` block.
 
-`services/services/mc-runner.nix` — public web + several raw ports + DNS record:
+`services/services/mc-runner/` — public web + several raw ports + DNS record:
 
 ```nix
 {
@@ -173,16 +182,18 @@ Plumbing companion (`immich-db.nix`): same minus the `web` block.
 }
 ```
 
-`services/services/lunamultiplayer.nix` — mixed tiers on one container:
+`services/services/lunamultiplayer-server.nix` — mixed tiers on one container,
+with an explicit domain (the default would embed the full container name):
 
 ```nix
 {
-  polpetta.services.lunamultiplayer = {
+  polpetta.services.lunamultiplayer-server = {
     container = { id = 20; /* ... */ };
 
     web = {
       port = 8900;
       access = "tailnet";              # internal status UI
+      domain = "lunamultiplayer.internal.polpetta.online";
     };
 
     raw = [
@@ -194,12 +205,12 @@ Plumbing companion (`immich-db.nix`): same minus the `web` block.
 
 ## Migration
 
-Incremental:
+Completed in one pass on a development branch:
 
-1. Land the module, generators and host wiring (no behavior change).
-2. Migrate services one by one from `containers/` into `services/services/`,
-   removing each service's hand-written nginx map/vhost and frpc proxy entries
-   as it migrates. The legacy wildcard+map blocks remain for the not-yet
-   migrated remainder.
-3. When the last service is migrated, delete the legacy wildcard+map blocks,
-   retire `useNginx`, and update `CONTAINERS.md`.
+1. `services/module.nix` + generators landed; infrastructure (nginx, frpc,
+   frps, bind9) consumes `polpetta.generated.*`.
+2. All services moved from `containers/` to `services/services/`; the
+   hand-written nginx map/vhosts, frpc proxies and the `mc` zone record were
+   deleted.
+3. `containers/` now holds only the infrastructure: the container engine
+   (`module.nix`), nginx, bind9, frp and certbot.
