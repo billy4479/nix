@@ -21,7 +21,7 @@ in
             ''
               export PATH=${
                 lib.makeBinPath [
-                  pkgs.xorg.xkbcomp
+                  pkgs.xkbcomp
                   pkgs.coreutils
                 ]
               }
