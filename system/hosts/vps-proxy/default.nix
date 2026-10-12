@@ -12,6 +12,36 @@
     ./sni-demux.nix
     ./derper-stun.nix
     ./derper-derp.nix
+    ../../../services/module.nix
+
+    # Imported for the frps projection only (public raw ports). Service files
+    # gate everything container- or host-specific on nerdctl-containers, so
+    # this evaluation is inert beyond polpetta.services.
+    ../../../services/services/syncthing.nix
+    ../../../services/services/immich.nix
+    ../../../services/services/immich-db.nix
+    ../../../services/services/immich-ml.nix
+    ../../../services/services/immich-valkey.nix
+    ../../../services/services/qbittorrent.nix
+    ../../../services/services/radarr.nix
+    ../../../services/services/jackett.nix
+    ../../../services/services/sonarr.nix
+    ../../../services/services/byparr.nix
+    ../../../services/services/jellyfin.nix
+    ../../../services/services/stirling-pdf.nix
+    ../../../services/services/opencloud.nix
+    ../../../services/services/searxng
+    ../../../services/services/openchamber.nix
+    ../../../services/services/t3code.nix
+    ../../../services/services/mc-runner
+    ../../../services/services/lunamultiplayer-server.nix
+    ../../../services/services/calendar-proxy.nix
+    ../../../services/services/ff.nix
+    ../../../services/services/giuoco-del-divertimento.nix
+    ../../../services/services/agent-up.nix
+    ../../../services/services/grafana
+    ../../../services/services/headscale
+    ../../../services/services/headplane
   ];
 
   sops.secrets.user_password.neededForUsers = true;

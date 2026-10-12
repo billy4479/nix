@@ -19,38 +19,42 @@ in
 {
   imports = [
     ../../../containers/module.nix
-
-    ../../../containers/headscale
-
-    ../../../containers/syncthing.nix
-    ../../../containers/immich
-    ../../../containers/qbittorrent.nix
+    ../../../services/module.nix
 
     ../../../containers/certbot.nix
     ../../../containers/nginx
     ../../../containers/bind9
     ../../../containers/frp.nix
 
-    ../../../containers/radarr.nix
-    ../../../containers/jackett.nix
-    ../../../containers/sonarr.nix
-    ../../../containers/byparr.nix
+    ../../../services/services/syncthing.nix
+    ../../../services/services/immich.nix
+    ../../../services/services/immich-db.nix
+    ../../../services/services/immich-ml.nix
+    ../../../services/services/immich-valkey.nix
+    ../../../services/services/qbittorrent.nix
 
-    ../../../containers/jellyfin.nix
+    ../../../services/services/radarr.nix
+    ../../../services/services/jackett.nix
+    ../../../services/services/sonarr.nix
+    ../../../services/services/byparr.nix
 
-    ../../../containers/stirling-pdf.nix
-    ../../../containers/opencloud.nix
-    ../../../containers/searxng
-    ../../../containers/openchamber
-    ../../../containers/t3code
+    ../../../services/services/jellyfin.nix
 
-    ../../../containers/mc-runner
-    ../../../containers/lunamultiplayer-server.nix
-    ../../../containers/calendar-proxy.nix
-    ../../../containers/ff.nix
-    ../../../containers/giuoco-del-divertimento.nix
-    ../../../containers/agent-up.nix
-    ../../../containers/grafana
+    ../../../services/services/stirling-pdf.nix
+    ../../../services/services/opencloud.nix
+    ../../../services/services/searxng
+    ../../../services/services/openchamber.nix
+    ../../../services/services/t3code.nix
+
+    ../../../services/services/mc-runner
+    ../../../services/services/lunamultiplayer-server.nix
+    ../../../services/services/calendar-proxy.nix
+    ../../../services/services/ff.nix
+    ../../../services/services/giuoco-del-divertimento.nix
+    ../../../services/services/agent-up.nix
+    ../../../services/services/grafana
+    ../../../services/services/headscale
+    ../../../services/services/headplane
   ];
 
   environment.systemPackages = [

@@ -2,6 +2,7 @@
   config,
   flakeInputs,
   lib,
+  options,
   pkgs,
   ...
 }:
@@ -126,7 +127,7 @@ let
   '';
 in
 {
-  sops.secrets = {
+  sops.secrets = lib.mkIf (options ? nerdctl-containers) {
     openchamber-env.restartUnits = [ "nerdctl-openchamber.service" ];
     openchamber-ssh-key = {
       owner = "container-${uidString}";
@@ -136,120 +137,130 @@ in
     };
   };
 
-  nerdctl-containers.${name} = {
-    inherit id uid;
-    useNginx = true;
-    workingDirectory = "/workspace";
+  polpetta.services.${name} = {
+    container = {
+      inherit id uid;
+      workingDirectory = "/workspace";
 
-    imageToBuild = pkgs.nix-snapshotter.buildImage {
-      inherit name;
-      tag = "nix-local";
+      imageToBuild = pkgs.nix-snapshotter.buildImage {
+        inherit name;
+        tag = "nix-local";
 
-      copyToRoot = [
-        runtime
-        nixConfig
-        identityFiles
-        caCertificates
+        copyToRoot = [
+          runtime
+          nixConfig
+          identityFiles
+          caCertificates
+        ];
+
+        config.entrypoint = [
+          "/bin/tini"
+          "--"
+          "/bin/openchamber"
+        ];
+      };
+
+      privateNixStore = {
+        enable = true;
+        hostPath = privateStoreRoot;
+        seedPackages = [
+          runtime
+          artifacts.skills
+          nixConfig
+          identityFiles
+          caCertificates
+        ];
+      };
+
+      cmd = [
+        "serve"
+        "--foreground"
+        "--host"
+        "0.0.0.0"
+        "--port"
+        "3000"
       ];
 
-      config.entrypoint = [
-        "/bin/tini"
-        "--"
-        "/bin/openchamber"
+      # OpenAI fixes this callback URI to localhost. Expose it only through an
+      # SSH local forward to serverone rather than directly on the network.
+      ports = [ "127.0.0.1:1455:1455/tcp" ];
+
+      environment = {
+        HOME = "/home/openchamber";
+        USER = "openchamber";
+        SHELL = "/bin/bash";
+        PATH = "/bin";
+        XDG_CACHE_HOME = "/home/openchamber/.cache";
+        XDG_CONFIG_HOME = "/home/openchamber/.config";
+        XDG_DATA_HOME = "/home/openchamber/.local/share";
+        XDG_STATE_HOME = "/home/openchamber/.local/state";
+        OPENCODE_BINARY = "/bin/opencode";
+        TMPDIR = "/tmp";
+      };
+      environmentFiles = [ config.sops.secrets.openchamber-env.path ];
+
+      extraOptions = [
+        "--read-only"
+        "--pids-limit=2048"
+      ];
+      memory = "8g";
+      cpus = 4;
+      tmpfs = [ ];
+
+      volumes = [
+        {
+          hostPath = "${baseDir}/home";
+          containerPath = "/home/openchamber";
+          customPermissionScript = # sh
+            ''
+              mkdir -p \
+                "${baseDir}/home/.agents" \
+                "${baseDir}/home/.cache" \
+                "${baseDir}/home/.config/opencode" \
+                "${baseDir}/home/.local/share" \
+                "${baseDir}/home/.local/state" \
+                "${baseDir}/home/.ssh"
+              chmod -R u+rwX "${baseDir}/home/.config/opencode"
+              chown -R ${uidString}:5000 "${baseDir}/home"
+              chmod 0700 "${baseDir}/home"
+              chmod 0700 "${baseDir}/home/.ssh"
+
+              ${setfacl} -R -m g:admin:rwX -m d:g:admin:rwX ${baseDir}/home
+            '';
+        }
+        {
+          hostPath = workspaceDir;
+          containerPath = "/workspace";
+        }
+        {
+          hostPath = "${baseDir}/tmp";
+          containerPath = "/tmp";
+          customPermissionScript = # sh
+            ''
+              chown ${uidString}:5000 "${baseDir}/tmp"
+              chmod 0700 "${baseDir}/tmp"
+            '';
+        }
+        {
+          hostPath = "${sshConfig}";
+          containerPath = "/home/openchamber/.ssh/config";
+          readOnly = true;
+        }
+        {
+          hostPath = config.sops.secrets.openchamber-ssh-key.path;
+          containerPath = "/home/openchamber/.ssh/id_ed25519";
+          readOnly = true;
+        }
       ];
     };
 
-    privateNixStore = {
-      enable = true;
-      hostPath = privateStoreRoot;
-      seedPackages = [
-        runtime
-        artifacts.skills
-        nixConfig
-        identityFiles
-        caCertificates
-      ];
+    web = {
+      port = 3000;
+      access = "tailnet";
+      # Chat UI attachments are arbitrary files, so allow generous bodies.
+      nginx.extraConfig = ''
+        client_max_body_size 256M;
+      '';
     };
-
-    cmd = [
-      "serve"
-      "--foreground"
-      "--host"
-      "0.0.0.0"
-      "--port"
-      "3000"
-    ];
-
-    # OpenAI fixes this callback URI to localhost. Expose it only through an
-    # SSH local forward to serverone rather than directly on the network.
-    ports = [ "127.0.0.1:1455:1455/tcp" ];
-
-    environment = {
-      HOME = "/home/openchamber";
-      USER = "openchamber";
-      SHELL = "/bin/bash";
-      PATH = "/bin";
-      XDG_CACHE_HOME = "/home/openchamber/.cache";
-      XDG_CONFIG_HOME = "/home/openchamber/.config";
-      XDG_DATA_HOME = "/home/openchamber/.local/share";
-      XDG_STATE_HOME = "/home/openchamber/.local/state";
-      OPENCODE_BINARY = "/bin/opencode";
-      TMPDIR = "/tmp";
-    };
-    environmentFiles = [ config.sops.secrets.openchamber-env.path ];
-
-    extraOptions = [
-      "--read-only"
-      "--pids-limit=2048"
-    ];
-    memory = "8g";
-    cpus = 4;
-    tmpfs = [ ];
-
-    volumes = [
-      {
-        hostPath = "${baseDir}/home";
-        containerPath = "/home/openchamber";
-        customPermissionScript = # sh
-          ''
-            mkdir -p \
-              "${baseDir}/home/.agents" \
-              "${baseDir}/home/.cache" \
-              "${baseDir}/home/.config/opencode" \
-              "${baseDir}/home/.local/share" \
-              "${baseDir}/home/.local/state" \
-              "${baseDir}/home/.ssh"
-            chmod -R u+rwX "${baseDir}/home/.config/opencode"
-            chown -R ${uidString}:5000 "${baseDir}/home"
-            chmod 0700 "${baseDir}/home"
-            chmod 0700 "${baseDir}/home/.ssh"
-
-            ${setfacl} -R -m g:admin:rwX -m d:g:admin:rwX ${baseDir}/home
-          '';
-      }
-      {
-        hostPath = workspaceDir;
-        containerPath = "/workspace";
-      }
-      {
-        hostPath = "${baseDir}/tmp";
-        containerPath = "/tmp";
-        customPermissionScript = # sh
-          ''
-            chown ${uidString}:5000 "${baseDir}/tmp"
-            chmod 0700 "${baseDir}/tmp"
-          '';
-      }
-      {
-        hostPath = "${sshConfig}";
-        containerPath = "/home/openchamber/.ssh/config";
-        readOnly = true;
-      }
-      {
-        hostPath = config.sops.secrets.openchamber-ssh-key.path;
-        containerPath = "/home/openchamber/.ssh/id_ed25519";
-        readOnly = true;
-      }
-    ];
   };
 }
