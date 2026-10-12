@@ -28,7 +28,7 @@ in
           # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/web-apps/stirling-pdf.nix
           which
 
-          libreoffice-fresh
+          libreoffice-stable
           tess
           ghostscript_headless
           pngquant
