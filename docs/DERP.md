@@ -9,7 +9,7 @@ the relay and STUN are served directly by `vps-proxy`, headscale (on
 Headscale runs in a `nerdctl` container on `serverone` (container id 15, IP
 `10.0.1.15`) with its embedded DERP server **disabled**
 (`derp.server.enabled: false` in `config.yaml`). The region it advertises is
-hand written in `../containers/headscale/derp-custom.yaml` (mounted in the
+hand written in `../services/services/headscale/derp-custom.yaml` (mounted in the
 container at `/etc/headscale/derp-custom.yaml` and referenced by `derp.paths`
 in `config.yaml`):
 

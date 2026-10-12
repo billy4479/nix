@@ -93,7 +93,8 @@ only** (v2 needs mainline ≥ 1.31.4). nginx parses both → v1 is fine.
 4. `containers/frp.nix` (serverone) — `nginx_https`: `remotePort = 8444`,
    remove `transport.proxyProtocolVersion`. `nginx_http` and the game tunnels
    untouched.
-5. `containers/headscale/derp-custom.yaml` — `derpport: 443` + comment updates.
+5. `services/services/headscale/derp-custom.yaml` — `derpport: 443` + comment
+   updates.
 6. `containers/nginx/config/nginx.conf` — **no changes**: `listen 4443 ssl
    proxy_protocol` already accepts PP v1/v2, `set_real_ip_from 10.0.1.131`
    still correct (the header's TCP peer is still the frpc container). The
