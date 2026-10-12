@@ -1,12 +1,18 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  config,
+  ...
+}:
 let
   name = "nginx";
   certsDir = "/mnt/SSD/apps/certbot/config";
 
-  externalTrafficFrom = "10.0.1.131";
+  externalTrafficFrom = "10.0.1.${toString config.nerdctl-containers.frp.id}";
   nginxConfig = pkgs.callPackage ./config.nix { inherit externalTrafficFrom; };
 in
 {
+  polpetta.externalTrafficFrom = externalTrafficFrom;
+
   nerdctl-containers.${name} = {
     imageToBuild = pkgs.nix-snapshotter.buildImage {
       inherit name;
@@ -36,6 +42,11 @@ in
       {
         hostPath = "${nginxConfig}/snippets";
         containerPath = "/etc/nginx/snippets";
+        readOnly = true;
+      }
+      {
+        hostPath = "${config.polpetta.generated.nginxVhostsFile}";
+        containerPath = "/etc/nginx/vhosts.conf";
         readOnly = true;
       }
       {

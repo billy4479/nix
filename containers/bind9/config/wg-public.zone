@@ -1,6 +1,6 @@
 $TTL 60
 @          IN SOA   ns.polpetta.online. billy. (
-                        2026100501 ; serial (YYYYMMDDnn) — bump on changes
+                        2026101201 ; serial (YYYYMMDDnn) — bump on changes
                         1h         ; refresh
                         15m        ; retry
                         1w         ; expire
@@ -30,4 +30,6 @@ external   IN A     87.106.25.93
 ; does not shadow it; must match the public (DNS-only) record.
 derp       IN A     87.106.25.93
 
-mc         IN A     10.0.1.13
+; Records for services exposing raw ports, generated from polpetta.services
+; (polpetta.generated.bind9Records).
+$INCLUDE /etc/bind/generated-records.zone

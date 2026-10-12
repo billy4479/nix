@@ -8,7 +8,10 @@ let
   baseDir = "/mnt/SSD/apps/${name}";
 
   hosts = pkgs.callPackage ./hosts.nix { };
-  bindConfig = pkgs.callPackage ./config.nix { bind9-hosts = hosts; };
+  bindConfig = pkgs.callPackage ./config.nix {
+    bind9-hosts = hosts;
+    generated-records = pkgs.writeText "generated-records.zone" config.polpetta.generated.bind9Records;
+  };
   uid = toString config.nerdctl-containers.${name}.uid;
   gid = toString config.users.groups.containers.gid;
 in

@@ -43,30 +43,7 @@ in
         localPort = 4443
         remotePort = 8444
 
-        [[proxies]]
-        name = "minecraft_java"
-        type = "tcp"
-        localIP = "10.0.1.13"
-        localPort = 25565
-        remotePort = 25565
-        # transport.proxyProtocolVersion = "v2"
-        # TODO: This in theory should be supported with mods, in practice I think we can ignore this
-        # https://modrinth.com/mod/proxy-protocol-support
-
-        [[proxies]]
-        name = "minecraft_bedrock"
-        type = "udp"
-        localIP = "10.0.1.13"
-        localPort = 19132
-        remotePort = 19132
-        # transport.proxyProtocolVersion = "v2"
-
-        [[proxies]]
-        name = "lunamultiplayer"
-        type = "udp"
-        localIP = "10.0.1.20"
-        localPort = 8800
-        remotePort = 8800
+        ${config.polpetta.generated.frpcProxies}
       '';
   };
 

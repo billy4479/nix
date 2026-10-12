@@ -10,15 +10,12 @@ in
       # deliberately closed: frps binds remote ports on 0.0.0.0, the firewall
       # is what keeps it loopback-only for the demuxer.
       443
-      25565
       2333
-    ];
+    ] ++ config.polpetta.generated.frpsTcpPorts;
     allowedUDPPorts = [
-      8800
-      19132
       # Not tunneled by frps, served by the local derper-stun service
       3478
-    ];
+    ] ++ config.polpetta.generated.frpsUdpPorts;
   };
 
   sops.secrets."frp-token" = { };
@@ -34,12 +31,12 @@ in
         auth.method = "token"
         auth.token = "${config.sops.placeholder."frp-token"}"
 
+        # 80 is nginx_http; 8444 is nginx_https behind the SNI demuxer
+        # (sni-demux.nix): 443 itself is the demuxer, not a frps port.
         allowPorts = [
           { start = 80, end = 80 },
           { start = 8444, end = 8444 },
-          { start = 25565, end = 25565 },
-          { start = 8800, end = 8800 },
-          { start = 19132, end = 19132 }
+          ${config.polpetta.generated.frpsAllowPorts}
         ]
       '';
   };

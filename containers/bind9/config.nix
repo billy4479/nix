@@ -1,6 +1,7 @@
 {
   stdenvNoCC,
   bind9-hosts,
+  generated-records,
   ...
 }:
 stdenvNoCC.mkDerivation {
@@ -15,6 +16,7 @@ stdenvNoCC.mkDerivation {
       mkdir -p $out
       cp -r * $out
       cp ${bind9-hosts} $out/blacklist.conf
+      cp ${generated-records} $out/generated-records.zone
       mkdir -p $out/examples
     '';
 }
