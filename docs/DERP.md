@@ -35,11 +35,15 @@ break them.
   `10.0.1.15`).
 - **DERP relay (`999a`)**: clients connect over TLS to
   `derp.polpetta.online:443`, an SNI demuxer on the vps (nginx stream,
-  `ssl_preread`, passthrough — sni-demux.nix) routes this hostname to the
-  loopback-only `derper-derp` (127.0.0.1:8443), where TLS is terminated.
-  Every other SNI goes to frps (remotePort 8444, firewall-closed from the
-  internet) with a PROXY protocol v1 header so http apps keep their real
-  client IPs. Relayed traffic never touches frp, nginx or serverone.
+  `ssl_preread` — sni-demux.nix) routes this hostname to the loopback-only
+  `derper-derp` (127.0.0.1:8443), where TLS is terminated. The demuxer writes
+  a PROXY protocol v1 header (it must: the dispatch block is the only stage
+  that still knows the real client IP), so the DERP branch first rides a
+  loopback hop whose `listen ... proxy_protocol` strips the header again
+  before the PP-unaware derper sees the stream. Every other SNI goes to frps
+  (remotePort 8444, firewall-closed from the internet) with the same header,
+  which is what keeps http apps' real client IPs intact across the frp hop.
+  Relayed DERP traffic never touches frp, nginx or serverone.
 - **STUN (`999b`)**: clients send UDP 3478 directly to `vps-proxy`, answered
   by `derper-stun`. Packets keep their real client source IPs, which is what
   makes NAT traversal work.

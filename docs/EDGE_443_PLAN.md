@@ -19,10 +19,11 @@ CURRENT
   :25565/tcp :8800/udp :19132/udp → frp   (untouched)
 
 TARGET
-  :443 → sni-demux (nginx stream, ssl_preread, passthrough)
-     ├─ SNI derp.polpetta.online ─▶ 127.0.0.1:8443 derper (no PP)
-     └─ default ────────────────▶ 127.0.0.1:4441 ─▶ 127.0.0.1:8444 frps
-                                     ──frp──▶ frpc ─▶ nginx:4443 (PP v1 from demuxer)
+  :443 → sni-demux (nginx stream, ssl_preread; dispatch writes PP v1 with
+         the real client IP — it is the only stage that still knows it)
+     ├─ SNI derp.polpetta.online ─▶ 127.0.0.1:4441 (strips PP) ─▶ 127.0.0.1:8443 derper
+     └─ default ────────────────▶ 127.0.0.1:8444 frps
+                                     ──frp──▶ frpc ─▶ nginx:4443 (PP v1)
   :8443 firewall-closed, derper bound to 127.0.0.1 only
 ```
 
@@ -41,6 +42,14 @@ the peer address frps observed):
   `set_real_ip_from 10.0.1.131` parse it unchanged. The port-80 path keeps its
   frps-generated PPv2 (frps still sees the real peer there).
 
+Why the header must come from the **:443 dispatch block**: nginx stream does
+not carry the original client address across a loopback `proxy_pass` hop, so a
+second-stage block writing PP stamps `127.0.0.1` into the header (verified
+locally on nginx 1.30.5 — this shipped broken once and made every http app see
+`127.0.0.1`). The cost: the DERP branch also gets a header, which derper
+cannot parse, so that branch rides a loopback hop whose `listen ... proxy_protocol`
+consumes it first.
+
 PP version note: nixpkgs nginx 1.30.5 stream `proxy_protocol on` emits **v1
 only** (v2 needs mainline ≥ 1.31.4). nginx parses both → v1 is fine.
 
@@ -53,29 +62,31 @@ only** (v2 needs mainline ≥ 1.31.4). nginx parses both → v1 is fine.
    ```nginx
    stream {
      map $ssl_preread_server_name $sni443 {
-       derp.polpetta.online  127.0.0.1:8443;
-       default               127.0.0.1:4441;
+       derp.polpetta.online  127.0.0.1:4441;
+       default               127.0.0.1:8444;
      }
-     server {                     # dispatch: 443
+     server {                     # dispatch: 443; PP carries the real client IP
        listen 443;
        ssl_preread on;
+       proxy_protocol on;
        proxy_pass $sni443;
        proxy_timeout 1d;          # DERP/websockets are long-lived (default 10m)
      }
-     server {                     # → frps, PP carries the real client IP
-       listen 127.0.0.1:4441;
-       proxy_pass 127.0.0.1:8444;
-       proxy_protocol on;
+     server {                     # strips the PP header before the PP-unaware derper
+       listen 127.0.0.1:4441 proxy_protocol;
+       proxy_pass 127.0.0.1:8443;
        proxy_timeout 1d;
      }
    }
    ```
 
-   Why only one loopback stage: `proxy_protocol on` is a per-server-block
-   directive, and the frps hop must get a PP header while the raw :443
-   listener must stay passthrough. derper is not PP-aware and needs no
-   header, so the map routes it straight to 127.0.0.1:8443 — no intermediate
-   stage for the DERP path.
+   Why the PP header lives on the dispatch block: `proxy_protocol on` is a
+   per-server-block directive, and the writing stage must be the one whose
+   `$remote_addr` is the real client. The first version put it on a second
+   loopback stage, which stamped `127.0.0.1` into every header (nginx stream
+   loses the original address across `proxy_pass`). Since the derper is
+   PP-unaware, its branch gets a dedicated hop whose `listen ... proxy_protocol`
+   consumes the header before the relay on 8443.
 3. `system/hosts/vps-proxy/derper-derp.nix` — `-a 127.0.0.1:8443`; drop 8443
    from `allowedTCPPorts`; update comments. (The all-interfaces bind constraint
    only exists on derper-stun because STUN inherits the bind IP.)
