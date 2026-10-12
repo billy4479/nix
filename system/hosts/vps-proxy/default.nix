@@ -9,6 +9,7 @@
   imports = [
     ./hardware-configuration.nix
     ./frp.nix
+    ./sni-demux.nix
     ./derper-stun.nix
     ./derper-derp.nix
   ];

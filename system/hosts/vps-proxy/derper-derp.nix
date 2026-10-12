@@ -5,6 +5,8 @@
 let
   name = "derper-derp";
   hostname = "derp.polpetta.online";
+  # Loopback only: clients reach the relay through the SNI demuxer on :443
+  # (sni-demux.nix), the port itself stays firewall-closed.
   port = 8443;
   # serverone's certbot-renew pushes the (wildcard) polpetta.online cert here
   # via plain scp; the path unit below picks it up and activates the relay.
@@ -16,8 +18,6 @@ in
     group = name;
   };
   users.groups.${name} = { };
-
-  networking.firewall.allowedTCPPorts = [ port ];
 
   systemd.tmpfiles.rules = [
     "d ${certStagingDir} 0700 billy users -"
@@ -83,7 +83,7 @@ in
       # client's node key to /verify and only relays for registered nodes.
       # Fail-open (the default) is deliberate: if headscale is unreachable the
       # relay stays up, only admission is unverified for that window.
-      ExecStart = "${pkgs.derper}/bin/derper -derp=true -stun=false -a :${
+      ExecStart = "${pkgs.derper}/bin/derper -derp=true -stun=false -a 127.0.0.1:${
         toString port
       } -http-port -1 -certmode=manual -certdir /var/lib/${name} -hostname ${hostname} -verify-client-url=https://headscale.polpetta.online/verify -c /var/lib/${name}/derper.conf";
 

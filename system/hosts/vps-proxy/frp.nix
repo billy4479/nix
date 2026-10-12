@@ -6,6 +6,9 @@ in
   networking.firewall = {
     allowedTCPPorts = [
       80
+      # SNI demuxer (sni-demux.nix); 8444 (frps remotePort for nginx_https) is
+      # deliberately closed: frps binds remote ports on 0.0.0.0, the firewall
+      # is what keeps it loopback-only for the demuxer.
       443
       25565
       2333
@@ -33,7 +36,7 @@ in
 
         allowPorts = [
           { start = 80, end = 80 },
-          { start = 443, end = 443 },
+          { start = 8444, end = 8444 },
           { start = 25565, end = 25565 },
           { start = 8800, end = 8800 },
           { start = 19132, end = 19132 }

@@ -31,13 +31,17 @@ in
         remotePort = 80
         transport.proxyProtocolVersion = "v2"
 
+        # nginx_https: 443 on the vps is the SNI demuxer (sni-demux.nix), which
+        # already writes a PROXY protocol header that transits frps/frpc
+        # byte-for-byte; a frpc-generated header (src=127.0.0.1) here would
+        # double-stack and break real client IPs. nginx_http above keeps the
+        # frps-generated PPv2.
         [[proxies]]
         name = "nginx_https"
         type = "tcp"
         localIP = "10.0.1.6"
         localPort = 4443
-        remotePort = 443
-        transport.proxyProtocolVersion = "v2"
+        remotePort = 8444
 
         [[proxies]]
         name = "minecraft_java"

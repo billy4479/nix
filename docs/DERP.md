@@ -15,7 +15,7 @@ in `config.yaml`):
 
 | Node   | Role       | Hostname               | IPv4           | Ports                       |
 |--------|------------|------------------------|----------------|-----------------------------|
-| `999a` | DERP relay | `derp.polpetta.online` | `87.106.25.93` | TCP 8443 (`derper-derp`)    |
+| `999a` | DERP relay | `derp.polpetta.online` | `87.106.25.93` | TCP 443 (`derper-derp`)     |
 | `999b` | STUN only  | `derp.polpetta.online` | `87.106.25.93` | UDP 3478 (`derper-stun`)    |
 
 Both nodes are `derper` processes running directly on `vps-proxy`
@@ -34,8 +34,12 @@ break them.
   `:81`/`:4443` with PROXY protocol) → headscale `:8080` (container
   `10.0.1.15`).
 - **DERP relay (`999a`)**: clients connect over TLS to
-  `derp.polpetta.online:8443`, terminated by `derper-derp` on `vps-proxy`.
-  Relayed traffic never touches frp, nginx or serverone.
+  `derp.polpetta.online:443`, an SNI demuxer on the vps (nginx stream,
+  `ssl_preread`, passthrough — sni-demux.nix) routes this hostname to the
+  loopback-only `derper-derp` (127.0.0.1:8443), where TLS is terminated.
+  Every other SNI goes to frps (remotePort 8444, firewall-closed from the
+  internet) with a PROXY protocol v1 header so http apps keep their real
+  client IPs. Relayed traffic never touches frp, nginx or serverone.
 - **STUN (`999b`)**: clients send UDP 3478 directly to `vps-proxy`, answered
   by `derper-stun`. Packets keep their real client source IPs, which is what
   makes NAT traversal work.
@@ -106,8 +110,12 @@ startup (`-certmode=manual`), so until a first push succeeds the
   private key and writes `{"PrivateKey": "privkey:..."}` there. Both services
   keep theirs in a `StateDirectory` (`/var/lib/derper/derper.conf`,
   `/var/lib/derper-derp/derper.conf`).
-- The `derper-derp` HTTP listener (`-http-port -1`) is disabled; only TCP
-  8443 is open in the firewall. `derper-stun`'s HTTP listener (`-a :8090`) is
+- The `derper-derp` HTTP listener (`-http-port -1`) is disabled; the relay is
+  bound to 127.0.0.1:8443 (reachable only via the :443 demuxer), the port
+  itself is firewall-closed. On the same vps, frps remotePort 8444
+  (`nginx_https`) is deliberately not in the firewall either: frps binds
+  remote ports on 0.0.0.0 (`proxyBindAddr` is global), the firewall is what
+  keeps it loopback-only. `derper-stun`'s HTTP listener (`-a :8090`) is
   unused as well; clients only speak STUN on UDP 3478.
 - Region code/name are `polpetta` / `Polpetta DERP` (they show up in client
   UIs); the region id stays 999.
@@ -126,11 +134,19 @@ fallback even when UDP STUN is dead.
 
 Quick checks:
 
-- `curl -v https://derp.polpetta.online:8443` → TLS must validate (wildcard
-  cert) and return the derper homepage.
+- `curl -v https://derp.polpetta.online/derp/probe` → 200 (hits the derper
+  through the :443 demux path specifically).
+- `openssl s_client -connect derp.polpetta.online:443 -servername
+  derp.polpetta.online` → wildcard cert validates (TLS terminated by derper,
+  demux is passthrough).
+- `curl -o /dev/null -w '%{http_code}\n' https://headscale.polpetta.online/health`
+  → 200 (full demux → frp → nginx path).
 - `tailscale netcheck` on a client should list region 999 with both DERP and
   STUN (cross-check UDP with `tailscale debug netmap` latency or packet
   captures if in doubt).
+- Restricted-network test (the point of running on 443): from a network that
+  only allows standard ports, confirm DERP still relays — `tailscale debug
+  derp 999` or a transfer forced through the relay.
 
 ## Deploy order
 

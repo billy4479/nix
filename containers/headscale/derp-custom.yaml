@@ -5,10 +5,13 @@
 # traffic off the frp tunnel/home WAN and UDP STUN source IPs real:
 #
 # - `999a` is the DERP relay, served by the derper-derp systemd service
-#   (TCP 8443, TLS with the wildcard polpetta.online cert pushed from
-#   serverone). Clients are admitted through headscale's /verify endpoint,
-#   so only registered node keys can relay. STUN is disabled for this node
-#   (`stunport: -1`): the relay process runs with -stun=false.
+#   (TCP 443, TLS with the wildcard polpetta.online cert pushed from
+#   serverone). Port 443 on the vps is an SNI demuxer (nginx stream,
+#   docs/EDGE_443_PLAN.md): this hostname is TLS-passthrough to the relay on
+#   loopback, everything else rides frp to serverone's nginx. Clients are
+#   admitted through headscale's /verify endpoint, so only registered node
+#   keys can relay. STUN is disabled for this node (`stunport: -1`): the
+#   relay process runs with -stun=false.
 # - `999b` is STUN-only (`stunonly: true`), served by the derper-stun
 #   systemd service on UDP 3478.
 #
@@ -28,7 +31,7 @@ regions:
         regionid: 999
         hostname: derp.polpetta.online
         ipv4: 87.106.25.93
-        derpport: 8443
+        derpport: 443
         stunport: -1
       - name: 999b
         regionid: 999
