@@ -86,9 +86,9 @@ let
       "}"
     ];
 
-  # proxy.conf resolves its upstream through $backend; the map must live in
-  # the generated file since the hand-written one was removed and generated
-  # vhosts must coexist with the legacy wildcard+map blocks during migration.
+  # proxy.conf resolves its upstream through $backend, which the vhost include
+  # defines; per-service vhosts are generated, nginx.conf only carries
+  # infrastructure blocks.
   backendMapLines = map (
     name:
     let
