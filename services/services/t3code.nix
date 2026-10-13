@@ -264,6 +264,9 @@ in
     web = {
       port = 3000;
       access = "tailnet";
+      # / is not public (auth-gated UI); http_unauth still proves the server
+      # is alive.
+      probe.unauth = true;
       # Chat UI attachments are arbitrary files, so allow generous bodies.
       nginx.extraConfig = ''
         client_max_body_size 256M;

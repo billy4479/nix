@@ -54,6 +54,8 @@ in
     web = {
       port = 3000;
       access = "tailnet";
+      # / answers 401; /admin is the login page.
+      probe.path = "/admin";
     };
   };
 }

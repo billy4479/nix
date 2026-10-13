@@ -41,6 +41,8 @@ in
     web = {
       port = 4479;
       access = "public";
+      # Answers 401 without a token; still proves the server is alive.
+      probe.unauth = true;
     };
   };
 }

@@ -13,7 +13,46 @@ let
 
   hasContainers = options ? nerdctl-containers;
 
+  # One probe shape for both http (web endpoints) and tcp (raw ports)
+  # probes; only `enable`'s default differs. `unauth` and `path` apply to
+  # http probes and are asserted off elsewhere.
+  probeSubmodule =
+    enableDefault:
+    lib.types.submodule {
+      options = {
+        enable = lib.mkOption {
+          type = lib.types.bool;
+          default = enableDefault;
+          description = "Whether to probe (http for web endpoints, tcp_connect for raw ports).";
+        };
+
+        unauth = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Accept 401/404 as alive (http_unauth module); http probes only.";
+        };
+
+        path = lib.mkOption {
+          type = lib.types.str;
+          default = "";
+          description = "Path appended to the probed URL (http probes).";
+        };
+      };
+    };
+
   servicesWithWeb = lib.filterAttrs (_: svc: svc.web != null) services;
+
+  httpProbeTargets = lib.mapAttrsToList (
+    name: svc:
+    let
+      web = svc.web;
+    in
+    {
+      inherit name;
+      url = "http://10.0.1.${toString svc.container.id}:${toString web.port}${web.probe.path}";
+      module = if web.probe.unauth then "http_unauth" else "http_2xx";
+    }
+  ) (lib.filterAttrs (_: svc: svc.web != null && svc.web.probe.enable) servicesWithWeb);
 
   domainOf =
     name: svc:
@@ -30,6 +69,13 @@ let
 
   publicRawEntries = lib.filter (e: e.raw.access == "public") rawEntries;
   recordEntries = lib.filter (e: e.raw.record != null) rawEntries;
+
+  tcpProbeTargets = map (
+    e: {
+      name = e.name;
+      address = "10.0.1.${toString e.id}:${toString e.raw.port}";
+    }
+  ) (lib.filter (e: e.raw.probe.enable) rawEntries);
 
   remotePortOf = raw: if raw.remotePort == null then raw.port else raw.remotePort;
 
@@ -197,6 +243,12 @@ let
         }";
       }
       {
+        assertion = lib.all (e: e.raw.proto == "tcp" && !e.raw.probe.unauth) (
+          lib.filter (e: e.raw.probe.enable) rawEntries
+        );
+        message = "polpetta.services: raw probes must be tcp with unauth = false (unauth applies to http probes only)";
+      }
+      {
         assertion = lib.all (
           d: lib.hasSuffix ".polpetta.online" d && !lib.hasSuffix ".internal.polpetta.online" d
         ) publicDomains;
@@ -256,6 +308,12 @@ in
                         '';
                       };
 
+                      probe = lib.mkOption {
+                        description = "Blackbox http probe of this endpoint, generated into polpetta.generated.probeHttpTargets.";
+                        default = { };
+                        type = probeSubmodule true;
+                      };
+
                       nginx.extraConfig = lib.mkOption {
                         type = lib.types.lines;
                         default = "";
@@ -305,6 +363,12 @@ in
                         type = lib.types.nullOr (lib.types.strMatching "[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?");
                         default = null;
                         description = "bind9 record name pointing at the container IP.";
+                      };
+
+                      probe = lib.mkOption {
+                        type = probeSubmodule false;
+                        default = { };
+                        description = "Blackbox tcp_connect probe of this port, generated into polpetta.generated.probeTcpTargets.";
                       };
                     };
                   }
@@ -358,6 +422,18 @@ in
         type = lib.types.str;
         readOnly = true;
       };
+
+      probeHttpTargets = lib.mkOption {
+        description = "Blackbox http probe targets ({ name, url, module }) for all web endpoints.";
+        type = lib.types.listOf lib.types.attrs;
+        readOnly = true;
+      };
+
+      probeTcpTargets = lib.mkOption {
+        description = "Blackbox tcp probe targets ({ name, address }) for raw entries flagged probe.";
+        type = lib.types.listOf lib.types.attrs;
+        readOnly = true;
+      };
     };
   };
 
@@ -368,6 +444,9 @@ in
       frpsAllowPorts = frpsAllowPorts;
       frpsTcpPorts = frpsTcpPorts;
       frpsUdpPorts = frpsUdpPorts;
+
+      probeHttpTargets = httpProbeTargets;
+      probeTcpTargets = tcpProbeTargets;
 
       nginxVhostsFile = lib.mkIf hasContainers (
         pkgs.writeText "polpetta-services-vhosts.conf" nginxVhostsText

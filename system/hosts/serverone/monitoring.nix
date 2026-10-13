@@ -296,39 +296,11 @@ let
     }
   ];
 
-  # Services with a web UI, probed with the http_2xx module unless they
-  # specify a `module` or a non-root `url`. Keep in sync with the table in
-  # docs/CONTAINERS.md.
-  httpProbeTargets = [
-    { name = "syncthing"; url = "http://10.0.1.2:8384"; }
-    { name = "immich"; url = "http://10.0.1.3:2283"; }
-    { name = "calendar-proxy"; url = "http://10.0.1.4:4479"; module = "http_unauth"; }
-    { name = "qbittorrent"; url = "http://10.0.1.5:8080"; }
-    { name = "radarr"; url = "http://10.0.1.7:7878"; }
-    { name = "jackett"; url = "http://10.0.1.8:9117"; }
-    { name = "sonarr"; url = "http://10.0.1.9:8989"; }
-    { name = "jellyfin"; url = "http://10.0.1.10:8096"; }
-    { name = "stirling-pdf"; url = "http://10.0.1.12:8080"; }
-    { name = "mc-runner"; url = "http://10.0.1.13:4479"; }
-    { name = "opencloud"; url = "http://10.0.1.14:9200"; }
-    { name = "headscale"; url = "http://10.0.1.15:8080"; }
-    { name = "headplane"; url = "http://10.0.1.16:3000/admin"; }
-    { name = "ff"; url = "http://10.0.1.17:4479"; }
-    { name = "giuoco-del-divertimento"; url = "http://10.0.1.18:4479"; }
-    { name = "searxng"; url = "http://10.0.1.19:8888"; }
-    { name = "lunamultiplayer"; url = "http://10.0.1.20:8900"; }
-    { name = "openchamber"; url = "http://10.0.1.21:3000"; }
-    { name = "agent-up"; url = "http://10.0.1.22:3000"; module = "http_unauth"; }
-    { name = "grafana"; url = "http://10.0.1.23:3000"; }
-    { name = "t3code"; url = "http://10.0.1.24:3000"; module = "http_unauth"; }
-    { name = "byparr"; url = "http://10.0.1.134:8191"; }
-  ];
-
-  tcpProbeTargets = [
-    { name = "bind9"; address = "10.0.1.11:53"; }
-    { name = "immich-valkey"; address = "10.0.1.129:6379"; }
-    { name = "immich-postgres"; address = "10.0.1.130:5432"; }
-  ];
+  # All probes are generated from polpetta.services: http targets from the
+  # web endpoints (polpetta.generated.probeHttpTargets), tcp targets from raw
+  # ports flagged `probe` (polpetta.generated.probeTcpTargets). Per-service
+  # path/module overrides live in each service file.
+  tcpProbeTargets = config.polpetta.generated.probeTcpTargets;
 
   # Each probe target carries a `service` label so the dashboards and the
   # ContainerDown alert can show a human-readable name. An optional `module`
@@ -448,7 +420,7 @@ in
         params = {
           module = [ "http_2xx" ];
         };
-        static_configs = probeStaticConfigs "url" httpProbeTargets;
+        static_configs = probeStaticConfigs "url" config.polpetta.generated.probeHttpTargets;
         relabel_configs = blackboxRelabelConfigs;
       }
       {
