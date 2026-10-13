@@ -121,7 +121,7 @@ let
       "  include /etc/nginx/snippets/tls.conf;"
       "  include /etc/nginx/snippets/headers.conf;"
     ]
-    ++ map (l: "    ${l}") (aclLines web.access)
+    ++ aclLines web.access
     ++ [
       "  location / {"
       "    include /etc/nginx/snippets/proxy.conf;"
@@ -219,7 +219,7 @@ let
 
   assertionEntries =
     let
-      nameRe = "[a-zA-Z0-9][a-zA-Z0-9_.-]*";
+      nameRe = "[a-zA-Z0-9][a-zA-Z0-9-]*";
     in
     [
       {
