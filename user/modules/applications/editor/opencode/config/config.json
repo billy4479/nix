@@ -1,10 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": [ ],
-  "permission": {
-    "external_directory": {
-      "/nix/store/**": "allow"
-    }
-  },
-  "theme": "catppuccin-frappe",
+  "permissions": [
+    { "action": "external_directory", "resource": "/nix/store/*", "effect": "allow" }
+  ]
 }

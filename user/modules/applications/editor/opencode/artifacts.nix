@@ -66,6 +66,10 @@ let
       in
       # sh
       ''
+        # nixpkgs' opencode 2.x also ships an `opencode2` alias; remove it so
+        # nothing can run the binary without the wrapper's PATH and env.
+        rm -f "$out/bin/opencode2"
+
         wrapProgram "$out/bin/opencode" \
           --prefix PATH : ${path} \
           --set AGENTUP_URL "https://agent-up.internal.polpetta.online" \

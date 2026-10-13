@@ -1,9 +1,9 @@
-import type { Plugin } from "@opencode-ai/plugin"
+import { Plugin } from "@opencode/plugin"
 
 const ERROR_MESSAGE =
   "Refusing to search the whole Nix store. /nix/store is huge and content-addressed; broad glob/grep/list operations are slow and usually not useful. Use the nix CLI to locate the store path first, then access that precise path instead."
 
-const GUARDED_TOOLS = new Set(["glob", "grep", "list"])
+const GUARDED_TOOLS = new Set(["glob", "grep", "read"])
 
 function isBroadNixStorePath(value: string) {
   const normalized = value.replace(/\/+/g, "/")
@@ -23,17 +23,19 @@ function strings(values: unknown[]) {
 function getPathArgs(tool: string, args: Record<string, unknown>) {
   if (tool === "glob") return strings([args.path, args.pattern])
   if (tool === "grep") return strings([args.path])
-  if (tool === "list") return strings([args.path])
+  if (tool === "read") return strings([args.path, args.filePath])
   return []
 }
 
-export const NixStoreGuardPlugin: Plugin = async () => {
-  return {
-    "tool.execute.before": async (input, output) => {
-      if (!GUARDED_TOOLS.has(input.tool)) return
+export default Plugin.define({
+  id: "nix-store-guard",
+  async setup(ctx) {
+    await ctx.tool.hook("execute.before", (event) => {
+      if (!GUARDED_TOOLS.has(event.tool)) return
 
-      const paths = getPathArgs(input.tool, output.args as Record<string, unknown>)
+      const args = (event.input ?? {}) as Record<string, unknown>
+      const paths = getPathArgs(event.tool, args)
       if (paths.some(isBroadNixStorePath)) throw new Error(ERROR_MESSAGE)
-    },
-  }
-}
+    })
+  },
+})

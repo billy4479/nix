@@ -1,56 +1,39 @@
 // https://github.com/simonwjackson/opencode-direnv/issues/1#issuecomment-3940887423
 
-import type { Plugin } from "@opencode-ai/plugin"
+import { Plugin } from "@opencode/plugin"
 
-export const DirenvPlugin: Plugin = async ({ client, $ }) => {
-  let notified = false
+export default Plugin.define({
+  id: "direnv",
+  async setup(ctx) {
+    let logged = false
 
-  const notify = async (message: string, variant: "info" | "success" | "error") => {
-    try {
-      await client.tui.showToast({ body: { message, variant } })
-    } catch {
-      // Toasts are best-effort; direnv loading should not depend on the UI.
+    const log = (message: string) => {
+      console.log(`[direnv] ${message}`)
     }
-  }
 
-  const log = async (level: "info" | "error", message: string, extra: Record<string, unknown>) => {
-    try {
-      await client.app.log({
-        body: {
-          service: "direnv",
-          level,
-          message,
-          extra,
-        },
-      })
-    } catch {
-      // Logging is best-effort too.
-    }
-  }
-
-  return {
-    async "shell.env"(input, output) {
-      const shouldNotify = !notified
-      notified = true
+    await ctx.shell.hook("create.before", async (event) => {
+      const firstRun = !logged
+      logged = true
 
       try {
-        if (shouldNotify) await notify("direnv: loading .envrc", "info")
+        const proc = Bun.spawn(["direnv", "export", "json"], {
+          cwd: event.cwd,
+          stdout: "pipe",
+          stderr: "pipe",
+        })
+        const text = await new Response(proc.stdout).text()
+        await proc.exited
 
-        const text = await $`direnv export json`.cwd(input.cwd).text()
         if (text.trim() === "") {
-          if (shouldNotify) await notify("direnv: .envrc loaded", "success")
-          await log("info", ".envrc already loaded", { cwd: input.cwd })
+          if (firstRun) log(".envrc already loaded")
           return
         }
 
-        const localEnv = JSON.parse(text)
-        Object.assign(output.env, localEnv)
-        if (shouldNotify) await notify("direnv: .envrc loaded", "success")
-        await log("info", ".envrc loaded", { DIRENV_FILE: localEnv.DIRENV_FILE, cwd: input.cwd })
+        Object.assign(event.env, JSON.parse(text))
+        if (firstRun) log(".envrc loaded")
       } catch (err) {
-        if (shouldNotify) await notify("direnv: .envrc failed to load", "error")
-        await log("error", ".envrc failed to load", { cwd: input.cwd, err })
+        log(`.envrc failed to load: ${err}`)
       }
-    },
-  }
-}
+    })
+  },
+})
