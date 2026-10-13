@@ -402,11 +402,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1791212454,
-        "narHash": "sha256-mcwKEdt6cpJyZFFWBt8emJIqJ5tpidK384l3jvYVETE=",
+        "lastModified": 1791894536,
+        "narHash": "sha256-Cb4DnsGSA4GY3mbnMgcYEghd/npKtEzdqTp29TrX5GM=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "22475b016cb73af573cc7645e1e473ee86ce8838",
+        "rev": "449e58eb6b96828136761acd4924ae135820b078",
         "type": "github"
       },
       "original": {
@@ -715,11 +715,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789963190,
-        "narHash": "sha256-mj5BLUKECIHv3rwkBXL6xQp45gIBJV7ZOYgT46LXwho=",
+        "lastModified": 1791170410,
+        "narHash": "sha256-pyru9MpuXRiyq0Bd4q0nHpL4T6HCuZT4B+alcgAYE4A=",
         "owner": "pyproject-nix",
         "repo": "build-system-pkgs",
-        "rev": "14b45373ea9a14ed2fcd0abf3ed35c8e3c430020",
+        "rev": "953d35d03a51dbecaf3feb3fb679eb63e90ebeb4",
         "type": "github"
       },
       "original": {
@@ -736,11 +736,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788394333,
-        "narHash": "sha256-xYOP0Xym1eVGUaHFx+eJEaycFGoiCbst3fZf0xFHP78=",
+        "lastModified": 1791657700,
+        "narHash": "sha256-vcCAvhtA7hG+/gOge29hYHy7I/dLkIsr5nLx4sFEQic=",
         "owner": "pyproject-nix",
         "repo": "pyproject.nix",
-        "rev": "6a8a7881d75b6f98967e7b8069f4ead331384301",
+        "rev": "ddc400a6883b042646d0940e65971bb7f7e96107",
         "type": "github"
       },
       "original": {
@@ -804,10 +804,10 @@
     "secrets-repo": {
       "flake": false,
       "locked": {
-        "lastModified": 1791218516,
-        "narHash": "sha256-Gh1AfrjIT8Z6tgBWLIQ4Lkn63DjnMJAx8bEzG/GYGk4=",
+        "lastModified": 1791893560,
+        "narHash": "sha256-lMopZd3qQ6PXDaDcw06W9PEbKlxFBWMej1KMnd7TPNg=",
         "ref": "master",
-        "rev": "a84bfad0278f8ce931b95e34167f780a7a4b62e1",
+        "rev": "2258ce2acfa365572b638a3239ec33edb2c88a8b",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/nix-secrets.git"
@@ -939,11 +939,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789383061,
-        "narHash": "sha256-+DkygIVr/+RtXnsjd07BzFFB0ihwmjjLuYh1fyc/bCg=",
+        "lastModified": 1791815626,
+        "narHash": "sha256-39EtILDexiwJqShYD/yu1B73OvF6DigAqF040egC07g=",
         "owner": "pyproject-nix",
         "repo": "uv2nix",
-        "rev": "079be4e68c529c4cbc44dbf1afc692e4b30695b3",
+        "rev": "37462fae7b37be45d78f754d1c39e8813ede0f80",
         "type": "github"
       },
       "original": {
