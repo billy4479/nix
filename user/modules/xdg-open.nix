@@ -21,12 +21,14 @@
       enable = true;
       associations.added = {
         "x-scheme-handler/tg" = "org.telegram.desktop.desktop";
+        "x-scheme-handler/mpv" = "mpv-open.desktop";
         "application/pdf" = "org.pwmt.zathura.desktop";
         "text/plain" = "org.kde.kate.desktop";
         "text/markdown" = "firefox.desktop";
       };
       defaultApplications = {
         "x-scheme-handler/tg" = "org.telegram.desktop.desktop";
+        "x-scheme-handler/mpv" = "mpv-open.desktop";
         "application/pdf" = "org.pwmt.zathura.desktop";
         "text/plain" = "org.kde.kate.desktop";
         "text/markdown" = "firefox.desktop";

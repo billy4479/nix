@@ -19,8 +19,48 @@ let
   maim = lib.getExe pkgs.maim;
   copyCmd = "${lib.getExe pkgs.xclip} -selection clipboard -t image/png";
   xdotool = lib.getExe pkgs.xdotool;
+
+  # Handler for the mpv:// uri scheme: browsers navigate to
+  # mpv://open/<percent-encoded-url> and this script plays it with mpv.
+  mpv-open =
+    pkgs.writeScriptBin "mpv-open" # sh
+      ''
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        uri="''${1:-}"
+
+        uri="''${uri#mpv://}"
+        uri="''${uri#open/}"
+
+        # percent-decode (all %HH become \xHH, which printf interprets)
+        url=$(printf -- "''${uri//%/\\x}")
+
+        case "$url" in
+        https://* | http://*) ;;
+        *)
+          echo "mpv-open: refusing to open non-http url: $url" >&2
+          exit 1
+          ;;
+        esac
+
+        # detach from the browser process so mpv survives the handler exiting
+        ${pkgs.util-linux}/bin/setsid -f ${mpv} -- "$url" \
+          >/dev/null 2>&1 </dev/null
+      '';
+
+  mpv-open-desktop = pkgs.makeDesktopItem {
+    name = "mpv-open";
+    desktopName = "mpv";
+    comment = "Play a url in mpv";
+    exec = "${mpv-open}/bin/mpv-open %u";
+    mimeTypes = [ "x-scheme-handler/mpv" ];
+    noDisplay = true;
+  };
 in
 {
+  inherit mpv-open mpv-open-desktop;
+
   mpv-url =
     pkgs.writeScriptBin "mpv-url"
       # sh
