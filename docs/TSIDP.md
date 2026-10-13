@@ -127,6 +127,55 @@ Sign-up is safe because tsidp only authenticates tailnet members, and
 (currently jack, as Admin). The local `admin` account remains as
 password fallback.
 
+### Headplane (as deployed)
+
+headplane (the `oidc:` block in
+`services/services/headplane/headplane.yaml`) authenticates against tsidp:
+
+- Issuer: `https://idp.internal.polpetta.online` (endpoints are
+  auto-discovered; PKCE S256 is enabled)
+- Scopes: `openid email profile` (all tsidp supports)
+
+Client registration in the tsidp admin UI
+(`https://idp.internal.polpetta.online`):
+
+- Name: `headplane`
+- Redirect URI (must match exactly — note the `/admin` prefix and **no
+  explicit `:443`**, which headplane drops when building the URI from
+  `server.base_url`):
+  `https://headplane.internal.polpetta.online/admin/oidc/callback`
+- Auth method: either works. headplane tries `client_secret_post` first
+  and falls back to `client_secret_basic`; tsidp supports both, so
+  `oidc.token_endpoint_auth_method` is left unset.
+
+Add to the `headplane-env` sops file (plain `KEY=value` lines; headplane
+merges `HEADPLANE_*__*` env overrides into its config automatically since
+0.7, no `HEADPLANE_LOAD_ENV_OVERRIDES` flag needed):
+
+- `HEADPLANE_OIDC__CLIENT_ID` / `HEADPLANE_OIDC__CLIENT_SECRET`: the
+  registered client credentials
+- `HEADPLANE_HEADSCALE__API_KEY`: a server-side headscale API key,
+  created with `headscale apikeys create --expiration 999d`; headplane
+  disables OIDC entirely without one (this is `headscale.api_key`)
+
+First login: the first OIDC user becomes headplane **Owner** and is
+asked to link their headscale user during onboarding (link it to
+`jack@`); any later user lands as a no-access **Member** until granted
+access in the headplane UI.
+
+**Access model (user decision — containment):** only jack may *use*
+headplane, but anyone on the tailnet may *authenticate*: headplane 0.7.1
+has no allow-list, and the first-login Owner bootstrap is unconditional
+(verified in source — it overrides even a role claim). Therefore
+**jack must complete the first SSO immediately after deploy**, before
+anyone else touches the URL; afterwards every other user is a permanent
+zero-capability Member (an inert row in the user list). Hard-blocking
+authentication at the IdP was evaluated (a `restrict_clients` tsidp
+grant enforced at /authorize) and deliberately skipped as overkill.
+
+API-key login stays enabled (`oidc.disable_api_key_login` is unset), so
+the traditional headscale API-key login remains as break-glass fallback.
+
 ## Known limitations
 
 - **STS disabled**: token exchange has no use here (no funnel/SaaS

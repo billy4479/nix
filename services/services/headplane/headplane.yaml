@@ -7,7 +7,12 @@ server:
   # The base URL for Headplane. Please keep in mind that this will be required
   # for Headscale to properly function going forward AND it should not include
   # the dashboard prefix (/admin) portion.
-  base_url: "https://headplane.internal.polpetta.online:443"
+  #
+  # The OIDC redirect URI is derived from this as
+  # `{base_url}/admin/oidc/callback` and must be registered in tsidp exactly;
+  # keep the default https port implicit (an explicit `:443` is dropped during
+  # redirect URI construction, so it would only cause confusion).
+  base_url: "https://headplane.internal.polpetta.online"
 
   # The secret used to encode and decode web sessions (must be 32 characters)
   # You may also provide `cookie_secret_path` instead to read a value from disk.
@@ -167,15 +172,23 @@ integration:
 
 # OIDC Configuration for simpler authentication
 # (This is optional, but recommended for the best experience)
-# oidc:
-  # The OIDC issuer URL
-  # issuer: "https://accounts.google.com"
+# Login is delegated to tsidp; see docs/TSIDP.md for the client registration.
+oidc:
+  # The OIDC issuer URL (tsidp). All endpoints are auto-discovered from
+  # /.well-known/openid-configuration, they must not be hardcoded.
+  issuer: "https://idp.internal.polpetta.online"
 
-  # If you are using OIDC, you need to generate an API key
-  # that can be used to authenticate other sessions when signing in.
-  #
-  # This can be done with `headscale apikeys create --expiration 999d`
-  # headscale_api_key: "<your-headscale-api-key>"
+  # The client id/secret of the client registered in tsidp.
+  # Do NOT set them here: they are provided through the headplane-env sops
+  # file as HEADPLANE_OIDC__CLIENT_ID and HEADPLANE_OIDC__CLIENT_SECRET
+  # (HEADPLANE_*__* env overrides are merged over this file; since 0.7 they
+  # are always loaded, no HEADPLANE_LOAD_ENV_OVERRIDES flag is needed).
+
+  # OIDC requires a server-side Headscale API key (Headplane disables OIDC
+  # without one). Create it with `headscale apikeys create --expiration 999d`
+  # and provide it through the headplane-env sops file as
+  # HEADPLANE_HEADSCALE__API_KEY (this is headscale.api_key; the old
+  # oidc.headscale_api_key location is deprecated).
 
   # If your OIDC provider does not support discovery (does not have the URL at
   # `/.well-known/openid-configuration`), you need to manually set endpoints.
@@ -191,21 +204,19 @@ integration:
   # method and fall back to `client_secret_basic` if unsure.
   # token_endpoint_auth_method: "client_secret_post"
 
-  # The client ID for the OIDC client
-  # For the best experience please ensure this is *identical* to the client_id
-  # you are using for Headscale. because
-  # client_id: "your-client-id"
-
-  # The client secret for the OIDC client
-  # You may also provide `client_secret_path` instead to read a value from disk.
-  # See https://headplane.net/configuration/#sensitive-values
-  # client_secret: "<your-client-secret>"
-
   # Whether to use PKCE when authenticating users. This is recommended as it
   # adds an extra layer of security to the authentication process. Enabling this
   # means your OIDC provider must support PKCE and it must be enabled on the
   # client.
-  # use_pkce: true
+  use_pkce: true
+
+  # Authorization containment (user decision): authentication itself cannot
+  # be restricted — headplane 0.7.1 has no allow-list, and its first-login
+  # Owner bootstrap is unconditional (it overrides even a role claim). So
+  # jack must complete the first SSO after deploy; everybody else lands
+  # here, a zero-capability role with no UI access. Explicit only to make
+  # the policy visible; "member" is already the upstream default.
+  default_role: "member"
 
   # If you want to disable traditional login via Headscale API keys
   # disable_api_key_login: false
@@ -215,8 +226,9 @@ integration:
   # "oidc" or "gravatar" as of 0.6.1.
   # profile_picture_source: "gravatar"
 
-  # The scopes to request when authenticating users. The default is below.
-  # scope: "openid email profile"
+  # The scopes to request when authenticating users. tsidp only supports
+  # these three.
+  scope: "openid email profile"
 
   # Extra query parameters can be passed to the authorization endpoint
   # by setting them here. This is useful for providers that require any kind
