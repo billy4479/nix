@@ -122,6 +122,10 @@ addressable by name.
 - `record` names unique across services
 - container IDs unique across all containers (services plus infrastructure);
   duplicate IDs would mean duplicate IPs on the bridge
+- built image references match their container (`nix-snapshotter.buildImage
+  name`/`tag` must be the service name and `nix-local`): the unit runs the
+  image as `<name>:nix-local` with `--pull never`, so a mismatch would only
+  surface as a crash loop at deploy time
 - `probe.unauth` is false on tcp (raw) probes; it only applies to http
 - non-public domains fall under `.internal.polpetta.online`, public ones under
   `polpetta.online` (wildcard DNS + cert are the only PKI)

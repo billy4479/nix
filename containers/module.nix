@@ -17,6 +17,21 @@ let
     map toString (lib.mapAttrsToList (_: container: container.id) config.nerdctl-containers)
   );
 
+  # nerdctl runs the image as <container name>:nix-local with --pull never,
+  # after loading whatever reference the image derivation records; a
+  # buildImage whose name differs from the container name makes the unit
+  # crash-loop at deploy time with "image not found". Catch it at eval time.
+  badImageRefs = lib.mapAttrsToList (name: _: name) (
+    lib.filterAttrs (
+      name: cfg:
+      cfg.imageToBuild != null
+      && (
+        cfg.imageToBuild.passthru.name or null != name
+        || cfg.imageToBuild.passthru.tag or null != "nix-local"
+      )
+    ) config.nerdctl-containers
+  );
+
   makeContainer =
     name: cfg:
     assert (cfg.id >= 2 && cfg.id <= 255);
@@ -351,6 +366,15 @@ in
           message = "nerdctl-containers: duplicate container IDs (they map to duplicate IPs 10.0.1.<id>): ${
             lib.concatStringsSep ", " duplicateIds
           }";
+        }
+        {
+          assertion = badImageRefs == [ ];
+          message = ''
+            nerdctl-containers: imageToBuild for ${lib.concatStringsSep ", " badImageRefs} must come from
+            nix-snapshotter.buildImage with name = <container name> and tag = "nix-local": the unit loads
+            the image under the buildImage reference and runs it as <container name>:nix-local with
+            --pull never, so a mismatched reference makes the container fail to start.
+          '';
         }
       ];
       users = lib.mkMerge (
