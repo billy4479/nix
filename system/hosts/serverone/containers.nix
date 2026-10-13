@@ -143,21 +143,21 @@ in
     # via nerdctl0 and never matches -o enp2s0) keeps real client IPs.
     extraCommands = # sh
       ''
-        iptables -C FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null ||
-          iptables -I FORWARD 1 -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT
-        iptables -C FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null ||
-          iptables -I FORWARD 1 -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-        iptables -t nat -C POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE 2>/dev/null ||
-          iptables -t nat -A POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE
-        ip6tables -t nat -C POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE 2>/dev/null ||
-          ip6tables -t nat -A POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE
+        iptables -w -C FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null ||
+          iptables -w -I FORWARD 1 -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT
+        iptables -w -C FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null ||
+          iptables -w -I FORWARD 1 -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+        iptables -w -t nat -C POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE 2>/dev/null ||
+          iptables -w -t nat -A POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE
+        ip6tables -w -t nat -C POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE 2>/dev/null ||
+          ip6tables -w -t nat -A POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE
       '';
     extraStopCommands = # sh
       ''
-        iptables -D FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null || true
-        iptables -D FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
-        iptables -t nat -D POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE 2>/dev/null || true
-        ip6tables -t nat -D POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE 2>/dev/null || true
+        iptables -w -D FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null || true
+        iptables -w -D FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
+        iptables -w -t nat -D POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE 2>/dev/null || true
+        ip6tables -w -t nat -D POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE 2>/dev/null || true
       '';
   };
 
