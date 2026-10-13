@@ -9,6 +9,14 @@ let
 
   containerSubmodule = import ./container-options.nix { inherit lib; };
 
+  duplicates =
+    list:
+    lib.attrNames (lib.filterAttrs (_: v: lib.length v > 1) (lib.groupBy (x: x) list));
+
+  duplicateIds = duplicates (
+    map toString (lib.mapAttrsToList (_: container: container.id) config.nerdctl-containers)
+  );
+
   makeContainer =
     name: cfg:
     assert (cfg.id >= 2 && cfg.id <= 255);
@@ -337,6 +345,14 @@ in
       containerConfigs = lib.mapAttrsToList makeContainer config.nerdctl-containers;
     in
     {
+      assertions = [
+        {
+          assertion = duplicateIds == [ ];
+          message = "nerdctl-containers: duplicate container IDs (they map to duplicate IPs 10.0.1.<id>): ${
+            lib.concatStringsSep ", " duplicateIds
+          }";
+        }
+      ];
       users = lib.mkMerge (
         map (c: c.users) containerConfigs
         ++ [
