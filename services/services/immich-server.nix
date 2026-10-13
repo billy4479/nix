@@ -6,15 +6,16 @@
   ...
 }:
 let
+  name = "immich-server";
   baseHDDDir = "/mnt/HDD/apps/immich";
 in
 {
   sops.secrets.immichEnv = lib.mkIf (options ? nerdctl-containers) { };
 
-  polpetta.services.immich-server = {
+  polpetta.services.${name} = {
     container = {
       imageToBuild = pkgs.nix-snapshotter.buildImage {
-        name = "immich";
+        inherit name;
         tag = "nix-local";
 
         copyToRoot = [
