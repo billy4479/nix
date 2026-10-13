@@ -91,6 +91,6 @@ Once t3code has proven itself: remove the openchamber container import from
 `system/hosts/serverone/containers.nix`, the `openchamber` nginx map entry,
 its monitoring entry, and the now t3code-owned sops secrets
 (`openchamber-env`; move `openchamber-ssh-key` ownership into
-`containers/t3code`). The workspaces and their Syncthing mounts stay where
+`services/services/t3code`). The workspaces and their Syncthing mounts stay where
 they are; a later rename of `/mnt/SSD/apps/openchamber/workspaces` would also
 touch the Syncthing folder configuration and is best done as its own change.

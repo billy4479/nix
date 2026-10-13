@@ -10,7 +10,7 @@ Everything lives in two places:
 
 - `system/hosts/serverone/monitoring.nix` — Prometheus, exporters,
   Alertmanager, alert rules and the zpool textfile exporter.
-- `containers/grafana/` — the Grafana container, its provisioning files and
+- `services/services/grafana/` — the Grafana container, its provisioning files and
   the two dashboards.
 
 ## Architecture
@@ -48,7 +48,7 @@ firewall interface for this stack.
 | blackbox_exporter | host | `127.0.0.1:9115` | `services.prometheus.exporters.blackbox` |
 | nginx-exporter | host | `127.0.0.1:9113` | `services.prometheus.exporters.nginx` |
 | zpool textfile script | host (root, timer) | writes `/run/prometheus-node-exporter/zpool.prom` | `prometheus-zpool-textfile.{service,timer}` |
-| Grafana | container `10.0.1.23:3000` | https://grafana.internal.polpetta.online | `containers/grafana` |
+| Grafana | container `10.0.1.23:3000` | https://grafana.internal.polpetta.online | `services/services/grafana` |
 | nginx stub_status | container `10.0.1.6:8082` | `/stub_status` (LAN-only allow/deny) | `containers/nginx/config/nginx.conf` |
 
 Notes:
@@ -67,7 +67,7 @@ Notes:
   `zpool_io_read_bytes_total`, `zpool_io_write_bytes_total`) parsed from
   `zpool iostat -pH`. The one-minute cadence exists so the IO counters give
   smooth rates; scrub/error status comes along for free.
-- The Grafana image is not pulled; `containers/grafana` builds it from
+- The Grafana image is not pulled; `services/services/grafana` builds it from
   `pkgs.grafana` via `nix-snapshotter.buildImage` (tag `grafana:nix-local`).
 
 ## Scrapes
@@ -119,7 +119,7 @@ disappears and the alert resolves on its own.
 
 ## Dashboards
 
-Provisioned from `containers/grafana/dashboards/` into the "serverone"
+Provisioned from `services/services/grafana/dashboards/` into the "serverone"
 folder, datasource uid `prometheus`:
 
 - **serverone host** (`uid: serverone-host`): CPU, load, memory, hwmon
