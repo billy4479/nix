@@ -81,7 +81,6 @@ in
     raw = [
       { port = 25565; access = "public"; record = "mc"; }
       { port = 19132; proto = "udp"; access = "public"; }
-      { port = 19132; proto = "tcp"; access = "public"; }
     ];
   };
 }
