@@ -23,7 +23,7 @@ in
 
     ../../../containers/certbot.nix
     ../../../containers/nginx
-    ../../../containers/bind9
+    ../../../services/services/bind9
     ../../../containers/frp.nix
 
     ../../../services/services/syncthing.nix

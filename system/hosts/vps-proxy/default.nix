@@ -18,7 +18,7 @@
     # gate everything container- or host-specific on nerdctl-containers, so
     # this evaluation is inert beyond polpetta.services.
     ../../../services/services/syncthing.nix
-    ../../../containers/bind9
+    ../../../services/services/bind9
     ../../../services/services/immich-server.nix
     ../../../services/services/immich-database.nix
     ../../../services/services/immich-ml.nix
