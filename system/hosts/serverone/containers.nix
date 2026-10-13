@@ -135,17 +135,29 @@ in
     # Loose reverse-path filtering is needed because Tailscale routes live in a
     # policy routing table and strict rpfilter can drop these packets before FORWARD.
     checkReversePath = "loose";
+    # --snat-subnet-routes=false (hosts/serverone/default.nix) removes
+    # tailscale's mark-matched MASQUERADE, which on Linux covers *all*
+    # tailscale0 traffic - including exit-node traffic. Re-add a scoped
+    # masquerade for tailnet sources leaving through the LAN interface so
+    # the exit node keeps working while subnet-routed traffic (which exits
+    # via nerdctl0 and never matches -o enp2s0) keeps real client IPs.
     extraCommands = # sh
       ''
         iptables -C FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null ||
           iptables -I FORWARD 1 -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT
         iptables -C FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null ||
           iptables -I FORWARD 1 -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+        iptables -t nat -C POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE 2>/dev/null ||
+          iptables -t nat -A POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE
+        ip6tables -t nat -C POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE 2>/dev/null ||
+          ip6tables -t nat -A POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE
       '';
     extraStopCommands = # sh
       ''
         iptables -D FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null || true
         iptables -D FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
+        iptables -t nat -D POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE 2>/dev/null || true
+        ip6tables -t nat -D POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE 2>/dev/null || true
       '';
   };
 

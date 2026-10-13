@@ -34,6 +34,11 @@ browser -> bind9 (wg/lan view wildcard) -> nginx 10.0.1.6:443 (TLS, tailnet ACL)
         -> tsidp 10.0.1.25:8080
 ```
 
+WhoIs depends on seeing the browser's real tailnet IP, so serverone runs with
+`--snat-subnet-routes=false`: without it, tailnet clients traversing the
+advertised `10.0.1.0/24` route arrive at nginx source-NAT'ed and every WhoIs
+lookup fails with `peer not found`.
+
 tsidp itself joins the tailnet as node `idp` (tagged `tag:idp`) via
 `TS_CONTROL_URL` through nginx -> headscale. Its tailnet IP is never used for
 traffic; only the container IP behind nginx is. The `tag:idp` tag comes from
