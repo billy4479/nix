@@ -176,6 +176,133 @@ grant enforced at /authorize) and deliberately skipped as overkill.
 API-key login stays enabled (`oidc.disable_api_key_login` is unset), so
 the traditional headscale API-key login remains as break-glass fallback.
 
+### Immich (as deployed)
+
+Immich 3.2.2 (the `pkgs.immich` in this flake's pin, running as the
+`immich-server` container) keeps its OAuth settings **in its own
+database**, not in nix config and not in env vars —
+`services/services/immich-server.nix` has no declarable OAuth surface.
+Everything below happens in Immich's admin UI (persisted to the
+`system_config` table) or in the `immich-database` container.
+
+Client registration in the tsidp admin UI
+(`https://idp.internal.polpetta.online`):
+
+- Name: `immich`
+- Redirect URIs (tsidp matches **exactly**, one per line in the form;
+  only the first is strictly required — save the generated client id +
+  secret, tsidp shows them once):
+  - `https://immich.internal.polpetta.online/auth/login` — web login
+    flow (Immich sends the login-page URL minus query string as
+    `redirect_uri`)
+  - `https://immich.internal.polpetta.online/user-settings` — needed
+    only for the self-service **Link to OAuth** button (user settings)
+  - `app.immich:///oauth-callback` — mobile app only (not used in this
+    tailnet-only deployment)
+
+Identity mapping, and why Immich's email matching cannot be used:
+tsidp's `sub` is the headscale **numeric user id as a string** (jack
+`1`, alice `2`, bob `3`, carol `4`), while `email` is the headscale
+LoginName passed through (`jack@`) — not a routable address. Immich
+resolves an OAuth login by `user.oauthId` **first**, then by email,
+then auto-registers. Without a pre-set `oauthId`, the first OIDC login
+of alice/bob/jack would auto-register a **duplicate** account with
+email `alice@` etc. Bind existing accounts *before* enabling OAuth.
+
+Admin UI (Administration → Settings → Authentication → OAuth), values
+verified against the 3.2.2 source; defaults are fine unless noted:
+
+| Field | Value |
+| --- | --- |
+| Login with OAuth | on |
+| issuer_url | `https://idp.internal.polpetta.online` |
+| client_id / client_secret | from the tsidp registration |
+| token_endpoint_auth_method | `client_secret_post` (default; tsidp supports it) |
+| scope | `openid email profile` (default; all tsidp supports) |
+| id_token_signed_response_alg | `RS256` (default; tsidp signs RS256 only, so no algorithm mismatch) |
+| userinfo_signed_response_alg | `none` (default; Immich reads the ID token because it carries `email`) |
+| prompt, end_session_endpoint, account management URL | empty |
+| Storage Label Claim | `preferred_username` (default; auto-registered users get a library dir named after their headscale username) |
+| Role Claim / Storage Quota Claim | `immich_role` / `immich_quota` (defaults; absent in tsidp, so admin status and quotas are never touched) |
+| Default Storage Quota | empty (no quota) |
+| Auto Register | **on** (required for carol, who has no Immich account) |
+| Auto Launch | off (keeps the password form visible) |
+| Mobile Redirect URI Override | off (tsidp accepts the native `app.immich:///oauth-callback`) |
+| Password → Enable password login | **on** — stays as break-glass fallback |
+
+Profile pictures: Immich pulls the `picture` claim when a user has no
+profile picture; headscale profiles are empty, so nothing changes.
+
+Binding the existing users — no SQL is required. Immich resolves an
+OAuth login by `oauthId` → **email match** → auto-register, and after
+the headscale users got real email addresses the token emails match two
+of the three Immich accounts:
+
+- **alice, bob**: nothing to do. Their Immich emails equal the token
+  emails (`alice@example.com`, `bob@example.com`), so the
+  first OAuth login matches by email and links the existing account.
+- **jack**: the token says `jack@example.com` but the Immich
+  account has `jack.doe@example.com` — email matching misses, and
+  auto-register would create a duplicate. Pick one, both are UI-only:
+  1. **Link to OAuth** (recommended): while password-logged-in, User
+     Settings → OAuth → *Link to OAuth*. Stores `sub` (`userid:1`) on
+     the account; requires the `/user-settings` redirect URI (already
+     in the registration list).
+  2. As admin, change the Immich account's email to
+     `jack@example.com`; the next OAuth login matches by email.
+     Do this if you prefer the headscale email for Immich mail.
+
+Do the binding **before** anyone's first OAuth login (auto-register is
+on and would mint duplicates otherwise).
+
+Scripted alternative (only if you ever need to rebind without logging
+in as the user): SQL in the `immich-database` container (table
+`"user"`, column `"oauthId"`; Immich reads it on each login, no restart
+needed). On serverone, **backup first**, then update:
+
+```sh
+ssh serverone
+# backup the user table (redirect happens host-side)
+sudo exec-in-container immich-database pg_dump -U postgres -d immich \
+  -t '"user"' --data-only > ~/immich-user-backup.sql
+
+# bind: sub (userid:<n>) -> existing account
+sudo exec-in-container immich-database psql -U postgres -d immich -c \
+  "UPDATE \"user\" SET \"oauthId\" = 'userid:1' WHERE email = 'jack.doe@example.com';"
+sudo exec-in-container immich-database psql -U postgres -d immich -c \
+  "UPDATE \"user\" SET \"oauthId\" = 'userid:2' WHERE email = 'alice@example.com';"
+sudo exec-in-container immich-database psql -U postgres -d immich -c \
+  "UPDATE \"user\" SET \"oauthId\" = 'userid:3' WHERE email = 'bob@example.com';"
+
+# verify: one row per sub
+sudo exec-in-container immich-database psql -U postgres -d immich -c \
+  "SELECT \"oauthId\", email, name, \"isAdmin\" FROM \"user\" ORDER BY \"oauthId\";"
+```
+
+Rollback is `UPDATE "user" SET "oauthId" = '';` scoped by email, or
+restore the dump. Each sub must end up on exactly one user (there
+is no uniqueness constraint on `oauthId`; on a collision the first
+match wins silently). Note the admin API itself cannot set `oauthId`
+in 3.2.2 (`PATCH /admin/users/{id}` has no such field); an Immich API
+key is only useful for *verifying* (below).
+
+Verification after enabling OAuth:
+
+- With an admin API key (Account Settings → API Keys → *New API key*):
+  ```sh
+  curl -sH 'x-api-key: <key>' \
+    https://immich.internal.polpetta.online/api/admin/users \
+    | jq -r '.[] | [.name, .email, .oauthId] | @tsv'
+  ```
+  Jack/Alice/Bob must show oauthId `1`/`2`/`3`, not new users.
+- Log in through the *Login with OAuth* button: Jack must land in his
+  existing admin account (same assets and API keys, no second "jack"
+  in the user list); carol is auto-registered on first login with
+  email `carol@` — Immich accepts non-routable emails on
+  auto-register (format validation only exists on the signup/admin
+  create forms).
+- Password login must keep working for all three existing users.
+
 ## Known limitations
 
 - **STS disabled**: token exchange has no use here (no funnel/SaaS
