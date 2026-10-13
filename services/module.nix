@@ -448,14 +448,19 @@ in
       probeHttpTargets = httpProbeTargets;
       probeTcpTargets = tcpProbeTargets;
 
-      nginxVhostsFile = lib.mkIf hasContainers (
-        pkgs.writeText "polpetta-services-vhosts.conf" nginxVhostsText
-      );
-      frpcProxies = lib.mkIf hasContainers frpcProxies;
-      bind9Records = lib.mkIf hasContainers bind9Records;
+      # Pure data: defined on every host importing this module (the vps
+      # consumes the frps/firewall projection), even where nothing deploys it.
+      nginxVhostsFile = pkgs.writeText "polpetta-services-vhosts.conf" nginxVhostsText;
+      frpcProxies = frpcProxies;
+      bind9Records = bind9Records;
     };
   }
+  # Mirroring is the only container-dependent part: service files keep
+  # evaluating on hosts without the containers module, where this turns into
+  # a no-op.
   // lib.optionalAttrs hasContainers {
+    # web implies the nginx vhost; a container-level `useNginx = false` cannot
+    # win here (the vhost would point at a container nginx never waits for).
     nerdctl-containers = lib.mapAttrs (
       name: svc: svc.container // lib.optionalAttrs (svc.web != null) { useNginx = true; }
     ) services;
