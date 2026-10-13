@@ -257,7 +257,9 @@
 
               # Validate with `nginx -t`: reassemble the config in a writable
               # tree with the absolute include/cert paths rewritten to it
-              # (the build sandbox has a read-only root). This checks the
+              # (the build sandbox has a read-only root). Listen ports are
+              # moved to high ports because `nginx -t` binds them and the
+              # unprivileged builder cannot bind 80/443. This checks the
               # full syntax, every include and the generated vhosts; it
               # cannot check the real certificates, which are mounted at
               # runtime.
@@ -268,7 +270,7 @@
               cp ${pkgsForFlake.nginx}/conf/mime.types check/etc/nginx/mime.types
               chmod -R u+w check
               find check -name '*.conf' -exec sed -i \
-                "s|/etc/nginx/|$PWD/check/etc/nginx/|g; s|/certs/|$PWD/check/certs/|g; s|listen 10.0.1.6:8082|listen 8082|" {} +
+                "s|/etc/nginx/|$PWD/check/etc/nginx/|g; s|/certs/|$PWD/check/certs/|g; s|listen 10.0.1.6:8082|listen 8082|; s|listen 443 |listen 18443 |; s|listen 4443 |listen 24443 |; s|listen 80;|listen 18080;|; s|listen 81 |listen 18081 |" {} +
               openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
                 -keyout check/certs/live/polpetta.online/privkey.pem \
                 -out check/certs/live/polpetta.online/fullchain.pem \
