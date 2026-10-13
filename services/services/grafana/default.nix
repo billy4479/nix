@@ -66,7 +66,14 @@ in
         GF_AUTH_GENERIC_OAUTH_API_URL = "https://idp.internal.polpetta.online/userinfo";
         GF_AUTH_GENERIC_OAUTH_SCOPES = "openid profile email";
         GF_AUTH_GENERIC_OAUTH_USE_PKCE = "true";
-        GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP = "false";
+        # tsidp authenticates any tailnet member, so account creation is gated
+        # by role mapping instead of allow_sign_up: only jack's headscale grant
+        # carries a grafana_role claim (docs/TSIDP.md); with strict mapping,
+        # logins without it are rejected, so nobody else gets an account.
+        GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP = "true";
+        GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "grafana_role";
+        GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_STRICT = "true";
+        GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH = "username";
         GF_ANALYTICS_REPORTING_ENABLED = "false";
         GF_ANALYTICS_CHECK_FOR_UPDATES = "false";
       };

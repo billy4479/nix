@@ -54,23 +54,32 @@ that combines a preauth key with client-advertised tags
   ```json
   { "tag:idp": ["jack@"] }
   ```
-- a grants entry:
+- a grants entry (the `extraClaims` are what make the user mapping work —
+  see the Grafana recipe below):
   ```jsonc
   {
     "src": ["jack@"],
     "dst": ["tag:idp"],
     "app": {
       "tailscale.com/cap/tsidp": [
-        { "allow_admin_ui": true, "allow_dcr": true }
+        {
+          "allow_admin_ui": true,
+          "allow_dcr": true,
+          "includeInUserInfo": true,
+          "extraClaims": { "grafana_role": "Admin" }
+        }
       ]
     }
   }
   ```
 
-Adjust `jack@` to the actual headscale LoginName. Per-service login
-restrictions are done at each RP (e.g. Grafana's
-`GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP = "false"`), not in tsidp: it
-authenticates any untagged tailnet node's browser for plain OIDC logins.
+Adjust `jack@` to the actual headscale LoginName. The grant above doubles
+as the user-mapping source for relying parties: its `extraClaims` (here
+`grafana_role`) are embedded into tokens tsidp issues to that user, and
+`includeInUserInfo` mirrors them into `/userinfo`. Per-user role
+assignment is therefore done by adding per-user grants with different
+`extraClaims` — RPs should restrict access by requiring a claim rather
+than trusting any tailnet identity (see Grafana below).
 
 ## Setup checklist
 
@@ -102,6 +111,21 @@ Discovery is not usable by all RPs (Grafana needs explicit URLs), so:
 - Authorize: `/authorize`, Token: `/token`, Userinfo: `/userinfo`
 - Scopes: `openid profile email`
 - PKCE: supported
+
+### Grafana (as deployed)
+
+```ini
+GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP = "true"
+GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH = "grafana_role"
+GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_STRICT = "true"
+GF_AUTH_GENERIC_OAUTH_LOGIN_ATTRIBUTE_PATH = "username"
+```
+
+Sign-up is safe because tsidp only authenticates tailnet members, and
+`role_attribute_strict` rejects any login whose grant carries no
+`grafana_role` claim — so only users with a per-user grant get accounts
+(currently jack, as Admin). The local `admin` account remains as
+password fallback.
 
 ## Known limitations
 
