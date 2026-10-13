@@ -5,6 +5,7 @@
 }:
 let
   name = "bind9";
+  id = 11;
   baseDir = "/mnt/SSD/apps/${name}";
 
   hosts = pkgs.callPackage ./hosts.nix { };
@@ -12,14 +13,17 @@ let
     bind9-hosts = hosts;
     generated-records = pkgs.writeText "generated-records.zone" config.polpetta.generated.bind9Records;
   };
-  uid = toString config.nerdctl-containers.${name}.uid;
-  gid = toString config.users.groups.containers.gid;
+  # Kept local (instead of reading config.nerdctl-containers / users.groups)
+  # so this file stays evaluable on hosts without the containers module.
+  # Must match containers/module.nix: uid = 5000 + id, gid = 5000.
+  uid = toString (5000 + id);
+  gid = "5000";
 in
 {
   polpetta.services.${name} = {
     container = {
       imageToBuild = pkgs.nix-snapshotter.buildImage {
-        name = "bind9";
+        inherit name;
         tag = "nix-local";
         copyToRoot = [
           (pkgs.writeTextDir "/etc/passwd" ''
@@ -38,7 +42,7 @@ in
         ];
       };
 
-      id = 11;
+      inherit id;
       capabilities = [ "CAP_NET_BIND_SERVICE" ];
       dns = null;
 
