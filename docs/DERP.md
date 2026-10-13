@@ -52,6 +52,27 @@ break them.
   (rides the control plane path above) and only relays for keys registered in
   the tailnet.
 
+### Real client IPs through frp
+
+frps has no PROXY-protocol parsing (`transport.proxyProtocolVersion` only
+controls a header **frpc generates** from the peer address frps observed):
+
+- If the demuxer sent PP *and* frpc kept `proxyProtocolVersion = "v2"`, nginx
+  would receive two headers (frpc's first, src=127.0.0.1) and treat the
+  demuxer's header as payload → broken. Hence `proxyProtocolVersion` is
+  **removed** from the `nginx_https` proxy: the demuxer's header transits
+  frps/frpc byte-for-byte and nginx (`listen 4443 ssl proxy_protocol`,
+  `set_real_ip_from 10.0.1.131`) parses it unchanged.
+- The **:443 dispatch block** must be the stage writing PP: nginx stream does
+  not carry the original client address across a loopback `proxy_pass` hop, so
+  a second-stage block would stamp `127.0.0.1` into the header (this shipped
+  broken once). The DERP branch gets the header too, which derper cannot
+  parse — hence its dedicated PP-stripping loopback hop.
+- The port-80 path keeps its frps-generated PPv2 (frps still sees the real
+  peer there).
+- nixpkgs nginx 1.30.5 stream `proxy_protocol on` emits **v1 only** (v2 needs
+  mainline ≥ 1.31.4); nginx parses both, so v1 is fine.
+
 ## Why the relay lives on the vps
 
 frp forwards UDP by re-originating packets from the `frpc` container on
@@ -145,6 +166,10 @@ Quick checks:
   demux is passthrough).
 - `curl -o /dev/null -w '%{http_code}\n' https://headscale.polpetta.online/health`
   → 200 (full demux → frp → nginx path).
+- `curl -o /dev/null -w '%{http_code}\n' https://derp.polpetta.online/generate_204`
+  → 204.
+- Real IP: from an external network, hit a public vhost; serverone nginx
+  access log must show the public IP (not `127.0.0.1`) for the 4443 vhost.
 - `tailscale netcheck` on a client should list region 999 with both DERP and
   STUN (cross-check UDP with `tailscale debug netmap` latency or packet
   captures if in doubt).

@@ -7,7 +7,7 @@
 # - `999a` is the DERP relay, served by the derper-derp systemd service
 #   (TCP 443, TLS with the wildcard polpetta.online cert pushed from
 #   serverone). Port 443 on the vps is an SNI demuxer (nginx stream,
-#   docs/EDGE_443_PLAN.md): this hostname is TLS-passthrough to the relay on
+#   docs/DERP.md): this hostname is TLS-passthrough to the relay on
 #   loopback, everything else rides frp to serverone's nginx. Clients are
 #   admitted through headscale's /verify endpoint, so only registered node
 #   keys can relay. STUN is disabled for this node (`stunport: -1`): the

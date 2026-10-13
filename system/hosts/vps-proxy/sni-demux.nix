@@ -1,4 +1,4 @@
-# SNI demuxer on TCP 443 (see docs/EDGE_443_PLAN.md): TLS passthrough for
+# SNI demuxer on TCP 443 (see docs/DERP.md): TLS passthrough for
 # everything, routed by server name. DERP stays local, everything else goes
 # to frps (remotePort 8444) which tunnels it to serverone's nginx — with a
 # PROXY protocol v1 header so real client IPs survive the frp hop.
