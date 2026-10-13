@@ -74,6 +74,11 @@ in
       # The service name would generate tsidp.internal...; the relying
       # parties (and the sops-seeded clients) know it as idp.
       domain = "idp.internal.polpetta.online";
+
+      # / does WhoIs and 500s for non-tailnet peers (e.g. the blackbox
+      # probe); the discovery endpoint is auth-free and proves tsidp is
+      # actually serving OIDC.
+      probe.path = "/.well-known/openid-configuration";
     };
   };
 }
