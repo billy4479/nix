@@ -239,7 +239,7 @@
           let
             serverone = hosts.nixosConfigurations.serverone.config;
             infraConfig = pkgsForFlake.callPackage ./containers/nginx/config.nix {
-              externalTrafficFrom = "10.0.1.${toString serverone.nerdctl-containers.frp.id}";
+              externalTrafficFrom = serverone.polpetta.externalTrafficFrom;
             };
           in
           pkgsForFlake.runCommand "polpetta-nginx-config"
