@@ -11,7 +11,7 @@ from that declaration.
 services/
   module.nix              # polpetta.services option + all generators
   services/
-    immich.nix            # one file per service: container + exposure
+    immich-server.nix     # one file per service: container + exposure
     grafana/              # directory when support files exist
       default.nix
       dashboards/
@@ -33,27 +33,35 @@ polpetta.services.<name> = {
     port = 4479;
     access = "public";             # "public" | "tailnet" | "local"
     # domain = "...";              # optional override, see "Domains"
+    # probe.enable = false;       # opt out of the blackbox probe
+    # probe.unauth = true;        # accept 401/404 as alive (default false)
+    # probe.path = "/admin";      # blackbox probe path (default "")
     # nginx.extraConfig = ''       # raw nginx text, injected into location /
     #   client_max_body_size 10M;
     # '';
   };
 
-  # Raw TCP/UDP port forwards, independent of the web endpoint.
+  # Raw TCP/UDP ports, independent of the web endpoint. `access = "public"`
+  # is tunneled through frp; tailnet/local are never tunneled and exist to
+  # declare (and optionally name or probe) the port.
   raw = [
     {
       port = 25565;                # remotePort defaults to port
       proto = "tcp";               # or "udp"
       access = "public";
       # record = "mc";             # optional bind9 record name → container IP
+      # probe.enable = true;       # blackbox tcp_connect probe (tcp only)
     }
   ];
 };
 ```
 
 One container per service: multi-container applications are split into one
-service file each (e.g. `immich`, `immich-db`, `immich-ml`, `immich-valkey`).
-Plumbing containers simply declare no `web`/`raw`. Inter-container wiring is
-unchanged (`dependsOn`, hardcoded IPs in environment).
+service file each (e.g. `immich-server`, `immich-database`, `immich-ml`,
+`immich-redis`). Plumbing containers declare no `web` and no public `raw`
+ports; they may still declare private raw ports to make a listen port
+addressable or probed (e.g. `immich-redis` probes 6379). Inter-container
+wiring is unchanged (`dependsOn`, hardcoded IPs in environment).
 
 ## Access model
 
@@ -93,6 +101,7 @@ wildcards `*.polpetta.online` to the vps.
 | frpc proxies        | `raw` entries with `access = "public"`           |
 | frps `allowPorts` + vps firewall | `raw` entries with `access = "public"` (`remotePort`; allowPorts ranges are proto-agnostic and deduplicated) |
 | bind9 zone records  | `raw` entries with `record` (→ container IP, wg/tailnet view) |
+| blackbox probes     | every `web` endpoint (URL/port inferred; `probe.enable`/`probe.unauth`/`probe.path` tune it) plus tcp probes of `raw` entries with `probe.enable = true`; consumed by serverone's monitoring.nix, which declares no targets itself |
 | `useNginx` ordering | presence of `web` (auto-set on the mirrored container) |
 
 Container `ports` (host publishing, e.g. LAN minecraft) stay explicit on the
@@ -111,7 +120,9 @@ addressable by name.
 - domains unique across services
 - `remotePort`s unique across services
 - `record` names unique across services
-- referenced containers exist
+- container IDs unique across all containers (services plus infrastructure);
+  duplicate IDs would mean duplicate IPs on the bridge
+- `probe.unauth` is false on tcp (raw) probes; it only applies to http
 - non-public domains fall under `.internal.polpetta.online`, public ones under
   `polpetta.online` (wildcard DNS + cert are the only PKI)
 - `access` is one of the three enum values
@@ -134,20 +145,23 @@ addressable by name.
 
 ## Examples
 
-`services/services/immich.nix` — split app, web endpoint with nginx overrides:
+`services/services/immich-server.nix` — split app, web endpoint with nginx
+overrides and a historical domain (the default would embed the container
+name):
 
 ```nix
 {
-  polpetta.services.immich = {
+  polpetta.services.immich-server = {
     container = {
       # imageToBuild, volumes, environmentFiles, environment, dependsOn ...
       id = 3;
-      dependsOn = [ "immich-db" "immich-valkey" "immich-ml" ];
+      dependsOn = [ "immich-database" "immich-redis" "immich-ml" ];
     };
 
     web = {
       port = 2283;
       access = "tailnet";
+      domain = "immich.internal.polpetta.online";
       nginx.extraConfig = ''
         client_max_body_size 50000M;
         proxy_request_buffering off;
@@ -159,7 +173,7 @@ addressable by name.
 }
 ```
 
-Plumbing companion (`immich-db.nix`): same minus the `web` block.
+Plumbing companion (`immich-database.nix`): same minus the `web` block.
 
 `services/services/mc-runner/` — public web + several raw ports + DNS record:
 
@@ -209,8 +223,8 @@ Completed in one pass on a development branch:
 
 1. `services/module.nix` + generators landed; infrastructure (nginx, frpc,
    frps, bind9) consumes `polpetta.generated.*`.
-2. All services moved from `containers/` to `services/services/`; the
-   hand-written nginx map/vhosts, frpc proxies and the `mc` zone record were
-   deleted.
+2. All services moved from `containers/` to `services/services/` (bind9
+   included, as a plumbing service); the hand-written nginx map/vhosts, frpc
+   proxies and the `mc` zone record were deleted.
 3. `containers/` now holds only the infrastructure: the container engine
-   (`module.nix`), nginx, bind9, frp and certbot.
+   (`module.nix`), nginx, frp and certbot.

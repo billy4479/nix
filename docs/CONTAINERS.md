@@ -11,7 +11,7 @@ User-facing services are defined through the `polpetta.services` API — see
 container plus how it is exposed (domain, access tier, raw ports).
 
 The containers under `../containers/` are infrastructure only (the engine,
-nginx, bind9, frp, certbot) and set `nerdctl-containers` directly.
+nginx, frp, certbot) and set `nerdctl-containers` directly.
 
 Prefer building an image from nix packages rather then pulling one.
 
@@ -99,7 +99,7 @@ Always keep this table in sync when adding new containers.
 | Container | ID | IP Address |
 |-----------|----|----|
 | Syncthing | 2 | 10.0.1.2 |
-| Immich | 3 | 10.0.1.3 |
+| Immich (Server) | 3 | 10.0.1.3 |
 | Calendar Proxy | 4 | 10.0.1.4 |
 | qBittorrent | 5 | 10.0.1.5 |
 | nginx | 6 | 10.0.1.6 |
@@ -122,6 +122,7 @@ Always keep this table in sync when adding new containers.
 | Grafana | 23 | 10.0.1.23 |
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
-| Immich (DB) | 130 | 10.0.1.130 || frp | 131 | 10.0.1.131 |
+| Immich (DB) | 130 | 10.0.1.130 |
+| frp | 131 | 10.0.1.131 |
 | Certbot | 132 | 10.0.1.132 |
 | Byparr | 134 | 10.0.1.134 |
