@@ -39,9 +39,9 @@ ssh serverone sudo /run/current-system/sw/bin/exec-in-container t3code claude au
 ssh serverone sudo /run/current-system/sw/bin/exec-in-container t3code codex login
 ```
 
-Note that the `exec-in-container` wrapper does not allocate a TTY; interactive
-logins may need `nerdctl exec -it` from serverone instead (requires root on
-serverone).
+Note that the `exec-in-container` wrapper forwards stdin but does not allocate
+a TTY; logins that need a TTY may require `nerdctl exec -it` from serverone
+instead (requires root on serverone).
 
 ## Private Nix store
 

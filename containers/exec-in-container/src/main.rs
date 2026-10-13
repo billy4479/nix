@@ -48,6 +48,7 @@ fn nerdctl_command(
         .arg("--namespace")
         .arg(CONTAINERD_NAMESPACE)
         .arg("exec")
+        .arg("--interactive")
         .arg("--user")
         .arg(user)
         .arg(container)
@@ -113,6 +114,7 @@ mod tests {
                 "--namespace",
                 CONTAINERD_NAMESPACE,
                 "exec",
+                "--interactive",
                 "--user",
                 "5021:5000",
                 "openchamber",

@@ -9,5 +9,6 @@ If you just need to see logs you can use `journalctl`, container units are named
 
 If you need to exec into a container you can use `sudo exec-in-container <container-name> some command`.
 When you do so, commands will run as the user inside the container (uid 5000+container_id).
+Stdin is forwarded to the command, but no TTY is allocated, so fully interactive programs will not work.
 These are live containers with important data on them, be very careful.
 
