@@ -20,6 +20,8 @@ in
       [
         notify-me
         mpv-url
+        mpv-open
+        mpv-open-desktop
         open-document
         clip-copy
         clip-paste
