@@ -69,6 +69,17 @@ nginx needs the extra space because it buffers large proxied transfers to
 `proxy_temp_path` under `/tmp`: with the 128MB default, any buffered response
 or upload bigger than 128MB hit ENOSPC and the transfer aborted mid-stream.
 
+## Inspecting the nginx config
+
+The complete nginx runtime config as deployed (hand-written infrastructure
+plus the generated per-service vhosts) builds as a package, validated with
+`nginx -t` against a throwaway certificate:
+
+```sh
+nix build .#nginx-config
+cat result/nginx.conf result/vhosts.conf
+```
+
 ## Startup Dependencies
 
 Container ordering is controlled by the `dependsOn`, `dns`, and `useNginx` options in `../containers/module.nix`.
