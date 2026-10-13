@@ -36,7 +36,10 @@ browser -> bind9 (wg/lan view wildcard) -> nginx 10.0.1.6:443 (TLS, tailnet ACL)
 
 tsidp itself joins the tailnet as node `idp` (tagged `tag:idp`) via
 `TS_CONTROL_URL` through nginx -> headscale. Its tailnet IP is never used for
-traffic; only the container IP behind nginx is.
+traffic; only the container IP behind nginx is. The `tag:idp` tag comes from
+the preauth key (see checklist): headscale >= 0.29 rejects any registration
+that combines a preauth key with client-advertised tags
+(`-advertise-tags`), so tsidp must not be given that flag.
 
 ## Headscale policy
 
@@ -69,6 +72,14 @@ authenticates any untagged tailnet node's browser for plain OIDC logins.
 1. Add the sops keys (see below): `tsidp/authkey` (the raw preauth key; a
    template renders it into `TS_AUTHKEY=...` for the container),
    `grafana/oauth-client-id`, `grafana/oauth-client-secret`.
+
+   The preauth key must be created **with the tag baked in** (`--tags`); a
+   tagged key also disables node key expiry, which is what we want for a
+   long-lived idp node:
+   ```sh
+   sudo exec-in-container headscale headscale preauthkeys create \
+     --user 1 --reusable --expiration 90d --tags tag:idp
+   ```
 2. Apply the headscale policy above in headplane.
 3. Deploy `serverone`.
 4. Verify the node `idp` appears in headscale, tagged `tag:idp`.

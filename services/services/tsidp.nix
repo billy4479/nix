@@ -49,8 +49,6 @@ in
         "10.0.1.6"
         "-server-url"
         "https://idp.internal.polpetta.online"
-        "-advertise-tags"
-        "tag:idp"
       ];
 
       environment = {
