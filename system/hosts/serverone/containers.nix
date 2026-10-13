@@ -27,10 +27,10 @@ in
     ../../../containers/frp.nix
 
     ../../../services/services/syncthing.nix
-    ../../../services/services/immich.nix
-    ../../../services/services/immich-db.nix
+    ../../../services/services/immich-server.nix
+    ../../../services/services/immich-database.nix
     ../../../services/services/immich-ml.nix
-    ../../../services/services/immich-valkey.nix
+    ../../../services/services/immich-redis.nix
     ../../../services/services/qbittorrent.nix
 
     ../../../services/services/radarr.nix

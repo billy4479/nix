@@ -13,7 +13,7 @@ in
   # The database depends on optimistic overcommit for its memory accounting.
   boot.kernel.sysctl."vm.overcommit_memory" = lib.mkIf (options ? nerdctl-containers) 1;
 
-  polpetta.services.immich-db = {
+  polpetta.services.immich-database = {
     container = {
       imageToPull = "ghcr.io/immich-app/postgres";
       id = 130;
@@ -33,5 +33,15 @@ in
         }
       ];
     };
+
+    # The listen port is implicit in the postgres image; declare it so it can
+    # be probed. local raw ports are never tunneled.
+    raw = [
+      {
+        port = 5432;
+        access = "local";
+        probe.enable = true;
+      }
+    ];
   };
 }

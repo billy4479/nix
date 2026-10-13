@@ -18,10 +18,11 @@
     # gate everything container- or host-specific on nerdctl-containers, so
     # this evaluation is inert beyond polpetta.services.
     ../../../services/services/syncthing.nix
-    ../../../services/services/immich.nix
-    ../../../services/services/immich-db.nix
+    ../../../containers/bind9
+    ../../../services/services/immich-server.nix
+    ../../../services/services/immich-database.nix
     ../../../services/services/immich-ml.nix
-    ../../../services/services/immich-valkey.nix
+    ../../../services/services/immich-redis.nix
     ../../../services/services/qbittorrent.nix
     ../../../services/services/radarr.nix
     ../../../services/services/jackett.nix

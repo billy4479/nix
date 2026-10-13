@@ -11,7 +11,7 @@ in
 {
   sops.secrets.immichEnv = lib.mkIf (options ? nerdctl-containers) { };
 
-  polpetta.services.immich = {
+  polpetta.services.immich-server = {
     container = {
       imageToBuild = pkgs.nix-snapshotter.buildImage {
         name = "immich";
@@ -78,8 +78,8 @@ in
         FFPROBE_PATH = lib.getExe' pkgs.jellyfin-ffmpeg "ffprobe";
       };
       dependsOn = [
-        "immich-valkey"
-        "immich-db"
+        "immich-redis"
+        "immich-database"
         "immich-ml"
       ];
     };
@@ -87,6 +87,9 @@ in
     web = {
       port = 2283;
       access = "tailnet";
+      # Historical domain: the UI is served under `immich`, not the container
+      # name.
+      domain = "immich.internal.polpetta.online";
       nginx.extraConfig = ''
         client_max_body_size 50000M;
         proxy_request_buffering off;

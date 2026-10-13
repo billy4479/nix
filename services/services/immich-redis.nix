@@ -3,10 +3,10 @@ let
   baseSSDDir = "/mnt/SSD/apps/immich";
 in
 {
-  polpetta.services.immich-valkey = {
+  polpetta.services.immich-redis = {
     container = {
       imageToBuild = pkgs.nix-snapshotter.buildImage {
-        name = "immich-valkey";
+        name = "immich-redis";
         tag = "nix-local";
 
         config = {
@@ -31,5 +31,15 @@ in
       ];
       id = 129;
     };
+
+    # The listen port is implicit in the valkey image; declare it so it can
+    # be probed. local raw ports are never tunneled.
+    raw = [
+      {
+        port = 6379;
+        access = "local";
+        probe.enable = true;
+      }
+    ];
   };
 }
