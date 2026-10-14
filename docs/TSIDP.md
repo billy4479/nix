@@ -336,13 +336,10 @@ of the three Immich accounts:
 Do the binding **before** anyone's first OAuth login (auto-register is
 on and would mint duplicates otherwise).
 
-   # bind: sub (userid:<n>) -> existing account
-   sudo exec-in-container immich-database psql -U postgres -d immich -c \
-     "UPDATE \"user\" SET \"oauthId\" = 'userid:1' WHERE email = 'jack.doe@example.com';"
-   sudo exec-in-container immich-database psql -U postgres -d immich -c \
-     "UPDATE \"user\" SET \"oauthId\" = 'userid:2' WHERE email = 'alice@example.com';"
-   sudo exec-in-container immich-database psql -U postgres -d immich -c \
-     "UPDATE \"user\" SET \"oauthId\" = 'userid:3' WHERE email = 'bob@example.com';"
+Scripted alternative (only if you ever need to rebind without logging
+in as the user): SQL in the `immich-database` container (table
+`"user"`, column `"oauthId"`; Immich reads it on each login, no restart
+needed). On serverone, **backup first**, then update:
 
 ```sh
 ssh serverone
@@ -527,7 +524,11 @@ Fix: patch tsidp in `nix-packages` (where `headscale-proxy.patch` already
 lives) to accept secret-less clients — clients registered **without** a
 secret — when the authorization request carried a PKCE S256 challenge. A
 client that holds a registered secret is untouched: it keeps the upstream
-path and must keep presenting its secret. The change landed as
+path and must keep presenting its secret. Making a client public is an
+explicit **registration** choice: DCR (RFC 7591, `POST /register`) stores
+the client without a secret when the request asks for
+`token_endpoint_auth_method: "none"`, while the admin UI keeps minting
+confidential (secret-carrying) clients only. The change landed as
 `tsidp/public-clients.patch`, wired into `tsidp/default.nix` after
 `headscale-proxy.patch`:
 
@@ -535,19 +536,22 @@ path and must keep presenting its secret. The change landed as
 diff --git a/server/token.go b/server/token.go
 --- a/server/token.go
 +++ b/server/token.go
-@@ -910,6 +910,27 @@ func (ar *AuthRequest) allowRelyingParty(r *http.Request) (int, error) {
+@@ -910,6 +910,30 @@ func (ar *AuthRequest) allowRelyingParty(r *http.Request) (int, error) {
  		clientSecret = r.FormValue("client_secret")
  	}
  
-+	// Public clients send no client_secret (e.g. the OpenCloud web client is
-+	// a public PKCE client registered without a secret). Authenticate them
-+	// by client_id alone, but only when the registered client has no secret
-+	// of its own: a client that holds a registered secret must keep
-+	// presenting it and falls through to the credential check below. The
-+	// public path also requires the authorization request to have carried a
-+	// PKCE S256 challenge; the code_verifier is then enforced by
-+	// handleAuthorizationCodeGrant before any token is issued.
-+	if clientSecret == "" && ar.FunnelRP.Secret == "" {
++	// Public clients are registered with token_endpoint_auth_method "none"
++	// and therefore hold no secret (e.g. the OpenCloud web client). Take the
++	// public path whenever the registered client has no secret, whether or
++	// not the request carries a stray client_secret: a client that was told
++	// not to authenticate has no secret to check against, and requiring one
++	// would break it. They are authenticated by client_id alone, and the
++	// public path requires the authorization request to have carried a PKCE
++	// S256 challenge; the code_verifier is then enforced by
++	// handleAuthorizationCodeGrant before any token is issued. A client that
++	// holds a registered secret must keep presenting it and falls through to
++	// the credential check below.
++	if ar.FunnelRP.Secret == "" {
 +		if clientID == "" {
 +			return http.StatusUnauthorized, fmt.Errorf("tsidp: missing client credentials")
 +		}
@@ -565,26 +569,28 @@ diff --git a/server/token.go b/server/token.go
  	}
 ```
 
-(The patch also adds `server/publicclients_test.go`, not shown: unit tests
-for `allowRelyingParty`, full `/token` exchanges for secret-less clients —
-success, missing/wrong `code_verifier`, no-PKCE rejection — and
-refresh-token grants, which public clients must be able to run secret-less
-after a PKCE login. Refinements over the earlier draft: constant-time
-`client_id` comparison, distinct error codes — `400 client_id mismatch`,
-`401 public clients must use PKCE S256` — while an empty `client_id` still
-returns the original `401 missing client credentials`, and a tightening:
-the public path only applies when the registered client has **no** secret
-of its own — a client with a registered secret cannot drop it and gets the
-original `401` when it sends none.) Then:
+(The patch also adds `server/publicclients_test.go` and touches
+`server/clients.go` + `server/oauth-metadata.go`, not shown: unit tests for
+`allowRelyingParty` — including a stray-secret case — full `/token`
+exchanges for secret-less clients (success, missing/wrong `code_verifier`,
+no-PKCE rejection) and refresh-token grants, which public clients must be
+able to run secret-less after a PKCE login; DCR registration tests — `none`
+stores a client with an **empty** secret and the RFC 7591 response carries
+no `client_secret` at all, while `client_secret_post` and the default
+`client_secret_basic` still generate one — and a check that discovery
+advertises `none` in `token_endpoint_auth_methods_supported`. Error
+handling: constant-time `client_id` comparison, distinct codes —
+`400 client_id mismatch`, `401 public clients must use PKCE S256` — while
+an empty `client_id` still returns the original `401 missing client
+credentials`. The public path applies exactly when the registered client
+has **no** secret: a client holding a registered secret cannot drop it
+(original `401` when it sends none), and a secret-less client that sends a
+stray `client_secret` is ignored and still served by the public path.)
+Then:
 commit + push `nix-packages`, and in this flake run
-`nix flake lock --update-input myPackages`. Consequence of the tightening:
-the OpenCloud client must be registered **without** a secret. tsidp always
-generates one at registration (admin UI and dynamic registration alike) —
-so after registering, clear the `Secret` field by hand-editing
-`oidc-funnel-clients.json` in tsidp's state dir
-(`/mnt/SSD/apps/tsidp/lib` on serverone) **while tsidp is stopped** (it
-rewrites the file from memory on changes). Nothing else consumes the
-secret. PKCE remains mandatory:
+`nix flake lock --update-input myPackages`. No hand-editing of
+`oidc-funnel-clients.json` is involved — the secret-less state is produced
+by the registration itself (below). PKCE remains mandatory:
 the `code_verifier` check in `handleAuthorizationCodeGrant` is untouched.
 
 #### Client registration via DCR (not the admin UI)
@@ -595,15 +601,30 @@ client. Register it with the RFC 7591 dynamic registration endpoint, which
 honours `token_endpoint_auth_method: "none"` (post-patch) and stores the
 client with an empty secret.
 
-- Name: `opencloud`
-- Redirect URIs (tsidp matches **exactly**, one per line — the web
-  frontend builds both from the router base, verified in the web source):
-  - `https://opencloud.polpetta.online/oidc-callback.html`
-  - `https://opencloud.polpetta.online/oidc-silent-redirect.html`
-- Save: tsidp shows client id + secret **once**. Record the secret
-  somewhere safe (unused by OpenCloud), then clear it from the registered
-  client — the tightened patch requires a secret-less client (procedure
-  above). Append the client id to the sops env file:
+Run the call from a **tailnet source** — e.g. on serverone itself: DCR is
+gated by jack's headscale grant (`allow_dcr`), which is evaluated from the
+WhoIs of the connecting client, so a non-tailnet source gets nothing:
+
+```sh
+ssh serverone
+curl -s -X POST https://idp.internal.polpetta.online/register \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "client_name": "opencloud",
+    "redirect_uris": [
+      "https://opencloud.polpetta.online/oidc-callback.html",
+      "https://opencloud.polpetta.online/oidc-silent-redirect.html"
+    ],
+    "token_endpoint_auth_method": "none",
+    "grant_types": ["authorization_code", "refresh_token"],
+    "response_types": ["code"],
+    "scope": "openid profile email"
+  }'
+```
+
+The `201` response echoes the client metadata — `token_endpoint_auth_method`
+is `"none"` and there is **no `client_secret` field**: nothing to save
+anywhere. Record the `client_id` in the sops env file:
 
   ```sh
   # in /workspace/code/nix-secrets, append to the opencloud-env plaintext:
@@ -791,12 +812,10 @@ OpenCloud-specific caveats worth knowing:
   DisplayName, e.g. `Jack`; `PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME=name`):
   the proxy re-applies `displayName`/`mail` from claims on every login
   (`UpdateUserIfNeeded`), so editing the display name in OpenCloud web is
-  undone at the next login (jack's *redacted* becomes `Jack`,
-  Plan A too). Refinement (optional): set proper display names on the
-  headscale users and switch
-  `PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME` to `name` — **only safe if
-  every headscale user has a non-empty DisplayName**, otherwise their
-  login 500s (missing claim).
+  undone at the next login — set proper display names on the headscale
+  users to control this. The claim is always non-empty: headscale falls
+  back (DisplayName → email → username → id) when building the WhoIs
+  profile, so provisioning cannot 500 on a missing claim.
 - headscale usernames are the join key: renaming a headscale user later
   mints a *new* OpenCloud account on next login (the old one stays).
   Renaming an OpenCloud account (graph) has the mirror effect. A rename
@@ -877,6 +896,80 @@ Caveat: logout (`/logout`) clears ff's session cookie, but tsidp
 authenticates via tailnet WhoIs with no interaction, so the next page load
 silently logs the user back in. With a single authorized user this is
 harmless — there is no meaningful "logged out" state to protect.
+
+### giuoco-del-divertimento (as deployed)
+
+giuoco-del-divertimento (`https://giuoco.polpetta.online`, the drinking-game
+card deck) uses the same hand-rolled flow as ff — authorization code + PKCE
+**S256**, `client_secret_post`, scopes `openid profile email`, claims read
+from `/userinfo` with the opaque access token (`src/lib/server/{oidc,session}.ts`
+in the app repo, duplicated rather than shared).
+
+> **DEPLOY ORDERING (mandatory).** This flake pins the app through the
+> `giuoco-del-divertimento` input, and the pin in `flake.lock` can lag the
+> app repo. Deploying this service before pushing the updated app and
+> bumping the input publishes `giuoco.polpetta.online` — a **public**
+> vhost since the giuoco commit of this series — with **ungated anonymous
+> card adds**: exactly the opposite of that commit's security claim.
+> Required order:
+>
+> 1. push the app repo,
+> 2. `nix flake lock --update-input giuoco-del-divertimento`,
+> 3. deploy.
+>
+> Bump the `ff` and `myPackages` inputs in the same batch. Those two fail
+> safe (`ff` stays tailnet-only; an unpatched tsidp only breaks OpenCloud
+> logins, nothing is exposed), but the bumps still belong in the same
+> deploy batch — `myPackages` because OpenCloud login needs the patched
+> tsidp.
+
+Unlike every other relying party here, giuoco is **intentionally public**
+(`web.access = "public"`, short domain set via `web.domain`): anyone on the
+internet can play and read cards, and the login exists only to authorize
+writes:
+
+| Action                          | Who                        |
+| ------------------------------- | -------------------------- |
+| Play, read cards (`GET`, torneo next) | everyone, no login   |
+| Add a card (`POST /api/items`)  | any successful tsidp login |
+
+There is **no username restriction**: any tailnet member who completes the
+flow gets a session and may add cards. External users simply cannot complete
+the login (tsidp is unreachable outside the tailnet), so they stay read-only
+by construction. Enforcement lives in the app (`src/lib/server/guard.ts` +
+`src/hooks.server.ts`: writes without a session get 401 on `/api/*`, a
+redirect to `/login` elsewhere).
+
+Sessions are HMAC-SHA256-signed cookies (`giuoco_session`, 7 days,
+HttpOnly / Secure / SameSite=Lax) over `{sub, username, exp}`; the flow
+state lives in `giuoco_oauth` (10 minutes). Post-login redirects accept
+only local paths.
+
+Client registration in the tsidp admin UI
+(`https://idp.internal.polpetta.online`):
+
+- Name: `giuoco`
+- Redirect URI: `https://giuoco.polpetta.online/login/callback`
+- Save: tsidp shows client id + secret **once** — both go into sops:
+
+  ```sh
+  # in /workspace/code/nix-secrets, add the giuoco plaintext keys:
+  giuoco/oauth-client-id=<generated client id>
+  giuoco/oauth-client-secret=<generated client secret>
+  # session secret: any long random string, e.g.
+  #   openssl rand -base64 32
+  giuoco/session-secret=<long random string>
+  ```
+
+  (`services/services/giuoco-del-divertimento.nix` renders them into a
+  `giuoco-env` template with `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` /
+  `SESSION_SECRET` / `OIDC_ISSUER` and restarts
+  `nerdctl-giuoco-del-divertimento.service` on rotation.)
+
+Note: before the public switch the app lived at
+`https://giuoco-del-divertimento.internal.polpetta.online`; that hostname is
+gone — it is no longer in the generated nginx map, so requests to it hit the
+default server and are closed with 444. Use `https://giuoco.polpetta.online`.
 
 ## Known limitations
 
