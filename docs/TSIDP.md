@@ -836,9 +836,10 @@ library, just `node:crypto` and `fetch` in `src/lib/server/{oidc,session}.ts`:
 
 **Authorization is enforced by the app, not the IdP**: every tailnet member
 can authenticate at tsidp, but ff only accepts the user with headscale
-username `jack` (`ALLOWED_USERNAME` in `src/lib/server/oidc.ts`;
-the `username` it reads from `/userinfo` is the short headscale name,
-see the claims section); anybody
+username `jack` (the `ALLOWED_USERNAME` environment variable, set in
+`services/services/ff.nix` and **required** — the app fails closed
+without it; the `username` it reads from `/userinfo` is the short
+headscale name, see the claims section); anybody
 else who completes the flow gets a styled 403 denial page. The check runs
 in the login callback and again in `src/hooks.server.ts` (defense in depth
 for sessions minted before a policy change).
@@ -876,62 +877,6 @@ Caveat: logout (`/logout`) clears ff's session cookie, but tsidp
 authenticates via tailnet WhoIs with no interaction, so the next page load
 silently logs the user back in. With a single authorized user this is
 harmless — there is no meaningful "logged out" state to protect.
-
-### giuoco-del-divertimento (as deployed)
-
-giuoco-del-divertimento (`https://giuoco.polpetta.online`, the drinking-game
-card deck) uses the same hand-rolled flow as ff — authorization code + PKCE
-**S256**, `client_secret_post`, scopes `openid profile email`, claims read
-from `/userinfo` with the opaque access token (`src/lib/server/{oidc,session}.ts`
-in the app repo, duplicated rather than shared).
-
-Unlike every other relying party here, giuoco is **intentionally public**
-(`web.access = "public"`, short domain set via `web.domain`): anyone on the
-internet can play and read cards, and the login exists only to authorize
-writes:
-
-| Action                          | Who                        |
-| ------------------------------- | -------------------------- |
-| Play, read cards (`GET`, torneo next) | everyone, no login   |
-| Add a card (`POST /api/items`)  | any successful tsidp login |
-
-There is **no username restriction**: any tailnet member who completes the
-flow gets a session and may add cards. External users simply cannot complete
-the login (tsidp is unreachable outside the tailnet), so they stay read-only
-by construction. Enforcement lives in the app (`src/lib/server/guard.ts` +
-`src/hooks.server.ts`: writes without a session get 401 on `/api/*`, a
-redirect to `/login` elsewhere).
-
-Sessions are HMAC-SHA256-signed cookies (`giuoco_session`, 7 days,
-HttpOnly / Secure / SameSite=Lax) over `{sub, username, exp}`; the flow
-state lives in `giuoco_oauth` (10 minutes). Post-login redirects accept
-only local paths.
-
-Client registration in the tsidp admin UI
-(`https://idp.internal.polpetta.online`):
-
-- Name: `giuoco`
-- Redirect URI: `https://giuoco.polpetta.online/login/callback`
-- Save: tsidp shows client id + secret **once** — both go into sops:
-
-  ```sh
-  # in /workspace/code/nix-secrets, add the giuoco plaintext keys:
-  giuoco/oauth-client-id=<generated client id>
-  giuoco/oauth-client-secret=<generated client secret>
-  # session secret: any long random string, e.g.
-  #   openssl rand -base64 32
-  giuoco/session-secret=<long random string>
-  ```
-
-  (`services/services/giuoco-del-divertimento.nix` renders them into a
-  `giuoco-env` template with `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` /
-  `SESSION_SECRET` / `OIDC_ISSUER` and restarts
-  `nerdctl-giuoco-del-divertimento.service` on rotation.)
-
-Note: before the public switch the app lived at
-`https://giuoco-del-divertimento.internal.polpetta.online`; that hostname is
-gone — it is no longer in the generated nginx map, so requests to it hit the
-default server and are closed with 444. Use `https://giuoco.polpetta.online`.
 
 ## Known limitations
 
