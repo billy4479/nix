@@ -303,6 +303,111 @@ Verification after enabling OAuth:
   create forms).
 - Password login must keep working for all three existing users.
 
+### Jellyfin (as deployed)
+
+Jellyfin 12.1 (the `pkgs.jellyfin` in this flake's pin, container id 10) gets
+the SSO plugin (**SSO-Auth** by 9p4, release `4.0.0.4`) **declaratively**:
+`services/services/jellyfin.nix` builds the release zip into a nix-store
+layout of `plugins/SSO-Auth/4.0.0.4/{SSO-Auth,Duende.IdentityModel,Duende.IdentityModel.OidcClient}.dll`
+and read-only bind-mounts it onto `/config/plugins/SSO-Auth` (a nested ro
+bind inside the rw `/config` volume). Jellyfin 12 auto-loads manifest-free
+plugin folders (it scans `plugins/*/` recursively for `*.dll` and synthesizes
+an `Active` manifest), so nothing has to be installed or updated through the
+dashboard — bump the version in `jellyfin.nix` instead. The plugin's provider
+configuration (which contains the client secret) lives in Jellyfin's own
+config volume (`/config/plugins/configurations/SSO-Auth.xml`) and is done in
+the admin UI, below.
+
+Client registration in the tsidp admin UI
+(`https://idp.internal.polpetta.online`):
+
+- Name: `jellyfin`
+- Redirect URI (must match exactly — one line, no trailing slash; the plugin
+  builds it from the request's scheme/host behind nginx):
+  `https://jellyfin.internal.polpetta.online/sso/OID/r/tsidp`
+- Auth method: the plugin's OIDC client sends the secret as a **token-endpoint
+  POST body parameter** (`client_secret_post`, the OidcClient default) —
+  supported by tsidp.
+- PKCE: the plugin always uses S256, tsidp supports it.
+
+Login flow (all routes behind nginx, tailnet ACL): the web UI start URL is
+`https://jellyfin.internal.polpetta.online/sso/OID/start/tsidp`, the IdP
+bounces back to the redirect URI above, and the plugin's page completes the
+login client-side (browser or any client with Quick Connect support).
+
+Admin UI — Dashboard → Plugins → **SSO Authentication** → OpenID tab, add a
+provider. Every field, exact values (defaults are fine unless noted):
+
+| Field | Value |
+| --- | --- |
+| Name of OpenID Provider | `tsidp` (this is the `{provider}` in the redirect URI above — they must agree) |
+| OpenID Endpoint | `https://idp.internal.polpetta.online/.well-known/openid-configuration` |
+| OpenID Client ID / OpenID client secret | from the tsidp registration (secret shown once) |
+| Enabled | **on** |
+| Enable Authorization by Plugin | **off** — with this off the plugin never touches permissions: `jack` stays admin, existing users keep their access, and auto-created users keep Jellyfin's defaults (non-admin, all libraries, playback enabled). If it were on, every SSO login would demote users unless roles match, and tsidp has no roles to offer |
+| Enable All Folders / Role-Based Folder Access | off (inert while RBAC is off) |
+| Roles / AdminRoles / Role Claim | empty — empty `Roles` is what lets every tailnet identity pass the login gate |
+| Request Additional Scopes | `email` (one line; the field is required — the plugin always sends `openid profile` itself, which covers every claim we use) |
+| Set default username claim | `preferred_username` (leave empty — this is the default; it is the headscale username in the ID token) |
+| Set default Provider / avatar url format | empty |
+| Do Not Load Profile Information | off |
+| Disable HTTPS Discovery / Disable Pushed Authorization / Do Not Validate Endpoints / Issuer Name (all "Insecure") | off |
+| Scheme Override / Port Override | empty (nginx sends `Host` and `X-Forwarded-Proto`; if the IdP ever receives an `http://` redirect URI, set Scheme Override to `https`) |
+
+Save the provider. The plugin does **not** add a button to the login page by
+itself; to get one, paste the upstream snippet (Dashboard → General →
+Branding → *Login disclaimer*):
+
+```html
+<form action="https://jellyfin.internal.polpetta.online/sso/OID/start/tsidp">
+  <button class="raised block emby-button button-submit">Sign in with SSO</button>
+</form>
+```
+
+Order-sensitive setup steps:
+
+1. **Before any SSO login**: Dashboard → Users → rename `billy` → `jack`.
+   The plugin matches identities to accounts **by username** (first by its
+   stored canonical link, then by username, then creates a new user), so
+   after the rename the headscale identity `jack` lands in the existing
+   admin account. If the order is wrong, the first SSO login of `jack`
+   silently creates a fresh **non-admin** `jack` and admin access stays
+   stranded in `billy`.
+2. Deploy `serverone`, confirm **SSO-Auth** shows as installed in
+   Dashboard → Plugins (loaded from the read-only mount, no catalog entry).
+3. Register the tsidp client (above), configure the provider in the plugin
+   page (table above), Save.
+4. Verify the mapping by logging in through SSO:
+   - headscale `jack` and `carol` must land in the **existing** Jellyfin
+     accounts (jack = admin; check Dashboard → Users for no duplicates);
+   - `alice` and `bob` are auto-created on first login with standard
+     permissions (non-admin, all libraries, playback on);
+   - any other tailnet member can log in the same way.
+5. Confirm the smart TV (`tv` user) still logs in from the LAN with its
+   password / Quick Connect — **local and password auth stay fully enabled**;
+   the plugin has no switch that disables them (each user keeps its own
+   authentication provider; SSO users created by the plugin are pinned to it,
+   everyone else is untouched). `tv` never uses SSO.
+
+tsidp claim caveats that do **not** bite here (worth knowing):
+
+- The `email` claim is the headscale LoginName (`jack@`), not a routable
+  address — but this plugin never reads `email` (only the username claim and,
+  if configured, the role claim and avatar format), so it is harmless.
+- tsidp has no `oid` or `email_verified` claim and the plugin requires
+  neither.
+- If `preferred_username` were ever missing from the ID token (e.g. the
+  registration lost the `profile` scope), the plugin silently falls back to
+  `sub` and would create users named after headscale's numeric ids
+  (`1`, `2`, …). If accounts with numeric names appear, that is why.
+- Existing users can also self-link a different IdP identity at
+  `/SSOViews/linking`; not needed for this setup, where usernames already
+  match.
+
+Break-glass: rename the provider or flip its `Enabled` checkbox off in the
+plugin page (the config file `/config/plugins/configurations/SSO-Auth.xml`
+is on the rw volume), and every user falls back to local login.
+
 ## Known limitations
 
 - **STS disabled**: token exchange has no use here (no funnel/SaaS
