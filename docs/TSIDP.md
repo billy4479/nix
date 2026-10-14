@@ -15,7 +15,7 @@ impossible by design.
 ## Architecture
 
 The container (id 25, IP `10.0.1.25`) runs a **patched** `tsidp` from
-`myPackages` (the `tsidp` branch of `nix-packages`). The patch adds three
+`myPackages` (the `tsidp` branch of `nix-packages`). The patches add three
 flags, each needed because tsidp assumes it sits directly on the tailnet with
 Tailscale-provisioned TLS, which headscale cannot do:
 
@@ -112,6 +112,87 @@ Discovery is not usable by all RPs (Grafana needs explicit URLs), so:
 - Scopes: `openid profile email`
 - PKCE: supported
 
+### Claims, as validated live (2026-10-14)
+
+What tsidp actually puts in its tokens in this deployment:
+
+- `sub` = `userid:<n>`, where `<n>` is the headscale numeric user id
+  (jack `1`, alice `2`, bob `3`, carol `4`) — not a bare number.
+- `email` = headscale's **Email field, verbatim** (a real, routable
+  address such as `jack@example.com`): headscale sets the WhoIs
+  LoginName to the user's Email when one exists, and tsidp passes it
+  through (its `@github`/`@passkey` rewrite never fires here). Same
+  value in the ID token and `/userinfo`.
+- `username` (in `/userinfo`) and `preferred_username` (in the ID
+  token, only granted with the `profile` scope) = the **short headscale
+  username** (`jack`, `alice`, …), derived by the patched tsidp from the
+  WhoIs **display name**: lowercased, with spaces replaced by `_` —
+  `Jack` → `jack`, `Mary Jane` → `mary_jane`. (WhoIs carries no short
+  username, only the email-shaped LoginName and the display name; the
+  derivation is pure WhoIs — no headscale API, no API key, no network.)
+  A display name that is empty **or is an email address** (headscale
+  falls back to the user's email when no display name is set, and an
+  email local part is not a username) yields no username: the claim
+  falls back to the pre-`@` part of the LoginName, and stays omitted
+  when the LoginName has no `@` — upstream's original semantics.
+- `name` (in `/userinfo`) = headscale's DisplayName (e.g. `Jack`).
+- `picture`, `key`, `nid`, `node`, `addresses`, `tailnet`, `uid`:
+  tailscale claims, unchanged.
+
+Live ID token payload (claims-audit client; `<…>` elided):
+
+```json
+{
+  "iss": "https://idp.internal.polpetta.online",
+  "sub": "userid:1",
+  "aud": ["<client id>"],
+  "exp": <unix>, "iat": <unix>, "nbf": <unix>,
+  "jti": "<random hex>",
+  "nonce": "<nonce>",
+  "email": "jack@example.com",
+  "preferred_username": "jack",
+  "grafana_role": "Admin",
+  "key": "<node public key>",
+  "nid": 10,
+  "node": "serverone.devices.polpetta.online.",
+  "addresses": ["<tailnet ip>/32"],
+  "tailnet": "devices.polpetta.online.",
+  "uid": 1
+}
+```
+
+Live `/userinfo` (same session):
+
+```json
+{
+  "email": "jack@example.com",
+  "grafana_role": "Admin",
+  "name": "Jack",
+  "sub": "userid:1",
+  "username": "jack"
+}
+```
+
+`grafana_role` comes from the headscale grant's `extraClaims` (see the
+policy section). The short `preferred_username`/`username` values are
+post-patch: before `displayname-username.patch` landed they were the
+email local part (`jack`).
+
+> **REQUIRED INVARIANT — display names are the username source.** Every
+> headscale user must have a **display name whose normalized form
+> (lowercase, spaces → `_`) equals their headscale username**: `Jack`
+> for `jack`, `Mary Jane` for `mary_jane`. tsidp cannot verify this — a
+> violation errors nowhere and silently degrades to the email-prefix
+> derivation (`jack`), which then **mismatches downstream**:
+> OpenCloud resolves accounts by the `username` claim, Jellyfin matches
+> users by `preferred_username`, and ff compares it against
+> `ALLOWED_USERNAME`. Set the display name **before** a user's first
+> login, and keep the invariant across renames: rename the username and
+> the display name together, or the account mapping moves.
+
+Housekeeping: the throwaway DCR client `claims-audit-test` registered
+in the admin UI during this validation can be deleted.
+
 ### Grafana (as deployed)
 
 ```ini
@@ -200,14 +281,14 @@ Client registration in the tsidp admin UI
   - `app.immich:///oauth-callback` — mobile app only (not used in this
     tailnet-only deployment)
 
-Identity mapping, and why Immich's email matching cannot be used:
-tsidp's `sub` is the headscale **numeric user id as a string** (jack
-`1`, alice `2`, bob `3`, carol `4`), while `email` is the headscale
-LoginName passed through (`jack@`) — not a routable address. Immich
-resolves an OAuth login by `user.oauthId` **first**, then by email,
-then auto-registers. Without a pre-set `oauthId`, the first OIDC login
-of alice/bob/jack would auto-register a **duplicate** account with
-email `alice@` etc. Bind existing accounts *before* enabling OAuth.
+Identity mapping, and why binding beats email matching: tsidp's `sub`
+is `userid:<n>` — the headscale numeric user id (jack `userid:1`,
+alice `userid:2`, bob `userid:3`, carol `userid:4`; see the claims
+section above) — while `email` is the headscale Email field verbatim
+(a real address). Immich resolves an OAuth login by `user.oauthId`
+**first**, then by email, then auto-registers. Bind existing accounts
+*before* enabling OAuth so the explicit `oauthId` is authoritative and
+no login can silently create a duplicate.
 
 Admin UI (Administration → Settings → Authentication → OAuth), values
 verified against the 3.2.2 source; defaults are fine unless noted:
@@ -255,10 +336,13 @@ of the three Immich accounts:
 Do the binding **before** anyone's first OAuth login (auto-register is
 on and would mint duplicates otherwise).
 
-Scripted alternative (only if you ever need to rebind without logging
-in as the user): SQL in the `immich-database` container (table
-`"user"`, column `"oauthId"`; Immich reads it on each login, no restart
-needed). On serverone, **backup first**, then update:
+   # bind: sub (userid:<n>) -> existing account
+   sudo exec-in-container immich-database psql -U postgres -d immich -c \
+     "UPDATE \"user\" SET \"oauthId\" = 'userid:1' WHERE email = 'jack.doe@example.com';"
+   sudo exec-in-container immich-database psql -U postgres -d immich -c \
+     "UPDATE \"user\" SET \"oauthId\" = 'userid:2' WHERE email = 'alice@example.com';"
+   sudo exec-in-container immich-database psql -U postgres -d immich -c \
+     "UPDATE \"user\" SET \"oauthId\" = 'userid:3' WHERE email = 'bob@example.com';"
 
 ```sh
 ssh serverone
@@ -294,13 +378,14 @@ Verification after enabling OAuth:
     https://immich.internal.polpetta.online/api/admin/users \
     | jq -r '.[] | [.name, .email, .oauthId] | @tsv'
   ```
-  Jack/Alice/Bob must show oauthId `1`/`2`/`3`, not new users.
+  Jack/Alice/Bob must show oauthId `userid:1`/`userid:2`/`userid:3`, not
+  new users.
 - Log in through the *Login with OAuth* button: Jack must land in his
   existing admin account (same assets and API keys, no second "jack"
-  in the user list); carol is auto-registered on first login with
-  email `carol@` — Immich accepts non-routable emails on
-  auto-register (format validation only exists on the signup/admin
-  create forms).
+  in the user list); carol is auto-registered on first login (email =
+  the headscale Email field, which Immich's auto-register accepts as
+  is — the strict email format validation only exists on the
+  signup/admin create forms).
 - Password login must keep working for all three existing users.
 
 ### Jellyfin (as deployed)
@@ -368,11 +453,12 @@ Order-sensitive setup steps:
 
 1. **Before any SSO login**: Dashboard → Users → rename `billy` → `jack`.
    The plugin matches identities to accounts **by username** (first by its
-   stored canonical link, then by username, then creates a new user), so
-   after the rename the headscale identity `jack` lands in the existing
-   admin account. If the order is wrong, the first SSO login of `jack`
-   silently creates a fresh **non-admin** `jack` and admin access stays
-   stranded in `billy`.
+   stored canonical link, then by username, then creates a new user), and
+   the username it sees is the ID token's `preferred_username` — the short
+   headscale name `jack` (see the claims section). After the rename the
+   headscale identity lands in the existing admin account. If the order is
+   wrong, the first SSO login of `jack` silently creates a fresh
+   **non-admin** `jack` and admin access stays stranded in `billy`.
 2. Deploy `serverone`, confirm **SSO-Auth** shows as installed in
    Dashboard → Plugins (loaded from the read-only mount, no catalog entry).
 3. Register the tsidp client (above), configure the provider in the plugin
@@ -391,15 +477,17 @@ Order-sensitive setup steps:
 
 tsidp claim caveats that do **not** bite here (worth knowing):
 
-- The `email` claim is the headscale LoginName (`jack@`), not a routable
-  address — but this plugin never reads `email` (only the username claim and,
-  if configured, the role claim and avatar format), so it is harmless.
+- The `email` claim is the headscale Email field verbatim (a real,
+  routable address) — this plugin never reads `email` (only the username
+  claim and, if configured, the role claim and avatar format), so it
+  does not matter either way.
 - tsidp has no `oid` or `email_verified` claim and the plugin requires
   neither.
 - If `preferred_username` were ever missing from the ID token (e.g. the
-  registration lost the `profile` scope), the plugin silently falls back to
-  `sub` and would create users named after headscale's numeric ids
-  (`1`, `2`, …). If accounts with numeric names appear, that is why.
+  registration lost the `profile` scope), the plugin silently falls back
+  to `sub` and would create users named after headscale's user ids
+  (`userid:1`, `userid:2`, …). If accounts with names like that appear,
+  that is why.
 - Existing users can also self-link a different IdP identity at
   `/SSOViews/linking`; not needed for this setup, where usernames already
   match.
@@ -439,11 +527,7 @@ Fix: patch tsidp in `nix-packages` (where `headscale-proxy.patch` already
 lives) to accept secret-less clients — clients registered **without** a
 secret — when the authorization request carried a PKCE S256 challenge. A
 client that holds a registered secret is untouched: it keeps the upstream
-path and must keep presenting its secret. Making a client public is an
-explicit **registration** choice: DCR (RFC 7591, `POST /register`) stores
-the client without a secret when the request asks for
-`token_endpoint_auth_method: "none"`, while the admin UI keeps minting
-confidential (secret-carrying) clients only. The change landed as
+path and must keep presenting its secret. The change landed as
 `tsidp/public-clients.patch`, wired into `tsidp/default.nix` after
 `headscale-proxy.patch`:
 
@@ -451,24 +535,27 @@ confidential (secret-carrying) clients only. The change landed as
 diff --git a/server/token.go b/server/token.go
 --- a/server/token.go
 +++ b/server/token.go
-@@ -910,6 +910,30 @@ func (ar *AuthRequest) allowRelyingParty(r *http.Request) (int, error) {
+@@ -910,6 +910,27 @@ func (ar *AuthRequest) allowRelyingParty(r *http.Request) (int, error) {
  		clientSecret = r.FormValue("client_secret")
  	}
  
-+	// Public clients are registered with token_endpoint_auth_method "none"
-+	// and therefore hold no secret (e.g. the OpenCloud web client). Take the
-+	// public path whenever the registered client has no secret, whether or
-+	// not the request carries a stray client_secret: a client that was told
-+	// not to authenticate has no secret to check against, and requiring one
-+	// would break it. They are authenticated by client_id alone, and the
-+	// public path requires the authorization request to have carried a PKCE
-+	// S256 challenge; the code_verifier is then enforced by
-+	// handleAuthorizationCodeGrant before any token is issued. A client that
-+	// holds a registered secret must keep presenting it and falls through to
-+	// the credential check below.
-+	if ar.FunnelRP.Secret == "" {
++	// Public clients send no client_secret (e.g. the OpenCloud web client is
++	// a public PKCE client registered without a secret). Authenticate them
++	// by client_id alone, but only when the registered client has no secret
++	// of its own: a client that holds a registered secret must keep
++	// presenting it and falls through to the credential check below. The
++	// public path also requires the authorization request to have carried a
++	// PKCE S256 challenge; the code_verifier is then enforced by
++	// handleAuthorizationCodeGrant before any token is issued.
++	if clientSecret == "" && ar.FunnelRP.Secret == "" {
 +		if clientID == "" {
 +			return http.StatusUnauthorized, fmt.Errorf("tsidp: missing client credentials")
++		}
++		if subtle.ConstantTimeCompare([]byte(clientID), []byte(ar.FunnelRP.ID)) != 1 {
++			return http.StatusBadRequest, fmt.Errorf("tsidp: client_id mismatch")
++		}
++		if ar.CodeChallenge == "" || ar.CodeChallengeMethod != "S256" {
++			return http.StatusUnauthorized, fmt.Errorf("tsidp: public clients must use PKCE S256")
 +		}
 +		return http.StatusOK, nil
 +	}
@@ -478,28 +565,26 @@ diff --git a/server/token.go b/server/token.go
  	}
 ```
 
-(The patch also adds `server/publicclients_test.go` and touches
-`server/clients.go` + `server/oauth-metadata.go`, not shown: unit tests for
-`allowRelyingParty` — including a stray-secret case — full `/token`
-exchanges for secret-less clients (success, missing/wrong `code_verifier`,
-no-PKCE rejection) and refresh-token grants, which public clients must be
-able to run secret-less after a PKCE login; DCR registration tests — `none`
-stores a client with an **empty** secret and the RFC 7591 response carries
-no `client_secret` at all, while `client_secret_post` and the default
-`client_secret_basic` still generate one — and a check that discovery
-advertises `none` in `token_endpoint_auth_methods_supported`. Error
-handling: constant-time `client_id` comparison, distinct codes —
-`400 client_id mismatch`, `401 public clients must use PKCE S256` — while
-an empty `client_id` still returns the original `401 missing client
-credentials`. The public path applies exactly when the registered client
-has **no** secret: a client holding a registered secret cannot drop it
-(original `401` when it sends none), and a secret-less client that sends a
-stray `client_secret` is ignored and still served by the public path.)
-Then:
+(The patch also adds `server/publicclients_test.go`, not shown: unit tests
+for `allowRelyingParty`, full `/token` exchanges for secret-less clients —
+success, missing/wrong `code_verifier`, no-PKCE rejection — and
+refresh-token grants, which public clients must be able to run secret-less
+after a PKCE login. Refinements over the earlier draft: constant-time
+`client_id` comparison, distinct error codes — `400 client_id mismatch`,
+`401 public clients must use PKCE S256` — while an empty `client_id` still
+returns the original `401 missing client credentials`, and a tightening:
+the public path only applies when the registered client has **no** secret
+of its own — a client with a registered secret cannot drop it and gets the
+original `401` when it sends none.) Then:
 commit + push `nix-packages`, and in this flake run
-`nix flake lock --update-input myPackages`. No hand-editing of
-`oidc-funnel-clients.json` is involved — the secret-less state is produced
-by the registration itself (below). PKCE remains mandatory:
+`nix flake lock --update-input myPackages`. Consequence of the tightening:
+the OpenCloud client must be registered **without** a secret. tsidp always
+generates one at registration (admin UI and dynamic registration alike) —
+so after registering, clear the `Secret` field by hand-editing
+`oidc-funnel-clients.json` in tsidp's state dir
+(`/mnt/SSD/apps/tsidp/lib` on serverone) **while tsidp is stopped** (it
+rewrites the file from memory on changes). Nothing else consumes the
+secret. PKCE remains mandatory:
 the `code_verifier` check in `handleAuthorizationCodeGrant` is untouched.
 
 #### Client registration via DCR (not the admin UI)
@@ -510,30 +595,15 @@ client. Register it with the RFC 7591 dynamic registration endpoint, which
 honours `token_endpoint_auth_method: "none"` (post-patch) and stores the
 client with an empty secret.
 
-Run the call from a **tailnet source** — e.g. on serverone itself: DCR is
-gated by jack's headscale grant (`allow_dcr`), which is evaluated from the
-WhoIs of the connecting client, so a non-tailnet source gets nothing:
-
-```sh
-ssh serverone
-curl -s -X POST https://idp.internal.polpetta.online/register \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "client_name": "opencloud",
-    "redirect_uris": [
-      "https://opencloud.polpetta.online/oidc-callback.html",
-      "https://opencloud.polpetta.online/oidc-silent-redirect.html"
-    ],
-    "token_endpoint_auth_method": "none",
-    "grant_types": ["authorization_code", "refresh_token"],
-    "response_types": ["code"],
-    "scope": "openid profile email"
-  }'
-```
-
-The `201` response echoes the client metadata — `token_endpoint_auth_method`
-is `"none"` and there is **no `client_secret` field**: nothing to save
-anywhere. Record the `client_id` in the sops env file:
+- Name: `opencloud`
+- Redirect URIs (tsidp matches **exactly**, one per line — the web
+  frontend builds both from the router base, verified in the web source):
+  - `https://opencloud.polpetta.online/oidc-callback.html`
+  - `https://opencloud.polpetta.online/oidc-silent-redirect.html`
+- Save: tsidp shows client id + secret **once**. Record the secret
+  somewhere safe (unused by OpenCloud), then clear it from the registered
+  client — the tightened patch requires a secret-less client (procedure
+  above). Append the client id to the sops env file:
 
   ```sh
   # in /workspace/code/nix-secrets, append to the opencloud-env plaintext:
@@ -567,7 +637,8 @@ see the old account's data without a copy.
 Both plans use the **same nix config**; they differ only in what happens
 to the existing `jack` account before/after the deploy. The nix config
 maps tsidp's `username` claim to the LDAP `username`, so **a headscale
-user whose login name matches an existing LDAP username logs into that
+user whose short username (derived from the display name, see the
+claims section) matches an existing LDAP username logs into that
 existing account** (same UUID, data, shares, spaces, role) — for jack
 that is exactly the case. alice/bob/carol have nothing to collide with and
 auto-provision fresh either way.
@@ -627,8 +698,9 @@ auto-provision fresh either way.
 3. Web login as headscale `jack` (Plan A: must land in the *existing*
    account — files/spaces intact, no second jack in
    *Administration → Users*). alice/bob/carol log in once each: fresh
-   accounts are created on the fly (role *user*, displayName = headscale
-   username, mail = `name@`).
+   accounts are created on the fly (role *user*, displayName from the
+   userinfo `name` claim = headscale DisplayName, mail from the `email`
+   claim = headscale Email).
 4. Roles: auto-provisioned users get *user*. To make jack an OpenCloud
    admin, use the admin app token:
 
@@ -713,21 +785,27 @@ OpenCloud-specific caveats worth knowing:
 - tsidp's userinfo has `username`, **not** `preferred_username` — that is
   why `PROXY_USER_OIDC_CLAIM=username` here, while the official docs use
   `preferred_username` (Keycloak examples). Either way the value is the
-  short headscale username (`jack`), sourced live from the headscale API
-  (see the claims section).
+  short headscale username (`jack`), derived from the headscale display
+  name (see the claims section).
 - Display names come from the userinfo `name` claim (= headscale's
   DisplayName, e.g. `Jack`; `PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME=name`):
   the proxy re-applies `displayName`/`mail` from claims on every login
   (`UpdateUserIfNeeded`), so editing the display name in OpenCloud web is
-  undone at the next login — set proper display names on the headscale
-  users to control this. The claim is always non-empty: headscale falls
-  back (DisplayName → email → username → id) when building the WhoIs
-  profile, so provisioning cannot 500 on a missing claim.
+  undone at the next login (jack's *redacted* becomes `Jack`,
+  Plan A too). Refinement (optional): set proper display names on the
+  headscale users and switch
+  `PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME` to `name` — **only safe if
+  every headscale user has a non-empty DisplayName**, otherwise their
+  login 500s (missing claim).
 - headscale usernames are the join key: renaming a headscale user later
   mints a *new* OpenCloud account on next login (the old one stays).
-  Renaming an OpenCloud account (graph) has the mirror effect.
-- The `email` claim is the LoginName (`jack@`, not routable); auto-
-  provisioning accepts it (email is optional in the provisioning code —
+  Renaming an OpenCloud account (graph) has the mirror effect. A rename
+  must keep the display-name invariant (display name = username,
+  normalized — see the claims section) or the next login's `username`
+  claim no longer matches.
+- The `email` claim is the headscale Email field verbatim (a real
+  address for users that have one); auto-provisioning accepts whatever
+  it carries (email is optional in the provisioning code —
   if provisioning ever fails on mail, point
   `PROXY_AUTOPROVISION_CLAIM_EMAIL` at a nonexistent claim name to drop
   it).
@@ -740,6 +818,120 @@ OpenCloud-specific caveats worth knowing:
 - tsidp holds sessions in memory: restarting the tsidp container logs
   everyone out of OpenCloud (access tokens live 5 min, refresh tokens
   30 days; re-login via WhoIs is seamless).
+
+### ff (as deployed)
+
+ff (`https://ff.internal.polpetta.online`, the personal finance tracker from
+`inputs.ff`) authenticates against tsidp with a hand-rolled flow — no OAuth
+library, just `node:crypto` and `fetch` in `src/lib/server/{oidc,session}.ts`:
+
+- Authorization code + PKCE **S256**, token endpoint auth
+  `client_secret_post` (tsidp supports it), scopes `openid profile email`
+  (everything tsidp offers).
+- No local JWT validation: the RS256 ID token is ignored, identity claims
+  are read from `/userinfo` with the opaque access token (tsidp access
+  tokens are not JWTs anyway).
+- Redirect URI (must match the registration exactly):
+  `https://ff.internal.polpetta.online/login/callback`
+
+**Authorization is enforced by the app, not the IdP**: every tailnet member
+can authenticate at tsidp, but ff only accepts the user with headscale
+username `jack` (`ALLOWED_USERNAME` in `src/lib/server/oidc.ts`;
+the `username` it reads from `/userinfo` is the short headscale name,
+see the claims section); anybody
+else who completes the flow gets a styled 403 denial page. The check runs
+in the login callback and again in `src/hooks.server.ts` (defense in depth
+for sessions minted before a policy change).
+
+Sessions are HMAC-SHA256-signed cookies (`ff_session`, 7 days, HttpOnly /
+Secure / SameSite=Lax) over `{sub, username, exp}` — no server-side state.
+The login flow (state + PKCE verifier + return path) lives in a second
+signed cookie (`ff_oauth`, 10 minutes). Post-login redirects accept only
+local paths (open-redirect safe). `src/hooks.server.ts` requires a valid
+session for everything except `/login`, `/login/callback`, `/logout` and
+`/_app/*` static assets — with adapter-node all writes (form actions) pass
+through hooks, so no per-action re-checks are needed.
+
+Client registration in the tsidp admin UI
+(`https://idp.internal.polpetta.online`):
+
+- Name: `ff`
+- Redirect URI: `https://ff.internal.polpetta.online/login/callback`
+- Save: tsidp shows client id + secret **once** — both go into sops:
+
+  ```sh
+  # in /workspace/code/nix-secrets, add the ff plaintext keys:
+  ff/oauth-client-id=<generated client id>
+  ff/oauth-client-secret=<generated client secret>
+  # session secret: any long random string, e.g.
+  #   openssl rand -base64 32
+  ff/session-secret=<long random string>
+  ```
+
+  (`services/services/ff.nix` renders them into an `ff-env` template with
+  `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` / `SESSION_SECRET` /
+  `OIDC_ISSUER` and restarts `nerdctl-ff.service` on rotation.)
+
+Caveat: logout (`/logout`) clears ff's session cookie, but tsidp
+authenticates via tailnet WhoIs with no interaction, so the next page load
+silently logs the user back in. With a single authorized user this is
+harmless — there is no meaningful "logged out" state to protect.
+
+### giuoco-del-divertimento (as deployed)
+
+giuoco-del-divertimento (`https://giuoco.polpetta.online`, the drinking-game
+card deck) uses the same hand-rolled flow as ff — authorization code + PKCE
+**S256**, `client_secret_post`, scopes `openid profile email`, claims read
+from `/userinfo` with the opaque access token (`src/lib/server/{oidc,session}.ts`
+in the app repo, duplicated rather than shared).
+
+Unlike every other relying party here, giuoco is **intentionally public**
+(`web.access = "public"`, short domain set via `web.domain`): anyone on the
+internet can play and read cards, and the login exists only to authorize
+writes:
+
+| Action                          | Who                        |
+| ------------------------------- | -------------------------- |
+| Play, read cards (`GET`, torneo next) | everyone, no login   |
+| Add a card (`POST /api/items`)  | any successful tsidp login |
+
+There is **no username restriction**: any tailnet member who completes the
+flow gets a session and may add cards. External users simply cannot complete
+the login (tsidp is unreachable outside the tailnet), so they stay read-only
+by construction. Enforcement lives in the app (`src/lib/server/guard.ts` +
+`src/hooks.server.ts`: writes without a session get 401 on `/api/*`, a
+redirect to `/login` elsewhere).
+
+Sessions are HMAC-SHA256-signed cookies (`giuoco_session`, 7 days,
+HttpOnly / Secure / SameSite=Lax) over `{sub, username, exp}`; the flow
+state lives in `giuoco_oauth` (10 minutes). Post-login redirects accept
+only local paths.
+
+Client registration in the tsidp admin UI
+(`https://idp.internal.polpetta.online`):
+
+- Name: `giuoco`
+- Redirect URI: `https://giuoco.polpetta.online/login/callback`
+- Save: tsidp shows client id + secret **once** — both go into sops:
+
+  ```sh
+  # in /workspace/code/nix-secrets, add the giuoco plaintext keys:
+  giuoco/oauth-client-id=<generated client id>
+  giuoco/oauth-client-secret=<generated client secret>
+  # session secret: any long random string, e.g.
+  #   openssl rand -base64 32
+  giuoco/session-secret=<long random string>
+  ```
+
+  (`services/services/giuoco-del-divertimento.nix` renders them into a
+  `giuoco-env` template with `OIDC_CLIENT_ID` / `OIDC_CLIENT_SECRET` /
+  `SESSION_SECRET` / `OIDC_ISSUER` and restarts
+  `nerdctl-giuoco-del-divertimento.service` on rotation.)
+
+Note: before the public switch the app lived at
+`https://giuoco-del-divertimento.internal.polpetta.online`; that hostname is
+gone — it is no longer in the generated nginx map, so requests to it hit the
+default server and are closed with 444. Use `https://giuoco.polpetta.online`.
 
 ## Known limitations
 
