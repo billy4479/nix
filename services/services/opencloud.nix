@@ -9,6 +9,16 @@ let
   name = "opencloud";
   domain = "opencloud.polpetta.online";
 
+  # The web frontend's CSP must allow XHRs to the OIDC issuer (discovery,
+  # token, userinfo all go to tsidp cross-origin). PROXY_CSP_CONFIG_FILE_
+  # LOCATION deep-merges this over the embedded default, and the loader
+  # concatenates directive lists — so the delta alone is enough.
+  cspOverride = pkgs.writeText "opencloud-csp.yaml" ''
+    directives:
+      connect-src:
+        - https://idp.internal.polpetta.online
+  '';
+
   baseSSDDir = "/mnt/SSD/apps/${name}";
   configDir = "${baseSSDDir}/config";
   appsDir = "${baseSSDDir}/apps";
@@ -63,6 +73,7 @@ in
         "OC_URL" = "https://${domain}";
         "PROXY_HTTP_ADDR" = "10.0.1.14:9200";
         "PROXY_TLS" = "false";
+        "PROXY_CSP_CONFIG_FILE_LOCATION" = "/etc/opencloud/csp-override.yaml";
 
         "OC_PASSWORD_POLICY_DISABLED" = "true";
         "OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD" = "true";
@@ -107,6 +118,11 @@ in
       environmentFiles = [ config.sops.templates."opencloud-env".path ];
 
       volumes = [
+        {
+          hostPath = "${cspOverride}";
+          containerPath = "/etc/opencloud/csp-override.yaml";
+          readOnly = true;
+        }
         {
           hostPath = configDir;
           containerPath = "/etc/opencloud";

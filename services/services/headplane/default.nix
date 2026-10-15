@@ -75,6 +75,9 @@ in
       access = "tailnet";
       # / answers 401; /admin is the login page.
       probe.path = "/admin";
+      # With OIDC enabled /admin redirects to the IdP; the redirect is the
+      # liveness signal (see http_unauth in monitoring).
+      probe.unauth = true;
     };
   };
 }

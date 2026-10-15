@@ -37,6 +37,16 @@ let
   };
 in
 {
+  # Seed the SSO plugin into the rw config volume: Jellyfin 12 writes
+  # meta.json next to the plugin dlls on every start, so mounting the
+  # store path read-only crashes the server (EROFS in SaveManifest).
+  # tmpfiles copies per version, so plugin upgrades land in a fresh
+  # directory while the old one stays for reference.
+  systemd.tmpfiles.rules = [
+    "d /mnt/SSD/apps/jellyfin/config/plugins 0755 - - - -"
+    "C /mnt/SSD/apps/jellyfin/config/plugins/SSO-Auth/${ssoAuthPlugin.version} - - - - ${ssoAuthPlugin}/plugins/SSO-Auth/${ssoAuthPlugin.version}"
+  ];
+
   polpetta.services.jellyfin = {
     container = {
       imageToBuild = pkgs.nix-snapshotter.buildImage {
@@ -93,10 +103,6 @@ in
 
       extraOptions = [
         "--device=/dev/dri:/dev/dri"
-        # Nested read-only bind inside the rw /config volume: the plugin dlls
-        # come from the nix store while /config stays Jellyfin's own config
-        # volume (its plugin settings land in /config/plugins/configurations).
-        "-v ${ssoAuthPlugin}/plugins/SSO-Auth:/config/plugins/SSO-Auth:ro"
       ];
     };
 

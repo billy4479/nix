@@ -26,9 +26,13 @@ let
         timeout = "5s";
         http = {
           preferred_ip_protocol = "ip4";
+          # Don't follow auth redirects: an unauthenticated probe that lands
+          # on the IdP would fail even though the service is alive.
+          follow_redirects = false;
           # blackbox_exporter only accepts literal status codes here; 401 is
-          # calendar-proxy without a token, 404 is agent-up on /.
-          valid_status_codes = [ 200 401 404 ];
+          # calendar-proxy without a token, 404 is agent-up on /, 302/403 are
+          # the OIDC-gated services (ff, headplane) bouncing to tsidp.
+          valid_status_codes = [ 200 301 302 401 403 404 ];
         };
       };
       https_internal = {
