@@ -908,7 +908,7 @@ harmless — there is no meaningful "logged out" state to protect.
 
 ### giuoco-del-divertimento (as deployed)
 
-giuoco-del-divertimento (`https://giuoco.polpetta.online`, the drinking-game
+giuoco-del-divertimento (`https://giuoco-del-divertimento.polpetta.online`, the drinking-game
 card deck) uses the same hand-rolled flow as ff — authorization code + PKCE
 **S256**, `client_secret_post`, scopes `openid profile email`, claims read
 from `/userinfo` with the opaque access token (`src/lib/server/{oidc,session}.ts`
@@ -917,7 +917,7 @@ in the app repo, duplicated rather than shared).
 > **DEPLOY ORDERING (mandatory).** This flake pins the app through the
 > `giuoco-del-divertimento` input, and the pin in `flake.lock` can lag the
 > app repo. Deploying this service before pushing the updated app and
-> bumping the input publishes `giuoco.polpetta.online` — a **public**
+> bumping the input publishes `giuoco-del-divertimento.polpetta.online` — a **public**
 > vhost since the giuoco commit of this series — with **ungated anonymous
 > card adds**: exactly the opposite of that commit's security claim.
 > Required order:
@@ -958,7 +958,7 @@ Client registration in the tsidp admin UI
 (`https://idp.internal.polpetta.online`):
 
 - Name: `giuoco`
-- Redirect URI: `https://giuoco.polpetta.online/login/callback`
+- Redirect URI: `https://giuoco-del-divertimento.polpetta.online/login/callback`
 - Save: tsidp shows client id + secret **once** — both go into sops:
 
   ```sh
@@ -978,7 +978,7 @@ Client registration in the tsidp admin UI
 Note: before the public switch the app lived at
 `https://giuoco-del-divertimento.internal.polpetta.online`; that hostname is
 gone — it is no longer in the generated nginx map, so requests to it hit the
-default server and are closed with 444. Use `https://giuoco.polpetta.online`.
+default server and are closed with 444. Use `https://giuoco-del-divertimento.polpetta.online`.
 
 ## Known limitations
 

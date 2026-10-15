@@ -49,7 +49,7 @@ in
       environment = {
         PORT = "4479";
         ENVIRONMENT = "production";
-        ORIGIN = "https://giuoco.polpetta.online";
+        ORIGIN = "https://giuoco-del-divertimento.polpetta.online";
         DATABASE_URL = "/data/items.db";
       };
 
@@ -70,8 +70,6 @@ in
     web = {
       port = 4479;
       access = "public";
-      # Short name instead of the default <name>.polpetta.online.
-      domain = "giuoco.polpetta.online";
     };
   };
 }
