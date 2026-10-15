@@ -1,5 +1,6 @@
 # Warning: This config does not include keys that have an unset value
 format =  """
+
 $username@$hostname\
 $shlvl\
 $kubernetes\
@@ -54,7 +55,7 @@ $jobs\
 $battery\
 $time\
 $status\
-$shell\
+$shell
 $character"""
 scan_timeout = 1000
 command_timeout = 1000
