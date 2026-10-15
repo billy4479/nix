@@ -10,7 +10,26 @@ let
   baseDir = "/mnt/SSD/apps/heascale";
 in
 {
-  sops.secrets.headplane-env = lib.mkIf (options ? nerdctl-containers) { };
+  sops.secrets = lib.mkIf (options ? nerdctl-containers) {
+    headplane-cookie-secret.key = "headplane/cookie-secret";
+    headplane-oauth-client-id.key = "headplane/oauth-client-id";
+    headplane-oauth-client-secret.key = "headplane/oauth-client-secret";
+    headplane-headscale-api-key.key = "headplane/headscale-api-key";
+  };
+
+  sops.templates."headplane-env".content = lib.mkIf (options ? nerdctl-containers) (
+    # sh
+    ''
+      HEADPLANE_SERVER__COOKIE_SECRET=${config.sops.placeholder.headplane-cookie-secret}
+      HEADPLANE_OIDC__CLIENT_ID=${config.sops.placeholder.headplane-oauth-client-id}
+      HEADPLANE_OIDC__CLIENT_SECRET=${config.sops.placeholder.headplane-oauth-client-secret}
+      HEADPLANE_HEADSCALE__API_KEY=${config.sops.placeholder.headplane-headscale-api-key}
+    ''
+  );
+
+  sops.templates."headplane-env".restartUnits = lib.mkIf (options ? nerdctl-containers) [
+    "nerdctl-headplane.service"
+  ];
 
   polpetta.services.headplane = {
     container = {
@@ -29,7 +48,7 @@ in
 
       dependsOn = [ "headscale" ];
 
-      environmentFiles = [ config.sops.secrets.headplane-env.path ];
+      environmentFiles = [ config.sops.templates."headplane-env".path ];
 
       volumes = [
         {

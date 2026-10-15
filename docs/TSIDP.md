@@ -229,15 +229,20 @@ Client registration in the tsidp admin UI
   and falls back to `client_secret_basic`; tsidp supports both, so
   `oidc.token_endpoint_auth_method` is left unset.
 
-Add to the `headplane-env` sops file (plain `KEY=value` lines; headplane
-merges `HEADPLANE_*__*` env overrides into its config automatically since
-0.7, no `HEADPLANE_LOAD_ENV_OVERRIDES` flag needed):
+Sops keys (rendered into the `headplane-env` template by the service
+declaration; headplane merges `HEADPLANE_*__*` env overrides into its
+config automatically since 0.7, no `HEADPLANE_LOAD_ENV_OVERRIDES` flag
+needed):
 
-- `HEADPLANE_OIDC__CLIENT_ID` / `HEADPLANE_OIDC__CLIENT_SECRET`: the
+- `headplane/cookie-secret` → `HEADPLANE_SERVER__COOKIE_SECRET`:
+  migrate the existing value from the old opaque `headplane-env` file
+- `headplane/oauth-client-id` / `headplane/oauth-client-secret` →
+  `HEADPLANE_OIDC__CLIENT_ID` / `HEADPLANE_OIDC__CLIENT_SECRET`: the
   registered client credentials
-- `HEADPLANE_HEADSCALE__API_KEY`: a server-side headscale API key,
-  created with `headscale apikeys create --expiration 999d`; headplane
-  disables OIDC entirely without one (this is `headscale.api_key`)
+- `headplane/headscale-api-key` → `HEADPLANE_HEADSCALE__API_KEY`: a
+  server-side headscale API key, created with
+  `headscale apikeys create --expiration 999d`; headplane disables OIDC
+  entirely without one (this is `headscale.api_key`)
 
 First login: the first OIDC user becomes headplane **Owner** and is
 asked to link their headscale user during onboarding (link it to
@@ -502,8 +507,8 @@ switches it to tsidp: the built-in `idp` service is excluded
 (`OC_EXCLUDE_RUN_SERVICES=idp`), the **IDM keeps running** (it still holds
 all accounts — auto-provisioning writes new users there), and proxy, web
 and webfinger all read the issuer from `OC_OIDC_ISSUER`. Non-secret
-settings are in the nix file; the tsidp client id is appended by the user
-to the `opencloud-env` sops file (below). `OC_URL` stays public on
+settings are in the nix file; the tsidp client id is rendered from the
+sops key `opencloud/oidc-client-id` (below). `OC_URL` stays public on
 purpose (share links); every *authentication* path requires the tailnet,
 because the only issuer is tsidp and local password auth is disabled
 (`PROXY_ENABLE_BASIC_AUTH=false`).
@@ -624,10 +629,11 @@ curl -s -X POST https://idp.internal.polpetta.online/register \
 
 The `201` response echoes the client metadata — `token_endpoint_auth_method`
 is `"none"` and there is **no `client_secret` field**: nothing to save
-anywhere. Record the `client_id` in the sops env file:
+anywhere. Record the `client_id` as the sops key `opencloud/oidc-client-id`
+(rendered into the `opencloud-env` template as `OC_OIDC_CLIENT_ID`):
 
   ```sh
-  # in /workspace/code/nix-secrets, append to the opencloud-env plaintext:
+  # in /workspace/code/nix-secrets, add the key opencloud/oidc-client-id:
   OC_OIDC_CLIENT_ID=<client_id from the response>
   ```
 
@@ -700,8 +706,11 @@ auto-provision fresh either way.
    - one for the OpenCloud `admin` user (break-glass admin API access
      after the switch — the `admin` account itself becomes unloggable),
    - one for `jack` (only needed for Plan B's copy, cheap to have anyway).
-3. Register the opencloud client via the DCR call (above) and append
-   `OC_OIDC_CLIENT_ID` to the `opencloud-env` sops file. Confirm the
+3. Register the opencloud client via the DCR call (above) and add the
+   sops key `opencloud/oidc-client-id` with the client id as its value.
+   Also migrate `opencloud/idm-admin-password` and the headplane keys
+   listed above (the old opaque `opencloud-env` / `headplane-env` sops
+   entries become unused and can be deleted). Confirm the
    tsidp patch is in the built tsidp (`nix flake lock --update-input
    myPackages` first).
 4. **Plan B only:** rename the old `jack` account now (still on the old

@@ -15,7 +15,22 @@ let
   dataDir = "/mnt/HDD/apps/${name}";
 in
 {
-  sops.secrets.opencloud-env = lib.mkIf (options ? nerdctl-containers) { };
+  sops.secrets = lib.mkIf (options ? nerdctl-containers) {
+    opencloud-oidc-client-id.key = "opencloud/oidc-client-id";
+    opencloud-idm-admin-password.key = "opencloud/idm-admin-password";
+  };
+
+  sops.templates."opencloud-env".content = lib.mkIf (options ? nerdctl-containers) (
+    # sh
+    ''
+      OC_OIDC_CLIENT_ID=${config.sops.placeholder.opencloud-oidc-client-id}
+      IDM_ADMIN_PASSWORD=${config.sops.placeholder.opencloud-idm-admin-password}
+    ''
+  );
+
+  sops.templates."opencloud-env".restartUnits = lib.mkIf (options ? nerdctl-containers) [
+    "nerdctl-${name}.service"
+  ];
 
   polpetta.services.${name} = {
     container = {
@@ -49,14 +64,17 @@ in
         "PROXY_HTTP_ADDR" = "10.0.1.14:9200";
         "PROXY_TLS" = "false";
 
+        "OC_PASSWORD_POLICY_DISABLED" = "true";
+        "OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD" = "true";
+        "OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD" = "true";
         "FRONTEND_ARCHIVER_MAX_SIZE" = "10000000000";
 
         # Authentication via tsidp (external OIDC, tailnet-only). The web
         # frontend and the proxy read the issuer from OC_OIDC_ISSUER, the web
         # client id (registered via DCR with token_endpoint_auth_method
         # "none" — it is a secret-less public client, so not via the admin
-        # UI) comes from the sops env file as OC_OIDC_CLIENT_ID. Full
-        # runbook: docs/TSIDP.md.
+        # UI) comes from the sops key opencloud/oidc-client-id, rendered
+        # into the opencloud-env template. Full runbook: docs/TSIDP.md.
         "OC_EXCLUDE_RUN_SERVICES" = "idp";
         "OC_OIDC_ISSUER" = "https://idp.internal.polpetta.online";
         # tsidp access tokens are opaque strings, not JWTs, so the proxy must
@@ -86,7 +104,7 @@ in
         "PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME" = "name";
       };
 
-      environmentFiles = [ config.sops.secrets.opencloud-env.path ];
+      environmentFiles = [ config.sops.templates."opencloud-env".path ];
 
       volumes = [
         {
