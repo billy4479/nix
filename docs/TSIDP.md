@@ -591,6 +591,24 @@ credentials`. The public path applies exactly when the registered client
 has **no** secret: a client holding a registered secret cannot drop it
 (original `401` when it sends none), and a secret-less client that sends a
 stray `client_secret` is ignored and still served by the public path.)
+
+Accepting secret-less clients is not the whole story for the web SPA:
+tsidp wraps its entire mux in `filippo.io/csrf`, which 403s every
+cross-site browser request whose `Origin` is not the server's own origin
+(server-side RPs never hit this — curl sends no `Origin`, which is why
+the all-curl tests passed). `tsidp/browser-rp-cors.patch` (wired after
+`displayname-username.patch`) adds the redirect-URI origin of every
+registered client to the csrf protection's trusted origins — all
+persisted clients at mux setup, and each client immediately when it is
+registered through the admin UI or DCR — and makes `/token` and
+`/userinfo` reflect `Access-Control-Allow-Origin` (plus `Vary: Origin`
+and `Access-Control-Allow-Headers: Content-Type, Authorization`) for the
+origins registered by the request's client, set early in the handler so
+`400/401/403` error responses stay readable by the SPA; OPTIONS
+preflights are answered with `204` and the same headers. Unregistered
+origins are still rejected without any CORS header, and the admin UI
+keeps its CSRF protection. The patch replaces the upstream wildcard
+`Access-Control-Allow-Origin: *` on `/token` with this reflection.
 Then:
 commit + push `nix-packages`, and in this flake run
 `nix flake lock --update-input myPackages`. No hand-editing of
@@ -646,6 +664,15 @@ anywhere. Record the `client_id` as the sops key `opencloud/oidc-client-id`
 Webfinger discovery is **mandatory** for the web UI to boot (it fails
 closed with "OIDC configuration could not be loaded via webfinger"), and
 it is served by OpenCloud itself from the same env — no extra setup.
+
+The DCR-registered client also works **in the browser**, not only
+server-side: `tsidp/browser-rp-cors.patch` trusts the registered
+redirect origins in tsidp's csrf protection and reflects CORS headers on
+`/token` and `/userinfo` for them, so the OpenCloud web SPA completes the
+authorization code + PKCE flow from `https://opencloud.polpetta.online`
+after the patched tsidp is redeployed. The already-registered client
+needs no re-registration: on restart tsidp trusts the persisted redirect
+origins when it builds its mux.
 
 #### Roster and data (recon 2026-10-14, read-only)
 
