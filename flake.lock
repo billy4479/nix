@@ -310,10 +310,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1792046057,
-        "narHash": "sha256-DNpus/C28Fx/EeUHXoEglsLllJPfKQDbCUO0YSOAYFE=",
+        "lastModified": 1792083666,
+        "narHash": "sha256-pNlsYX9YsxKeBva/r917Y/xuplTQDjTc3vAIexwBk8k=",
         "ref": "master",
-        "rev": "54b382b6ab513d885487113cc989a938b700a43b",
+        "rev": "2f73db85f58e6dac2d5a0f519097bbc028edf225",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/giuoco-del-divertimento.git"
