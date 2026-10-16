@@ -44,7 +44,6 @@ in
     ../../../services/services/opencloud.nix
     ../../../services/services/searxng
     ../../../services/services/openchamber.nix
-    ../../../services/services/t3code.nix
 
     ../../../services/services/mc-runner
     ../../../services/services/lunamultiplayer-server.nix
