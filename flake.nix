@@ -170,21 +170,6 @@
             inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
             inherit (inputs.agent-up.packages.${system}) agent-up agent-up-server;
             read-nix-docs = inputs.read-nix-docs.packages.${system}.default;
-
-            immich = prev.immich.overrideAttrs (old: {
-              postInstall =
-                (old.postInstall or "")
-                +
-                # sh
-                ''
-                  for processor in "$out"/lib/node_modules/immich/node_modules/.pnpm/fluent-ffmpeg@*/node_modules/fluent-ffmpeg/lib/processor.js; do
-                    substituteInPlace "$processor" \
-                      --replace-fail \
-                      'emitEnd(err, stdoutRing.get(), stderrRing.get());' \
-                      'emitEnd(err, stdoutRing && stdoutRing.get(), stderrRing && stderrRing.get());'
-                  done
-                '';
-            });
           }
           // inputs.myPackages.packages.${system}
         )
