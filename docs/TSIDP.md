@@ -112,29 +112,27 @@ Discovery is not usable by all RPs (Grafana needs explicit URLs), so:
 - Scopes: `openid profile email`
 - PKCE: supported
 
-### Claims, as validated live (2026-10-14)
+### Claims (current scheme)
 
-What tsidp actually puts in its tokens in this deployment:
+What tsidp puts in its tokens in this deployment:
 
 - `sub` = `userid:<n>`, where `<n>` is the headscale numeric user id
   (jack `1`, alice `2`, bob `3`, carol `4`) — not a bare number.
-- `email` = headscale's **Email field, verbatim** (a real, routable
-  address such as `jack@example.com`): headscale sets the WhoIs
-  LoginName to the user's Email when one exists, and tsidp passes it
-  through (its `@github`/`@passkey` rewrite never fires here). Same
-  value in the ID token and `/userinfo`.
+- `email` = headscale's **Email field, verbatim** (the scheme address
+  `<username>@mail.polpetta.online` — unroutable by design, no MX):
+  headscale sets the WhoIs LoginName to the user's Email when one
+  exists, and tsidp passes it through (its `@github`/`@passkey` rewrite
+  never fires here). Same value in the ID token and `/userinfo`.
 - `username` (in `/userinfo`) and `preferred_username` (in the ID
-  token, only granted with the `profile` scope) = the **short headscale
-  username** (`jack`, `alice`, …), derived by the patched tsidp from the
-  WhoIs **display name**: lowercased, with spaces replaced by `_` —
-  `Jack` → `jack`, `Mary Jane` → `mary_jane`. (WhoIs carries no short
-  username, only the email-shaped LoginName and the display name; the
-  derivation is pure WhoIs — no headscale API, no API key, no network.)
-  A display name that is empty **or is an email address** (headscale
-  falls back to the user's email when no display name is set, and an
-  email local part is not a username) yields no username: the claim
-  falls back to the pre-`@` part of the LoginName, and stays omitted
-  when the LoginName has no `@` — upstream's original semantics.
+  token, only granted with the `profile` scope) = the **email local
+  part** — plain upstream tsidp semantics (cut before the first `@`),
+  no local patch. Because every headscale user's Email is
+  `<username>@mail.polpetta.online`, this equals the short headscale
+  username (`jack@mail.polpetta.online` → `jack`). (WhoIs carries no
+  short username, only the email-shaped LoginName; upstream omits the
+  claim entirely when the LoginName has no `@` — which is why a user
+  without an Email field breaks every username-driven relying party;
+  see the invariant below.)
 - `name` (in `/userinfo`) = headscale's DisplayName (e.g. `Jack`).
 - `picture`, `key`, `nid`, `node`, `addresses`, `tailnet`, `uid`:
   tailscale claims, unchanged.
@@ -149,7 +147,7 @@ Live ID token payload (claims-audit client; `<…>` elided):
   "exp": <unix>, "iat": <unix>, "nbf": <unix>,
   "jti": "<random hex>",
   "nonce": "<nonce>",
-  "email": "jack@example.com",
+  "email": "jack@mail.polpetta.online",
   "preferred_username": "jack",
   "grafana_role": "Admin",
   "key": "<node public key>",
@@ -165,7 +163,7 @@ Live `/userinfo` (same session):
 
 ```json
 {
-  "email": "jack@example.com",
+  "email": "jack@mail.polpetta.online",
   "grafana_role": "Admin",
   "name": "Jack",
   "sub": "userid:1",
@@ -174,21 +172,40 @@ Live `/userinfo` (same session):
 ```
 
 `grafana_role` comes from the headscale grant's `extraClaims` (see the
-policy section). The short `preferred_username`/`username` values are
-post-patch: before `displayname-username.patch` landed they were the
-email local part (`jack`).
+policy section). The `username`/`preferred_username` values are plain
+upstream derivation: an earlier `displayname-username.patch` derived
+them from the WhoIs display name and was dropped once every headscale
+user got a `<username>@mail.polpetta.online` address — the display-name
+rule and the email-local-part rule agree exactly when the display name
+matches the username, and the email is the field that is actually
+maintained.
 
-> **REQUIRED INVARIANT — display names are the username source.** Every
-> headscale user must have a **display name whose normalized form
-> (lowercase, spaces → `_`) equals their headscale username**: `Jack`
-> for `jack`, `Mary Jane` for `mary_jane`. tsidp cannot verify this — a
-> violation errors nowhere and silently degrades to the email-prefix
-> derivation (`jack`), which then **mismatches downstream**:
-> OpenCloud resolves accounts by the `username` claim, Jellyfin matches
-> users by `preferred_username`, and ff compares it against
-> `ALLOWED_USERNAME`. Set the display name **before** a user's first
-> login, and keep the invariant across renames: rename the username and
-> the display name together, or the account mapping moves.
+> **REQUIRED INVARIANT — the email local part is the username.** Every
+> headscale user's Email must be `<username>@mail.polpetta.online`:
+> `jack@mail.polpetta.online` for `jack`. The addresses are unroutable
+> by design; their job is to make the OIDC `username`/
+> `preferred_username` claims (upstream tsidp cuts the local part)
+> equal the short headscale username that relying parties key on:
+> OpenCloud binds accounts by the `email` claim, Jellyfin matches users
+> by `preferred_username`, Grafana by the `username` login attribute,
+> and ff compares it against `ALLOWED_USERNAME`. tsidp cannot verify
+> this — set the Email **at user creation, before the first login**
+> (a user without one gets no `username` claim at all), and never
+> change it afterwards: an email rename **orphans the OpenCloud
+> account** (the next login misses the lookup and autoprovisions a
+> fresh one) and moves every other username-keyed mapping. Display
+> names are cosmetic and load-bearing nowhere.
+>
+> Migration order that put this scheme in place (2026-10): set the
+> headscale Emails **first**, then let every user log into OpenCloud
+> once (or bulk-fix the stored mails via the graph API) so
+> `UpdateUserIfNeeded` syncs the LDAP `mail` attribute to the new
+> claim — only then flip `PROXY_USER_OIDC_CLAIM=email`. Flipping the
+> proxy while stored mails still hold the old addresses would miss the
+> lookup and autoprovision duplicates on the next login. Immich
+> accounts with an empty `oauthId` must be bound before the email
+> change, or their next OAuth login auto-registers a duplicate instead
+> of matching by email.
 
 Housekeeping: the throwaway DCR client `claims-audit-test` registered
 in the admin UI during this validation can be deleted.
@@ -289,11 +306,9 @@ Client registration in the tsidp admin UI
 Identity mapping, and why binding beats email matching: tsidp's `sub`
 is `userid:<n>` — the headscale numeric user id (jack `userid:1`,
 alice `userid:2`, bob `userid:3`, carol `userid:4`; see the claims
-section above) — while `email` is the headscale Email field verbatim
-(a real address). Immich resolves an OAuth login by `user.oauthId`
-**first**, then by email, then auto-registers. Bind existing accounts
-*before* enabling OAuth so the explicit `oauthId` is authoritative and
-no login can silently create a duplicate.
+section above) — while `email` is the headscale Email field
+(`<username>@mail.polpetta.online`). Immich resolves an OAuth login by
+`user.oauthId` **first**, then by email, then auto-registers.
 
 Admin UI (Administration → Settings → Authentication → OAuth), values
 verified against the 3.2.2 source; defaults are fine unless noted:
@@ -319,27 +334,17 @@ verified against the 3.2.2 source; defaults are fine unless noted:
 Profile pictures: Immich pulls the `picture` claim when a user has no
 profile picture; headscale profiles are empty, so nothing changes.
 
-Binding the existing users — no SQL is required. Immich resolves an
-OAuth login by `oauthId` → **email match** → auto-register, and after
-the headscale users got real email addresses the token emails match two
-of the three Immich accounts:
+Existing accounts are **already bound by `oauthId`** (jack `userid:1`,
+alice `userid:2`, bob `userid:3` — set during the 2026-10 migrations),
+so the `email` claim plays no role in resolving their logins: Immich
+reads `oauthId` first and email matching never fires for them. Their
+stored Immich emails (personal addresses) therefore do **not** follow
+the headscale `<username>@mail.polpetta.online` scheme, and headscale
+email changes cannot break their logins.
 
-- **alice, bob**: nothing to do. Their Immich emails equal the token
-  emails (`alice@example.com`, `bob@example.com`), so the
-  first OAuth login matches by email and links the existing account.
-- **jack**: the token says `jack@example.com` but the Immich
-  account has `jack.doe@example.com` — email matching misses, and
-  auto-register would create a duplicate. Pick one, both are UI-only:
-  1. **Link to OAuth** (recommended): while password-logged-in, User
-     Settings → OAuth → *Link to OAuth*. Stores `sub` (`userid:1`) on
-     the account; requires the `/user-settings` redirect URI (already
-     in the registration list).
-  2. As admin, change the Immich account's email to
-     `jack@example.com`; the next OAuth login matches by email.
-     Do this if you prefer the headscale email for Immich mail.
-
-Do the binding **before** anyone's first OAuth login (auto-register is
-on and would mint duplicates otherwise).
+Email matching only matters for an account whose `oauthId` is empty —
+bind any such account **before** its first OAuth login (auto-register
+is on and would mint a duplicate instead of linking):
 
 Scripted alternative (only if you ever need to rebind without logging
 in as the user): SQL in the `immich-database` container (table
@@ -352,13 +357,14 @@ ssh serverone
 sudo exec-in-container immich-database pg_dump -U postgres -d immich \
   -t '"user"' --data-only > ~/immich-user-backup.sql
 
-# bind: sub (userid:<n>) -> existing account
+# bind: sub (userid:<n>) -> existing account, matched by the account's
+# stored (personal) Immich email
 sudo exec-in-container immich-database psql -U postgres -d immich -c \
-  "UPDATE \"user\" SET \"oauthId\" = 'userid:1' WHERE email = 'jack.doe@example.com';"
+  "UPDATE \"user\" SET \"oauthId\" = 'userid:1' WHERE email = '<jack-immich-email>';"
 sudo exec-in-container immich-database psql -U postgres -d immich -c \
-  "UPDATE \"user\" SET \"oauthId\" = 'userid:2' WHERE email = 'alice@example.com';"
+  "UPDATE \"user\" SET \"oauthId\" = 'userid:2' WHERE email = '<alice-immich-email>';"
 sudo exec-in-container immich-database psql -U postgres -d immich -c \
-  "UPDATE \"user\" SET \"oauthId\" = 'userid:3' WHERE email = 'bob@example.com';"
+  "UPDATE \"user\" SET \"oauthId\" = 'userid:3' WHERE email = '<bob-immich-email>';"
 
 # verify: one row per sub
 sudo exec-in-container immich-database psql -U postgres -d immich -c \
@@ -435,7 +441,7 @@ provider. Every field, exact values (defaults are fine unless noted):
 | Enable All Folders / Role-Based Folder Access | off (inert while RBAC is off) |
 | Roles / AdminRoles / Role Claim | empty — empty `Roles` is what lets every tailnet identity pass the login gate |
 | Request Additional Scopes | `email` (one line; the field is required — the plugin always sends `openid profile` itself, which covers every claim we use) |
-| Set default username claim | `preferred_username` (leave empty — this is the default; it is the headscale username in the ID token) |
+| Set default username claim | `preferred_username` (leave empty — this is the default; it is the email local part under the `<username>@mail.polpetta.online` scheme, i.e. the headscale username, in the ID token) |
 | Set default Provider / avatar url format | empty |
 | Do Not Load Profile Information | off |
 | Disable HTTPS Discovery / Disable Pushed Authorization / Do Not Validate Endpoints / Issuer Name (all "Insecure") | off |
@@ -479,8 +485,9 @@ Order-sensitive setup steps:
 
 tsidp claim caveats that do **not** bite here (worth knowing):
 
-- The `email` claim is the headscale Email field verbatim (a real,
-  routable address) — this plugin never reads `email` (only the username
+- The `email` claim is the headscale Email field verbatim (the
+  unroutable `<username>@mail.polpetta.online` scheme address) — this
+  plugin never reads `email` (only the username
   claim and, if configured, the role claim and avatar format), so it
   does not matter either way.
 - tsidp has no `oid` or `email_verified` claim and the plugin requires
@@ -596,8 +603,8 @@ Accepting secret-less clients is not the whole story for the web SPA:
 tsidp wraps its entire mux in `filippo.io/csrf`, which 403s every
 cross-site browser request whose `Origin` is not the server's own origin
 (server-side RPs never hit this — curl sends no `Origin`, which is why
-the all-curl tests passed). `tsidp/browser-rp-cors.patch` (wired after
-`displayname-username.patch`) adds the redirect-URI origin of every
+the all-curl tests passed). `tsidp/browser-rp-cors.patch` adds the
+redirect-URI origin of every
 registered client to the csrf protection's trusted origins — all
 persisted clients at mux setup, and each client immediately when it is
 registered through the admin UI or DCR — and makes `/token` and
@@ -677,9 +684,10 @@ origins when it builds its mux.
 #### Roster and data (recon 2026-10-14, read-only)
 
 The IDM database (`/mnt/HDD/apps/opencloud/idm/idm.boltdb`) holds exactly
-one human account — `jack` (displayName *redacted*, mail
-`jack@example.com`) — plus internal sysusers (`reva`, `libregraph`,
-`idp`). **alice, bob and carol have no OpenCloud accounts and no data.**
+one human account — `jack` (displayName *redacted*; at recon time his
+stored mail was a personal address, since overwritten with the OIDC
+`email` claim by the proxy's `UpdateUserIfNeeded` on each login) — plus
+internal sysusers (`reva`, `libregraph`, `idp`). **alice, bob and carol have no OpenCloud accounts and no data.**
 Storage has one personal space (`887686ba-95d9-4c88-b01d-4da9fb4f3579`,
 ~40G) and three project spaces. Auto-provisioned accounts get **fresh
 random UUIDs** (the proxy's `CreateUserFromClaims` never sends an id; the
@@ -690,11 +698,14 @@ see the old account's data without a copy.
 
 Both plans use the **same nix config**; they differ only in what happens
 to the existing `jack` account before/after the deploy. The nix config
-maps tsidp's `username` claim to the LDAP `username`, so **a headscale
-user whose short username (derived from the display name, see the
-claims section) matches an existing LDAP username logs into that
-existing account** (same UUID, data, shares, spaces, role) — for jack
-that is exactly the case. alice/bob/carol have nothing to collide with and
+resolves accounts by the `email` claim against the LDAP `mail`
+attribute (`PROXY_USER_OIDC_CLAIM=email`), and the proxy re-applies
+`mail` from the claim on every login (`UpdateUserIfNeeded`) — so **a
+headscale user whose claim email equals the stored mail of an existing
+LDAP account logs into that existing account** (same UUID, data,
+shares, spaces, role) — for jack that is exactly the case (the old
+`UpdateUserIfNeeded` sync already made his stored mail match the
+claim). alice/bob/carol have nothing to collide with and
 auto-provision fresh either way.
 
 - **Plan A — zero-copy (recommended):** do nothing to the old account.
@@ -755,9 +766,9 @@ auto-provision fresh either way.
 3. Web login as headscale `jack` (Plan A: must land in the *existing*
    account — files/spaces intact, no second jack in
    *Administration → Users*). alice/bob/carol log in once each: fresh
-   accounts are created on the fly (role *user*, displayName from the
-   userinfo `name` claim = headscale DisplayName, mail from the `email`
-   claim = headscale Email).
+   accounts are created on the fly (role *user*, username **and** mail
+   = the `email` claim, `alice@mail.polpetta.online`; displayName from
+   the userinfo `name` claim = headscale DisplayName).
 4. Roles: auto-provisioned users get *user*. To make jack an OpenCloud
    admin, use the admin app token:
 
@@ -839,11 +850,17 @@ OpenCloud-specific caveats worth knowing:
   access tokens are opaque random strings (`rands.HexString(32)`), not
   JWTs; the proxy default `jwt` would fail every request. Claims are read
   from `/userinfo`.
-- tsidp's userinfo has `username`, **not** `preferred_username` — that is
-  why `PROXY_USER_OIDC_CLAIM=username` here, while the official docs use
-  `preferred_username` (Keycloak examples). Either way the value is the
-  short headscale username (`jack`), derived from the headscale display
-  name (see the claims section).
+- `PROXY_USER_OIDC_CLAIM=email` / `PROXY_USER_CS3_CLAIM=mail`: accounts
+  resolve by the **email claim** against the LDAP `mail` attribute, not
+  by the username. The email is the join key because under the
+  `<username>@mail.polpetta.online` scheme it is unique per user and
+  unreachable by display-name edits — a takeover would require giving a
+  second user the *same full address*, a deliberate admin act (the
+  `username` claim would only pin the local part and discard the
+  domain). The autoprovision username also comes from the email
+  (`PROXY_AUTOPROVISION_CLAIM_USERNAME=email`), so fresh accounts are
+  named `alice@mail.polpetta.online` — OpenCloud explicitly allows
+  email-shaped usernames.
 - Display names come from the userinfo `name` claim (= headscale's
   DisplayName, e.g. `Jack`; `PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME=name`):
   the proxy re-applies `displayName`/`mail` from claims on every login
@@ -852,14 +869,15 @@ OpenCloud-specific caveats worth knowing:
   users to control this. The claim is always non-empty: headscale falls
   back (DisplayName → email → username → id) when building the WhoIs
   profile, so provisioning cannot 500 on a missing claim.
-- headscale usernames are the join key: renaming a headscale user later
-  mints a *new* OpenCloud account on next login (the old one stays).
-  Renaming an OpenCloud account (graph) has the mirror effect. A rename
-  must keep the display-name invariant (display name = username,
-  normalized — see the claims section) or the next login's `username`
-  claim no longer matches.
-- The `email` claim is the headscale Email field verbatim (a real
-  address for users that have one); auto-provisioning accepts whatever
+- The `email` claim is the join key: renaming a headscale *username* is
+  harmless (the claim email is unchanged), while **changing a user's
+  Email orphans the account** — the next login's lookup misses and
+  autoprovision mints a fresh one (the old account stays, frozen).
+  Renaming the OpenCloud account (graph) has the mirror effect. Never
+  change a `<username>@mail.polpetta.online` address.
+- The `email` claim is the headscale Email field verbatim
+  (`<username>@mail.polpetta.online`, unroutable by design — nothing
+  sends mail to it); auto-provisioning accepts whatever
   it carries (email is optional in the provisioning code —
   if provisioning ever fails on mail, point
   `PROXY_AUTOPROVISION_CLAIM_EMAIL` at a nonexistent claim name to drop
@@ -893,8 +911,9 @@ library, just `node:crypto` and `fetch` in `src/lib/server/{oidc,session}.ts`:
 can authenticate at tsidp, but ff only accepts the user with headscale
 username `jack` (the `ALLOWED_USERNAME` environment variable, set in
 `services/services/ff.nix` and **required** — the app fails closed
-without it; the `username` it reads from `/userinfo` is the short
-headscale name, see the claims section); anybody
+without it; the `username` it reads from `/userinfo` is the email
+local part — i.e. the short headscale name under the
+`<username>@mail.polpetta.online` scheme, see the claims section); anybody
 else who completes the flow gets a styled 403 denial page. The check runs
 in the login callback and again in `src/hooks.server.ts` (defense in depth
 for sessions minted before a policy change).

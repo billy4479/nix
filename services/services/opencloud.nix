@@ -98,17 +98,19 @@ in
         # No local authentication at all: OC_URL stays public (for share
         # links) and must not offer any login path to outsiders.
         "PROXY_ENABLE_BASIC_AUTH" = "false";
-        # Account resolution and auto-provisioning: tsidp's userinfo carries
-        # `username` (the short headscale username, derived by tsidp from
-        # the WhoIs display name), `email` (the headscale Email field, a
-        # real address) and `name` (the headscale display name, e.g.
-        # "Jack"). `username` is the only claim guaranteed on every login,
-        # so it maps the account lookup;
-        # provisioning happens in the built-in IDM, which keeps running.
-        "PROXY_USER_OIDC_CLAIM" = "username";
-        "PROXY_USER_CS3_CLAIM" = "username";
+        # Account resolution and auto-provisioning: the `email` claim is the
+        # join key. Every headscale user's Email is
+        # <username>@mail.polpetta.online (docs/TSIDP.md invariant), so the
+        # claim is unique per user, unreachable by display-name edits, and
+        # its local part equals the short username. Lookup runs against the
+        # LDAP mail attribute; provisioning names fresh accounts after the
+        # full address (OpenCloud explicitly allows email-shaped usernames).
+        # Never change a headscale Email: a rename orphans the account —
+        # the next login misses the lookup and autoprovisions a fresh one.
+        "PROXY_USER_OIDC_CLAIM" = "email";
+        "PROXY_USER_CS3_CLAIM" = "mail";
         "PROXY_AUTOPROVISION_ACCOUNTS" = "true";
-        "PROXY_AUTOPROVISION_CLAIM_USERNAME" = "username";
+        "PROXY_AUTOPROVISION_CLAIM_USERNAME" = "email";
         "PROXY_AUTOPROVISION_CLAIM_EMAIL" = "email";
         # Display name from the `name` claim ("Jack"); headscale guarantees a
         # non-empty value (its DisplayName falls back to email/username).
