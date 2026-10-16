@@ -62,7 +62,7 @@ application legitimately needs more scratch space:
 tmpfs = [ "/tmp:size=512m" ];
 ```
 
-Current overrides: byparr (1g), jellyfin (1g), nginx (2g), stirling-pdf (512m).
+Current overrides: byparr (1g), jellyfin (1g), nginx (2g).
 openchamber opts out entirely with `tmpfs = [ ];`.
 
 nginx needs the extra space because it buffers large proxied transfers to
@@ -119,7 +119,7 @@ Always keep this table in sync when adding new containers.
 | sonarr | 9 | 10.0.1.9 |
 | jellyfin | 10 | 10.0.1.10 |
 | bind9 (DNS) | 11 | 10.0.1.11 |
-| Stirling PDF | 12 | 10.0.1.12 |
+| BentoPDF | 12 | 10.0.1.12 |
 | mc-runner | 13 | 10.0.1.13 |
 | opencloud | 14 | 10.0.1.14 |
 | headscale | 15 | 10.0.1.15 |

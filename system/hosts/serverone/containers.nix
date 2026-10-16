@@ -40,7 +40,7 @@ in
 
     ../../../services/services/jellyfin.nix
 
-    ../../../services/services/stirling-pdf.nix
+    ../../../services/services/bentopdf.nix
     ../../../services/services/opencloud.nix
     ../../../services/services/searxng
     ../../../services/services/openchamber.nix
