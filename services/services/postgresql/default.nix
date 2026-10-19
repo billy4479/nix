@@ -126,6 +126,9 @@ in
 
       environment = {
         PGDATA = containerDataDir;
+        # libpq clients exec'd into the container (psql, pg_dump, pg_restore,
+        # vacuumdb) pick this up and find the socket without -h.
+        PGHOST = "/tmp";
         HOME = "/tmp";
         LANG = "en_US.UTF-8";
         LC_ALL = "en_US.UTF-8";
