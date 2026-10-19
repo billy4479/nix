@@ -8,6 +8,14 @@
   # - acltype=posix
   # - com.sun:auto-snapshot=true
 
+  # Cap the ZFS ARC at half of RAM (~16 GiB). Unbounded, the ARC climbs to
+  # c_max (~30 GiB) and `free` reports the box as out of memory even though
+  # the ARC shrinks under pressure. Services + kernel need ~13 GiB baseline
+  # and nightly nix builds spike a further ~7 GiB, so leave that headroom.
+  boot.kernelParams = [
+    "zfs.zfs_arc_max=${toString (16 * 1024 * 1024 * 1024)}"
+  ];
+
   boot.zfs = {
     forceImportRoot = false;
 
