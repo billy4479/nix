@@ -117,7 +117,8 @@ addressable by name.
 ## Assertions
 
 - domains unique across services
-- `remotePort`s unique across services
+- `remotePort`s unique across public `raw` entries (only public entries are
+  tunneled through frp; local/tailnet ports stay on the bridge and may repeat)
 - `record` names unique across services
 - container IDs unique across all containers (services plus infrastructure);
   duplicate IDs would mean duplicate IPs on the bridge

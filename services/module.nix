@@ -231,9 +231,12 @@ let
         message = "polpetta.services: duplicate web domains: ${lib.concatStringsSep ", " (duplicates webDomains)}";
       }
       {
-        assertion = duplicates (map (e: "${e.raw.proto}-${toString (remotePortOf e.raw)}") rawEntries) == [ ];
-        message = "polpetta.services: duplicate remote ports: ${
-          lib.concatStringsSep ", " (duplicates (map (e: "${e.raw.proto}-${toString (remotePortOf e.raw)}") rawEntries))
+        # Only public raw entries are tunneled through frp, so only their
+        # remote ports can collide on the vps; local/tailnet ports never
+        # leave the bridge and may repeat across containers.
+        assertion = duplicates (map (e: "${e.raw.proto}-${toString (remotePortOf e.raw)}") publicRawEntries) == [ ];
+        message = "polpetta.services: duplicate remote ports on public raw entries: ${
+          lib.concatStringsSep ", " (duplicates (map (e: "${e.raw.proto}-${toString (remotePortOf e.raw)}") publicRawEntries))
         }";
       }
       {
