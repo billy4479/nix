@@ -16,8 +16,6 @@ let
   containerDataDir = "/var/lib/postgresql/data";
 
   postgresqlVersion = "18.6";
-  # 0.8.7 (2026-10-01) is a bug-fix patch release over 0.8.6: IVFFlat build
-  # buffer overflow and an avg() aggregate error; no API or storage changes.
   pgvectorVersion = "0.8.7";
   vectorchordVersion = "1.1.1";
   expectedExtensions = "cube:1.5,earthdistance:1.2,pg_trgm:1.6,unaccent:1.1,uuid-ossp:1.1,vchord:${vectorchordVersion},vector:${pgvectorVersion}";
@@ -28,8 +26,6 @@ let
   ]);
 
   localeArchive = "${pkgs.glibcLocales}/lib/locale/locale-archive";
-  postgresqlConfig = toString ./postgresql.conf;
-  postgresqlHba = toString ./pg_hba.conf;
 
   fakeNss = pkgs.dockerTools.fakeNss.override {
     extraPasswdLines = [ "postgres:x:${toString uid}:${toString gid}:PostgreSQL:/tmp:/bin/sh" ];
@@ -52,7 +48,7 @@ let
           exit 1
         fi
 
-        data_version=$(tr -d '[:space:]' < "$pgdata/PG_VERSION")
+        data_version=$(tr -d '[:space:]' <"$pgdata/PG_VERSION")
         if [ "$data_version" != "18" ]; then
           echo "Refusing to start PostgreSQL 18 with data directory version $data_version." >&2
           exit 1
@@ -142,12 +138,12 @@ in
           containerPath = containerDataDir;
         }
         {
-          hostPath = postgresqlConfig;
+          hostPath = "${./postgresql.conf}";
           containerPath = "/etc/postgresql/postgresql.conf";
           readOnly = true;
         }
         {
-          hostPath = postgresqlHba;
+          hostPath = "${./pg_hba.conf}";
           containerPath = "/etc/postgresql/pg_hba.conf";
           readOnly = true;
         }
