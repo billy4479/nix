@@ -51,6 +51,8 @@ in
     ../../../services/services/ff.nix
     ../../../services/services/giuoco-del-divertimento.nix
     ../../../services/services/agent-up.nix
+    ../../../services/services/outline.nix
+    ../../../services/services/outline-valkey.nix
     ../../../services/services/grafana
     ../../../services/services/headscale
     ../../../services/services/headplane

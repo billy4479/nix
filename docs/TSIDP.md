@@ -1026,6 +1026,45 @@ Note: before the public switch the app lived at
 gone — it is no longer in the generated nginx map, so requests to it hit the
 default server and are closed with 444. Use `https://giuoco-del-divertimento.polpetta.online`.
 
+### Outline (as deployed)
+
+Outline (`https://outline.internal.polpetta.online`, the `pkgs.outline`
+from this flake's pin, container 24) uses the generic OIDC plugin with
+**manual endpoint configuration** — the same three URLs as Grafana, no
+`OIDC_ISSUER_URL` discovery:
+
+- Auth/Token/Userinfo: `https://idp.internal.polpetta.online/authorize`,
+  `/token`, `/userinfo`
+- Scopes: `openid profile email`
+- Client: confidential, registered in the admin UI (Outline's
+  passport-oauth2 client authenticates with `client_secret_post`); no
+  PKCE — with manual configuration Outline uses the state parameter
+  only, which tsidp accepts for secret-carrying clients.
+- Redirect URI (must match exactly):
+  `https://outline.internal.polpetta.online/auth/oidc.callback`
+
+Claims mapping (see the claims section above):
+
+- `email` = the headscale Email field (`<username>@mail.polpetta.online`)
+  — Outline keys teams by email domain, so every user lands in the same
+  single team (`mail.polpetta.online`).
+- Username: `OIDC_USERNAME_CLAIM=preferred_username` (Outline's
+  default) — Outline reads it from `/userinfo` first (`username` there)
+  and falls back to the ID token (`preferred_username`), where the
+  claim actually exists: the short headscale username either way.
+- `name` = headscale DisplayName (used as the Outline display name);
+  `sub` (`userid:<n>`) is stored as the Outline `profileId` and is the
+  stable join key across renames.
+- tsidp sends no `email_verified`; Outline treats the claim as absent,
+  which it accepts (only an explicit `false` would be a problem).
+
+Sign-up is implicitly gated by the tailnet: only tailnet members can
+reach the vhost or complete the WhoIs, and any of them gets a member
+account on first login. **The first login creates the team and its
+admin — jack must log in before anyone else** (same bootstrap rule as
+headplane). The database, secrets and ops runbook live in
+`docs/OUTLINE.md`.
+
 ## Known limitations
 
 - **STS disabled**: token exchange has no use here (no funnel/SaaS
