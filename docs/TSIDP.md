@@ -354,20 +354,20 @@ needed). On serverone, **backup first**, then update:
 ```sh
 ssh serverone
 # backup the user table (redirect happens host-side)
-sudo exec-in-container postgresql pg_dump -U postgres -d immich \
+sudo exec-in-container postgresql pg_dump -h /tmp -U postgres -d immich \
   -t '"user"' --data-only > ~/immich-user-backup.sql
 
 # bind: sub (userid:<n>) -> existing account, matched by the account's
 # stored (personal) Immich email
-sudo exec-in-container postgresql psql -U postgres -d immich -c \
+sudo exec-in-container postgresql psql -h /tmp -U postgres -d immich -c \
   "UPDATE \"user\" SET \"oauthId\" = 'userid:1' WHERE email = '<jack-immich-email>';"
-sudo exec-in-container postgresql psql -U postgres -d immich -c \
+sudo exec-in-container postgresql psql -h /tmp -U postgres -d immich -c \
   "UPDATE \"user\" SET \"oauthId\" = 'userid:2' WHERE email = '<alice-immich-email>';"
-sudo exec-in-container postgresql psql -U postgres -d immich -c \
+sudo exec-in-container postgresql psql -h /tmp -U postgres -d immich -c \
   "UPDATE \"user\" SET \"oauthId\" = 'userid:3' WHERE email = '<bob-immich-email>';"
 
 # verify: one row per sub
-sudo exec-in-container postgresql psql -U postgres -d immich -c \
+sudo exec-in-container postgresql psql -h /tmp -U postgres -d immich -c \
   "SELECT \"oauthId\", email, name, \"isAdmin\" FROM \"user\" ORDER BY \"oauthId\";"
 ```
 

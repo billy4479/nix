@@ -423,12 +423,17 @@ sudo systemctl start nerdctl-postgresql.service
 sudo systemctl status nerdctl-postgresql.service
 
 sudo nerdctl exec -i postgresql \
-  psql -X -U postgres -d postgres -c \
+  psql -X -h /tmp -U postgres -d postgres -c \
   "SELECT version(); SHOW data_checksums; SHOW shared_preload_libraries;"
 ```
 
 Require PostgreSQL 18.6, enabled checksums, and `vchord.so` in
 `shared_preload_libraries`.
+
+The container's Unix socket is at `/tmp` (`unix_socket_directories` in
+`postgresql.conf`), not `/run/postgresql`: every `psql`, `pg_dump`,
+`pg_restore`, and `vacuumdb` invocation against this container must pass
+`-h /tmp`.
 
 ## 10. Create the Immich role and database
 
@@ -436,7 +441,7 @@ Open an interactive local administrative session:
 
 ```sh
 sudo nerdctl exec -it postgresql \
-  psql -X -v ON_ERROR_STOP=1 -U postgres -d postgres
+  psql -X -h /tmp -v ON_ERROR_STOP=1 -U postgres -d postgres
 ```
 
 Create the role and securely set the password to the value stored in the
@@ -499,7 +504,7 @@ Generate the restore list with PostgreSQL 18:
 
 ```sh
 sudo nerdctl exec -i postgresql \
-  pg_restore --list < "$DUMP" \
+  pg_restore -h /tmp --list < "$DUMP" \
   > "$BACKUP_DIR/restore.pg18.list"
 ```
 
@@ -527,7 +532,7 @@ sudo nerdctl cp \
   postgresql:/tmp/restore.list
 
 sudo nerdctl exec -i postgresql \
-  pg_restore \
+  pg_restore -h /tmp \
   --username=postgres \
   --role=immich \
   --dbname=immich \
@@ -545,7 +550,7 @@ Do not start Immich unless the restore exits successfully.
 ## 12. Validate the restored database
 
 Generate target state by repeating the command from section 6 with `postgresql`
-as the container name and write the result to:
+as the container name and `-h /tmp` added to `psql`, and write the result to:
 
 ```text
 $BACKUP_DIR/target-database-state.csv
@@ -563,7 +568,7 @@ Verify the role:
 
 ```sh
 sudo nerdctl exec -i postgresql \
-  psql -X -U postgres -d postgres -c \
+  psql -X -h /tmp -U postgres -d postgres -c \
   "SELECT rolname, rolsuper, rolinherit, rolcreatedb, rolcreaterole,
           rolreplication, rolbypassrls, rolcanlogin
    FROM pg_roles
@@ -576,7 +581,7 @@ Check indexes, constraints, and ownership:
 
 ```sh
 sudo nerdctl exec -i postgresql \
-  psql -X -v ON_ERROR_STOP=1 -U postgres -d immich <<'SQL'
+  psql -X -h /tmp -v ON_ERROR_STOP=1 -U postgres -d immich <<'SQL'
 SELECT n.nspname, c.relname
 FROM pg_index i
 JOIN pg_class c ON c.oid = i.indexrelid
@@ -608,7 +613,7 @@ All three queries must return zero rows. Regenerate planner statistics:
 
 ```sh
 sudo nerdctl exec postgresql \
-  vacuumdb --username=postgres --dbname=immich --analyze-in-stages
+  vacuumdb -h /tmp --username=postgres --dbname=immich --analyze-in-stages
 ```
 
 The restore creates the indexes using the new extension versions, so an
@@ -630,7 +635,7 @@ Confirm its sessions use the new role:
 
 ```sh
 sudo nerdctl exec postgresql \
-  psql -X -U postgres -d postgres -c \
+  psql -X -h /tmp -U postgres -d postgres -c \
   "SELECT usename, datname, application_name, client_addr, state
    FROM pg_stat_activity
    WHERE datname = 'immich'
@@ -655,7 +660,7 @@ backup="$backup_dir/immich.dump"
 sudo install -d -m 0700 -o "$(id -u)" -g "$(id -g)" "$backup_dir"
 umask 077
 sudo nerdctl exec postgresql \
-  pg_dump \
+  pg_dump -h /tmp \
   --username=postgres \
   --role=immich \
   --dbname=immich \
@@ -675,7 +680,7 @@ then update the extension SQL as `postgres`:
 
 ```sh
 sudo nerdctl exec -i postgresql \
-  psql -X -v ON_ERROR_STOP=1 -U postgres -d immich <<'SQL'
+  psql -X -h /tmp -v ON_ERROR_STOP=1 -U postgres -d immich <<'SQL'
 ALTER EXTENSION vector UPDATE;
 ALTER EXTENSION vchord UPDATE;
 REINDEX INDEX face_index;
