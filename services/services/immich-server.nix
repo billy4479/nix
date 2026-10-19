@@ -10,7 +10,15 @@ let
   baseHDDDir = "/mnt/HDD/apps/immich";
 in
 {
-  sops.secrets.immichAppEnv = lib.mkIf (options ? nerdctl-containers) {
+  sops.secrets.immich-db-password = lib.mkIf (options ? nerdctl-containers) {
+    key = "immich/db-password";
+  };
+
+  sops.templates."immich-env" = lib.mkIf (options ? nerdctl-containers) {
+    content = # sh
+      ''
+        DB_PASSWORD=${config.sops.placeholder.immich-db-password}
+      '';
     restartUnits = [ "nerdctl-${name}.service" ];
   };
 
@@ -51,7 +59,7 @@ in
         }
       ];
       environmentFiles = [
-        config.sops.secrets.immichAppEnv.path
+        config.sops.templates."immich-env".path
       ];
       environment = {
         DB_USERNAME = "immich";

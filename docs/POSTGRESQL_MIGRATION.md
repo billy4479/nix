@@ -47,10 +47,12 @@ Generate a new password for the `immich` database role:
 openssl rand -hex 32
 ```
 
-In the secrets repository, replace the combined `immichEnv` secret with a new
-dotenv secret named `immichAppEnv`. Preserve all Immich application settings,
-set `DB_PASSWORD` to the new password, and remove `POSTGRES_PASSWORD` and every
-other PostgreSQL administrative value. Do not commit plaintext credentials.
+In the secrets repository, replace the flat `immichEnv` dotenv with a new
+hierarchical key named `db-password` under an `immich` section, holding the new
+password (the same style as the `grafana` section). The dotenv holds nothing
+else: `POSTGRES_PASSWORD` is obsolete because the new superuser has no network
+password, and the old `DB_PASSWORD` applied to the `postgres` role. Do not
+commit plaintext credentials.
 
 Preserve the old secrets revision for rollback, update the flake lock to the new
 secrets revision, and do not deploy yet.
@@ -437,8 +439,8 @@ sudo nerdctl exec -it postgresql \
   psql -X -v ON_ERROR_STOP=1 -U postgres -d postgres
 ```
 
-Create the role and securely set the password to the value stored in
-`immichAppEnv`:
+Create the role and securely set the password to the value stored in the
+`immich/db-password` secret:
 
 ```sql
 CREATE ROLE immich
