@@ -286,7 +286,7 @@ Immich 3.2.2 (the `pkgs.immich` in this flake's pin, running as the
 database**, not in nix config and not in env vars —
 `services/services/immich-server.nix` has no declarable OAuth surface.
 Everything below happens in Immich's admin UI (persisted to the
-`system_config` table) or in the `immich-database` container.
+`system_config` table) or in the shared `postgresql` container.
 
 Client registration in the tsidp admin UI
 (`https://idp.internal.polpetta.online`):
@@ -347,27 +347,27 @@ bind any such account **before** its first OAuth login (auto-register
 is on and would mint a duplicate instead of linking):
 
 Scripted alternative (only if you ever need to rebind without logging
-in as the user): SQL in the `immich-database` container (table
+in as the user): SQL in the `postgresql` container (table
 `"user"`, column `"oauthId"`; Immich reads it on each login, no restart
 needed). On serverone, **backup first**, then update:
 
 ```sh
 ssh serverone
 # backup the user table (redirect happens host-side)
-sudo exec-in-container immich-database pg_dump -U postgres -d immich \
+sudo exec-in-container postgresql pg_dump -U postgres -d immich \
   -t '"user"' --data-only > ~/immich-user-backup.sql
 
 # bind: sub (userid:<n>) -> existing account, matched by the account's
 # stored (personal) Immich email
-sudo exec-in-container immich-database psql -U postgres -d immich -c \
+sudo exec-in-container postgresql psql -U postgres -d immich -c \
   "UPDATE \"user\" SET \"oauthId\" = 'userid:1' WHERE email = '<jack-immich-email>';"
-sudo exec-in-container immich-database psql -U postgres -d immich -c \
+sudo exec-in-container postgresql psql -U postgres -d immich -c \
   "UPDATE \"user\" SET \"oauthId\" = 'userid:2' WHERE email = '<alice-immich-email>';"
-sudo exec-in-container immich-database psql -U postgres -d immich -c \
+sudo exec-in-container postgresql psql -U postgres -d immich -c \
   "UPDATE \"user\" SET \"oauthId\" = 'userid:3' WHERE email = '<bob-immich-email>';"
 
 # verify: one row per sub
-sudo exec-in-container immich-database psql -U postgres -d immich -c \
+sudo exec-in-container postgresql psql -U postgres -d immich -c \
   "SELECT \"oauthId\", email, name, \"isAdmin\" FROM \"user\" ORDER BY \"oauthId\";"
 ```
 
