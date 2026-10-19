@@ -45,6 +45,7 @@ in
         tag = "nix-local";
 
         copyToRoot = with pkgs; [
+          dockerTools.binSh
           dockerTools.caCertificates
           outline
           tzdata
