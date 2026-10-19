@@ -597,19 +597,30 @@ SELECT n.nspname, c.relname, c.relkind,
 FROM pg_class c
 JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+  AND n.nspname NOT LIKE 'pg_%'
+  AND pg_get_userbyid(c.relowner) <> 'immich'
   AND NOT EXISTS (
     SELECT 1
     FROM pg_depend d
-    WHERE d.classid = 'pg_class'::regclass
-      AND d.objid = c.oid
+    WHERE d.objid = c.oid
       AND d.deptype = 'e'
   )
-  AND pg_get_userbyid(c.relowner) <> 'immich'
+  AND NOT EXISTS (
+    SELECT 1
+    FROM pg_depend d
+    JOIN pg_type t ON d.classid = 'pg_type'::regclass AND d.objid = t.oid
+    WHERE t.typrelid = c.oid
+      AND d.deptype = 'e'
+  )
 ORDER BY n.nspname, c.relname;
 SQL
 ```
 
-All three queries must return zero rows. Regenerate planner statistics:
+All three queries must return zero rows. The third excludes `pg_toast`
+relations and extension-owned composite types (for example VectorChord's
+`sphere_*` types, whose extension membership is recorded through
+`pg_type` rather than `pg_class`); those are system objects correctly
+owned by `postgres`. Regenerate planner statistics:
 
 ```sh
 sudo nerdctl exec postgresql \
