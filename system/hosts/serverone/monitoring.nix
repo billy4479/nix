@@ -19,9 +19,6 @@ let
         timeout = "5s";
         http = {
           preferred_ip_protocol = "ip4";
-          headers = {
-            x-forwarded-proto = "https";
-          };
         };
       };
       http_unauth = {
