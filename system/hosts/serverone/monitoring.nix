@@ -19,6 +19,9 @@ let
         timeout = "5s";
         http = {
           preferred_ip_protocol = "ip4";
+          headers = {
+            x-forwarded-proto = "https";
+          };
         };
       };
       http_unauth = {
@@ -32,7 +35,14 @@ let
           # blackbox_exporter only accepts literal status codes here; 401 is
           # calendar-proxy without a token, 404 is agent-up on /, 302/403 are
           # the OIDC-gated services (ff, headplane) bouncing to tsidp.
-          valid_status_codes = [ 200 301 302 401 403 404 ];
+          valid_status_codes = [
+            200
+            301
+            302
+            401
+            403
+            404
+          ];
         };
       };
       https_internal = {
@@ -237,8 +247,8 @@ let
 
             state=0
             case "$scan" in
-              "scrub in progress"*) state=1 ;;
-              "resilver in progress"*) state=2 ;;
+            "scrub in progress"*) state=1 ;;
+            "resilver in progress"*) state=2 ;;
             esac
             printf 'zpool_scrub_state{pool="%s"} %d\n' "$pool" "$state"
 
@@ -268,7 +278,7 @@ let
             printf 'zpool_io_read_bytes_total{pool="%s"} %s\n' "$pool" "$rbytes"
             printf 'zpool_io_write_bytes_total{pool="%s"} %s\n' "$pool" "$wbytes"
           done
-        } > "$tmp"
+        } >"$tmp"
 
         # mktemp creates the file 0600 root-owned; node_exporter runs as the
         # node-exporter user and would never read it.
@@ -309,16 +319,17 @@ let
   # Each probe target carries a `service` label so the dashboards and the
   # ContainerDown alert can show a human-readable name. An optional `module`
   # label selects the blackbox module for that target.
-  probeStaticConfigs = probeAttr: targets: map (
-    t: {
+  probeStaticConfigs =
+    probeAttr: targets:
+    map (t: {
       targets = [ t.${probeAttr} ];
       labels = {
         service = t.name;
-      } // lib.optionalAttrs (t ? module) {
+      }
+      // lib.optionalAttrs (t ? module) {
         module = t.module;
       };
-    }
-  ) targets;
+    }) targets;
 in
 {
   # The shared telegram-bot secret block (token + chat id) lives once per
