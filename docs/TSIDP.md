@@ -1128,6 +1128,7 @@ game-server-runner/oauth-client-secret=<generated client secret>
 game-server-runner/telegram-token=<old TG_TOKEN value from mc-runner-env>
 game-server-runner/telegram-username=<bot username without @>
 game-server-runner/telegram-chat-ids=<old TG_CHAT_IDS value, semicolon separated>
+game-server-runner/restic-password=<old RESTIC_PASSWORD value from mc-runner-env>
 ```
 
 The old opaque `mc-runner-env` entry becomes unused after those are

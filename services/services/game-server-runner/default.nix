@@ -35,12 +35,15 @@ in
   # - game-server-runner/telegram-token, -username, -chat-ids: the companion
   #   bot, login widget and notifications; an empty token turns telegram
   #   (login and notifications) off
+  # - game-server-runner/restic-password: the restic backups read it from
+  #   the inherited environment (same repo as the old mc-runner)
   sops.secrets = lib.mkIf (options ? nerdctl-containers) {
     game-server-runner-oauth-client-id.key = "game-server-runner/oauth-client-id";
     game-server-runner-oauth-client-secret.key = "game-server-runner/oauth-client-secret";
     game-server-runner-telegram-token.key = "game-server-runner/telegram-token";
     game-server-runner-telegram-username.key = "game-server-runner/telegram-username";
     game-server-runner-telegram-chat-ids.key = "game-server-runner/telegram-chat-ids";
+    game-server-runner-restic-password.key = "game-server-runner/restic-password";
   };
 
   # The app reads all four OIDC settings as a unit: the template renders
@@ -53,6 +56,7 @@ in
       OIDC_CLIENT_ID=${config.sops.placeholder."game-server-runner-oauth-client-id"}
       OIDC_CLIENT_SECRET=${config.sops.placeholder."game-server-runner-oauth-client-secret"}
       ADMIN_USERNAME=jack
+      RESTIC_PASSWORD=${config.sops.placeholder."game-server-runner-restic-password"}
     ''
   );
 
