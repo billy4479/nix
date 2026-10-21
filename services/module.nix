@@ -14,8 +14,8 @@ let
   hasContainers = options ? nerdctl-containers;
 
   # One probe shape for both http (web endpoints) and tcp (raw ports)
-  # probes; only `enable`'s default differs. `unauth` and `path` apply to
-  # http probes and are asserted off elsewhere.
+  # probes; only `enable`'s default differs. `unauth`, `path` and `headers`
+  # apply to http probes and are asserted off elsewhere.
   probeSubmodule =
     enableDefault:
     lib.types.submodule {
@@ -37,6 +37,16 @@ let
           default = "";
           description = "Path appended to the probed URL (http probes).";
         };
+
+        headers = lib.mkOption {
+          type = lib.types.attrsOf lib.types.str;
+          default = { };
+          description = ''
+            Extra HTTP headers sent by the probe. blackbox_exporter only
+            reads headers from the module config, so a probe with headers
+            gets a generated http_custom_<name> module; http probes only.
+          '';
+        };
       };
     };
 
@@ -46,11 +56,19 @@ let
     name: svc:
     let
       web = svc.web;
+      baseModule = if web.probe.unauth then "http_unauth" else "http_2xx";
     in
     {
       inherit name;
       url = "http://10.0.1.${toString svc.container.id}:${toString web.port}${web.probe.path}";
-      module = if web.probe.unauth then "http_unauth" else "http_2xx";
+      # blackbox_exporter cannot take headers per probe, so a probe with
+      # headers selects a generated http_custom_<name> module (monitoring.nix
+      # derives it from baseModule + headers).
+      module = if web.probe.headers != { } then "http_custom_${name}" else baseModule;
+    }
+    // lib.optionalAttrs (web.probe.headers != { }) {
+      inherit baseModule;
+      headers = web.probe.headers;
     }
   ) (lib.filterAttrs (_: svc: svc.web != null && svc.web.probe.enable) servicesWithWeb);
 
@@ -246,10 +264,14 @@ let
         }";
       }
       {
-        assertion = lib.all (e: e.raw.proto == "tcp" && !e.raw.probe.unauth) (
-          lib.filter (e: e.raw.probe.enable) rawEntries
-        );
-        message = "polpetta.services: raw probes must be tcp with unauth = false (unauth applies to http probes only)";
+        assertion = lib.all (
+          e:
+          e.raw.proto == "tcp"
+          && e.raw.probe.unauth == false
+          && e.raw.probe.path == ""
+          && e.raw.probe.headers == { }
+        ) (lib.filter (e: e.raw.probe.enable) rawEntries);
+        message = "polpetta.services: raw probes must be tcp with the http-only probe options (unauth, path, headers) unset";
       }
       {
         assertion = lib.all (
@@ -427,7 +449,7 @@ in
       };
 
       probeHttpTargets = lib.mkOption {
-        description = "Blackbox http probe targets ({ name, url, module }) for all web endpoints.";
+        description = "Blackbox http probe targets ({ name, url, module } plus baseModule and headers when the probe sets custom headers) for all web endpoints.";
         type = lib.types.listOf lib.types.attrs;
         readOnly = true;
       };

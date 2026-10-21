@@ -36,6 +36,8 @@ polpetta.services.<name> = {
     # probe.enable = false;       # opt out of the blackbox probe
     # probe.unauth = true;        # accept 401/404 as alive (default false)
     # probe.path = "/admin";      # blackbox probe path (default "")
+    # probe.headers = { };        # extra HTTP headers sent by the probe
+    #                             # (generates an http_custom_<name> module)
     # nginx.extraConfig = ''       # raw nginx text, injected into location /
     #   client_max_body_size 10M;
     # '';
@@ -100,7 +102,7 @@ wildcards `*.polpetta.online` to the vps.
 | frpc proxies        | `raw` entries with `access = "public"`           |
 | frps `allowPorts` + vps firewall | `raw` entries with `access = "public"` (`remotePort`; allowPorts ranges are proto-agnostic and deduplicated) |
 | bind9 zone records  | `raw` entries with `record` (→ container IP, wg/tailnet view) |
-| blackbox probes     | every `web` endpoint (URL/port inferred; `probe.enable`/`probe.unauth`/`probe.path` tune it) plus tcp probes of `raw` entries with `probe.enable = true`; consumed by serverone's monitoring.nix, which declares no targets itself |
+| blackbox probes     | every `web` endpoint (URL/port inferred; `probe.enable`/`probe.unauth`/`probe.path`/`probe.headers` tune it) plus tcp probes of `raw` entries with `probe.enable = true`; consumed by serverone's monitoring.nix, which declares no targets itself |
 | `useNginx` ordering | presence of `web` (auto-set on the mirrored container) |
 
 Container `ports` (host publishing, e.g. LAN minecraft) stay explicit on the

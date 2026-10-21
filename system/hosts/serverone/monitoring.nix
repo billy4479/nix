@@ -7,59 +7,76 @@
 let
   yamlFormat = pkgs.formats.yaml { };
 
-  # Blackbox probe modules: plain http for the container web UIs, an
+  # Static blackbox probe modules: plain http for the container web UIs, an
   # https module pinning the grafana internal vhost (used to watch the
   # wildcard certificate), an http module for services whose only unauth
   # answers are 401/404 (which still prove the HTTP server is alive) and a
   # plain tcp module for non-http services.
-  blackboxConfig = yamlFormat.generate "blackbox-exporter.yml" {
-    modules = {
-      http_2xx = {
-        prober = "http";
-        timeout = "5s";
-        http = {
-          preferred_ip_protocol = "ip4";
-        };
-      };
-      http_unauth = {
-        prober = "http";
-        timeout = "5s";
-        http = {
-          preferred_ip_protocol = "ip4";
-          # Don't follow auth redirects: an unauthenticated probe that lands
-          # on the IdP would fail even though the service is alive.
-          follow_redirects = false;
-          # blackbox_exporter only accepts literal status codes here; 401 is
-          # calendar-proxy without a token, 404 is agent-up on /, 302/403 are
-          # the OIDC-gated services (ff, headplane) bouncing to tsidp.
-          valid_status_codes = [
-            200
-            301
-            302
-            401
-            403
-            404
-          ];
-        };
-      };
-      https_internal = {
-        prober = "http";
-        timeout = "5s";
-        http = {
-          preferred_ip_protocol = "ip4";
-          headers = {
-            Host = "grafana.internal.polpetta.online";
-          };
-          tls_config = {
-            server_name = "grafana.internal.polpetta.online";
-          };
-        };
-      };
-      tcp_connect = {
-        prober = "tcp";
-        timeout = "5s";
+  staticModules = {
+    http_2xx = {
+      prober = "http";
+      timeout = "5s";
+      http = {
+        preferred_ip_protocol = "ip4";
       };
     };
+    http_unauth = {
+      prober = "http";
+      timeout = "5s";
+      http = {
+        preferred_ip_protocol = "ip4";
+        # Don't follow auth redirects: an unauthenticated probe that lands
+        # on the IdP would fail even though the service is alive.
+        follow_redirects = false;
+        # blackbox_exporter only accepts literal status codes here; 401 is
+        # calendar-proxy without a token, 404 is agent-up on /, 302/403 are
+        # the OIDC-gated services (ff, headplane) bouncing to tsidp.
+        valid_status_codes = [
+          200
+          301
+          302
+          401
+          403
+          404
+        ];
+      };
+    };
+    https_internal = {
+      prober = "http";
+      timeout = "5s";
+      http = {
+        preferred_ip_protocol = "ip4";
+        headers = {
+          Host = "grafana.internal.polpetta.online";
+        };
+        tls_config = {
+          server_name = "grafana.internal.polpetta.online";
+        };
+      };
+    };
+    tcp_connect = {
+      prober = "tcp";
+      timeout = "5s";
+    };
+  };
+
+  httpProbeTargets = config.polpetta.generated.probeHttpTargets;
+
+  # blackbox_exporter takes http headers only from the module config, so a
+  # service with probe.headers gets its own module: a copy of its base module
+  # with the headers merged in. The generated target carries the base module
+  # name and the headers (see services/module.nix).
+  headerModules = lib.listToAttrs (
+    map (t: {
+      name = t.module;
+      value = lib.recursiveUpdate staticModules.${t.baseModule} {
+        http.headers = t.headers;
+      };
+    }) (lib.filter (t: t ? headers) httpProbeTargets)
+  );
+
+  blackboxConfig = yamlFormat.generate "blackbox-exporter.yml" {
+    modules = staticModules // headerModules;
   };
 
   alertRules = yamlFormat.generate "serverone-alerts.yml" {
@@ -432,7 +449,7 @@ in
         params = {
           module = [ "http_2xx" ];
         };
-        static_configs = probeStaticConfigs "url" config.polpetta.generated.probeHttpTargets;
+        static_configs = probeStaticConfigs "url" httpProbeTargets;
         relabel_configs = blackboxRelabelConfigs;
       }
       {
