@@ -64,10 +64,17 @@ in
   # placeholders are not secrets but this is part of the one sops edit
   # the deployment needs anyway, and it keeps token/username/chat ids
   # out of this repo; an empty token disables telegram login and
-  # notifications.
-  sops.templates."game-server-runner-config".content = lib.mkIf (options ? nerdctl-containers) (
+  # notifications. Unlike the env file (only nerdctl on the host ever
+  # opens it) this file is bind-mounted into the container, so it must
+  # be readable there: the rendered file gets the container uid's
+  # ownership and group, like the frp/openchamber container files.
+  sops.templates."game-server-runner-config" = lib.mkIf (options ? nerdctl-containers) {
+    owner = "container-${toString config.nerdctl-containers.${name}.uid}";
+    group = "containers";
+    mode = "0400";
+    restartUnits = [ "nerdctl-${name}.service" ];
     # toml
-    ''
+    content = ''
       db_path = "/game-server-runner/game-server-runner.db"
       port = 4479
       connect_url = "localhost:25565"
@@ -82,13 +89,10 @@ in
       token = "${config.sops.placeholder."game-server-runner-telegram-token"}"
       username = "${config.sops.placeholder."game-server-runner-telegram-username"}"
       chat_ids = "${config.sops.placeholder."game-server-runner-telegram-chat-ids"}"
-    ''
-  );
+    '';
+  };
 
   sops.templates."game-server-runner-env".restartUnits = lib.mkIf (options ? nerdctl-containers) [
-    "nerdctl-${name}.service"
-  ];
-  sops.templates."game-server-runner-config".restartUnits = lib.mkIf (options ? nerdctl-containers) [
     "nerdctl-${name}.service"
   ];
 
