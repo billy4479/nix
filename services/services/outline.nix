@@ -63,8 +63,7 @@ in
         PORT = "3000";
         # nginx terminates TLS and forwards X-Forwarded-Proto, so Outline only
         # uses this to mark cookies secure and redirect plain http.
-        # FIXME: restore this once I fix probes
-        # FORCE_HTTPS = "true";
+        FORCE_HTTPS = "true";
         ENABLE_UPDATES = "false";
 
         REDIS_URL = "redis://${redisIp}:6379";
@@ -111,6 +110,9 @@ in
       nginx.extraConfig = ''
         client_max_body_size 262144000;
       '';
+      probe.headers = {
+        X-Forwarded-Proto = "https";
+      };
     };
   };
 }
