@@ -40,7 +40,7 @@ these keys (adding them restarts the container):
 `pg_hba.conf` already carries the narrow rule
 (`host outline outline 10.0.1.24/32 scram-sha-256`). The role and
 database are created once, the same way as Immich's (see
-POSTGRESQL_MIGRATION.md §10):
+postgresql-migration.md §10):
 
 ```sh
 ssh serverone
@@ -87,6 +87,20 @@ In the tsidp admin UI (`https://idp.internal.polpetta.online`):
 Save, then put the shown client id + secret into the sops keys above
 (tsidp shows them once).
 
+## Identity mapping
+
+- Claims: `email` = the headscale Email field (`<username>@mail.polpetta.online`,
+  see the invariant in [../TSIDP.md](../TSIDP.md)) — Outline keys teams by
+  email domain, so every user lands in the same single team
+  (`mail.polpetta.online`).
+- Username: `OIDC_USERNAME_CLAIM=preferred_username` (outline.nix) — the
+  short headscale username; the userdata `name` claim (= headscale
+  DisplayName) is used as the display name.
+- `sub` (`userid:<n>`) is stored as the Outline `profileId` and is the
+  stable join key across renames.
+- tsidp sends no `email_verified`; Outline treats the claim as absent,
+  which it accepts (only an explicit `false` would be a problem).
+
 ## Deploy checklist (order matters)
 
 1. Add the five sops keys (above).
@@ -104,11 +118,11 @@ Save, then put the shown client id + secret into the sops keys above
 6. Verify: `https://outline.internal.polpetta.online` shows the login
    page with a "Continue with tsidp" button; a tailnet login lands in
    the account of the headscale user (username = short headscale name,
-   see the claims section in TSIDP.md).
+   see the claims section in [../TSIDP.md](../TSIDP.md)).
 
 ## Backups
 
-- Database: logical dump like Immich's (POSTGRESQL_MIGRATION.md,
+- Database: logical dump like Immich's (postgresql-migration.md,
   "Manual backups"), with `--role=outline --dbname=outline`.
 - Attachments: `/mnt/SSD/apps/outline/data` (plain file tree).
 - Valkey (`/mnt/SSD/apps/outline/valkey`) holds only caches and job

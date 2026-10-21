@@ -31,7 +31,8 @@ in
   # sops keys (in secrets-repo, serverone.yaml), rendered into the env and
   # config templates below:
   # - game-server-runner/oauth-client-id + /oauth-client-secret: the tsidp
-  #   client registration (docs/TSIDP.md), OIDC admin login
+  #   client registration (docs/deployments/tsidp-game-server-runner.md),
+  #   OIDC admin login
   # - game-server-runner/telegram-token, -username, -chat-ids: the companion
   #   bot, login widget and notifications; an empty token turns telegram
   #   (login and notifications) off

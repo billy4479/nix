@@ -85,7 +85,8 @@ in
         # client id (registered via DCR with token_endpoint_auth_method
         # "none" — it is a secret-less public client, so not via the admin
         # UI) comes from the sops key opencloud/oidc-client-id, rendered
-        # into the opencloud-env template. Full runbook: docs/TSIDP.md.
+        # into the opencloud-env template. Full runbook:
+        # docs/deployments/tsidp-opencloud.md.
         "OC_EXCLUDE_RUN_SERVICES" = "idp";
         "OC_OIDC_ISSUER" = "https://idp.internal.polpetta.online";
         # tsidp access tokens are opaque strings, not JWTs, so the proxy must

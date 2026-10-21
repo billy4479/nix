@@ -72,9 +72,9 @@ in
         FILE_STORAGE_LOCAL_ROOT_DIR = "/var/lib/outline/data";
         FILE_STORAGE_UPLOAD_MAX_SIZE = "262144000";
 
-        # Auth against tsidp (docs/TSIDP.md): the client id/secret come from
-        # the tsidp client registration, the callback path is fixed by
-        # Outline (${URL}/auth/oidc.callback).
+        # Auth against tsidp (docs/deployments/outline.md): the client
+        # id/secret come from the tsidp client registration, the callback
+        # path is fixed by Outline (${URL}/auth/oidc.callback).
         OIDC_AUTH_URI = "https://idp.internal.polpetta.online/authorize";
         OIDC_TOKEN_URI = "https://idp.internal.polpetta.online/token";
         OIDC_USERINFO_URI = "https://idp.internal.polpetta.online/userinfo";

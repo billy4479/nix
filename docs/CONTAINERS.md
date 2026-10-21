@@ -108,7 +108,7 @@ qbittorrent -> sonarr/radarr
 Always keep this table in sync when adding new containers.
 
 The shared PostgreSQL container is initialized and migrated according to
-[`POSTGRESQL_MIGRATION.md`](./POSTGRESQL_MIGRATION.md).
+[`deployments/postgresql-migration.md`](./deployments/postgresql-migration.md).
 
 | Container | ID | IP Address |
 |-----------|----|----|

@@ -53,10 +53,10 @@ in
         DATABASE_URL = "/data/items.db";
       };
 
-      # OIDC login against tsidp (docs/TSIDP.md): the game is publicly
-      # readable/playable, any tailnet member who logs in may add cards.
-      # The client id/secret come from the tsidp client registration, the
-      # session secret signs giuoco's session cookies.
+      # OIDC login against tsidp (docs/deployments/tsidp-giuoco-del-divertimento.md):
+      # the game is publicly readable/playable, any tailnet member who logs
+      # in may add cards. The client id/secret come from the tsidp client
+      # registration, the session secret signs giuoco's session cookies.
       environmentFiles = [ config.sops.templates."giuoco-env".path ];
 
       volumes = [
