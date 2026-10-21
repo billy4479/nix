@@ -106,8 +106,8 @@
       };
     };
 
-    mc-runner = {
-      url = "github:billy4479/mc-runner";
+    game-server-runner = {
+      url = "github:billy4479/game-server-runner";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-utils.follows = "flake-utils";
@@ -165,7 +165,10 @@
           final: prev:
           {
             inherit (inputs.ff.packages.${system}) ff;
-            inherit (inputs.mc-runner.packages.${system}) mc-runner mc-java;
+            # The app flake exposes the binary as `default`; no mc-java
+            # equivalent is needed: the image carries the java version
+            # the world runs on (see the service file).
+            game-server-runner = inputs.game-server-runner.packages.${system}.default;
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
             inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
             inherit (inputs.agent-up.packages.${system}) agent-up agent-up-server;

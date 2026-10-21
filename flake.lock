@@ -295,6 +295,29 @@
         "type": "github"
       }
     },
+    "game-server-runner": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792593643,
+        "narHash": "sha256-K5Qv9IIrfvQRufsYm0z6jBCUozE0Ud8CrVPSHnt/1E4=",
+        "owner": "billy4479",
+        "repo": "game-server-runner",
+        "rev": "ca20049d979a411bd535dffb2049ff2a9e389e31",
+        "type": "github"
+      },
+      "original": {
+        "owner": "billy4479",
+        "repo": "game-server-runner",
+        "type": "github"
+      }
+    },
     "git-hooks-nix": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -380,29 +403,6 @@
       "original": {
         "owner": "nix-community",
         "repo": "home-manager",
-        "type": "github"
-      }
-    },
-    "mc-runner": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1789996895,
-        "narHash": "sha256-IjVIqXQ2uEfnsTOYdY1kX2v1wdcAZLQLbcwwifX1gXM=",
-        "owner": "billy4479",
-        "repo": "mc-runner",
-        "rev": "fd4c7df5eb04fca044018a83715e7a8f3dadd0c3",
-        "type": "github"
-      },
-      "original": {
-        "owner": "billy4479",
-        "repo": "mc-runner",
         "type": "github"
       }
     },
@@ -803,9 +803,9 @@
         "ff": "ff",
         "firefox-ui-fix": "firefox-ui-fix",
         "flake-utils": "flake-utils",
+        "game-server-runner": "game-server-runner",
         "giuoco-del-divertimento": "giuoco-del-divertimento",
         "home-manager": "home-manager",
-        "mc-runner": "mc-runner",
         "myPackages": "myPackages",
         "niri": "niri",
         "nix-snapshotter": "nix-snapshotter",

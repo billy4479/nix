@@ -1083,6 +1083,62 @@ admin — jack must log in before anyone else** (same bootstrap rule as
 headplane). The database, secrets and ops runbook live in
 `docs/OUTLINE.md`.
 
+### game-server-runner (as deployed)
+
+game-server-runner (`https://mc-runner.polpetta.online`, the
+`inputs.game-server-runner` Rust rewrite of mc-runner, container 13, kept on
+the historical domain via `web.domain`) has two login paths:
+
+- **Admin: OIDC against tsidp**, the ff-style hand-rolled flow
+  (`src/web/oidc.rs`: authorization code + PKCE S256, `client_secret_post`,
+  claims from `/userinfo`). Unlike ff's `/login/callback` page, the callback
+  path is an API route:
+
+  - Redirect URI (must match exactly):
+    `https://mc-runner.polpetta.online/api/auth/oidc/callback`
+  - The app derives it from the forwarded Host header, so it follows the
+    `web.domain` override and needs no extra env.
+
+  The app accepts exactly one identity: `ADMIN_USERNAME` from the env
+  (`jack`, `services/services/game-server-runner/default.nix`). Admin login
+  only works from the tailnet (tsidp is tailnet-only); the admin console
+  lives at `/admin`, and a browser that has completed once auto-redirects
+  past the login screen.
+
+- **Friends: Telegram login widget** — no tsidp involvement: the widget's
+  signed payload is verified against the bot token, unknown accounts queue
+  for approval in the admin panel. The same bot account is the notification
+  sender (start/stop/error events).
+
+Client registration in the tsidp admin UI
+(`https://idp.internal.polpetta.online`):
+
+- Name: `game-server-runner`
+- Redirect URI: `https://mc-runner.polpetta.online/api/auth/oidc/callback`
+- Save: tsidp shows client id + secret **once** — both go into sops.
+
+Sops keys (rendered into the `game-server-runner-env` and
+`game-server-runner-config` templates by the service declaration, which
+restarts `nerdctl-game-server-runner.service` on rotation):
+
+```sh
+# in /workspace/code/nix-secrets, add the game-server-runner plaintext keys:
+game-server-runner/oauth-client-id=<generated client id>
+game-server-runner/oauth-client-secret=<generated client secret>
+game-server-runner/telegram-token=<old TG_TOKEN value from mc-runner-env>
+game-server-runner/telegram-username=<bot username without @>
+game-server-runner/telegram-chat-ids=<old TG_CHAT_IDS value, semicolon separated>
+```
+
+The old opaque `mc-runner-env` entry becomes unused after those are
+copied and can be deleted. The OIDC settings must be complete in the
+env template or the app refuses to start (fail closed).
+
+Per-server config: the world now also needs a `server.toml` next to the
+old `mc-runner.yml` (the rewrite reads TOML; see the game-server-runner
+README for the syntax — it replaces `java_version`/`jar_file`/flags with
+`command`/`args`).
+
 ## Known limitations
 
 - **STS disabled**: token exchange has no use here (no funnel/SaaS

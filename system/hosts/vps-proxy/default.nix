@@ -33,7 +33,7 @@
     ../../../services/services/opencloud.nix
     ../../../services/services/searxng
     ../../../services/services/openchamber.nix
-    ../../../services/services/mc-runner
+    ../../../services/services/game-server-runner
     ../../../services/services/lunamultiplayer-server.nix
     ../../../services/services/calendar-proxy.nix
     ../../../services/services/ff.nix

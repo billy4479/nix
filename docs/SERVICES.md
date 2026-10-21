@@ -181,16 +181,18 @@ name):
 
 Plumbing companion (`immich-redis.nix`): same minus the `web` block.
 
-`services/services/mc-runner/` — public web + several raw ports + DNS record:
+`services/services/game-server-runner/` — public web + several raw ports + DNS record,
+with a historical domain (the default would embed the container name):
 
 ```nix
 {
-  polpetta.services.mc-runner = {
+  polpetta.services.game-server-runner = {
     container = { id = 13; /* ... */ };
 
     web = {
       port = 4479;
-      access = "public";               # → mc-runner.polpetta.online
+      access = "public";               # public endpoint
+      domain = "mc-runner.polpetta.online"; # historical domain (was the old service's name)
     };
 
     raw = [

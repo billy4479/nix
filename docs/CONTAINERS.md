@@ -123,7 +123,7 @@ The shared PostgreSQL container is initialized and migrated according to
 | jellyfin | 10 | 10.0.1.10 |
 | bind9 (DNS) | 11 | 10.0.1.11 |
 | BentoPDF | 12 | 10.0.1.12 |
-| mc-runner | 13 | 10.0.1.13 |
+| game-server-runner | 13 | 10.0.1.13 |
 | opencloud | 14 | 10.0.1.14 |
 | headscale | 15 | 10.0.1.15 |
 | headplane | 16 | 10.0.1.16 |
