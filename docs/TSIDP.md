@@ -402,14 +402,31 @@ Jellyfin 12.1 (the `pkgs.jellyfin` in this flake's pin, container id 10) gets
 the SSO plugin (**SSO-Auth** by 9p4, release `4.0.0.4`) **declaratively**:
 `services/services/jellyfin.nix` builds the release zip into a nix-store
 layout of `plugins/SSO-Auth/4.0.0.4/{SSO-Auth,Duende.IdentityModel,Duende.IdentityModel.OidcClient}.dll`
-and read-only bind-mounts it onto `/config/plugins/SSO-Auth` (a nested ro
-bind inside the rw `/config` volume). Jellyfin 12 auto-loads manifest-free
-plugin folders (it scans `plugins/*/` recursively for `*.dll` and synthesizes
-an `Active` manifest), so nothing has to be installed or updated through the
-dashboard — bump the version in `jellyfin.nix` instead. The plugin's provider
-configuration (which contains the client secret) lives in Jellyfin's own
-config volume (`/config/plugins/configurations/SSO-Auth.xml`) and is done in
-the admin UI, below.
+and seeds it into the rw config volume from the `nerdctl-jellyfin` unit's
+`preStart` (a root `install` + `chown` to the container user, re-run on
+every container start). Jellyfin 12 auto-loads manifest-free plugin folders
+(it scans `plugins/*/` recursively for `*.dll` and synthesizes an `Active`
+manifest), so nothing has to be installed or updated through the dashboard —
+bump the version in `jellyfin.nix` instead.
+
+Two earlier seedings failed and are worth remembering why:
+
+- A nested **read-only bind** of the store path onto
+  `/config/plugins/SSO-Auth` loaded the plugin but crashed the server with
+  EROFS: Jellyfin 12 writes `meta.json` next to the plugin dlls on every
+  start and the nix store is not writable.
+- **tmpfiles** (`C` rules) only apply at boot — `nixos-rebuild switch` never
+  runs them — and on this volume they could not run at all: systemd's
+  `chase()` aborts canonicalizing any path below `/config` because
+  `/mnt/SSD/apps/jellyfin` (uid 5000) and `config/` (uid 5010) form an
+  "unsafe path transition" under `CHASE_SAFE`, so the rule was skipped
+  silently and the plugin vanished from the plugins page after the first
+  deploy without a reboot.
+
+The plugin's provider configuration (which contains the client secret)
+lives in Jellyfin's own config volume
+(`/config/plugins/configurations/SSO-Auth.xml`) and is done in the admin
+UI, below.
 
 Client registration in the tsidp admin UI
 (`https://idp.internal.polpetta.online`):
@@ -468,7 +485,8 @@ Order-sensitive setup steps:
    wrong, the first SSO login of `jack` silently creates a fresh
    **non-admin** `jack` and admin access stays stranded in `billy`.
 2. Deploy `serverone`, confirm **SSO-Auth** shows as installed in
-   Dashboard → Plugins (loaded from the read-only mount, no catalog entry).
+   Dashboard → Plugins (seeded into the config volume by the unit's
+   `preStart`, no catalog entry).
 3. Register the tsidp client (above), configure the provider in the plugin
    page (table above), Save.
 4. Verify the mapping by logging in through SSO:

@@ -1,6 +1,11 @@
-{ pkgs, lib, ... }:
+{ config, options, pkgs, lib, ... }:
 let
   name = "jellyfin";
+  containerId = 10;
+  # Matches nerdctl-containers' uid for this container (5000 + id by
+  # default); the seeded plugin files must be owned by it so Jellyfin can
+  # write its meta.json next to the dlls.
+  containerUid = config.polpetta.services.jellyfin.container.uid;
   baseHDDDir = "/mnt/HDD/torrent";
   baseSSDDir = "/mnt/SSD/apps/${name}";
 
@@ -37,15 +42,30 @@ let
   };
 in
 {
-  # Seed the SSO plugin into the rw config volume: Jellyfin 12 writes
-  # meta.json next to the plugin dlls on every start, so mounting the
-  # store path read-only crashes the server (EROFS in SaveManifest).
-  # tmpfiles copies per version, so plugin upgrades land in a fresh
-  # directory while the old one stays for reference.
-  systemd.tmpfiles.rules = [
-    "d /mnt/SSD/apps/jellyfin/config/plugins 0755 - - - -"
-    "C /mnt/SSD/apps/jellyfin/config/plugins/SSO-Auth/${ssoAuthPlugin.version} - - - - ${ssoAuthPlugin}/plugins/SSO-Auth/${ssoAuthPlugin.version}"
-  ];
+  # Seed the SSO plugin into the rw config volume before the container
+  # starts. The unit's preStart runs as root on every start, so a deploy
+  # applies the plugin immediately — without needing a reboot. tmpfiles
+  # cannot do this job here: rules only apply at boot (switches never run
+  # them), and systemd's chase() refuses to canonicalize this volume at
+  # all, because /mnt/SSD/apps/jellyfin is owned by uid 5000 and config/
+  # by the container's 5010 — an "unsafe path transition" under
+  # CHASE_SAFE — so any rule below /config aborts before copying. The dlls
+  # are chowned to the container user because Jellyfin 12 writes meta.json
+  # next to them on every start: the same write that made the previous
+  # read-only store bind crash with EROFS. Reseeding on every start is
+  # cheap and self-healing; version bumps land in a fresh directory while
+  # the old one stays for reference.
+  systemd.services."nerdctl-jellyfin".preStart = lib.mkIf (options ? nerdctl-containers) (
+    lib.mkAfter # sh
+      ''
+        plugdir=${baseSSDDir}/config/plugins/SSO-Auth/${ssoAuthPlugin.version}
+        mkdir -p "$plugdir"
+        install -m 0644 \
+          ${ssoAuthPlugin}/plugins/SSO-Auth/${ssoAuthPlugin.version}/*.dll \
+          "$plugdir/"
+        chown -R ${toString containerUid}:5000 ${baseSSDDir}/config/plugins/SSO-Auth
+      ''
+  );
 
   polpetta.services.jellyfin = {
     container = {
@@ -69,7 +89,7 @@ in
         ];
       };
 
-      id = 10;
+      id = containerId;
 
       # Steady-state usage is ~130MB and concurrent transcodes can spike well
       # beyond that during long viewing sessions.
