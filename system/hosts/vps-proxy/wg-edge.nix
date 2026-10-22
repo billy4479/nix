@@ -34,7 +34,21 @@ let
     targetPort = 80;
   };
 
-  edgeForwards = config.polpetta.generated.dnatForwards ++ [ webForward ];
+  # HTTP/3: QUIC arrives as udp/443 and terminates on the same nginx vhosts
+  # as tcp/443. It bypasses the SNI demuxer by design (nginx stream cannot
+  # SNI-demux UDP, and nothing needs it: derp never speaks h3, so no QUIC
+  # for derp.polpetta.online ever arrives).
+  http3Forward = {
+    proto = "udp";
+    port = 443;
+    target = "10.0.1.6";
+    targetPort = 443;
+  };
+
+  edgeForwards = config.polpetta.generated.dnatForwards ++ [
+    webForward
+    http3Forward
+  ];
 
   dnatRules = lib.concatMapStrings (f: ''
     iptables -w -t nat -C PREROUTING -d ${publicIp} -p ${f.proto} --dport ${toString f.port} -j DNAT --to-destination ${f.target}:${toString f.targetPort} 2>/dev/null ||

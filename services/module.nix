@@ -155,6 +155,10 @@ let
     [
       "server {"
       "  listen 443 ssl;"
+      # QUIC for HTTP/3: udp/443 is DNAT'd from the vps edge next to the tcp
+      # one. The reuseport socket lives on the default_server block; these
+      # plain listeners share it, servers are selected by SNI like on tcp.
+      "  listen 443 quic;"
       "  listen 4443 ssl proxy_protocol;"
       "  http2 on;"
       ""
