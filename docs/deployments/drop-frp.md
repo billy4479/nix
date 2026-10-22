@@ -116,8 +116,8 @@ curl -o /dev/null -w '%{http_code}\n' https://headscale.polpetta.online/health  
 curl -o /dev/null -w '%{http_code}\n' https://calendar-proxy.polpetta.online     # 401
 curl -o /dev/null -w '%{http_code}\n' https://derp.polpetta.online/derp/probe    # 200 (DERP unchanged)
 curl -o /dev/null -w '%{http_code}\n' http://calendar-proxy.polpetta.online      # 301 → https
-# from an external machine: real client IP in the 4443 vhost access log
-ssh serverone 'nerdctl exec nginx tail -20 /dev/stdout' | grep calendar-proxy
+# from an external machine: real client IP in the nginx access log
+ssh serverone 'sudo nerdctl logs nginx --tail 50 2>&1 | grep calendar-proxy'
 # internal tier still denies internet sources (from an external machine):
 curl -o /dev/null -w '%{http_code}\n' https://immich.internal.polpetta.online    # 403 (via public DNS wildcard → real IP denied)
 ```
@@ -172,6 +172,87 @@ serverone → vps → tunnel → nginx → calendar-proxy, so a dead tunnel, mis
 DNAT or broken demuxer turns `probe_success{service="public-edge"}` off and
 fires the existing probe alert. It cannot see which leg broke — check
 `wg show` and the vps DNAT rules when it fires.
+
+## Debugging
+
+The design is deterministic: a packet either shows up on the next interface
+or the component that should have moved it there is broken. Walk the packet
+with tcpdump on both hosts in parallel and find the interface where it
+disappears — that interface names the broken layer.
+
+```
+request:  vps eth0 ─DNAT→ vps wg0 → serverone wg0 ─FORWARD→ serverone nerdctl0 → container
+reply:    container → serverone nerdctl0 ─mark+policy→ serverone wg0 → vps wg0 ─un-DNAT→ vps eth0
+```
+
+The probe/debug tools are not preinstalled; fetch them ad hoc (tcpdump with
+`-i any` shows the packet once per interface, tagged `[in]`/`[out]`):
+
+```sh
+nix shell nixpkgs#tcpdump nixpkgs#conntrack-tools -c \
+  sudo tcpdump -ni any host <CLIENT_IP>
+```
+
+### Where it stops → what to check
+
+| packet stops at | check | usual cause |
+|---|---|---|
+| never arrives on vps eth0 | DNS on the client: from LAN/tailnet, `*.internal.*` resolves to `10.0.1.6`, not the edge — force the public path with `curl --resolve <host>:443:87.106.25.93` | testing the wrong path |
+| on vps eth0, not on wg0 | `sudo iptables -t nat -S PREROUTING \| grep DNAT` (rule present?) and `-t nat -L PREROUTING -nv` (counter moving?); `conntrack -L -p tcp --dport <port>` | DNAT rule missing (stage 3 not deployed) or `-d` anchor mismatch |
+| leaves vps wg0, absent on serverone wg0 | `wg show wg0` on **both**: `latest handshake` < ~3 min, `transfer` increasing; `ping 10.100.0.x` across | tunnel down: sops key missing, `wireguard-wg0` failed, vps `:51820/udp` firewall, or serverone endpoint stale (only while keepalives are also broken) |
+| on serverone wg0, not on nerdctl0 | `sudo iptables -L FORWARD -nv` (wg0→nerdctl0 accept, counter moving); `ip route get 10.0.1.<id>` | FORWARD rules missing |
+| reaches container, no reply on nerdctl0 | container listening (`nerdctl exec <svc> ss -tln`), app log | the service itself is down — not an edge problem |
+| reply on nerdctl0, absent on serverone wg0 | `sudo iptables -t mangle -L PREROUTING -nv` (both CONNMARK rules' counters); `conntrack -L` entry shows `mark=1`; `ip rule show`; `ip route show table 51820` | policy plumbing gone: wg restarted without postSetup, or the firewall unit failed |
+| reply on vps wg0, not on eth0 | `conntrack -L` entry exists and matches the reply tuple; `sysctl net.ipv4.conf.all.rp_filter` must be `2` (loose); `sudo sysctl -w net.ipv4.conf.all.log_martians=1` then `dmesg \| grep -i martian` | conntrack didn't match (UDP app replying from a different address/port than it received on — replies die silently) or strict rp_filter crept back in |
+| reply leaves vps eth0, client silent | client-side NAT/firewall ate it; retry with a fresh connection; `conntrack -S` for table pressure on the vps | client side or conntrack exhaustion |
+
+### Per-component checks
+
+- **Tunnel** — `wg show wg0` is the first check whenever the `public-edge`
+  probe fires: handshake under ~3 min and growing `transfer` clears the
+  whole tunnel. The peer endpoint on the vps should equal serverone's
+  current WAN IP; it roams automatically, but only while keepalives flow.
+- **Deploy-time** — `systemctl status sops-nix wireguard-wg0 firewall` on
+  each host. A failed sops unit means the stage-0 key is missing
+  (`wireguard-wg0` then fails on the absent key file). A failed **firewall**
+  unit is urgent: NixOS INPUT rules are in that unit, so the vps sits with
+  an unfiltered INPUT until it runs. The `-C … || -A` rule pattern means a
+  leftover variant from an older deploy only duplicates a rule (harmless),
+  it cannot fail the unit.
+- **Web (443)** — the demuxer is userspace, so tcpdump shows a *vps-local*
+  connection: `nc -vz 10.0.1.6 4443` from the vps must connect through the
+  tunnel, `journalctl -u nginx` shows relay errors, and
+  `openssl s_client -connect 127.0.0.1:443 -servername <host>` tests SNI
+  dispatch without leaving the box. Nginx access logs showing `10.100.0.1`
+  instead of client IPs means proxy_protocol wasn't restored — check
+  `set_real_ip_from` in the rendered nginx.conf. Internet clients getting
+  **200** on `*.internal.polpetta.online` is the one security-relevant
+  failure: it means stage 2 was deployed vps-first (nginx trusts only the
+  tunnel address while the demuxer still sends via frp) — redeploy
+  serverone.
+- **HTTP/3** — `curl -sI https://<host>` must show `Alt-Svc: h3=":443"`;
+  h3 failing while h2 works is a silent degradation by design, verify with
+  `curl --http3-only`; `conntrack -L -p udp --dport 443` shows the QUIC
+  flows crossed the DNAT.
+- **Stalls on large transfers** (small requests fine) — MTU/MSS. From
+  serverone `ping -M do -s 1392 10.100.0.1` must pass (1392 + 28 = the wg
+  MTU 1420), and `tcpdump -ni wg0 'tcp[tcpflags] & (tcp-syn|tcp-ack) != 0'`
+  must show `mss 1360` on handshakes crossing the tunnel.
+- **Only UDP broken, TCP fine** — an app that replies from a different
+  socket/address than the one that received the packet can never be
+  conntrack-matched on the vps; its replies arrive on vps wg0 and are
+  dropped silently. tcpdump on both ends confirms; binding the service to
+  the intended address:port is the fix. (Bedrock and Luna reply from the
+  receiving socket and are known-good.)
+
+### Reading the alert
+
+`probe_success{service="public-edge"} == 0` says the chain
+serverone → vps demuxer → tunnel → nginx → calendar-proxy broke somewhere —
+not which leg. Check cheapest first: `wg show` on both hosts → vps `nginx`
+running → DNAT counters (`iptables -t nat -L PREROUTING -nv`) → container
+up. The LAN probes staying green while it fires is the intended signal:
+the services are alive, the edge in front of them is not.
 
 ## Design notes (why it is built this way)
 
