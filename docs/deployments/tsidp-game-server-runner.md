@@ -37,6 +37,27 @@ into the env/config templates and restarts the unit on rotation.
 The OIDC settings must be complete in the env template or the app refuses
 to start (fail closed).
 
+## Luna instance
+
+`services/services/lunamultiplayer-server.nix` runs a second instance of the
+same binary under container id 20, managing Luna Multiplayer. Its tsidp
+client registration is separate because the redirect URI differs:
+
+- Name: `game-server-runner-luna` (tsidp-side label, anything works)
+- Redirect URI: `https://lunamultiplayer.polpetta.online/api/auth/oidc/callback`
+
+The client id + secret go into sops as `lunamultiplayer-server/oauth-client-id`
+and `lunamultiplayer-server/oauth-client-secret`. Telegram keys are shared
+with the minecraft runner (same bot; sops keys declared in
+`services/services/game-server-runner/default.nix`), but each instance keeps
+its own user database and approval queue: a friend approved on the minecraft
+runner is unknown here until approved once.
+
+Note the one-label public domain: the historical
+`lunamultiplayer.internal.polpetta.online` cannot be public (the wildcard
+cert and the cloudflare wildcard cover only single-label names), so the web
+UI lives on the default `lunamultiplayer.polpetta.online`.
+
 ## World config
 
 Each world needs a `server.toml` next to the legacy `mc-runner.yml` (the

@@ -203,8 +203,10 @@ with a historical domain (the default would embed the container name):
 }
 ```
 
-`services/services/lunamultiplayer-server.nix` — mixed tiers on one container,
-with an explicit domain (the default would embed the full container name):
+`services/services/lunamultiplayer-server.nix` — mixed tiers on one container.
+Since the game-server-runner instance landed, the `web` port is the runner's
+web UI (on the default public domain; Luna's own built-in website stays off);
+see the service file for the runner config (env/config templates, `server.toml`):
 
 ```nix
 {
@@ -212,9 +214,8 @@ with an explicit domain (the default would embed the full container name):
     container = { id = 20; /* ... */ };
 
     web = {
-      port = 8900;
-      access = "tailnet";              # internal status UI
-      domain = "lunamultiplayer.internal.polpetta.online";
+      port = 4479;
+      access = "public";               # game-server-runner web UI
     };
 
     raw = [
