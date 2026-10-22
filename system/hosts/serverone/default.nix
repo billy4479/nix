@@ -17,6 +17,7 @@
 
     ./users.nix
     ./ssh.nix
+    ./wireguard.nix
 
     flakeInputs.nix-snapshotter.nixosModules.default
     ./containers.nix

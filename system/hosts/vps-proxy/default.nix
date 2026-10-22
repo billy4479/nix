@@ -12,6 +12,8 @@
     ./sni-demux.nix
     ./derper-stun.nix
     ./derper-derp.nix
+    ./wg-edge.nix
+    ../../../services/module.nix
 
     # Imported for the frps projection only (public raw ports). Service files
     # gate everything container- or host-specific on nerdctl-containers, so
