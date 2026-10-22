@@ -7,7 +7,13 @@ let
   name = "nginx";
   certsDir = "/mnt/SSD/apps/certbot/config";
 
-  externalTrafficFrom = "10.0.1.${toString config.nerdctl-containers.frp.id}";
+  # The public web edge: the vps SNI demuxer relays to nginx over the
+  # wireguard tunnel, so tunnel-terminated connections arrive from the vps's
+  # tunnel address with the real client IP in the proxy_protocol header.
+  # Trusted for real_ip restoration and denied for non-public tiers (defense
+  # in depth: without a valid PP header the source would stay the edge
+  # address, which matches `allow 10.0.0.0/8`).
+  externalTrafficFrom = "10.100.0.1";
   nginxConfig = pkgs.callPackage ./config.nix { inherit externalTrafficFrom; };
   homepage = pkgs.callPackage ../../sites/homepage { };
 in

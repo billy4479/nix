@@ -123,7 +123,7 @@ let
 
   remotePortOf = raw: if raw.remotePort == null then raw.port else raw.remotePort;
 
-  # The frp edge must not be able to reach restricted tiers; nginx enforces
+  # The web edge must not be able to reach restricted tiers; nginx enforces
   # on the proxy_protocol-restored client address, so ordering matters.
   externalIp =
     if cfg.externalTrafficFrom != null then
@@ -433,7 +433,7 @@ in
     };
 
     externalTrafficFrom = lib.mkOption {
-      description = "The IP frp tunnels arrive from (set by the nginx container definition); used for ACLs.";
+      description = "The address public web traffic arrives from (the vps tunnel edge, set by the nginx container definition); trusted for real_ip and denied for non-public tiers.";
       type = lib.types.nullOr lib.types.str;
       default = null;
     };

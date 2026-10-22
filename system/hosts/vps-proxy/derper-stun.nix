@@ -4,16 +4,9 @@ let
 in
 {
   systemd.services.${name} = {
-    description = "Tailscale STUN-only server (derper)";
+    description = "STUN-only server (derper)";
     wantedBy = [ "multi-user.target" ];
-    after = [
-      "network.target"
-      # Order after frps so the old frps (which may still hold UDP 3478 from a
-      # previously registered stun proxy) releases the port before we bind it.
-      # derper discards a failed UDP listen silently, so losing the race here
-      # would leave the service running without a STUN server.
-      "frp.service"
-    ];
+    after = [ "network.target" ];
 
     serviceConfig = {
       # `-a :8090` must stay on all interfaces: STUN inherits the same bind IP,
