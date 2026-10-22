@@ -11,7 +11,7 @@ User-facing services are defined through the `polpetta.services` API — see
 container plus how it is exposed (domain, access tier, raw ports).
 
 The containers under `../containers/` are infrastructure only (the engine,
-nginx, frp, certbot) and set `nerdctl-containers` directly.
+nginx, certbot) and set `nerdctl-containers` directly.
 
 Prefer building an image from nix packages rather then pulling one.
 
@@ -185,7 +185,6 @@ The shared PostgreSQL container is initialized and migrated according to
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
 | PostgreSQL | 130 | 10.0.1.130 |
-| frp | 131 | 10.0.1.131 |
 | Certbot | 132 | 10.0.1.132 |
 | Outline (valkey) | 133 | 10.0.1.133 |
 | Byparr | 134 | 10.0.1.134 |

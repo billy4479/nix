@@ -204,33 +204,17 @@ let
     )
   );
 
-  proxyName =
-    name: raw: "${name}-${toString raw.port}" + lib.optionalString (raw.proto == "udp") "-udp";
-
-  frpcProxy =
-    e:
-    # toml
-    ''
-      [[proxies]]
-      name = "${proxyName e.name e.raw}"
-      type = "${e.raw.proto}"
-      localIP = "10.0.1.${toString e.id}"
-      localPort = ${toString e.raw.port}
-      remotePort = ${toString (remotePortOf e.raw)}
-    '';
-
-  frpcProxies = lib.concatStringsSep "\n" (map frpcProxy publicRawEntries);
-
-  # allowPorts ranges are not proto-aware, so the same port over tcp and udp
-  # yields a single range.
-  frpsAllowPorts = lib.concatStringsSep "\n" (
-    map (port: "  { start = ${toString port}, end = ${toString port} },") (
-      lib.unique (map (e: remotePortOf e.raw) publicRawEntries)
-    )
-  );
-
-  frpsTcpPorts = map (e: remotePortOf e.raw) (lib.filter (e: e.raw.proto == "tcp") publicRawEntries);
-  frpsUdpPorts = map (e: remotePortOf e.raw) (lib.filter (e: e.raw.proto == "udp") publicRawEntries);
+  # Public raw ports projected as DNAT forwards for the vps edge:
+  # <vps public IP>:<remotePort> -> 10.0.1.<id>:<port>, carried over the
+  # wireguard tunnel with the source address preserved (no SNAT), so
+  # services see real client IPs and the vps conntrack reverses the
+  # translation on replies.
+  dnatForwards = map (e: {
+    proto = e.raw.proto;
+    port = remotePortOf e.raw;
+    target = "10.0.1.${toString e.id}";
+    targetPort = e.raw.port;
+  }) publicRawEntries;
 
   bind9Records =
     # bind zone
@@ -266,7 +250,7 @@ let
         message = "polpetta.services: duplicate web domains: ${lib.concatStringsSep ", " (duplicates webDomains)}";
       }
       {
-        # Only public raw entries are tunneled through frp, so only their
+        # Only public raw entries are forwarded from the edge, so only their
         # remote ports can collide on the vps; local/tailnet ports never
         # leave the bridge and may repeat across containers.
         assertion =
@@ -451,27 +435,32 @@ in
         readOnly = true;
       };
 
-      frpcProxies = lib.mkOption {
-        description = "toml fragment with the frpc proxies for public raw ports.";
-        type = lib.types.str;
-        readOnly = true;
-      };
-
-      frpsAllowPorts = lib.mkOption {
-        description = "toml fragment for the frps allowPorts list.";
-        type = lib.types.str;
-        readOnly = true;
-      };
-
-      frpsTcpPorts = lib.mkOption {
-        description = "Public raw TCP ports to open in the vps firewall.";
-        type = lib.types.listOf lib.types.int;
-        readOnly = true;
-      };
-
-      frpsUdpPorts = lib.mkOption {
-        description = "Public raw UDP ports to open in the vps firewall.";
-        type = lib.types.listOf lib.types.int;
+      dnatForwards = lib.mkOption {
+        description = "DNAT forwards for public raw ports, applied on the vps edge over the wireguard tunnel.";
+        type = lib.types.listOf (
+          lib.types.submodule {
+            options = {
+              proto = lib.mkOption {
+                type = lib.types.enum [
+                  "tcp"
+                  "udp"
+                ];
+              };
+              port = lib.mkOption {
+                type = lib.types.port;
+                description = "Port opened on the vps.";
+              };
+              target = lib.mkOption {
+                type = lib.types.str;
+                description = "Container IP the port is forwarded to.";
+              };
+              targetPort = lib.mkOption {
+                type = lib.types.port;
+                description = "Port the application listens on inside the container.";
+              };
+            };
+          }
+        );
         readOnly = true;
       };
 
@@ -499,17 +488,14 @@ in
     assertions = assertionEntries;
 
     polpetta.generated = {
-      frpsAllowPorts = frpsAllowPorts;
-      frpsTcpPorts = frpsTcpPorts;
-      frpsUdpPorts = frpsUdpPorts;
+      dnatForwards = dnatForwards;
 
       probeHttpTargets = httpProbeTargets;
       probeTcpTargets = tcpProbeTargets;
 
       # Pure data: defined on every host importing this module (the vps
-      # consumes the frps/firewall projection), even where nothing deploys it.
+      # consumes the edge DNAT projection), even where nothing deploys it.
       nginxVhostsFile = pkgs.writeText "polpetta-services-vhosts.conf" nginxVhostsText;
-      frpcProxies = frpcProxies;
       bind9Records = bind9Records;
       rawFirewallFile = pkgs.writeText "polpetta-raw-firewall.nft" rawFirewall.ruleset;
     };

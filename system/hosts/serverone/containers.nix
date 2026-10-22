@@ -28,7 +28,6 @@ in
 
     ../../../containers/certbot.nix
     ../../../containers/nginx
-    ../../../containers/frp.nix
 
     ../../../services/services
   ];

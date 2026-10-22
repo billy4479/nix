@@ -68,7 +68,7 @@ in
   # notifications. Unlike the env file (only nerdctl on the host ever
   # opens it) this file is bind-mounted into the container, so it must
   # be readable there: the rendered file gets the container uid's
-  # ownership and group, like the frp/openchamber container files.
+  # ownership and group, like the openchamber container files.
   sops.templates."game-server-runner-config" = lib.mkIf (options ? nerdctl-containers) {
     owner = "container-${toString config.nerdctl-containers.${name}.uid}";
     group = "containers";

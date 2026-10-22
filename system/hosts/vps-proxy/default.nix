@@ -8,17 +8,18 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./frp.nix
     ./sni-demux.nix
     ./derper-stun.nix
     ./derper-derp.nix
     ./wg-edge.nix
     ../../../services/module.nix
 
-    # Imported for the frps projection only (public raw ports). Service files
-    # gate everything container- or host-specific on nerdctl-containers, so
-    # this evaluation is inert beyond polpetta.services.
+    # Imported for the edge DNAT projection only (public raw ports). Service
+    # files gate everything container- or host-specific on
+    # nerdctl-containers, so this evaluation is inert beyond
+    # polpetta.services.
     ../../../services/services
+
   ];
 
   sops.secrets.user_password.neededForUsers = true;

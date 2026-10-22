@@ -2,8 +2,8 @@
 
 Under this API a single service file declares its container, where it is
 reachable (domain), and who can reach it (access tier); the nginx vhost, the
-frp tunnels, the vps firewall openings and the bind9 records are generated
-from that declaration.
+vps edge DNAT forwards and the bind9 records are generated from that
+declaration.
 
 ## Layout
 
@@ -48,8 +48,10 @@ polpetta.services.<name> = {
   };
 
   # Raw TCP/UDP ports, independent of the web endpoint. `access = "public"`
-  # is tunneled through frp; tailnet/local are never tunneled. Direct access
-  # is filtered on the host and bridge according to the tier/allowlist.
+  # is forwarded from the vps edge (DNAT over the wireguard tunnel); tailnet
+  # and local are never forwarded. Direct access is filtered on the host and
+  # bridge according to the tier/allowlist.
+
   raw = [
     {
       port = 25565;                # remotePort defaults to port
@@ -77,12 +79,12 @@ Tiers are cumulative:
 |-----------|-----------------------------------------|
 | `local`   | LAN only (RFC1918)                      |
 | `tailnet` | LAN + tailnet (100.64.0.0/10)           |
-| `public`  | everyone (internet via the frp tunnel)  |
+| `public`  | everyone (internet via the vps edge)    |
 
 Enforcement happens in nginx on the **real client IP** (restored from
 proxy_protocol), so every vhost listens uniformly on 443 and 4443; the tier
-only decides which ACL snippet is applied. The frp edge IP is explicitly
-denied for non-public tiers as defense in depth.
+only decides which ACL snippet is applied. The edge address (the vps's
+tunnel IP) is explicitly denied for non-public tiers as defense in depth.
 
 For declared raw endpoints, independent nftables hooks enforce the source
 policy before CNI's iptables accept rules. Both routed and same-bridge traffic
@@ -117,9 +119,9 @@ wildcards `*.polpetta.online` to the vps.
 | Target              | Generated from                                   |
 |---------------------|--------------------------------------------------|
 | nginx vhost         | `web`: one explicit server block (listen 443 + 4443 proxy_protocol, TLS/headers snippets, tier ACL, `extraConfig` in `location /`) plus the `map $host $backend` entries it proxies through |
-| frpc proxies        | `raw` entries with `access = "public"`           |
-| frps `allowPorts` + vps firewall | `raw` entries with `access = "public"` (`remotePort`; allowPorts ranges are proto-agnostic and deduplicated) |
+| vps edge DNAT forwards | `raw` entries with `access = "public"` (`remotePort`; `<vps IP>:<remotePort> → container IP:port` over the wireguard tunnel, source addresses preserved) |
 | host and bridge raw-port firewall | non-public `raw` tiers, or any `allowedSources` override; loaded independently of the CNI filter chains |
+
 | bind9 zone records  | `raw` entries with `record` (→ container IP, wg/tailnet view) |
 | blackbox probes     | every `web` endpoint (URL/port inferred; `probe.enable`/`probe.unauth`/`probe.path`/`probe.headers` tune it) plus tcp probes of `raw` entries with `probe.enable = true`; consumed by serverone's monitoring.nix, which declares no targets itself |
 | `useNginx` ordering | presence of `web` (auto-set on the mirrored container) |
@@ -128,22 +130,25 @@ Container `ports` (host publishing, e.g. LAN minecraft) stay explicit on the
 container: publishing a web endpoint's port on the host would bypass the nginx
 ACLs.
 
-The nginx 80/443 edge forwards, the frps bind port/token and the static
+The nginx 80/443 edge, the vps DNAT plumbing and the static
 zone/SOA data stay hand-written: they are infrastructure, not per-service.
 So is the homepage vhost (`polpetta.online` apex + `www` redirect, content
 in `sites/homepage/`, mounted into the nginx container at `/srv/homepage`):
 it is plain static files with no backend container, and the apex name is
 not a `.polpetta.online` subdomain, so it cannot be a service entry.
 
-Non-public raw ports are not tunneled. The subnet router and LAN routes provide
-the network path, but the generated raw-port firewall still enforces the tier
-or explicit application allowlist. The `record` option only supplies a name.
+Non-public raw ports are not forwarded from the edge: reachability is
+inherent (subnet router + LAN routing to container IPs), and the generated
+raw-port firewall still enforces the tier or explicit application allowlist.
+The `record` option only makes them addressable by name.
+
 
 ## Assertions
 
 - domains unique across services
 - `remotePort`s unique across public `raw` entries (only public entries are
-  tunneled through frp; local/tailnet ports stay on the bridge and may repeat)
+  forwarded from the edge; local/tailnet ports stay on the bridge and may
+  repeat)
 - `record` names unique across services
 - container IDs unique across all containers (services plus infrastructure);
   duplicate IDs would mean duplicate IPs on the bridge
@@ -161,7 +166,8 @@ or explicit application allowlist. The `record` option only supplies a name.
 - Both serverone and vps-proxy import `services/services/` (its default.nix
   pulls in module.nix and every service file, so the two hosts always
   evaluate the same service set). vps-proxy only consumes the
-  frps/firewall projection.
+  edge DNAT projection.
+
 - Any container runs only where `containers/module.nix` is imported: each
   service's `container` is mirrored into `nerdctl-containers.<name>` (service
   name = container name) there, which keeps the existing dependency inference
@@ -280,4 +286,5 @@ Completed in one pass on a development branch:
    included, as a plumbing service); the hand-written nginx map/vhosts, frpc
    proxies and the `mc` zone record were deleted.
 3. `containers/` now holds only the infrastructure: the container engine
-   (`module.nix`), nginx, frp and certbot.
+   (`module.nix`), nginx and certbot. (frp was later replaced by a wireguard
+   tunnel + vps edge DNAT; see `docs/deployments/drop-frp.md`.)

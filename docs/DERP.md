@@ -29,8 +29,8 @@ break them.
 
 ## Traffic flows
 
-- **Control plane**: clients → `headscale.polpetta.online` → `frps` on
-  `vps-proxy` → frp tunnel → `frpc` on `serverone` → nginx container (10.0.1.6,
+- **Control plane**: clients → `headscale.polpetta.online` → SNI demuxer on
+  `vps-proxy` → wireguard tunnel → nginx container on `serverone` (10.0.1.6,
   `:81`/`:4443` with PROXY protocol) → headscale `:8080` (container
   `10.0.1.15`).
 - **DERP relay (`999a`)**: clients connect over TLS to
@@ -40,10 +40,11 @@ break them.
   a PROXY protocol v1 header (it must: the dispatch block is the only stage
   that still knows the real client IP), so the DERP branch first rides a
   loopback hop whose `listen ... proxy_protocol` strips the header again
-  before the PP-unaware derper sees the stream. Every other SNI goes to frps
-  (remotePort 8444, firewall-closed from the internet) with the same header,
-  which is what keeps http apps' real client IPs intact across the frp hop.
-  Relayed DERP traffic never touches frp, nginx or serverone.
+  before the PP-unaware derper sees the stream. Every other SNI is relayed
+  with the same header to serverone's nginx over the wireguard tunnel
+  (10.0.1.6:4443), which is what keeps http apps' real client IPs intact
+  across the hop.
+  Relayed DERP traffic never touches the tunnel, nginx or serverone.
 - **STUN (`999b`)**: clients send UDP 3478 directly to `vps-proxy`, answered
   by `derper-stun`. Packets keep their real client source IPs, which is what
   makes NAT traversal work.
@@ -52,34 +53,29 @@ break them.
   (rides the control plane path above) and only relays for keys registered in
   the tailnet.
 
-### Real client IPs through frp
+### Real client IPs across the edge
 
-frps has no PROXY-protocol parsing (`transport.proxyProtocolVersion` only
-controls a header **frpc generates** from the peer address frps observed):
-
-- If the demuxer sent PP *and* frpc kept `proxyProtocolVersion = "v2"`, nginx
-  would receive two headers (frpc's first, src=127.0.0.1) and treat the
-  demuxer's header as payload → broken. Hence `proxyProtocolVersion` is
-  **removed** from the `nginx_https` proxy: the demuxer's header transits
-  frps/frpc byte-for-byte and nginx (`listen 4443 ssl proxy_protocol`,
-  `set_real_ip_from 10.0.1.131`) parses it unchanged.
 - The **:443 dispatch block** must be the stage writing PP: nginx stream does
-  not carry the original client address across a loopback `proxy_pass` hop, so
-  a second-stage block would stamp `127.0.0.1` into the header (this shipped
-  broken once). The DERP branch gets the header too, which derper cannot
+  not carry the original client address across a `proxy_pass` hop, so the
+  relayed connection would carry only the tunnel address. The demuxer writes
+  the header before dialing 10.0.1.6:4443; nginx (`listen 4443 ssl
+  proxy_protocol`, `set_real_ip_from 10.100.0.1`) parses it unchanged and
+  restores real client IPs for ACLs and headers.
+- The DERP branch gets the header too, which derper cannot
   parse — hence its dedicated PP-stripping loopback hop.
-- The port-80 path keeps its frps-generated PPv2 (frps still sees the real
-  peer there).
+- The raw-port forwards (DNAT, no SNAT) need no proxy protocol at all: the
+  packet source stays the real client address end to end.
 - nixpkgs nginx 1.30.5 stream `proxy_protocol on` emits **v1 only** (v2 needs
   mainline ≥ 1.31.4); nginx parses both, so v1 is fine.
 
 ## Why the relay lives on the vps
 
-frp forwards UDP by re-originating packets from the `frpc` container on
-`serverone` (`10.0.1.131`) — there is no PROXY protocol equivalent for UDP.
-When STUN answered through the tunnel, every client was told its public
-endpoint was `10.0.1.131:<port>`, which breaks endpoint discovery. That is
-why STUN moved to the vps (`derper-stun`, `stunonly` node `999b`).
+While the edge was frp, UDP was forwarded by re-originating packets from the
+`frpc` container on `serverone` (`10.0.1.131`) — there is no PROXY protocol
+equivalent for UDP. When STUN answered through the tunnel, every client was
+told its public endpoint was `10.0.1.131:<port>`, which breaks endpoint
+discovery. That is why STUN moved to the vps (`derper-stun`, `stunonly` node
+`999b`).
 
 With STUN gone from the tunnel, moving the relay too is the natural
 completion: a relayed connection used to cross the frp tunnel *and* the home
@@ -144,10 +140,7 @@ not restart the relay.
   `/var/lib/derper-derp/derper.conf`).
 - The `derper-derp` HTTP listener (`-http-port -1`) is disabled; the relay is
   bound to 127.0.0.1:8443 (reachable only via the :443 demuxer), the port
-  itself is firewall-closed. On the same vps, frps remotePort 8444
-  (`nginx_https`) is deliberately not in the firewall either: frps binds
-  remote ports on 0.0.0.0 (`proxyBindAddr` is global), the firewall is what
-  keeps it loopback-only. `derper-stun`'s HTTP listener (`-a :8090`) is
+  itself is firewall-closed. `derper-stun`'s HTTP listener (`-a :8090`) is
   unused as well; clients only speak STUN on UDP 3478.
 - Region code/name are `polpetta` / `Polpetta DERP` (they show up in client
   UIs); the region id stays 999.
@@ -172,7 +165,7 @@ Quick checks:
   derp.polpetta.online` → DERP-only cert validates (TLS terminated by derper,
   demux is passthrough).
 - `curl -o /dev/null -w '%{http_code}\n' https://headscale.polpetta.online/health`
-  → 200 (full demux → frp → nginx path).
+  → 200 (full demux → tunnel → nginx path).
 - `curl -o /dev/null -w '%{http_code}\n' https://derp.polpetta.online/generate_204`
   → 204.
 - Real IP: from an external network, hit a public vhost; serverone nginx
