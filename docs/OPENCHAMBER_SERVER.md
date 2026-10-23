@@ -31,8 +31,11 @@ process afterward.
 The container sees a conventional writable `/nix` backed by
 `/mnt/SSD/apps/openchamber/nix-root/nix` on `serverone`. Before starting the
 container, `nerdctl-openchamber.service` copies the declared runtime closures
-into that store and registers GC roots for them. The image's `/nix` is then
-hidden by the private store mount.
+into that store and registers GC roots for them. After a deploy this copy can
+move GBs and take minutes, so the unit's start timeout is raised via
+`startTimeout` (see [CONTAINERS.md](./CONTAINERS.md)); normal restarts copy
+nothing and start quickly. The image's `/nix` is then hidden by the private
+store mount.
 
 This lets OpenCode, direnv, and agent shell commands use normal `/nix/store`
 paths without wrappers or access to the host Nix daemon. Do not recursively

@@ -50,6 +50,22 @@ reserves: the container cannot use more than that share, but idle capacity
 stays available to the rest of the system. Currently only openchamber (8g / 4
 cpus) sets these.
 
+## Start and stop timeouts
+
+The unit's start job includes `preStart`, so volume permission fixes, private
+Nix store seeding, and image loading all count against systemd's default 90s
+start timeout. A preStart that legitimately moves a lot of data (e.g. openchamber
+copying a fresh runtime closure into its private store after a deploy) should
+raise it:
+
+```nix
+startTimeout = 600; # seconds; null keeps the 90s default
+```
+
+`stopTimeout` (also in seconds) tunes how long nerdctl waits before killing the
+container on stop. Keep preStart cheap regardless: probe before repairing, and
+skip work when nothing changed.
+
 ## tmpfs
 
 `/tmp` is mounted as a tmpfs capped at 128MB by default. tmpfs lives in RAM and

@@ -100,6 +100,7 @@ let
   };
 
   setfacl = lib.getExe' pkgs.acl "setfacl";
+  getfacl = lib.getExe' pkgs.acl "getfacl";
   sshConfig = pkgs.writeText "openchamber-ssh-config" ''
     Host github.com
       User git
@@ -206,12 +207,38 @@ in
       memory = "8g";
       cpus = 4;
       tmpfs = [ ];
+      # After a deploy, preStart copies the fresh runtime closure (GBs) into
+      # the private store; the 90s systemd default timed out mid-copy.
+      startTimeout = 600;
 
       volumes = [
         {
           hostPath = "${baseDir}/home";
           containerPath = "/home/openchamber";
-          customPermissionScript = # sh
+          # The full recursive repair rewrites ~500k inodes and costs up to a
+          # minute, which alone pushed starts past the unit's start timeout.
+          # Probe first and only repair on real drift: the directory's default
+          # ACL propagates g:admin to newly created files, and the ownership
+          # scan exits at the first file owned by someone else (e.g. host-side
+          # edits through the admin ACL). Only the "other" permission class is
+          # pinned to zero: group bits legitimately vary with the ACL (mask,
+          # setgid), so a fixed mode like 0700 never holds on an ACL'd dir.
+          customPermissionScript =
+            let
+              permsAreGood = # sh
+                ''
+                  permsOk=1
+                  [ "$(stat -c %u:%g "${baseDir}/home")" = "${uidString}:5000" ] || permsOk=0
+                  [ "$(stat -c %a "${baseDir}/home" | tail -c 2)" = 0 ] || permsOk=0
+                  [ "$(stat -c %a "${baseDir}/home/.ssh" | tail -c 2)" = 0 ] || permsOk=0
+                  [ "$(${getfacl} -p "${baseDir}/home" 2>/dev/null | grep -c '^group:admin:')" -ge 1 ] || permsOk=0
+                  [ "$(${getfacl} -p "${baseDir}/home" 2>/dev/null | grep -c '^default:group:admin:')" -ge 1 ] || permsOk=0
+                  [ -z "$(find "${baseDir}/home" -xdev \
+                    \( ! -user ${uidString} -o ! -group 5000 \) -print -quit 2>/dev/null)" ] || permsOk=0
+                  [ "$permsOk" = 1 ]
+                '';
+            in
+            # sh
             ''
               mkdir -p \
                 "${baseDir}/home/.agents" \
@@ -220,12 +247,19 @@ in
                 "${baseDir}/home/.local/share" \
                 "${baseDir}/home/.local/state" \
                 "${baseDir}/home/.ssh"
-              chmod -R u+rwX "${baseDir}/home/.config/opencode"
-              chown -R ${uidString}:5000 "${baseDir}/home"
-              chmod 0700 "${baseDir}/home"
-              chmod 0700 "${baseDir}/home/.ssh"
 
-              ${setfacl} -R -m g:admin:rwX -m d:g:admin:rwX ${baseDir}/home
+              if ${permsAreGood}
+              then
+                echo "Permissions for ${baseDir}/home are good"
+              else
+                echo "Repairing permissions for ${baseDir}/home"
+                chmod -R u+rwX "${baseDir}/home/.config/opencode"
+                chown -R ${uidString}:5000 "${baseDir}/home"
+                chmod 0700 "${baseDir}/home"
+                chmod 0700 "${baseDir}/home/.ssh"
+
+                ${setfacl} -R -m g:admin:rwX -m d:g:admin:rwX ${baseDir}/home
+              fi
             '';
         }
         {

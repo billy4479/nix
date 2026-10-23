@@ -339,6 +339,9 @@ let
         // lib.optionalAttrs (cfg.stopTimeout != null) {
           # Two seconds buffer to give some time to nerdctl to send sigkill
           TimeoutStopSec = toString (cfg.stopTimeout + 2) + "s";
+        }
+        // lib.optionalAttrs (cfg.startTimeout != null) {
+          TimeoutStartSec = "${toString cfg.startTimeout}s";
         };
 
         unitConfig = {

@@ -189,6 +189,17 @@ lib.types.submodule (
         default = null;
         description = "Seconds before nerdctl sends kill to container.";
       };
+
+      startTimeout = lib.mkOption {
+        type = lib.types.nullOr lib.types.int;
+        default = null;
+        description = ''
+          Seconds before the unit's start job (preStart included) times out;
+          null keeps systemd's 90s default. Raise it when preStart
+          legitimately moves large amounts of data, e.g. seeding a private
+          Nix store after a deploy.
+        '';
+      };
     };
   }
 )
