@@ -53,15 +53,18 @@ in
   # - lunamultiplayer-server/oauth-client-id + /oauth-client-secret: the
   #   tsidp client registration (docs/deployments/tsidp-game-server-runner.md),
   #   separate from the minecraft runner's because the redirect URI differs
-  # - telegram token/username/chat ids are shared with the minecraft
-  #   runner (same bot, sops keys declared in services/game-server-runner/):
-  #   the login widget verifies payloads with the token and notifications
-  #   land in the same admin chat. The approval queue and accounts are
-  #   per-instance (a friend approved on the minecraft runner is unknown
-  #   here until approved once)
+  # - lunamultiplayer-server/telegram-token, -username, -chat-ids: the
+  #   companion bot, login widget and notifications, separate from the
+  #   minecraft runner's (both are instances of the same app, but each
+  #   carries its own bot and login/notifications). An empty token turns
+  #   telegram (login and notifications) off. Accounts and the approval
+  #   queue are always per-instance
   sops.secrets = lib.mkIf (options ? nerdctl-containers) {
     lunamultiplayer-server-oauth-client-id.key = "lunamultiplayer-server/oauth-client-id";
     lunamultiplayer-server-oauth-client-secret.key = "lunamultiplayer-server/oauth-client-secret";
+    lunamultiplayer-server-telegram-token.key = "lunamultiplayer-server/telegram-token";
+    lunamultiplayer-server-telegram-username.key = "lunamultiplayer-server/telegram-username";
+    lunamultiplayer-server-telegram-chat-ids.key = "lunamultiplayer-server/telegram-chat-ids";
   };
 
   # The app reads the four OIDC settings as a unit: the template renders
@@ -80,8 +83,8 @@ in
     "nerdctl-${name}.service"
   ];
 
-  # Global config (config.toml). The telegram placeholders are shared
-  # secrets, so this file is a sops template like the minecraft runner's:
+  # Global config (config.toml). The telegram placeholders are secrets,
+  # so this file is a sops template like the minecraft runner's:
   # bind-mounted into the container, rendered with the container uid's
   # ownership.
   sops.templates."lunamultiplayer-server-config" = lib.mkIf (options ? nerdctl-containers) {
@@ -105,9 +108,9 @@ in
       restic_enable = false
 
       [telegram]
-      token = "${config.sops.placeholder."game-server-runner-telegram-token"}"
-      username = "${config.sops.placeholder."game-server-runner-telegram-username"}"
-      chat_ids = "${config.sops.placeholder."game-server-runner-telegram-chat-ids"}"
+      token = "${config.sops.placeholder."lunamultiplayer-server-telegram-token"}"
+      username = "${config.sops.placeholder."lunamultiplayer-server-telegram-username"}"
+      chat_ids = "${config.sops.placeholder."lunamultiplayer-server-telegram-chat-ids"}"
     '';
   };
 

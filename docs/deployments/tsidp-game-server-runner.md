@@ -47,11 +47,14 @@ client registration is separate because the redirect URI differs:
 - Redirect URI: `https://lunamultiplayer.polpetta.online/api/auth/oidc/callback`
 
 The client id + secret go into sops as `lunamultiplayer-server/oauth-client-id`
-and `lunamultiplayer-server/oauth-client-secret`. Telegram keys are shared
-with the minecraft runner (same bot; sops keys declared in
-`services/services/game-server-runner/default.nix`), but each instance keeps
-its own user database and approval queue: a friend approved on the minecraft
-runner is unknown here until approved once.
+and `lunamultiplayer-server/oauth-client-secret`. Telegram is a separate bot:
+its token, username and chat ids live in sops as
+`lunamultiplayer-server/telegram-token` / `-username` / `-chat-ids` and are
+declared in `services/services/lunamultiplayer-server.nix` like everything
+else; an empty token disables telegram login and notifications. Even with
+bots unified, each instance keeps its own user database and approval queue:
+a friend approved on the minecraft runner is unknown here until approved
+once.
 
 Note the one-label public domain: the historical
 `lunamultiplayer.internal.polpetta.online` cannot be public (the wildcard
