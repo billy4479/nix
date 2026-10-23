@@ -74,7 +74,7 @@ in
     dependsOn = [
       "nginx"
       "game-server-runner"
-      "lunamultiplayer-server"
+      "lunamultiplayer"
     ];
   };
 }

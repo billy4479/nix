@@ -39,18 +39,18 @@ to start (fail closed).
 
 ## Luna instance
 
-`services/services/lunamultiplayer-server.nix` runs a second instance of the
+`services/services/lunamultiplayer.nix` runs a second instance of the
 same binary under container id 20, managing Luna Multiplayer. Its tsidp
 client registration is separate because the redirect URI differs:
 
 - Name: `game-server-runner-luna` (tsidp-side label, anything works)
 - Redirect URI: `https://lunamultiplayer.polpetta.online/api/auth/oidc/callback`
 
-The client id + secret go into sops as `lunamultiplayer-server/oauth-client-id`
-and `lunamultiplayer-server/oauth-client-secret`. Telegram is a separate bot:
+The client id + secret go into sops as `lunamultiplayer/oauth-client-id`
+and `lunamultiplayer/oauth-client-secret`. Telegram is a separate bot:
 its token, username and chat ids live in sops as
-`lunamultiplayer-server/telegram-token` / `-username` / `-chat-ids` and are
-declared in `services/services/lunamultiplayer-server.nix` like everything
+`lunamultiplayer/telegram-token` / `-username` / `-chat-ids` and are
+declared in `services/services/lunamultiplayer.nix` like everything
 else; an empty token disables telegram login and notifications. Even with
 bots unified, each instance keeps its own user database and approval queue:
 a friend approved on the minecraft runner is unknown here until approved

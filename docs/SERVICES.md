@@ -161,7 +161,11 @@ name):
     container = {
       # imageToBuild, volumes, environmentFiles, environment, dependsOn ...
       id = 3;
-      dependsOn = [ "postgresql" "immich-redis" "immich-ml" ];
+      dependsOn = [
+        "postgresql"
+        "immich-redis"
+        "immich-ml"
+      ];
     };
 
     web = {
@@ -187,39 +191,55 @@ with a historical domain (the default would embed the container name):
 ```nix
 {
   polpetta.services.game-server-runner = {
-    container = { id = 13; /* ... */ };
+    container = {
+      id = 13; # ...
+    };
 
     web = {
       port = 4479;
-      access = "public";               # public endpoint
+      access = "public"; # public endpoint
       domain = "mc-runner.polpetta.online"; # historical domain (was the old service's name)
     };
 
     raw = [
-      { port = 25565; access = "public"; record = "mc"; }
-      { port = 19132; proto = "udp"; access = "public"; }
+      {
+        port = 25565;
+        access = "public";
+        record = "mc";
+      }
+      {
+        port = 19132;
+        proto = "udp";
+        access = "public";
+      }
     ];
   };
 }
 ```
 
-`services/services/lunamultiplayer-server.nix` — mixed tiers on one container.
+`services/services/lunamultiplayer.nix` — mixed tiers on one container.
 Since the game-server-runner instance landed, the `web` port is the runner's
 web UI (on the default public domain; Luna's own built-in website stays off);
 see the service file for the runner config (env/config templates, `server.toml`):
 
 ```nix
 {
-  polpetta.services.lunamultiplayer-server = {
-    container = { id = 20; /* ... */ };
+  polpetta.services.lunamultiplayer = {
+    container = {
+      id = 20; # ...
+    };
 
     web = {
       port = 4479;
-      access = "public";               # game-server-runner web UI
+      access = "public"; # game-server-runner web UI
     };
 
     raw = [
-      { port = 8800; proto = "udp"; access = "public"; }  # game traffic
+      {
+        port = 8800;
+        proto = "udp";
+        access = "public";
+      } # game traffic
     ];
   };
 }

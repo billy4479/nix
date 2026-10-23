@@ -46,7 +46,7 @@ in
     ../../../services/services/openchamber.nix
 
     ../../../services/services/game-server-runner
-    ../../../services/services/lunamultiplayer-server.nix
+    ../../../services/services/lunamultiplayer.nix
     ../../../services/services/calendar-proxy.nix
     ../../../services/services/ff.nix
     ../../../services/services/giuoco-del-divertimento.nix
