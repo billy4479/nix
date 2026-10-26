@@ -399,6 +399,10 @@
       plugins.auto_update = "none";
     };
 
+    # v5 rejects a custom palette without a `terminal` section and falls back to
+    # the builtin palette, so the ANSI colors are required even though the shell
+    # does not use them (no templates enabled). Values are the official
+    # Catppuccin Macchiato terminal palette.
     customPalettes.CatppuccinMacchiato = {
       dark = {
         mError = "#e78284";
@@ -417,6 +421,35 @@
         mHover = "#626880";
         mSurfaceVariant = "#414559";
         mTertiary = "#e5c890";
+
+        terminal = {
+          normal = {
+            black = "#494d64"; # surface 1
+            red = "#ed8796";
+            green = "#a6da95";
+            yellow = "#eed49f";
+            blue = "#8aadf4";
+            magenta = "#f5bde6";
+            cyan = "#8bd5ca";
+            white = "#a5adcb"; # subtext 0
+          };
+          bright = {
+            black = "#5b6078"; # surface 2
+            red = "#ec7486";
+            green = "#8ccf7f";
+            yellow = "#e1c682";
+            blue = "#78a1f6";
+            magenta = "#f2a9dd";
+            cyan = "#63cbc0";
+            white = "#b8c0e0"; # subtext 1
+          };
+          foreground = "#cad3f5"; # text
+          background = "#24273a"; # base
+          cursor = "#f4dbd6"; # rosewater
+          cursorText = "#24273a"; # base
+          selectionFg = "#cad3f5"; # text
+          selectionBg = "#5b6078"; # surface 2
+        };
       };
     };
   };
