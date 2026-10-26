@@ -69,8 +69,9 @@
     };
 
     noctalia = {
-      url = "github:noctalia-dev/noctalia-shell/v4.7.7"; # TODO: update to v5 when out of alpha
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:noctalia-dev/noctalia/cachix";
+      # This is commented out to allow caching
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # My flakes

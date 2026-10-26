@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   extraConfig,
   flakeInputs,
   ...
@@ -8,18 +9,17 @@
 let
   scripts = import ../../scripts/packages.nix args;
 
-  noctaliaCmd = lib.getExe flakeInputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  noctaliaCmd = lib.getExe config.programs.noctalia.package;
   niriCmd = lib.getExe pkgs.niri;
   brightnessctl = lib.getExe pkgs.brightnessctl;
 
-  noctaliaIpc =
-    x:
+  noctaliaMsg =
+    args:
     [
       noctaliaCmd
-      "ipc"
-      "call"
+      "msg"
     ]
-    ++ (lib.strings.splitString " " x);
+    ++ args;
 in
 {
   imports = [
@@ -41,7 +41,6 @@ in
   services.swayidle = {
     enable = true;
     extraArgs = [ "-d" ];
-    events.before-sleep = lib.strings.concatStringsSep " " (noctaliaIpc "lockScreen lock");
     timeouts =
       let
         dim-screen = timeout: {
@@ -59,7 +58,7 @@ in
           command = "${pkgs.writeShellScript "power-off-screen" (
             # sh
             ''
-              ${noctaliaCmd} ipc call lockScreen lock &&
+              ${noctaliaCmd} msg session lock &&
             ''
             + (lib.strings.concatMapStringsSep " && " (output: "${niriCmd} msg output ${output} off") outputs)
           )}";
@@ -75,7 +74,7 @@ in
             # sh
             ''
               [ "$(cat /sys/class/power_supply/AC*/online 2>/dev/null)" = 0 ] &&
-                ${noctaliaCmd} ipc call sessionMenu lockAndSuspend
+                ${noctaliaCmd} msg session lock-and-suspend
             ''
           }";
         };
@@ -108,10 +107,19 @@ in
         "Mod+Shift+Slash".action.show-hotkey-overlay = { };
 
         "Mod+Return".action.spawn = "kitty";
-        "Mod+Shift+Return".action.spawn = noctaliaIpc "launcher toggle";
-        "Mod+Ctrl+Shift+Return".action.spawn = noctaliaIpc "launcher command";
-        "Mod+Period".action.spawn = noctaliaIpc "launcher emoji";
-        "Mod+V".action.spawn = noctaliaIpc "launcher clipboard";
+        "Mod+Shift+Return".action.spawn = noctaliaMsg [
+          "panel-toggle"
+          "launcher"
+        ];
+        "Mod+Period".action.spawn = noctaliaMsg [
+          "panel-toggle"
+          "launcher"
+          "/emo"
+        ];
+        "Mod+V".action.spawn = noctaliaMsg [
+          "panel-toggle"
+          "clipboard"
+        ];
 
         "Mod+B".action.spawn = "firefox";
         "Mod+C".action.spawn = lib.getExe pkgs.qalculate-gtk;
@@ -119,8 +127,14 @@ in
         "Mod+D".action.spawn = lib.getExe scripts.open-document;
         "Mod+Y".action.spawn = lib.getExe scripts.mpv-url;
 
-        "Mod+Shift+L".action.spawn = noctaliaIpc "lockScreen lock";
-        "Mod+Q".action.spawn = noctaliaIpc "sessionMenu toggle";
+        "Mod+Shift+L".action.spawn = noctaliaMsg [
+          "session"
+          "lock"
+        ];
+        "Mod+Q".action.spawn = noctaliaMsg [
+          "panel-toggle"
+          "session"
+        ];
 
         # Volume
         "XF86AudioRaiseVolume" = {
@@ -357,6 +371,8 @@ in
         path = lib.getExe pkgs.xwayland-satellite;
       };
 
+      debug.honor-xdg-activation-with-invalid-serial = true;
+
       screenshot-path = "~/Pictures/Screenshots/%Y-%m-%d_%H-%M-%S.png";
 
       window-rules = [
@@ -390,13 +406,25 @@ in
           open-floating = true;
           open-focused = true;
         }
+        {
+          matches = [
+            { app-id = "dev.noctalia.Noctalia"; }
+          ];
+          open-floating = true;
+          default-column-width = {
+            fixed = 1080;
+          };
+          default-window-height = {
+            fixed = 920;
+          };
+        }
 
       ];
 
       layer-rules = [
         {
           matches = [
-            { namespace = "^noctalia-(background|launcher-overlay|dock)-.*$"; }
+            { namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$"; }
           ];
           background-effect = {
             xray = false;

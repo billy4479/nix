@@ -39,6 +39,7 @@
         "https://catppuccin.cachix.org"
         "https://install.determinate.systems"
         "https://cache.nixos.org/"
+        "https://noctalia.cachix.org"
       ]
       ++ (lib.optionals extraConfig.hasCuda [
         "https://cache.nixos-cuda.org"
@@ -48,6 +49,7 @@
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         "catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU="
         "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
+        "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
 
         (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/nix/computerone")
         (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/nix/portatilo")
