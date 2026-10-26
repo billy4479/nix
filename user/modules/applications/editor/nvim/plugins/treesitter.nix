@@ -12,6 +12,7 @@
               tree-sitter-c
               tree-sitter-cmake
               tree-sitter-cpp
+              tree-sitter-cuda
               tree-sitter-css
               tree-sitter-csv
               tree-sitter-dockerfile
