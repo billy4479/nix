@@ -12,6 +12,7 @@ let
   noctaliaCmd = lib.getExe config.programs.noctalia.package;
   niriCmd = lib.getExe pkgs.niri;
   brightnessctl = lib.getExe pkgs.brightnessctl;
+  systemctl = lib.getExe' pkgs.systemd "systemctl";
 
   noctaliaMsg =
     args:
@@ -432,7 +433,16 @@ in
         }
       ];
 
-      spawn-at-startup = [ { command = [ noctaliaCmd ]; } ];
+      spawn-at-startup = [
+        {
+          command = [
+            systemctl
+            "--user"
+            "start"
+            "noctalia.service"
+          ];
+        }
+      ];
 
       hotkey-overlay.skip-at-startup = true;
     };

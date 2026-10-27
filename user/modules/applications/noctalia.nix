@@ -11,6 +11,7 @@
 
   programs.noctalia = {
     enable = true;
+    systemd.enable = true;
     package = flakeInputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
     settings = {
