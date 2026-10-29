@@ -66,8 +66,6 @@ let
     sandbox = false
     build-users-group =
     warn-dirty = false
-    max-jobs = 2
-    cores = 2
   '';
 
   identityFiles = pkgs.symlinkJoin {
