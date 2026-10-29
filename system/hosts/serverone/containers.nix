@@ -19,44 +19,12 @@ in
 {
   imports = [
     ../../../containers/module.nix
-    ../../../services/module.nix
 
     ../../../containers/certbot.nix
     ../../../containers/nginx
-    ../../../services/services/bind9
     ../../../containers/frp.nix
 
-    ../../../services/services/syncthing.nix
-    ../../../services/services/immich-server.nix
-    ../../../services/services/postgresql
-    ../../../services/services/immich-ml.nix
-    ../../../services/services/immich-redis.nix
-    ../../../services/services/qbittorrent.nix
-
-    ../../../services/services/radarr.nix
-    ../../../services/services/jackett.nix
-    ../../../services/services/sonarr.nix
-    ../../../services/services/byparr.nix
-
-    ../../../services/services/jellyfin.nix
-
-    ../../../services/services/bentopdf.nix
-    ../../../services/services/opencloud.nix
-    ../../../services/services/searxng
-    ../../../services/services/openchamber.nix
-
-    ../../../services/services/game-server-runner
-    ../../../services/services/lunamultiplayer.nix
-    ../../../services/services/calendar-proxy.nix
-    ../../../services/services/ff.nix
-    ../../../services/services/giuoco-del-divertimento.nix
-    ../../../services/services/agent-up.nix
-    ../../../services/services/outline.nix
-    ../../../services/services/outline-valkey.nix
-    ../../../services/services/grafana
-    ../../../services/services/headscale
-    ../../../services/services/headplane
-    ../../../services/services/tsidp.nix
+    ../../../services/services
   ];
 
   environment.systemPackages = [

@@ -11,6 +11,7 @@ from that declaration.
 services/
   module.nix              # polpetta.services option + all generators
   services/
+    default.nix           # shared import: module.nix + every service file
     immich-server.nix     # one file per service: container + exposure
     grafana/              # directory when support files exist
       default.nix
@@ -135,8 +136,10 @@ addressable by name.
 
 ## Host wiring
 
-- Both serverone and vps-proxy import all the service files (explicit import
-  lists). vps-proxy only consumes the frps/firewall projection.
+- Both serverone and vps-proxy import `services/services/` (its default.nix
+  pulls in module.nix and every service file, so the two hosts always
+  evaluate the same service set). vps-proxy only consumes the
+  frps/firewall projection.
 - Any container runs only where `containers/module.nix` is imported: each
   service's `container` is mirrored into `nerdctl-containers.<name>` (service
   name = container name) there, which keeps the existing dependency inference
