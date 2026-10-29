@@ -754,6 +754,31 @@
         "type": "github"
       }
     },
+    "quote-bot": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1741788859,
+        "narHash": "sha256-Z3fLpNy44FGW5vBHaw96l1FmLNxb8Mn05DCfhTqnLDA=",
+        "ref": "master",
+        "rev": "9b1862dd00f67b32832c9e506822f70a495ccfef",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/quote-bot.git"
+      },
+      "original": {
+        "ref": "master",
+        "shallow": true,
+        "type": "git",
+        "url": "ssh://git@github.com/billy4479/quote-bot.git"
+      }
+    },
     "read-nix-docs": {
       "inputs": {
         "flake-utils": [
@@ -800,6 +825,7 @@
         "nixpkgs": "nixpkgs_3",
         "noctalia": "noctalia",
         "plasma-manager": "plasma-manager",
+        "quote-bot": "quote-bot",
         "read-nix-docs": "read-nix-docs",
         "secrets-repo": "secrets-repo",
         "sops-nix": "sops-nix",

@@ -33,6 +33,7 @@
     ./ff.nix
     ./giuoco-del-divertimento.nix
     ./agent-up.nix
+    ./quote-bot.nix
 
     ./outline.nix
     ./outline-valkey.nix

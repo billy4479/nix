@@ -91,6 +91,14 @@
       };
     };
 
+    quote-bot = {
+      url = "git+ssh://git@github.com/billy4479/quote-bot.git?ref=master&shallow=1";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+    };
+
     calendar-proxy = {
       url = "git+ssh://git@github.com/billy4479/calendar-proxy-v2.git?ref=master&shallow=1";
       inputs = {
@@ -173,6 +181,7 @@
             inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
             inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
             inherit (inputs.agent-up.packages.${system}) agent-up agent-up-server;
+            quote-bot = inputs.quote-bot.packages.${system}.default;
             read-nix-docs = inputs.read-nix-docs.packages.${system}.default;
           }
           // inputs.myPackages.packages.${system}
