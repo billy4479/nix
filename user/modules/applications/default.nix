@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   imports = [
+    ./agent-up.nix
     ./browser
     ./btop.nix
     ./direnv.nix
