@@ -22,6 +22,11 @@
             	prepend_args = { "-g", "/dev/null" },
             }
 
+            -- Match the colorcolumn setting (see default.nix)
+            conform.formatters.typstyle = {
+            	prepend_args = { "--line-width", "100", "--wrap-text=fill" },
+            }
+
             local prettier_cfg = { "prettierd", "prettier", stop_after_first = true }
 
             conform.setup({
