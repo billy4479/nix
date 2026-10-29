@@ -168,6 +168,17 @@ lib.types.submodule (
               default = [ ];
               description = "Packages copied into and rooted in the private store before startup.";
             };
+            wipeAboveGib = lib.mkOption {
+              type = lib.types.nullOr lib.types.ints.positive;
+              default = null;
+              description = ''
+                Wipe the whole private store before startup when it exceeds this
+                many GiB. Safe because the store is fully re-seeded from
+                seedPackages right afterwards, but the limit must stay well
+                above the seed closures' size or the store is rebuilt on every
+                restart.
+              '';
+            };
           };
         };
       };

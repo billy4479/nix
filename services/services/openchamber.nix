@@ -169,6 +169,11 @@ in
           identityFiles
           caCertificates
         ];
+        # Agent sessions build nix closures into this store without ever GCing
+        # them, and it reached 414 GiB against a pool with ~150 GiB free. The
+        # limit is far above the seed closures' few GiB so ordinary builds
+        # between restarts never trigger a wipe.
+        wipeAboveGib = 100;
       };
 
       cmd = [
@@ -206,8 +211,10 @@ in
       cpus = 4;
       tmpfs = [ ];
       # After a deploy, preStart copies the fresh runtime closure (GBs) into
-      # the private store; the 90s systemd default timed out mid-copy.
-      startTimeout = 600;
+      # the private store; the 90s systemd default timed out mid-copy. A start
+      # that also wipes an over-limit store adds a multi-minute rm of millions
+      # of files on top.
+      startTimeout = 1800;
 
       volumes = [
         {
