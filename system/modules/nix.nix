@@ -9,12 +9,16 @@
     flakeInputs.determinate.nixosModules.default
   ];
 
-  nix = {
-    gc = {
-      automatic = true;
-      dates = "weekly";
-    };
+  # Periodic cleanup with nh instead of the plain `nix.gc` job: besides
+  # collecting unreachable store paths, it also drops old generations,
+  # which plain `nix-collect-garbage` leaves in place.
+  programs.nh.clean = {
+    enable = true;
+    dates = "weekly";
+    extraArgs = "--keep 5 --keep-since 7d";
+  };
 
+  nix = {
     # Make the nixpkgs flake input be used for various nix commands
     registry.nixpkgs = {
       from = {
