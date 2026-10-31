@@ -112,6 +112,10 @@ ACLs.
 
 The nginx 80/443 edge forwards, the frps bind port/token and the static
 zone/SOA data stay hand-written: they are infrastructure, not per-service.
+So is the homepage vhost (`polpetta.online` apex + `www` redirect, content
+in `sites/homepage/`, mounted into the nginx container at `/srv/homepage`):
+it is plain static files with no backend container, and the apex name is
+not a `.polpetta.online` subdomain, so it cannot be a service entry.
 
 Non-public raw ports are not tunneled: reachability is inherent (subnet router
 + LAN routing to container IPs); the `record` option just makes them

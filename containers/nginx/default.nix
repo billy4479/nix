@@ -9,6 +9,7 @@ let
 
   externalTrafficFrom = "10.0.1.${toString config.nerdctl-containers.frp.id}";
   nginxConfig = pkgs.callPackage ./config.nix { inherit externalTrafficFrom; };
+  homepage = pkgs.callPackage ../../sites/homepage { };
 in
 {
   polpetta.externalTrafficFrom = externalTrafficFrom;
@@ -52,6 +53,11 @@ in
       {
         hostPath = "${pkgs.nginx}/conf/mime.types";
         containerPath = "/etc/nginx/mime.types";
+        readOnly = true;
+      }
+      {
+        hostPath = "${homepage}";
+        containerPath = "/srv/homepage";
         readOnly = true;
       }
       {
