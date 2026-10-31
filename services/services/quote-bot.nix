@@ -8,6 +8,7 @@
 let
   name = "quote-bot";
   baseDir = "/mnt/SSD/apps/${name}";
+  webhookUrl = "https://quote-bot.polpetta.online";
 in
 {
   # sops keys (in secrets-repo, serverone.yaml), rendered into the env
@@ -57,9 +58,6 @@ in
       environment = {
         PORT = "4479";
         DATABASE_PATH = "/data/quotebot.db";
-        # Only the preStart reads this (the setWebhook call); the bot
-        # itself serves whatever path Telegram posts to.
-        TELEGRAM_WEBHOOK_URL = "https://quote-bot.polpetta.online";
       };
 
       environmentFiles = [ config.sops.templates."quote-bot-env".path ];
@@ -68,7 +66,8 @@ in
       # config-owned, so a deploy re-points the bot with no manual
       # setwebhook.sh step. Failures are non-fatal but loud: the
       # registration lives on telegram's side and the next restart
-      # retries.
+      # retries. Container `environment` is invisible here (it is passed
+      # to nerdctl run, not to the unit), hence the interpolated URL.
       extraPreStart =
         let
           envFile = config.sops.templates."quote-bot-env".path;
@@ -81,8 +80,8 @@ in
           # process list; curl reads the body from a private file.
           umask 077
           body="$STATE_DIRECTORY/setwebhook-body"
-          printf 'url=%s/api/webhook&secret_token=%s' \
-            "$TELEGRAM_WEBHOOK_URL" "$TELEGRAM_WEBHOOK_SECRET" >"$body"
+          printf 'url=${webhookUrl}/api/webhook&secret_token=%s' \
+            "$TELEGRAM_WEBHOOK_SECRET" >"$body"
           response=$(
             ${pkgs.curl}/bin/curl -s --max-time 10 \
               -d @"$body" \
