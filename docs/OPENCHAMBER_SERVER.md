@@ -83,7 +83,8 @@ wrapper exists because Chromium cannot run here unmodified: the container
 runtime policy blocks the namespace syscalls of its sandbox (like the Nix
 sandbox below, it stays disabled), so the wrapper launches it with
 `--no-sandbox`, and the container has no `/etc/fonts`, so the wrapper points
-`FONTCONFIG_FILE` at a generated fonts.conf (DejaVu, Liberation, Noto Emoji).
+`FONTCONFIG_FILE` at a generated fonts.conf (DejaVu, Liberation, Noto Emoji;
+no CJK font on purpose, so East Asian text renders as tofu).
 It also passes `--disable-dev-shm-usage` because the container's `/dev/shm` is
 small. The extension itself adds the headless and remote-debugging flags.
 
