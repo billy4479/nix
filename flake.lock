@@ -764,10 +764,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1741788859,
-        "narHash": "sha256-Z3fLpNy44FGW5vBHaw96l1FmLNxb8Mn05DCfhTqnLDA=",
+        "lastModified": 1793315692,
+        "narHash": "sha256-1qHhkmYsZ6OUteDeq9dBlkJOuIfkj62fS86Jn1kx7oE=",
         "ref": "master",
-        "rev": "9b1862dd00f67b32832c9e506822f70a495ccfef",
+        "rev": "9ebd2b408565dc97882e6d7a9e6857af239cdc62",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/quote-bot.git"
@@ -835,10 +835,10 @@
     "secrets-repo": {
       "flake": false,
       "locked": {
-        "lastModified": 1792764196,
-        "narHash": "sha256-El/RrePrUDAOEBTTpwUGV1Ve9I+G/lqI+WWuzf7xgCM=",
+        "lastModified": 1793447694,
+        "narHash": "sha256-SUWHpUqJsVmSoEeC0J9mKecLDXnFsxNZ7OC6pcMWzPs=",
         "ref": "master",
-        "rev": "f7715716a390f0f5eefed12ab82197b72397ccfd",
+        "rev": "5f0a89ed06d4403bbae4b35e2102570afd3cb1e7",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/nix-secrets.git"
