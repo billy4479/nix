@@ -73,6 +73,20 @@ nerdctl exec openchamber nix build --no-link nixpkgs#hello
 nerdctl exec openchamber nix shell nixpkgs#hello -c hello
 ```
 
+## Server browser
+
+The openchamber-server-browser extension runs Chrome on the server for the
+`openchamber_web` tool's `browser.*` actions. The container image ships a
+`chromium` wrapper (defined in `services/services/openchamber.nix`) that the
+extension discovers by name on `PATH`; no `chromePath` entry is needed. The
+wrapper exists because Chromium cannot run here unmodified: the container
+runtime policy blocks the namespace syscalls of its sandbox (like the Nix
+sandbox below, it stays disabled), so the wrapper launches it with
+`--no-sandbox`, and the container has no `/etc/fonts`, so the wrapper points
+`FONTCONFIG_FILE` at a generated fonts.conf (DejaVu, Liberation, Noto Emoji).
+It also passes `--disable-dev-shm-usage` because the container's `/dev/shm` is
+small. The extension itself adds the headless and remote-debugging flags.
+
 ## Workspaces
 
 The SSD directory `/mnt/SSD/apps/openchamber/workspaces` is mounted at

@@ -24,6 +24,28 @@ let
     opencode = artifacts.package;
   };
 
+  # Chromium for the openchamber-server-browser extension, which discovers the
+  # browser by name on PATH and launches it with no sandbox flags. The container
+  # runtime policy blocks the namespace syscalls Chromium's sandbox needs (the
+  # same reason the Nix sandbox below is disabled) and setuid is unavailable, so
+  # Chromium aborts at startup unless launched unsandboxed. The extension also
+  # probes `chromium --version` for the user-agent, which passes through "$@".
+  # Chromium renders no text at all without a fontconfig file and the nixpkgs
+  # wrapper expects the host's /etc/fonts, so point it at a generated one.
+  chromiumWrapper =
+    let
+      fontDirectories = [
+        "${pkgs.dejavu_fonts}/share/fonts/truetype"
+        "${pkgs.liberation_ttf}/share/fonts/truetype"
+        "${pkgs.noto-fonts-color-emoji}/share/fonts/noto"
+      ];
+    in
+    pkgs.writeShellScriptBin "chromium" # sh
+      ''
+        export FONTCONFIG_FILE=${pkgs.makeFontsConf { inherit fontDirectories; }}
+        exec ${lib.getExe pkgs.chromium} --no-sandbox --disable-dev-shm-usage "$@"
+      '';
+
   # OpenChamber identifies the container as `openchamber-container` instead of
   # the ephemeral hostname assigned by nerdctl.
   fakeHostname = pkgs.writeShellScriptBin "hostname" # sh
@@ -48,6 +70,8 @@ let
       ++ [
         openchamber
         artifacts.package
+        # Wrapper providing /bin/chromium; pulls in the full browser closure.
+        chromiumWrapper
       ];
     pathsToLink = [
       "/bin"
