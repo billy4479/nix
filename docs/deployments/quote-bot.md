@@ -67,18 +67,14 @@ nix build .#nixosConfigurations.serverone.config.system.build.toplevel
 
 The volume directory is created by the containers module on first start.
 
-## 5. Switch the webhook
+## 5. Webhook (automatic)
 
-Point Telegram at the new URL (from a clone of the quote-bot repo, with
-`TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_URL=https://quote-bot.polpetta.online`
-and `TELEGRAM_WEBHOOK_SECRET` in the environment or `.env`):
-
-```sh
-./setwebhook.sh
-```
-
-The secret must match `quote-bot/webhook-secret`, or Telegram's posts are
-rejected with 401.
+The container's preStart registers the webhook on every (re)start, so the
+deploy itself points Telegram at `https://quote-bot.polpetta.online`: no
+manual `setwebhook.sh` step. The unit logs the setWebhook response; the
+secret it sends is `quote-bot/webhook-secret`, or Telegram's posts are
+rejected with 401. The old webhook registration (vercel, or a dev tunnel)
+is replaced by the deploy.
 
 ## 6. Verify
 
@@ -97,7 +93,9 @@ Once verified:
 
 ## Rollback
 
-`setwebhook.sh` against the old vercel URL points Telegram back at vercel
-within seconds; quotes posted in the meantime live only in the SQLite file
-and would need `cmd/migrate` in reverse (out of scope: re-running the
-forward migration after a short rollback is simpler).
+Stopping the container and running `setwebhook.sh` against the old vercel
+URL points Telegram back at vercel within seconds (the container must stay
+stopped, or its next restart re-registers the new URL); quotes posted in
+the meantime live only in the SQLite file and would need `cmd/migrate` in
+reverse (out of scope: re-running the forward migration after a short
+rollback is simpler).

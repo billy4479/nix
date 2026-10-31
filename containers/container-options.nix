@@ -211,6 +211,16 @@ lib.types.submodule (
           Nix store after a deploy.
         '';
       };
+
+      extraPreStart = lib.mkOption {
+        type = lib.types.lines;
+        default = "";
+        description = ''
+          Extra shell lines appended to the unit's preStart, after the
+          image is loaded and before the container starts (runs as root on
+          the host).
+        '';
+      };
     };
   }
 )

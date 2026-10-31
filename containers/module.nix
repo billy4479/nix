@@ -340,6 +340,8 @@ let
             else
               echo "Image ${imageName} is already loaded from ${nixImage}"
             fi
+
+            ${cfg.extraPreStart}
           '';
 
         script = ''

@@ -57,9 +57,40 @@ in
       environment = {
         PORT = "4479";
         DATABASE_PATH = "/data/quotebot.db";
+        # Only the preStart reads this (the setWebhook call); the bot
+        # itself serves whatever path Telegram posts to.
+        TELEGRAM_WEBHOOK_URL = "https://quote-bot.polpetta.online";
       };
 
       environmentFiles = [ config.sops.templates."quote-bot-env".path ];
+
+      # Re-register the telegram webhook on every (re)start: the URL is
+      # config-owned, so a deploy re-points the bot with no manual
+      # setwebhook.sh step. Failures are non-fatal but loud: the
+      # registration lives on telegram's side and the next restart
+      # retries.
+      extraPreStart =
+        let
+          envFile = config.sops.templates."quote-bot-env".path;
+        in
+        # sh
+        ''
+          source ${lib.escapeShellArg envFile}
+
+          # printf is a bash builtin, so the secrets never land in the
+          # process list; curl reads the body from a private file.
+          umask 077
+          body="$STATE_DIRECTORY/setwebhook-body"
+          printf 'url=%s/api/webhook&secret_token=%s' \
+            "$TELEGRAM_WEBHOOK_URL" "$TELEGRAM_WEBHOOK_SECRET" >"$body"
+          response=$(
+            ${pkgs.curl}/bin/curl -s --max-time 10 \
+              -d @"$body" \
+              "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook"
+          ) && echo "setWebhook: $response" \
+            || echo "setWebhook failed (non-fatal), telegram keeps the previous url"
+          rm -f "$body"
+        '';
 
       volumes = [
         {
