@@ -87,6 +87,10 @@ in
     web = {
       port = 8191;
       access = "tailnet";
+
+      # / redirects to /docs, which stays 200 even when the browser driver is
+      # dead and every solve 500s; /health actually reflects app health.
+      probe.path = "/health";
     };
   };
 }
