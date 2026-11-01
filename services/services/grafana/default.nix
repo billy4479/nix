@@ -106,6 +106,7 @@ in
     web = {
       port = 3000;
       access = "tailnet";
+      probe.path = "/api/health";
     };
   };
 }

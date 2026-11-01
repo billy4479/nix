@@ -320,6 +320,7 @@ in
     web = {
       port = 3000;
       access = "tailnet";
+      probe.path = "/health";
       # Chat UI attachments are arbitrary files, so allow generous bodies.
       nginx.extraConfig = ''
         client_max_body_size 256M;

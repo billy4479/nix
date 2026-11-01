@@ -47,6 +47,7 @@ in
     web = {
       port = 9117;
       access = "tailnet";
+      probe.path = "/health";
     };
   };
 }

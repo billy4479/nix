@@ -67,6 +67,7 @@ in
     web = {
       port = 8989;
       access = "tailnet";
+      probe.path = "/ping";
     };
   };
 }

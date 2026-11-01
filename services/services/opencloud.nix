@@ -150,6 +150,7 @@ in
     web = {
       port = 9200;
       access = "public";
+      probe.path = "/healthz";
       # Deliberately unbuffered: sync clients pull files in parallel and
       # sizes are unbounded, so buffering multi-GB responses to the 2g tmpfs
       # would risk ENOSPC mid-transfer and burn RAM. ocis streams cheaply.

@@ -65,6 +65,7 @@
     web = {
       port = 8384;
       access = "tailnet";
+      probe.path = "/rest/noauth/health";
     };
   };
 }

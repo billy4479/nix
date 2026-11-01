@@ -54,6 +54,7 @@ in
     web = {
       port = 8888;
       access = "tailnet";
+      probe.path = "/healthz";
     };
   };
 }

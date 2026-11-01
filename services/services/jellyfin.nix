@@ -129,6 +129,7 @@ in
     web = {
       port = 8096;
       access = "tailnet";
+      probe.path = "/health";
       nginx.extraConfig = ''
         proxy_buffering off;
         proxy_read_timeout 3600;

@@ -96,6 +96,10 @@ in
       # Historical domain: the UI is served under `immich`, not the container
       # name.
       domain = "immich.internal.polpetta.online";
+
+      # / and /health answer 200 with the SPA's HTML shell; the API ping is
+      # the only unauthenticated endpoint that actually reports health.
+      probe.path = "/api/server/ping";
       nginx.extraConfig = ''
         client_max_body_size 50000M;
         proxy_request_buffering off;

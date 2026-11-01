@@ -59,6 +59,7 @@ in
     web = {
       port = 8080;
       access = "public";
+      probe.path = "/health";
     };
   };
 }
