@@ -10,13 +10,12 @@ file records only the deployment wiring.
 
 - Redirect URI (must match the tsidp registration exactly):
   `https://ff.internal.polpetta.online/login/callback`
-- **Authorization is enforced by the app, not the IdP**: every tailnet
-  member can authenticate at tsidp, but ff only accepts the user with
-  headscale username `jack` — the `ALLOWED_USERNAME` environment variable
-  (set in `services/services/ff.nix`; the app fails closed without it).
-  The `username` it reads from `/userinfo` is the short headscale name
-  under the claims invariant in TSIDP.md. Anybody else completing the
-  flow gets a styled 403 denial page.
+- **Authorization is delegated to the IdP**: every user tsidp
+  authenticates (any tailnet member) may use ff. On first login the app
+  provisions the user into its `users` table, keyed by the `sub` claim
+  (username and last login time are refreshed on each login). The
+  `username` it reads from `/userinfo` is the short headscale name under
+  the claims invariant in TSIDP.md.
 
 ## tsidp client registration
 
@@ -39,5 +38,6 @@ ff/session-secret=<long random string, e.g. openssl rand -base64 32>
 
 Logout clears ff's session cookie, but tsidp authenticates via tailnet
 WhoIs without interaction, so the next page load silently logs the user
-back in. With a single authorized user this is harmless — there is no
-meaningful "logged out" state to protect.
+back in as themselves. There is no meaningful "logged out" state to
+protect: the machine is on the tailnet, so its user can always get back
+in without typing anything.

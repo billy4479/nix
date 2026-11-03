@@ -51,15 +51,12 @@ in
         ENVIRONMENT = "production";
         ORIGIN = "https://ff.internal.polpetta.online";
         FF_DATA_PATH = "/data";
-        # Authorization policy (fail closed): only this headscale username
-        # may use ff; anybody else who authenticates gets a 403 page.
-        ALLOWED_USERNAME = "jack";
       };
 
-      # OIDC login against tsidp (docs/deployments/tsidp-ff.md): the app
-      # itself allows only the headscale user `jack`; the client id/secret
-      # come from the tsidp client registration, the session secret signs
-      # ff's session cookies.
+      # OIDC login against tsidp (docs/deployments/tsidp-ff.md): everyone the
+      # IdP authenticates may use ff and is provisioned on first login; the
+      # client id/secret come from the tsidp client registration, the session
+      # secret signs ff's session cookies.
       environmentFiles = [ config.sops.templates."ff-env".path ];
 
       volumes = [

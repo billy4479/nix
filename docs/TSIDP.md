@@ -136,7 +136,7 @@ What tsidp puts in its tokens in this deployment:
 > the short headscale username that relying parties key on: OpenCloud
 > binds accounts by the `email` claim, Jellyfin matches users by
 > `preferred_username`, Grafana by the `username` login attribute, and ff
-> compares it against `ALLOWED_USERNAME`. tsidp cannot verify this — set
+> stores it on the user it provisions. tsidp cannot verify this — set
 > the Email **at user creation, before the first login** (a user without
 > one gets no `username` claim at all), and never change it afterwards: an
 > email rename **orphans the OpenCloud account** (the next login misses
