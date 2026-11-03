@@ -35,7 +35,6 @@
             		lua = { "stylua" },
             		go = { "goimports", "gofmt" },
             		nix = { "nixfmt", "injected" },
-            		python = { "ruff" },
             		rust = { "rustfmt", lsp_format = "fallback" },
             		javascript = prettier_cfg,
             		typescript = prettier_cfg,
