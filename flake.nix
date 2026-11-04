@@ -206,6 +206,13 @@
       formatter.${system} = pkgsForFlake.nixfmt;
 
       checks.${system} = {
+        shell-syntax = import ./tests/shell-syntax.nix {
+          pkgs = pkgsForFlake;
+          hosts = {
+            serverone = hosts.nixosConfigurations.serverone.config;
+            vps-proxy = hosts.nixosConfigurations.vps-proxy.config;
+          };
+        };
         server-policy = import ./tests/server-policy.nix {
           pkgs = pkgsForFlake;
           serverone = hosts.nixosConfigurations.serverone.config;

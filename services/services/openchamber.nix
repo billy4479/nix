@@ -274,7 +274,9 @@ in
                 "${baseDir}/home/.local/state" \
                 "${baseDir}/home/.ssh"
 
-              if ${permsAreGood}; then
+              if {
+                ${permsAreGood}
+              }; then
                 echo "Permissions for ${baseDir}/home are good"
               else
                 echo "Repairing permissions for ${baseDir}/home"
