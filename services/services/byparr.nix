@@ -16,7 +16,14 @@ in
         tag = "nix-local";
 
         config = {
+          # tini as PID 1: every browser session byparr spawns leaves
+          # orphaned children (forkserver, RDD Process, Utility Process)
+          # that reparent to the container init, which is the python
+          # process by default and never reaps them. They accumulated at
+          # ~15k zombies per day; tini reaps them instead.
           entrypoint = [
+            "${pkgs.tini}/bin/tini"
+            "--"
             (pkgs.writeShellScript "byparr-entrypoint" # sh
               ''
                 export PATH=${
