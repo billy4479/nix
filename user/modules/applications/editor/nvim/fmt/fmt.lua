@@ -1,8 +1,8 @@
--- Headless driver for the `fmt` CLI: formats files with the exact same
+-- Headless driver for the `nvim-fmt` CLI: formats files with the exact same
 -- conform.nvim setup the interactive Neovim config uses (see
 -- plugins/format.nix), including treesitter-injected code blocks.
 --
--- Invoked by the `fmt` wrapper as:
+-- Invoked by the `nvim-fmt` wrapper as:
 --   nvim --headless -l fmt.lua <file>...
 -- The wrapper expands directories (git-aware); this script receives files.
 
@@ -36,7 +36,7 @@ local conform = require("conform")
 
 -- Surface a misconfigured runtime instead of silently skipping everything.
 if vim.tbl_isempty(conform.formatters_by_ft) then
-	eprint("fmt: warning: no formatters configured in the nvim config (formatters_by_ft is empty)")
+	eprint("nvim-fmt: warning: no formatters configured in the nvim config (formatters_by_ft is empty)")
 end
 
 -- conform's own "no formatters found" notify is noisy in a batch run; the
@@ -74,7 +74,7 @@ local function format_file(path)
 	local ok, err = pcall(vim.cmd, "silent edit! " .. vim.fn.fnameescape(path))
 	if not ok then
 		stats.errors = stats.errors + 1
-		eprint("fmt: cannot open " .. path .. ": " .. tostring(err))
+		eprint("nvim-fmt: cannot open " .. path .. ": " .. tostring(err))
 		return
 	end
 	local bufnr = vim.api.nvim_get_current_buf()
@@ -94,7 +94,7 @@ local function format_file(path)
 			table.insert(names, info.name)
 		end
 		eprint(
-			"fmt: formatters not found for "
+			"nvim-fmt: formatters not found for "
 				.. path
 				.. " (configured: "
 				.. table.concat(configured, ", ")
@@ -119,7 +119,7 @@ local function format_file(path)
 	end)
 	if not ran then
 		stats.errors = stats.errors + 1
-		eprint("fmt: formatting failed for " .. path .. ": " .. tostring(run_err))
+		eprint("nvim-fmt: formatting failed for " .. path .. ": " .. tostring(run_err))
 		vim.api.nvim_buf_delete(bufnr, { force = true })
 		return
 	end
@@ -130,7 +130,7 @@ local function format_file(path)
 			msg = msg.message or vim.inspect(msg)
 		end
 		msg = tostring(msg):gsub("\27%[[%d;]*m", "")
-		eprint("fmt: formatter error in " .. path .. ": " .. msg)
+		eprint("nvim-fmt: formatter error in " .. path .. ": " .. msg)
 		vim.api.nvim_buf_delete(bufnr, { force = true })
 		return
 	end
@@ -142,10 +142,10 @@ local function format_file(path)
 		local wrote, write_err = pcall(vim.cmd, "silent noautocmd write")
 		if wrote and not vim.bo[bufnr].modified then
 			stats.formatted = stats.formatted + 1
-			eprint("fmt: formatted " .. path)
+			eprint("nvim-fmt: formatted " .. path)
 		else
 			stats.errors = stats.errors + 1
-			eprint("fmt: cannot write " .. path .. ": " .. tostring(write_err))
+			eprint("nvim-fmt: cannot write " .. path .. ": " .. tostring(write_err))
 		end
 	else
 		stats.unchanged = stats.unchanged + 1
@@ -160,7 +160,7 @@ for i = 1, #paths do
 end
 
 eprint(
-	("fmt: %d formatted, %d unchanged, %d skipped, %d missing formatters, %d errors"):format(
+	("nvim-fmt: %d formatted, %d unchanged, %d skipped, %d missing formatters, %d errors"):format(
 		stats.formatted,
 		stats.unchanged,
 		stats.skipped,

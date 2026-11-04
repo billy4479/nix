@@ -1,11 +1,11 @@
-# Wrapper for the `fmt` CLI: expands directories to files (git-aware), then
+# Wrapper for the `nvim-fmt` CLI: expands directories to files (git-aware), then
 # hands everything to the headless Neovim driver in ./fmt.lua. The nvim and
 # driver paths are substituted by ./package.nix.
 set -euo pipefail
 
 usage() {
 	cat <<'EOF'
-fmt [path...]
+nvim-fmt [path...]
 
 Format files with the same conform.nvim setup the interactive Neovim
 config uses, including treesitter-injected code blocks.
@@ -55,13 +55,13 @@ for p in "$@"; do
 	elif [ -e "$p" ]; then
 		files+=("$p")
 	else
-		echo "fmt: no such file or directory: $p" >&2
+		echo "nvim-fmt: no such file or directory: $p" >&2
 		exit 1
 	fi
 done
 
 if [ "${#files[@]}" -eq 0 ]; then
-	echo "fmt: nothing to format"
+	echo "nvim-fmt: nothing to format"
 	exit 0
 fi
 
