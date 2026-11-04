@@ -132,6 +132,9 @@ The installer is also ordered before relay startup. It must never wait
 synchronously for the relay, which would deadlock both units. The oneshot has
 a 60-second startup timeout. Until the first dedicated certificate is uploaded,
 the relay may fail to start; it does not fall back to an old wildcard key.
+An hourly persistent reconciliation timer retries transient installation
+failures even when the next upload is unchanged. Already installed bundles do
+not restart the relay.
 
 ## Operational notes
 

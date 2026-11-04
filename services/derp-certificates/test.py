@@ -201,6 +201,23 @@ class CertificateTransferTest(unittest.TestCase):
         self.assertFalse((self.installed / "current").exists())
         self.assertFalse(self.calls.exists())
 
+    def test_failed_restart_request_is_retryable_with_unchanged_bundle(self):
+        self.command("receive", json.dumps(self.bundle()).encode())
+        systemctl = self.bin / "systemctl"
+        systemctl.write_text("#!/bin/sh\nexit 1\n")
+        self.command("install", success=False)
+        self.assertTrue((self.installed / "current").is_symlink())
+        self.assertFalse((self.installed / "restart-requested").exists())
+        systemctl.write_text('#!/bin/sh\nprintf "%s\\n" "$*" >>"$TEST_CALLS"\n')
+        self.command("install")
+        self.assertEqual(
+            (self.installed / "restart-requested").read_text(),
+            str((self.installed / "current").readlink()),
+        )
+        self.assertEqual(
+            self.calls.read_text(), "--no-block try-restart derper-derp.service\n"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

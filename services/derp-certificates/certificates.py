@@ -97,7 +97,13 @@ def install(args):
     destination = Path(args.install_dir)
     digest = hashlib.sha256(json.dumps(bundle, sort_keys=True).encode()).hexdigest()
     current = destination / "current"
-    if current.is_symlink() and current.readlink() == Path(digest):
+    restart_requested = destination / "restart-requested"
+    if (
+        current.is_symlink()
+        and current.readlink() == Path(digest)
+        and restart_requested.exists()
+        and restart_requested.read_text() == digest
+    ):
         return
     gid = grp.getgrnam(args.group).gr_gid
     version = destination / digest
@@ -124,6 +130,9 @@ def install(args):
     subprocess.run(
         ["systemctl", "--no-block", "try-restart", "derper-derp.service"], check=True
     )
+    # A failed D-Bus request must remain retryable even after publication. A
+    # partial marker after a crash is also harmless: the next run retries.
+    restart_requested.write_text(digest)
 
 
 def main():

@@ -63,6 +63,16 @@ in
     };
   };
 
+  # Reconcile an unchanged upload too: a transient install failure must not
+  # remain stuck merely because subsequent uploads contain the same bundle.
+  systemd.timers."${name}-cert-sync" = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "hourly";
+      Persistent = true;
+    };
+  };
+
   systemd.services.${name} = {
     description = "Tailscale DERP relay server (derper)";
     wantedBy = [ "multi-user.target" ];
