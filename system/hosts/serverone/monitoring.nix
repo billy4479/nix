@@ -7,6 +7,42 @@
 let
   yamlFormat = pkgs.formats.yaml { };
 
+  # Always connect to the public VPS IP, not a split-DNS container address.
+  # Pin both Host and SNI so TLS and routing are checked end to end.
+  edgeTargets = [
+    {
+      name = "public-headscale";
+      host = "headscale.polpetta.online";
+      path = "/health";
+    }
+    {
+      name = "public-derp";
+      host = "derp.polpetta.online";
+      path = "/derp/probe";
+    }
+    {
+      name = "public-homepage";
+      host = "polpetta.online";
+      path = "/";
+    }
+  ];
+  edgeModules = lib.listToAttrs (
+    map (target: {
+      name = target.name;
+      value = {
+        prober = "http";
+        timeout = "5s";
+        http = {
+          preferred_ip_protocol = "ip4";
+          follow_redirects = false;
+          valid_status_codes = [ 200 ];
+          headers.Host = target.host;
+          tls_config.server_name = target.host;
+        };
+      };
+    }) edgeTargets
+  );
+
   # Static blackbox probe modules: plain http for the container web UIs, an
   # https module pinning the grafana internal vhost (used to watch the
   # wildcard certificate), an http module for services whose only unauth
@@ -76,7 +112,7 @@ let
   );
 
   blackboxConfig = yamlFormat.generate "blackbox-exporter.yml" {
-    modules = staticModules // headerModules;
+    modules = staticModules // headerModules // edgeModules;
   };
 
   alertRules = yamlFormat.generate "serverone-alerts.yml" {
@@ -85,14 +121,35 @@ let
         name = "host";
         rules = [
           {
-            alert = "HostDown";
+            alert = "NodeExporterDown";
             expr = "up{job=\"node\"} == 0";
             for = "3m";
             labels.severity = "critical";
             annotations = {
-              summary = "Host {{ $labels.instance }} is down";
+              summary = "Local node_exporter {{ $labels.instance }} is unreachable";
               description = "node_exporter has been unreachable for more than 3 minutes.";
             };
+          }
+          {
+            alert = "MonitoringTargetDown";
+            expr = "up == 0";
+            for = "5m";
+            labels.severity = "warning";
+            annotations.summary = "Monitoring target {{ $labels.instance }} cannot be scraped";
+          }
+          {
+            alert = "PublicEndpointDown";
+            expr = "probe_success{job=\"blackbox-edge\"} == 0";
+            for = "3m";
+            labels.severity = "critical";
+            annotations.summary = "Public endpoint {{ $labels.service }} is unreachable";
+          }
+          {
+            alert = "CertificateRenewalOverdue";
+            expr = "time() - certbot_renew_last_success_seconds > 36 * 3600 or absent(certbot_renew_last_success_seconds)";
+            for = "1h";
+            labels.severity = "warning";
+            annotations.summary = "Certificate renewal and DERP certificate upload have not completed recently";
           }
           {
             alert = "SystemdUnitFailed";
@@ -247,7 +304,7 @@ let
       ''
         set -eu
 
-        dir=/run/prometheus-node-exporter
+        dir=/var/lib/prometheus-node-exporter
         mkdir -p "$dir"
         tmp=$(mktemp "$dir/.zpool.XXXXXX")
         trap 'rm -f "$tmp"' EXIT
@@ -366,6 +423,9 @@ in
 
   services.prometheus = {
     enable = true;
+    # One listener serves localhost scrapes and Grafana on the bridge; the
+    # firewall opens it only on nerdctl0, not the LAN or tailnet interfaces.
+    listenAddress = "0.0.0.0";
     retentionTime = "90d";
 
     globalConfig = {
@@ -376,19 +436,27 @@ in
     exporters = {
       node = {
         enable = true;
+        listenAddress = "127.0.0.1";
         # systemd is not part of node_exporter's built-in defaults
         enabledCollectors = [ "systemd" ];
         extraFlags = [
-          "--collector.textfile.directory=/run/prometheus-node-exporter"
+          "--collector.textfile.directory=/var/lib/prometheus-node-exporter"
         ];
       };
 
-      smartctl.enable = true;
+      smartctl = {
+        enable = true;
+        listenAddress = "127.0.0.1";
+      };
 
-      zfs.enable = true;
+      zfs = {
+        enable = true;
+        listenAddress = "127.0.0.1";
+      };
 
       nginx = {
         enable = true;
+        listenAddress = "127.0.0.1";
         scrapeUri = "http://10.0.1.6:8082/stub_status";
       };
 
@@ -400,6 +468,18 @@ in
     };
 
     scrapeConfigs = [
+      {
+        job_name = "blackbox-edge";
+        metrics_path = "/probe";
+        static_configs = map (target: {
+          targets = [ "https://87.106.25.93${target.path}" ];
+          labels = {
+            service = target.name;
+            module = target.name;
+          };
+        }) edgeTargets;
+        relabel_configs = blackboxRelabelConfigs;
+      }
       {
         job_name = "node";
         static_configs = [
@@ -487,6 +567,7 @@ in
 
   services.cadvisor = {
     enable = true;
+    listenAddress = "127.0.0.1";
     extraOptions = [
       "--containerd=/run/containerd/containerd.sock"
       # cAdvisor only watches the "k8s.io" namespace by default, our
@@ -497,6 +578,8 @@ in
 
   services.prometheus.alertmanager = {
     enable = true;
+    listenAddress = "127.0.0.1";
+    extraFlags = [ "--cluster.listen-address=" ];
     # The rendered config contains secret placeholders, amtool cannot
     # validate them before envsubst runs.
     checkConfig = false;
@@ -521,6 +604,8 @@ in
                 send_resolved: true
       '';
   };
+
+  systemd.tmpfiles.rules = [ "d /var/lib/prometheus-node-exporter 0755 root root -" ];
 
   systemd.services.prometheus-zpool-textfile = {
     description = "Export zpool scrub, error and IO status to the node_exporter textfile collector";

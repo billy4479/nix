@@ -31,7 +31,7 @@ Everything lives in two places:
 ```
 
 Prometheus keeps 90 days of samples (`services.prometheus.retentionTime`) and
-only listens locally; Grafana reaches it through the bridge gateway address
+binds a wildcard listener so both local queries and Grafana work. Grafana reaches it through the bridge gateway address
 `10.0.1.1:9090` (the host), which is the only port opened on the `nerdctl0`
 firewall interface for this stack.
 
@@ -39,7 +39,7 @@ firewall interface for this stack.
 
 | Component | Runs on | Address | Source |
 |-----------|---------|---------|--------|
-| Prometheus | host | `127.0.0.1:9090` | `services.prometheus` |
+| Prometheus | host | `0.0.0.0:9090`, firewall allows bridge only | `services.prometheus` |
 | Alertmanager | host | `127.0.0.1:9093` | `services.prometheus.alertmanager` |
 | node_exporter | host | `127.0.0.1:9100` | `services.prometheus.exporters.node` |
 | smartctl_exporter | host (root) | `127.0.0.1:9633` | `services.prometheus.exporters.smartctl` |
@@ -47,7 +47,7 @@ firewall interface for this stack.
 | cAdvisor | host | `127.0.0.1:8080` | `services.cadvisor` (containerd socket) |
 | blackbox_exporter | host | `127.0.0.1:9115` | `services.prometheus.exporters.blackbox` |
 | nginx-exporter | host | `127.0.0.1:9113` | `services.prometheus.exporters.nginx` |
-| zpool textfile script | host (root, timer) | writes `/run/prometheus-node-exporter/zpool.prom` | `prometheus-zpool-textfile.{service,timer}` |
+| zpool textfile script | host (root, timer) | writes `/var/lib/prometheus-node-exporter/zpool.prom` | `prometheus-zpool-textfile.{service,timer}` |
 | Grafana | container `10.0.1.23:3000` | https://grafana.internal.polpetta.online | `services/services/grafana` |
 | nginx stub_status | container `10.0.1.6:8082` | `/stub_status` (LAN-only allow/deny) | `containers/nginx/config/nginx.conf` |
 
@@ -55,7 +55,7 @@ Notes:
 
 - node_exporter's `systemd` collector is **not** enabled upstream by default;
   it is explicitly enabled here, together with the textfile collector pointed
-  at `/run/prometheus-node-exporter`.
+  at `/var/lib/prometheus-node-exporter`.
 - zfs_exporter provides pool usage and pool health (`zfs_pool_allocated_bytes`
   / `zfs_pool_size_bytes`, `zfs_pool_health`, ...); node_exporter's built-in
   `zfs` collector provides ARC stats (`node_zfs_arc_*`).
@@ -84,6 +84,13 @@ Notes:
 | `blackbox-https` | HTTPS probe of the nginx container pinning the
   `grafana.internal.polpetta.online` vhost/SNI — used to watch the wildcard
   certificate (`*.internal.polpetta.online`) expiry |
+| `blackbox-edge` | public Headscale `/health`, DERP `/derp/probe`, and homepage, connecting explicitly to `87.106.25.93` with matching Host/SNI to bypass split DNS |
+
+All exporters and Alertmanager bind loopback explicitly. Alertmanager's unused
+cluster listener is disabled. Prometheus is the deliberate exception above.
+These checks are not an independent outage monitor: serverone cannot notify
+when its own power, network, Prometheus, or Alertmanager is completely down.
+Independent outage monitoring and off-host backups are deferred by user choice.
 
 ## Alerts
 
@@ -93,7 +100,10 @@ Alertmanager; severities are `warning` and `critical`.
 
 | Alert | Trigger | Severity |
 |-------|---------|----------|
-| `HostDown` | `up{job="node"} == 0` for 3m | critical |
+| `NodeExporterDown` | local node exporter scrape fails for 3m | critical |
+| `MonitoringTargetDown` | any configured scrape target fails for 5m | warning |
+| `PublicEndpointDown` | a public-edge probe fails for 3m | critical |
+| `CertificateRenewalOverdue` | renewal/upload success is missing or older than 36h, for 1h | warning |
 | `SystemdUnitFailed` | any failed unit (excluding user sessions) for 5m | warning |
 | `ZfsPoolUsageWarning` | pool > 80% for 10m | warning |
 | `ZfsPoolUsageCritical` | pool > 90% for 10m | critical |
@@ -143,14 +153,15 @@ State persists in `/mnt/SSD/apps/grafana/lib` (mounted at `/var/lib/grafana`).
 
 ## Adding a new container to probing
 
-1. Give it an id/IP following `CONTAINERS.md`.
-2. If it has a web UI, add `{ name = "<service>"; url = "http://10.0.1.<id>:<port>"; }`
-   to `httpProbeTargets` in `system/hosts/serverone/monitoring.nix`; otherwise
-   add `{ name = "<service>"; address = "10.0.1.<id>:<port>"; }` to
-   `tcpProbeTargets`. The `name` becomes the `service` label shown on the
-   dashboards and in the `ContainerDown` alert.
-3. If it should be reachable through nginx, add the usual map entry in
-   `containers/nginx/config/nginx.conf`.
+1. Define it in `polpetta.services` following `SERVICES.md`.
+2. A `web` endpoint automatically generates its HTTP probe and nginx vhost;
+   prefer an actual unauthenticated health endpoint using `web.probe.path`.
+3. For a raw TCP service, set `raw[].probe.enable = true`. Keep its access tier
+   and any `allowedSources` allowlist aligned with actual consumers.
+
+`certbot-renew.service` writes a persistent `certbot.prom` textfile only after
+renewal, nginx reload, and the restricted DERP upload succeed. It contains only
+the success timestamp, not credentials or certificate data.
 
 The `ContainerDown` alert and the dashboard tables pick the new target up
 automatically.
