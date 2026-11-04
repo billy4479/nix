@@ -11,6 +11,7 @@ in
   sops.secrets."frp-token" = { };
 
   sops.templates."frpc.toml" = {
+    restartUnits = [ "nerdctl-frp.service" ];
     owner = "container-${toString config.nerdctl-containers.${name}.uid}";
     group = config.users.users.containers.group;
 

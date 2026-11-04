@@ -205,6 +205,25 @@
     {
       formatter.${system} = pkgsForFlake.nixfmt;
 
+      checks.${system} = {
+        server-policy = import ./tests/server-policy.nix {
+          pkgs = pkgsForFlake;
+          serverone = hosts.nixosConfigurations.serverone.config;
+          vps = hosts.nixosConfigurations.vps-proxy.config;
+        };
+        monitoring = import ./tests/monitoring.nix {
+          pkgs = pkgsForFlake;
+          ruleFiles = hosts.nixosConfigurations.serverone.config.services.prometheus.ruleFiles;
+        };
+        derp-certificates = pkgsForFlake.callPackage ./services/derp-certificates/test.nix { };
+        private-store-threshold = pkgsForFlake.callPackage ./containers/private-store-wipe/test.nix { };
+        raw-firewall = import ./tests/raw-firewall.nix {
+          pkgs = pkgsForFlake;
+          ruleset = hosts.nixosConfigurations.serverone.config.polpetta.generated.rawFirewallFile;
+          rawUnit = hosts.nixosConfigurations.serverone.config.systemd.services.polpetta-raw-firewall;
+        };
+      };
+
       packages.${system} = rec {
         all-systems =
           let

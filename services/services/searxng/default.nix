@@ -10,7 +10,9 @@ let
   baseDir = "/mnt/SSD/apps/${name}";
 in
 {
-  sops.secrets.searxng-env = lib.mkIf (options ? nerdctl-containers) { };
+  sops.secrets.searxng-env = lib.mkIf (options ? nerdctl-containers) {
+    restartUnits = [ "nerdctl-searxng.service" ];
+  };
 
   polpetta.services.${name} = {
     container = {

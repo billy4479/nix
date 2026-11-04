@@ -23,6 +23,7 @@ in
   sops.secrets."frp-token" = { };
 
   sops.templates."frps.toml" = {
+    restartUnits = [ "frp.service" ];
 
     content = # toml
       ''

@@ -9,7 +9,9 @@ let
   name = "calendar-proxy";
 in
 {
-  sops.secrets.calendar-proxy-env = lib.mkIf (options ? nerdctl-containers) { };
+  sops.secrets.calendar-proxy-env = lib.mkIf (options ? nerdctl-containers) {
+    restartUnits = [ "nerdctl-calendar-proxy.service" ];
+  };
 
   polpetta.services.${name} = {
     container = {
