@@ -31,7 +31,8 @@ Everything lives in two places:
 ```
 
 Prometheus keeps 90 days of samples (`services.prometheus.retentionTime`) and
-binds a wildcard listener so both local queries and Grafana work. Grafana reaches it through the bridge gateway address
+binds a wildcard listener so both local queries and Grafana work. Grafana
+reaches it through the bridge gateway address
 `10.0.1.1:9090` (the host), which is the only port opened on the `nerdctl0`
 firewall interface for this stack.
 
@@ -81,9 +82,7 @@ Notes:
 | `nginx` | stub_status via nginx-exporter (request rate, connections) |
 | `blackbox-http` | HTTP probes against every service container with a web UI. The policy: probe an unauthenticated health endpoint where the app has one (`/health`, `/ping`, `/healthz`, ...), not `/`, so a probe answers for actual app health rather than a landing page or SPA shell; the specific path lives in each service file. Services without such an endpoint stay on `/` (qbittorrent, bentopdf, lunamultiplayer, giuoco-del-divertimento, game-server-runner). Exceptions: calendar-proxy and agent-up use `http_unauth` since their only unauthenticated answers are 401 (no token) and 404 (no such route) but those still prove the HTTP server is alive (5xx still fails the probe); ff and headplane do the same for their OIDC-gated redirects, probed at `/` and `/admin` respectively; tsidp is probed at `/.well-known/openid-configuration` because `/` does WhoIs and 500s for non-tailnet peers like the probe; immich is probed at `/api/server/ping` because `/` and `/health` return the SPA's HTML shell. A service setting `probe.headers` gets a generated `http_custom_<service>` module (a copy of its base module with the headers merged in), since blackbox_exporter only reads headers from the module config; outline uses that with `X-Forwarded-Proto: https` to skip its own HTTPS redirect |
 | `blackbox-tcp` | TCP probes: bind9 (53), immich valkey (6379), immich postgres (5432) |
-| `blackbox-https` | HTTPS probe of the nginx container pinning the
-  `grafana.internal.polpetta.online` vhost/SNI — used to watch the wildcard
-  certificate (`*.internal.polpetta.online`) expiry |
+| `blackbox-https` | HTTPS probe of nginx, pinning the `grafana.internal.polpetta.online` vhost/SNI to watch the internal wildcard certificate expiry |
 | `blackbox-edge` | public Headscale `/health`, DERP `/derp/probe`, and homepage, connecting explicitly to `87.106.25.93` with matching Host/SNI to bypass split DNS |
 
 All exporters and Alertmanager bind loopback explicitly. Alertmanager's unused
