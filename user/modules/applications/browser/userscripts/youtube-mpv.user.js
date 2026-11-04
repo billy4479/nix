@@ -56,9 +56,7 @@
       fontWeight: "500",
       cursor: "pointer",
       zIndex: "2147483647",
-      ...(floating
-        ? { position: "fixed", right: "24px", bottom: "24px" }
-        : {}),
+      ...(floating ? { position: "fixed", right: "24px", bottom: "24px" } : {}),
     });
     btn.addEventListener(
       "mouseenter",

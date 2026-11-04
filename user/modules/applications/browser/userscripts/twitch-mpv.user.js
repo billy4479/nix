@@ -19,10 +19,31 @@
 
   // top-level paths that are known pages, not channel names
   const RESERVED = new Set([
-    "videos", "directory", "settings", "search", "downloads", "jobs",
-    "security", "privacy", "terms", "broadcast", "store", "turbo", "team",
-    "moderator", "dashboard", "u", "p", "about", "activate", "affiliate",
-    "partner", "creatorcamp", "friends", "squad", "cars",
+    "videos",
+    "directory",
+    "settings",
+    "search",
+    "downloads",
+    "jobs",
+    "security",
+    "privacy",
+    "terms",
+    "broadcast",
+    "store",
+    "turbo",
+    "team",
+    "moderator",
+    "dashboard",
+    "u",
+    "p",
+    "about",
+    "activate",
+    "affiliate",
+    "partner",
+    "creatorcamp",
+    "friends",
+    "squad",
+    "cars",
   ]);
 
   // a channel page (/<channel>) or a VOD watch page (/videos/<id>)
@@ -76,9 +97,7 @@
       fontWeight: "600",
       cursor: "pointer",
       zIndex: "2147483647",
-      ...(floating
-        ? { position: "fixed", right: "24px", bottom: "24px" }
-        : {}),
+      ...(floating ? { position: "fixed", right: "24px", bottom: "24px" } : {}),
     });
     btn.addEventListener(
       "mouseenter",

@@ -40,7 +40,7 @@ url='https://example.com/protected-resource'
 jq -n \
   --arg url "$url" \
   '{cmd: "request.get", url: $url, max_timeout: 120}' \
-  > /tmp/opencode/byparr-request.json
+  >/tmp/opencode/byparr-request.json
 
 curl --fail-with-body --silent --show-error \
   --max-time 130 \
@@ -79,7 +79,7 @@ For HTML or other page content, extract the response as text:
 ```sh
 jq -r '.solution.response' \
   /tmp/opencode/byparr-response.json \
-  > /tmp/opencode/resource.html
+  >/tmp/opencode/resource.html
 ```
 
 For a PDF, Byparr returns base64-encoded bytes. Verify `contentType` first, then
@@ -90,9 +90,9 @@ jq -e '.solution.contentType == "application/pdf"' \
   /tmp/opencode/byparr-response.json >/dev/null
 
 jq -r '.solution.response' \
-  /tmp/opencode/byparr-response.json \
-  | base64 --decode \
-  > /tmp/opencode/resource.pdf
+  /tmp/opencode/byparr-response.json |
+  base64 --decode \
+    >/tmp/opencode/resource.pdf
 ```
 
 After extraction, use the normal file-reading or PDF-processing tools.

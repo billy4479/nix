@@ -52,6 +52,5 @@
   "todo-tree.highlights.enabled": false,
   "todo-tree.regex.regex": "(//|#|<!--|;|/\\*|^|^\\s*(-|\\d+.))\\s*($TAGS)",
   "window.zoomLevel": 2,
-  "workbench.startupEditor": "newUntitledFile",
-  "editor.fontLigatures": true
+  "workbench.startupEditor": "newUntitledFile"
 }

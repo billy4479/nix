@@ -63,7 +63,7 @@ first**, then update:
 ssh serverone
 # backup the user table (redirect happens host-side)
 sudo exec-in-container postgresql pg_dump -h /tmp -U postgres -d immich \
-  -t '"user"' --data-only > ~/immich-user-backup.sql
+  -t '"user"' --data-only >~/immich-user-backup.sql
 
 # bind: sub (userid:<n>) -> existing account, matched by the account's
 # stored (personal) Immich email
@@ -84,8 +84,8 @@ useful for verifying:
 
 ```sh
 curl -sH 'x-api-key: <key>' \
-  https://immich.internal.polpetta.online/api/admin/users \
-  | jq -r '.[] | [.name, .email, .oauthId] | @tsv'
+  https://immich.internal.polpetta.online/api/admin/users |
+  jq -r '.[] | [.name, .email, .oauthId] | @tsv'
 ```
 
 ## First-login expectations

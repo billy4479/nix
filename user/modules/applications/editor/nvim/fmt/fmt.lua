@@ -14,7 +14,9 @@ end
 -- Interactive formatting falls back to LSP only when a conform formatter is
 -- missing, which here means the project didn't provide its tools anyway.
 vim.lsp.enable = function() end
-vim.lsp.start = function() return nil end
+vim.lsp.start = function()
+	return nil
+end
 
 -- No swapfiles: if the file is open (or was left open) in an interactive
 -- nvim, the "swapfile exists" prompt would block forever in headless mode.

@@ -11,11 +11,13 @@ in
       # is what keeps it loopback-only for the demuxer.
       443
       2333
-    ] ++ config.polpetta.generated.frpsTcpPorts;
+    ]
+    ++ config.polpetta.generated.frpsTcpPorts;
     allowedUDPPorts = [
       # Not tunneled by frps, served by the local derper-stun service
       3478
-    ] ++ config.polpetta.generated.frpsUdpPorts;
+    ]
+    ++ config.polpetta.generated.frpsUdpPorts;
   };
 
   sops.secrets."frp-token" = { };

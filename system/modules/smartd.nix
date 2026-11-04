@@ -48,10 +48,7 @@ let
   shortTestSchedule = "S/../../7/02";
   longTestSchedule = "L/../15/./03";
   testSchedule =
-    if longCfg.enable then
-      "(${shortTestSchedule})"
-    else
-      "(${shortTestSchedule}|${longTestSchedule})";
+    if longCfg.enable then "(${shortTestSchedule})" else "(${shortTestSchedule}|${longTestSchedule})";
 
   longTestScript =
     pkgs.writeShellScript "smart-long-test" # sh

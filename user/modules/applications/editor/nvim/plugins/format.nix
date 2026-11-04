@@ -27,7 +27,7 @@
             	prepend_args = { "--line-width", "100", "--wrap-text=fill" },
             }
 
-            local prettier_cfg = { "prettierd", "prettier", stop_after_first = true }
+            local prettier_cfg = { "prettier" }
 
             conform.setup({
             	-- https://github.com/stevearc/conform.nvim?tab=readme-ov-file#formatters

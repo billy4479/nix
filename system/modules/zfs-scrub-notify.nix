@@ -12,15 +12,15 @@ let
   autoScrubPools = config.services.zfs.autoScrub.pools;
   zfsPackage = config.boot.zfs.package;
 
-  poolNames =
-    if autoScrubPools == [ ] then "all pools" else lib.concatStringsSep " " autoScrubPools;
+  poolNames = if autoScrubPools == [ ] then "all pools" else lib.concatStringsSep " " autoScrubPools;
 
   # At runtime: the configured pools, or whatever exists when autoScrub
   # is left to scrub everything.
   poolList =
-    if autoScrubPools == [ ]
-    then "$(${zfsPackage}/bin/zpool list -H -o name)"
-    else lib.concatStringsSep " " autoScrubPools;
+    if autoScrubPools == [ ] then
+      "$(${zfsPackage}/bin/zpool list -H -o name)"
+    else
+      lib.concatStringsSep " " autoScrubPools;
 
   scrubNotify =
     pkgs.writeShellScript "zfs-scrub-notify" # sh

@@ -139,7 +139,7 @@ sudo nerdctl exec immich-database \
     echo "== $db =="
     sudo nerdctl exec immich-database \
       psql -X -U postgres -d "$db" -tAc \
-      "SELECT extname FROM pg_extension ORDER BY 1;" < /dev/null
+      "SELECT extname FROM pg_extension ORDER BY 1;" </dev/null
   done
 ```
 
@@ -236,7 +236,7 @@ large-object counts can be compared after the restore:
 ```sh
 sudo nerdctl exec -i immich-database \
   psql -X -q -v ON_ERROR_STOP=1 -U postgres -d immich \
-  > "$BACKUP_DIR/source-database-state.csv" <<'SQL'
+  >"$BACKUP_DIR/source-database-state.csv" <<'SQL'
 CREATE TEMP TABLE migration_state (
   object_type text,
   schema_name text,
@@ -319,14 +319,14 @@ sudo nerdctl exec immich-database \
   --format=custom \
   --no-owner \
   --no-privileges \
-  > "$DUMP"
+  >"$DUMP"
 
 test -s "$DUMP"
 sha256sum "$DUMP" | tee "$DUMP.sha256"
 
 sudo nerdctl exec -i immich-database \
-  pg_restore --list < "$DUMP" \
-  > "$BACKUP_DIR/restore.pg14.list"
+  pg_restore --list <"$DUMP" \
+  >"$BACKUP_DIR/restore.pg14.list"
 ```
 
 Review `restore.pg14.list`. It must contain the expected tables, table data,
@@ -504,8 +504,8 @@ Generate the restore list with PostgreSQL 18:
 
 ```sh
 sudo nerdctl exec -i postgresql \
-  pg_restore -h /tmp --list < "$DUMP" \
-  > "$BACKUP_DIR/restore.pg18.list"
+  pg_restore -h /tmp --list <"$DUMP" \
+  >"$BACKUP_DIR/restore.pg18.list"
 ```
 
 The extensions already exist and must remain owned by `postgres`. Disable only
@@ -514,7 +514,7 @@ extension and extension-comment entries:
 ```sh
 LC_ALL=C sed '/ EXTENSION /s/^/;/' \
   "$BACKUP_DIR/restore.pg18.list" \
-  > "$BACKUP_DIR/restore.pg18.no-extensions.list"
+  >"$BACKUP_DIR/restore.pg18.no-extensions.list"
 
 chmod 0644 "$BACKUP_DIR/restore.pg18.no-extensions.list"
 
@@ -542,7 +542,7 @@ sudo nerdctl exec -i postgresql \
   --no-owner \
   --no-privileges \
   --no-tablespaces \
-  < "$DUMP"
+  <"$DUMP"
 ```
 
 Do not start Immich unless the restore exits successfully.
@@ -678,8 +678,8 @@ sudo nerdctl exec postgresql \
   --format=custom \
   --no-owner \
   --no-privileges \
-  > "$backup"
-sha256sum "$backup" > "$backup.sha256"
+  >"$backup"
+sha256sum "$backup" >"$backup.sha256"
 ```
 
 ## Extension upgrades

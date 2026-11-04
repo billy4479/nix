@@ -48,10 +48,11 @@ let
 
   # OpenChamber identifies the container as `openchamber-container` instead of
   # the ephemeral hostname assigned by nerdctl.
-  fakeHostname = pkgs.writeShellScriptBin "hostname" # sh
-    ''
-      echo openchamber-container
-    '';
+  fakeHostname =
+    pkgs.writeShellScriptBin "hostname" # sh
+      ''
+        echo openchamber-container
+      '';
 
   runtime = pkgs.buildEnv {
     name = "openchamber-container-runtime";
@@ -277,8 +278,7 @@ in
                 "${baseDir}/home/.local/state" \
                 "${baseDir}/home/.ssh"
 
-              if ${permsAreGood}
-              then
+              if ${permsAreGood}; then
                 echo "Permissions for ${baseDir}/home are good"
               else
                 echo "Repairing permissions for ${baseDir}/home"

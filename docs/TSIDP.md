@@ -57,20 +57,30 @@ Two entry kinds: the static `tagOwners` entry and the per-user grants:
 
 - `tagOwners`:
   ```json
-  { "tag:idp": ["jack@"] }
+  {
+    "tag:idp": [
+      "jack@"
+    ]
+  }
   ```
 - Grants (adjust `jack@` to the actual headscale LoginName):
   ```jsonc
   {
-    "src": ["jack@"],
-    "dst": ["tag:idp"],
+    "src": [
+      "jack@"
+    ],
+    "dst": [
+      "tag:idp"
+    ],
     "app": {
       "tailscale.com/cap/tsidp": [
         {
           "allow_admin_ui": true,
           "allow_dcr": true,
           "includeInUserInfo": true,
-          "extraClaims": { "grafana_role": "Admin" }
+          "extraClaims": {
+            "grafana_role": "Admin"
+          }
         }
       ]
     }

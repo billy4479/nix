@@ -17,15 +17,19 @@ in
     grafana-oauth-client-secret.key = "grafana/oauth-client-secret";
   };
 
-  sops.templates."grafana-env".content = lib.mkIf (options ? nerdctl-containers) (# sh
+  sops.templates."grafana-env".content = lib.mkIf (options ? nerdctl-containers) (
+    # sh
     ''
       GF_SECURITY_ADMIN_PASSWORD=${config.sops.placeholder."grafana-admin-password"}
       GF_SECURITY_SECRET_KEY=${config.sops.placeholder."grafana-secret-key"}
       GF_AUTH_GENERIC_OAUTH_CLIENT_ID=${config.sops.placeholder.grafana-oauth-client-id}
       GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=${config.sops.placeholder.grafana-oauth-client-secret}
-    '');
+    ''
+  );
 
-  sops.templates."grafana-env".restartUnits = lib.mkIf (options ? nerdctl-containers) [ "nerdctl-${name}.service" ];
+  sops.templates."grafana-env".restartUnits = lib.mkIf (options ? nerdctl-containers) [
+    "nerdctl-${name}.service"
+  ];
 
   polpetta.services.${name} = {
     container = {
@@ -42,7 +46,10 @@ in
         ];
 
         config = {
-          entrypoint = [ "${pkgs.grafana}/bin/grafana" "server" ];
+          entrypoint = [
+            "${pkgs.grafana}/bin/grafana"
+            "server"
+          ];
           cmd = [ "--homepath=${pkgs.grafana}/share/grafana" ];
           env = [
             "GF_PATHS_DATA=/var/lib/grafana"

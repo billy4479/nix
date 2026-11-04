@@ -82,18 +82,20 @@ let
       "${name}.internal.polpetta.online";
 
   rawEntries = lib.concatMap (
-    name: map (raw: { inherit name raw; id = services.${name}.container.id; }) services.${name}.raw
+    name:
+    map (raw: {
+      inherit name raw;
+      id = services.${name}.container.id;
+    }) services.${name}.raw
   ) (lib.attrNames services);
 
   publicRawEntries = lib.filter (e: e.raw.access == "public") rawEntries;
   recordEntries = lib.filter (e: e.raw.record != null) rawEntries;
 
-  tcpProbeTargets = map (
-    e: {
-      name = e.name;
-      address = "10.0.1.${toString e.id}:${toString e.raw.port}";
-    }
-  ) (lib.filter (e: e.raw.probe.enable) rawEntries);
+  tcpProbeTargets = map (e: {
+    name = e.name;
+    address = "10.0.1.${toString e.id}:${toString e.raw.port}";
+  }) (lib.filter (e: e.raw.probe.enable) rawEntries);
 
   remotePortOf = raw: if raw.remotePort == null then raw.port else raw.remotePort;
 
@@ -123,9 +125,7 @@ let
     let
       web = svc.web;
       extraLines = lib.filter (l: l != "") (
-        lib.optionals (web.nginx.extraConfig != "") (
-          lib.splitString "\n" web.nginx.extraConfig
-        )
+        lib.optionals (web.nginx.extraConfig != "") (lib.splitString "\n" web.nginx.extraConfig)
       );
     in
     [
@@ -161,31 +161,27 @@ let
     "  ${domainOf name svc}  10.0.1.${toString svc.container.id}:${toString svc.web.port};"
   ) (lib.attrNames servicesWithWeb);
 
-  nginxVhostsText =
-    lib.concatStringsSep "\n" (
+  nginxVhostsText = lib.concatStringsSep "\n" (
+    [
+      "# Generated from polpetta.services. Do not edit."
+      ""
+    ]
+    ++ lib.optionals (servicesWithWeb != { }) (
       [
-        "# Generated from polpetta.services. Do not edit."
+        "map $host $backend {"
+      ]
+      ++ backendMapLines
+      ++ [
+        "  default \"\";"
+        "}"
         ""
       ]
-      ++ lib.optionals (servicesWithWeb != { }) (
-        [
-          "map $host $backend {"
-        ]
-        ++ backendMapLines
-        ++ [
-          "  default \"\";"
-          "}"
-          ""
-        ]
-        ++ lib.concatMap (
-          name: vhostLines name services.${name} ++ [ "" ]
-        ) (lib.attrNames servicesWithWeb)
-      )
-    );
+      ++ lib.concatMap (name: vhostLines name services.${name} ++ [ "" ]) (lib.attrNames servicesWithWeb)
+    )
+  );
 
   proxyName =
-    name: raw:
-    "${name}-${toString raw.port}" + lib.optionalString (raw.proto == "udp") "-udp";
+    name: raw: "${name}-${toString raw.port}" + lib.optionalString (raw.proto == "udp") "-udp";
 
   frpcProxy =
     e:
@@ -218,14 +214,11 @@ let
       ; Generated from polpetta.services raw entries with a `record`.
       ; Included from wg-public.zone; change services, not this file.
 
-      ${lib.concatStringsSep "\n" (
-        map (e: "${e.raw.record} IN A 10.0.1.${toString e.id}") recordEntries
-      )}
+      ${lib.concatStringsSep "\n" (map (e: "${e.raw.record} IN A 10.0.1.${toString e.id}") recordEntries)}
     '';
 
   duplicates =
-    list:
-    lib.attrNames (lib.filterAttrs (_: v: lib.length v > 1) (lib.groupBy (x: x) list));
+    list: lib.attrNames (lib.filterAttrs (_: v: lib.length v > 1) (lib.groupBy (x: x) list));
 
   webDomains = lib.mapAttrsToList domainOf servicesWithWeb;
   publicDomains = lib.mapAttrsToList domainOf (
@@ -252,9 +245,12 @@ let
         # Only public raw entries are tunneled through frp, so only their
         # remote ports can collide on the vps; local/tailnet ports never
         # leave the bridge and may repeat across containers.
-        assertion = duplicates (map (e: "${e.raw.proto}-${toString (remotePortOf e.raw)}") publicRawEntries) == [ ];
+        assertion =
+          duplicates (map (e: "${e.raw.proto}-${toString (remotePortOf e.raw)}") publicRawEntries) == [ ];
         message = "polpetta.services: duplicate remote ports on public raw entries: ${
-          lib.concatStringsSep ", " (duplicates (map (e: "${e.raw.proto}-${toString (remotePortOf e.raw)}") publicRawEntries))
+          lib.concatStringsSep ", " (
+            duplicates (map (e: "${e.raw.proto}-${toString (remotePortOf e.raw)}") publicRawEntries)
+          )
         }";
       }
       {
@@ -277,15 +273,11 @@ let
         assertion = lib.all (
           d: lib.hasSuffix ".polpetta.online" d && !lib.hasSuffix ".internal.polpetta.online" d
         ) publicDomains;
-        message = "polpetta.services: public web domains must be under .polpetta.online and not under .internal.polpetta.online: ${
-          lib.concatStringsSep ", " publicDomains
-        }";
+        message = "polpetta.services: public web domains must be under .polpetta.online and not under .internal.polpetta.online: ${lib.concatStringsSep ", " publicDomains}";
       }
       {
         assertion = lib.all (d: lib.hasSuffix ".internal.polpetta.online" d) nonPublicDomains;
-        message = "polpetta.services: non-public web domains must be under .internal.polpetta.online: ${
-          lib.concatStringsSep ", " nonPublicDomains
-        }";
+        message = "polpetta.services: non-public web domains must be under .internal.polpetta.online: ${lib.concatStringsSep ", " nonPublicDomains}";
       }
     ];
 in
