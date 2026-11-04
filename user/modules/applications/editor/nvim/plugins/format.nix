@@ -52,7 +52,7 @@
             		json = { "jq" },
             	},
 
-            	formatters = { injected = { options = { ignore_errors = false } } },
+            	formatters = { injected = { options = { ignore_errors = true } } },
 
             	-- log_level = vim.log.levels.DEBUG,
             })
