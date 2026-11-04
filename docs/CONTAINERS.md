@@ -96,6 +96,21 @@ nix build .#nginx-config
 cat result/nginx.conf result/vhosts.conf
 ```
 
+## Private Nix store maintenance
+
+OpenChamber runs ordinary `nix store gc --max 107374182400` daily, inside its own
+container. GC preserves roots and active build locks, and attempts to free up
+to 100 GiB of unrooted paths per run; that number is not a hard store-size cap.
+It is skipped when the container is inactive. Host Nix GC cannot collect this
+separate store. ZFS snapshots can retain blocks after GC, so pool usage and
+snapshot retention still matter.
+
+Automatic full-store wiping is disabled for OpenChamber. The generic
+`privateNixStore.wipeAboveGib` option remains an explicit destructive opt-in,
+with a tested threshold and fail-closed input validation. It restores only seed
+closures, not arbitrary user-rooted environments. Never enable it as a routine
+way to recover disk space on a live development container.
+
 ## Startup Dependencies
 
 Container ordering is controlled by the `dependsOn`, `dns`, and `useNginx` options in `../containers/module.nix`.

@@ -194,11 +194,8 @@ in
           identityFiles
           caCertificates
         ];
-        # Agent sessions build nix closures into this store without ever GCing
-        # them, and it reached 414 GiB against a pool with ~150 GiB free. The
-        # limit is far above the seed closures' few GiB so ordinary builds
-        # between restarts never trigger a wipe.
-        wipeAboveGib = 100;
+        # Preserve registered store paths across upgrades. Ordinary GC below
+        # removes unrooted results without wiping the store on the next start.
       };
 
       cmd = [
@@ -237,8 +234,7 @@ in
       tmpfs = [ ];
       # After a deploy, preStart copies the fresh runtime closure (GBs) into
       # the private store; the 90s systemd default timed out mid-copy. A start
-      # that also wipes an over-limit store adds a multi-minute rm of millions
-      # of files on top.
+      # can also need time to import a larger browser/runtime closure.
       startTimeout = 1800;
 
       volumes = [
@@ -325,6 +321,27 @@ in
       nginx.extraConfig = ''
         client_max_body_size 256M;
       '';
+    };
+  };
+
+  systemd.services.openchamber-nix-gc = lib.mkIf (options ? nerdctl-containers) {
+    description = "Collect unrooted OpenChamber build results";
+    after = [ "nerdctl-openchamber.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecCondition = "${pkgs.systemd}/bin/systemctl is-active --quiet nerdctl-openchamber.service";
+      ExecStart = "${lib.getExe pkgs.nerdctl} exec openchamber /bin/nix store gc --max ${
+        toString (100 * 1024 * 1024 * 1024)
+      }";
+      TimeoutStartSec = "30min";
+    };
+  };
+  systemd.timers.openchamber-nix-gc = lib.mkIf (options ? nerdctl-containers) {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      RandomizedDelaySec = "30min";
+      Persistent = true;
     };
   };
 }

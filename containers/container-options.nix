@@ -172,11 +172,10 @@ lib.types.submodule (
               type = lib.types.nullOr lib.types.ints.positive;
               default = null;
               description = ''
-                Wipe the whole private store before startup when it exceeds this
-                many GiB. Safe because the store is fully re-seeded from
-                seedPackages right afterwards, but the limit must stay well
-                above the seed closures' size or the store is rebuilt on every
-                restart.
+                Destructive opt-in: wipe the whole private store before startup
+                when its registered NAR sizes exceed this many GiB. Only seed
+                closures are restored; other rooted environments are lost.
+                Disabled by default. Prefer regular garbage collection.
               '';
             };
           };

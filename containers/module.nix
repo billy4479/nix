@@ -231,27 +231,11 @@ let
                 seedPaths = map toString cfg.privateNixStore.seedPackages;
                 seedArgs = lib.escapeShellArgs seedPaths;
                 wipeAboveGib = cfg.privateNixStore.wipeAboveGib;
-                sqlite = lib.getExe' pkgs.sqlite "sqlite3";
+                wipeTool = pkgs.callPackage ./private-store-wipe { };
                 wipeStore = lib.optionalString (wipeAboveGib != null) (
                   # sh
                   ''
-                    # Everything below re-seeds the store from the host
-                    # closures, so once it has grown past the limit (usually
-                    # accumulated build outputs) the cheapest fix is to start
-                    # over empty rather than GC. Read the size from the store
-                    # database instead of walking the store itself: a large
-                    # store takes minutes to stat but milliseconds to query.
-                    storeBytes=$(
-                      echo 'select coalesce(sum(narSize), 0) from ValidPaths;' |
-                        ${sqlite} -readonly \
-                          "$privateStoreRoot/nix/var/nix/db/db.sqlite" 2>/dev/null ||
-                        true
-                    )
-                    : "''${storeBytes:=0}"
-                    if [ "$storeBytes" -gt $(${toString wipeAboveGib} * 1024 * 1024 * 1024) ]; then
-                      echo "Private Nix store is at $((storeBytes / 1024 / 1024 / 1024)) GiB, above the ${toString wipeAboveGib} GiB limit: wiping it"
-                      rm -rf "$privateStoreRoot/nix"
-                    fi
+                    ${lib.getExe wipeTool} "$privateStoreRoot" ${toString wipeAboveGib}
                   ''
                 );
               in
