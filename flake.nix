@@ -258,6 +258,12 @@
           nixfmt
           ruff
 
+          # formatters the nvim conform setup and the fmt CLI expect for
+          # filetypes present in this repo
+          jq
+          prettierd
+          rustfmt
+
           lua-language-server
           nixd
 
