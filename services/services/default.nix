@@ -19,6 +19,7 @@
     ./jackett.nix
     ./sonarr.nix
     ./byparr.nix
+    ./mircrewrr.nix
 
     ./jellyfin.nix
 

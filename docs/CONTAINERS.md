@@ -116,6 +116,7 @@ All containers except `bind9`, `nginx`, and `headscale` automatically start afte
 Current media stack ordering:
 ```text
 byparr -> jackett -> sonarr/radarr
+byparr -> mircrewrr -> sonarr/radarr
 qbittorrent -> sonarr/radarr
 ```
 
@@ -152,6 +153,7 @@ The shared PostgreSQL container is initialized and migrated according to
 | Grafana | 23 | 10.0.1.23 |
 | Outline | 24 | 10.0.1.24 |
 | tsidp | 25 | 10.0.1.25 |
+| Quote Bot | 26 | 10.0.1.26 |
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
 | PostgreSQL | 130 | 10.0.1.130 |
@@ -159,3 +161,4 @@ The shared PostgreSQL container is initialized and migrated according to
 | Certbot | 132 | 10.0.1.132 |
 | Outline (valkey) | 133 | 10.0.1.133 |
 | Byparr | 134 | 10.0.1.134 |
+| mircrewrr | 135 | 10.0.1.135 |
