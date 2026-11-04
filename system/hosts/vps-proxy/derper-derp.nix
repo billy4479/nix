@@ -1,5 +1,7 @@
 {
   pkgs,
+  lib,
+  flakeInputs,
   ...
 }:
 let
@@ -8,9 +10,11 @@ let
   # Loopback only: clients reach the relay through the SNI demuxer on :443
   # (sni-demux.nix), the port itself stays firewall-closed.
   port = 8443;
-  # serverone's certbot-renew pushes the (wildcard) polpetta.online cert here
-  # via plain scp; the path unit below picks it up and activates the relay.
-  certStagingDir = "/home/billy/derp-certs";
+  uploadUser = "derp-cert-sync";
+  certStagingDir = "/var/lib/${uploadUser}";
+  certDir = "/var/lib/derp-certificates";
+  tools = pkgs.callPackage ../../../services/derp-certificates { };
+  validationArgs = "--staging-dir ${certStagingDir} --hostname ${hostname} --ca-file ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
 in
 {
   users.users.${name} = {
@@ -19,8 +23,22 @@ in
   };
   users.groups.${name} = { };
 
+  users.users.${uploadUser} = {
+    isSystemUser = true;
+    group = uploadUser;
+    home = certStagingDir;
+    shell = pkgs.bash;
+    # SSH requires an executable shell even for a forced command. No shell,
+    # forwarding, SFTP, or arbitrary command is authorized by this key.
+    openssh.authorizedKeys.keys = [
+      ''restrict,command="${tools}/bin/derp-certificates receive ${validationArgs}" ${lib.removeSuffix "\n" (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/serverone_certsync.pub")}''
+    ];
+  };
+  users.groups.${uploadUser} = { };
+
   systemd.tmpfiles.rules = [
-    "d ${certStagingDir} 0700 billy users -"
+    "d ${certStagingDir} 0700 ${uploadUser} ${uploadUser} -"
+    "d ${certDir} 0750 root ${name} -"
   ];
 
   # Installs pushed certs into the relay's state dir and restarts it. Runs at
@@ -28,40 +46,19 @@ in
   # drops a renewed cert in the staging dir.
   systemd.services."${name}-cert-sync" = {
     description = "Install DERP relay TLS certs pushed from serverone";
-    path = [ pkgs.openssl ];
     serviceConfig = {
       Type = "oneshot";
+      TimeoutStartSec = "60s";
+      UMask = "0077";
+      ExecStart = "${tools}/bin/derp-certificates install ${validationArgs} --install-dir ${certDir} --group ${name}";
     };
-    # No-op (without failing) if the relay isn't running yet: at boot this
-    # runs before derper-derp, its only job there is to place the certs.
-    script = # sh
-      ''
-        crt=${certStagingDir}/${hostname}.crt
-        key=${certStagingDir}/${hostname}.key
-        if [ -s "$crt" ] && [ -s "$key" ]; then
-          # The two files are pushed by separate scp runs, so refuse to
-          # install a mismatched (e.g. partially pushed) pair: keep the
-          # currently installed certs, which stay valid until renewal.
-          # String compare instead of cmp: the service PATH has no diffutils.
-          crt_pub=$(openssl x509 -in "$crt" -noout -pubkey)
-          key_pub=$(openssl pkey -in "$key" -pubout)
-          if [ -z "$crt_pub" ] || [ "$crt_pub" != "$key_pub" ]; then
-            echo "staged cert/key pair mismatch, skipping install" >&2
-            exit 1
-          fi
-          install -d -o ${name} -g ${name} -m 0700 /var/lib/${name}
-          install -o ${name} -g ${name} -m 0644 "$crt" /var/lib/${name}/
-          install -o ${name} -g ${name} -m 0600 "$key" /var/lib/${name}/
-          systemctl try-restart ${name}.service
-        fi
-      '';
   };
 
   systemd.paths."${name}-cert-sync" = {
     description = "Watch for DERP relay TLS certs pushed from serverone";
     wantedBy = [ "multi-user.target" ];
     pathConfig = {
-      PathChanged = "${certStagingDir}/${hostname}.key";
+      PathChanged = "${certStagingDir}/bundle.json";
       Unit = "${name}-cert-sync.service";
     };
   };
@@ -83,7 +80,7 @@ in
       # client's node key to /verify and only relays for registered nodes.
       # Fail-open (the default) is deliberate: if headscale is unreachable the
       # relay stays up, only admission is unverified for that window.
-      ExecStart = "${pkgs.derper}/bin/derper -derp=true -stun=false -a 127.0.0.1:${toString port} -http-port -1 -certmode=manual -certdir /var/lib/${name} -hostname ${hostname} -verify-client-url=https://headscale.polpetta.online/verify -c /var/lib/${name}/derper.conf";
+      ExecStart = "${pkgs.derper}/bin/derper -derp=true -stun=false -a 127.0.0.1:${toString port} -http-port -1 -certmode=manual -certdir ${certDir}/current -hostname ${hostname} -verify-client-url=https://headscale.polpetta.online/verify -c /var/lib/${name}/derper.conf";
 
       Type = "simple";
       Restart = "on-failure";

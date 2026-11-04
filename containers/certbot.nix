@@ -8,15 +8,17 @@ let
   name = "certbot";
   baseSSDDir = "/mnt/SSD/apps/${name}";
   id = 132;
+  derpHostname = "derp.polpetta.online";
+  certificateTools = pkgs.callPackage ../services/derp-certificates { };
 in
 {
   sops.secrets.cloudflare-dns-token = {
     owner = "container-${toString config.nerdctl-containers.${name}.uid}";
     group = config.users.users.containers.group;
+    restartUnits = [ "nerdctl-certbot.service" ];
   };
 
-  # Key accepted by vps-proxy for billy, used to push the wildcard cert over
-  # for the DERP relay (see system/hosts/vps-proxy/derper-derp.nix).
+  # Accepted only by the dedicated forced-command upload account on the VPS.
   sops.secrets.derp-cert-sync-ssh-key = { };
 
   systemd = {
@@ -24,7 +26,7 @@ in
       wantedBy = [ "timers.target" ];
       timerConfig = {
         OnBootSec = "5m";
-        OnUnitActiveSec = "12h";
+        OnCalendar = "*-*-* 00,12:00:00";
         RandomizedDelaySec = "1h";
         Persistent = true;
         Unit = "certbot-renew.service";
@@ -34,7 +36,26 @@ in
       path = [ pkgs.openssh ];
       script = # sh
         ''
-          sleep 60 # HACK: wait for certbot container to be up
+          # Unit ordering does not imply that nerdctl has finished creating the
+          # container. Wait for actual exec readiness, with a bounded retry.
+          for attempt in $(seq 1 60); do
+            if ${lib.getExe pkgs.nerdctl} exec certbot certbot --version >/dev/null 2>&1; then
+              break
+            fi
+            if [ "$attempt" = 60 ]; then
+              echo "certbot container did not become ready" >&2
+              exit 1
+            fi
+            sleep 2
+          done
+
+          # A separate lineage prevents the public VPS from holding the web
+          # wildcard key. Existing lineages and their keys are left untouched.
+          ${lib.getExe pkgs.nerdctl} exec certbot certbot certonly \
+            --non-interactive --agree-tos --register-unsafely-without-email \
+            --keep-until-expiring --cert-name ${derpHostname} -d ${derpHostname} \
+            --dns-cloudflare-propagation-seconds 60 \
+            --dns-cloudflare --dns-cloudflare-credentials /cloudflare.ini
 
           ${lib.getExe pkgs.nerdctl} exec certbot certbot -v renew \
             --dns-cloudflare-propagation-seconds 60 \
@@ -43,34 +64,26 @@ in
 
           ${lib.getExe pkgs.nerdctl} exec nginx nginx -s reload
 
-          # Ship the (wildcard) cert to vps-proxy for the DERP relay, which
-          # installs and activates it via a path unit. Only push on actual
-          # change so the remote relay is not restarted needlessly. The gate
-          # tracks the private key: certbot generates a fresh key on every
-          # renewal, so a changed key == renewed cert.
-          #
-          # This runs as root, which has no ssh aliases: use the public name
-          # external.polpetta.online (host key pinned in ../system/hosts/
-          # serverone/ssh.nix, resolves to the vps from every DNS view).
+          # Push one bounded bundle over the pinned SSH connection. The receiver
+          # compares certificate AND key, validates them, and publishes atomically.
           key=${config.sops.secrets.derp-cert-sync-ssh-key.path}
-          dest=billy@external.polpetta.online
-          live=${baseSSDDir}/config/live/polpetta.online
-          opts=(-i "$key" -o IdentitiesOnly=yes)
-          # Fetch the remote key and compare locally: the vps may not have
-          # diffutils (cmp) available to a non-interactive ssh shell. If the
-          # fetch fails the comparison just fails, which pushes — safe.
-          remote_key=$(ssh "''${opts[@]}" "$dest" \
-            'cat derp-certs/derp.polpetta.online.key' 2>/dev/null || true)
-          if [ "$remote_key" != "$(cat "$live/privkey.pem")" ]; then
-            scp -q "''${opts[@]}" "$live/fullchain.pem" \
-              "$dest:derp-certs/derp.polpetta.online.crt"
-            scp -q "''${opts[@]}" "$live/privkey.pem" \
-              "$dest:derp-certs/derp.polpetta.online.key"
-          fi
+          live=${baseSSDDir}/config/live/${derpHostname}
+          ${certificateTools}/bin/derp-certificates send "$live/fullchain.pem" "$live/privkey.pem" |
+            ssh -T -i "$key" -o IdentitiesOnly=yes -o BatchMode=yes \
+              -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
+              derp-cert-sync@external.polpetta.online
+
+          # Consumed by the node-exporter textfile collector, never a secret.
+          install -d -m 0755 /var/lib/prometheus-node-exporter
+          printf 'certbot_renew_last_success_seconds %s\n' "$(date +%s)" \
+            >/var/lib/prometheus-node-exporter/.certbot.prom.tmp
+          chmod 0644 /var/lib/prometheus-node-exporter/.certbot.prom.tmp
+          mv /var/lib/prometheus-node-exporter/.certbot.prom.tmp \
+            /var/lib/prometheus-node-exporter/certbot.prom
         '';
       serviceConfig = {
         Type = "oneshot";
-        RemainAfterExit = true;
+        TimeoutStartSec = "30min";
         User = "root";
       };
 

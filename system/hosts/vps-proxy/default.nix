@@ -40,7 +40,6 @@
           (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_computerone.pub")
           (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/billy_portatilo.pub")
           (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/openchamber.pub")
-          (builtins.readFile "${flakeInputs.secrets-repo}/public_keys/ssh/serverone_certsync.pub")
         ];
 
         extraGroups = [

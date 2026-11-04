@@ -108,26 +108,30 @@ connecting clients already proved, with a 4 KiB body cap.
 
 ## TLS certificates
 
-Both DERP hostnames are covered by the wildcard `*.polpetta.online`
-certificate issued by certbot on serverone (DNS-01 via Cloudflare). Renewals
-are pushed to the vps automatically:
+DERP uses its own certificate lineage, `derp.polpetta.online`, issued on
+serverone through the existing Cloudflare DNS-01 credential. The VPS must not
+receive the web wildcard key. `certbot-renew.timer` runs at midnight/noon with
+up to an hour of jitter, and after boot; it is persistent and its oneshot does
+not remain active after completion.
 
-1. `certbot-renew.service` on serverone renews and reloads nginx as before,
-   then fetches the private key copy from vps-proxy over ssh (as
-   `billy@external.polpetta.online`, host key pinned in
-   system/hosts/serverone/ssh.nix, key `derp-cert-sync-ssh-key` from sops),
-   compares it locally against the fresh one and, if changed, scps both
-   files into `/home/billy/derp-certs/`.
-2. On vps-proxy a systemd path unit (`derper-derp-cert-sync.path`) watches
-   the staging dir, checks the cert/key pair actually match, installs the
-   files into `/var/lib/derper-derp/` and restarts the relay.
+1. `certbot-renew.service` waits for actual certbot exec readiness, ensures the
+   DERP-only lineage exists, renews certificates, and reloads nginx.
+2. `derp-certificates send` streams one bounded JSON bundle over pinned SSH to
+   `derp-cert-sync@external.polpetta.online`. The existing sync key is authorized
+   only for a forced receiver command with `restrict`: no shell, SFTP, port
+   forwarding, arbitrary paths, or remote private-key reads.
+3. The receiver validates the trusted chain, expiry, exact DERP-only SAN, and
+   matching key, then atomically replaces `/var/lib/derp-cert-sync/bundle.json`.
+   An unchanged certificate/key pair does not touch the watched file.
+4. The path-triggered installer revalidates the untrusted upload, writes a
+   complete version below `/var/lib/derp-certificates`, atomically switches
+   `current`, and queues `systemctl --no-block try-restart derper-derp.service`.
+   The relay reads that directory with group-only access to the private key.
 
-The push is gated on a local comparison of the fetched key, so the
-unchanged-cert case (the timer runs every 12h) does not restart the relay;
-the gate tracks the private key, which certbot regenerates on every renewal.
-derper loads the certificate at
-startup (`-certmode=manual`), so until a first push succeeds the
-`derper-derp` service will stay in its restart loop.
+The installer is also ordered before relay startup. It must never wait
+synchronously for the relay, which would deadlock both units. The oneshot has
+a 60-second startup timeout. Until the first dedicated certificate is uploaded,
+the relay may fail to start; it does not fall back to an old wildcard key.
 
 ## Operational notes
 
@@ -162,7 +166,7 @@ Quick checks:
 - `curl -v https://derp.polpetta.online/derp/probe` → 200 (hits the derper
   through the :443 demux path specifically).
 - `openssl s_client -connect derp.polpetta.online:443 -servername
-  derp.polpetta.online` → wildcard cert validates (TLS terminated by derper,
+  derp.polpetta.online` → DERP-only cert validates (TLS terminated by derper,
   demux is passthrough).
 - `curl -o /dev/null -w '%{http_code}\n' https://headscale.polpetta.online/health`
   → 200 (full demux → frp → nginx path).
@@ -183,7 +187,7 @@ Quick checks:
 2. Generate the cert-sync ssh keypair: private key into the sops secrets for
    serverone as `derp-cert-sync-ssh-key`, public key into the nix-secrets
    repo as `public_keys/ssh/serverone_certsync.pub` (vps-proxy authorizes it
-   for `billy`).
+   only for the restricted `derp-cert-sync` account).
 3. Deploy `vps-proxy` (relay + STUN + path unit come up; relay crashloops
    until the first cert push).
 4. Deploy `serverone` (headscale starts advertising the new map, frpc stops
@@ -191,4 +195,6 @@ Quick checks:
    `sudo systemctl start certbot-renew.service` — the fetch comes back
    empty against the missing copy, so it always pushes on first run.
 
-Rolling back means reverting both ends, same order (vps-proxy last).
+Rolling back means reverting both ends, same order (vps-proxy last). The old
+wildcard transfer protocol is incompatible with the restricted upload account;
+do not roll back only one endpoint.
