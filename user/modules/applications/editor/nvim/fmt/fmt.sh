@@ -1,12 +1,33 @@
 # Wrapper for the `fmt` CLI: expands directories to files (git-aware), then
-# hands everything to the headless Neovim driver in ./fmt.lua. The @nvim@ and
-# @lua@ placeholders are substituted by ./package.nix.
+# hands everything to the headless Neovim driver in ./fmt.lua. The nvim and
+# driver paths are substituted by ./package.nix.
 set -euo pipefail
+
+usage() {
+	cat <<'EOF'
+fmt [path...]
+
+Format files with the same conform.nvim setup the interactive Neovim
+config uses, including treesitter-injected code blocks.
+
+Paths can be files or directories: directories are expanded
+recursively to tracked and untracked (not git-ignored) files, ignored
+files are only formatted when passed explicitly. With no arguments
+the current directory is formatted.
+EOF
+}
+
+case "${1:-}" in
+-h | --help)
+	usage
+	exit 0
+	;;
+esac
 
 # Avoid option-like filenames being parsed as flags by nvim.
 normalize() {
 	case "$1" in
-	-*) "./$1" ;;
+	-*) printf './%s' "$1" ;;
 	*) printf '%s' "$1" ;;
 	esac
 }

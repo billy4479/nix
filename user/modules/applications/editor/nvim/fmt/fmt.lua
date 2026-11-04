@@ -16,6 +16,10 @@ end
 vim.lsp.enable = function() end
 vim.lsp.start = function() return nil end
 
+-- No swapfiles: if the file is open (or was left open) in an interactive
+-- nvim, the "swapfile exists" prompt would block forever in headless mode.
+vim.o.swapfile = false
+
 -- `nvim -l` neither loads plugins nor sources the user config, so do all
 -- three startup steps explicitly: plugins, user init.lua, and filetype
 -- detection (without it every buffer opens with an empty filetype).
