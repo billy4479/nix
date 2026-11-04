@@ -15,6 +15,12 @@ let
   execInContainer = pkgs.callPackage ../../../containers/exec-in-container {
     allowedContainers = allowedExecContainers;
   };
+  rawFirewallRemoval =
+    pkgs.writeText "remove-polpetta-raw.nft" # nftables
+      ''
+        destroy table inet polpetta_raw
+        destroy table bridge polpetta_raw
+      '';
 in
 {
   imports = [
@@ -97,6 +103,25 @@ in
     nixSnapshotterIntegration = true;
   };
 
+  # Keep the independent raw-port policy installed across ordinary firewall
+  # reloads. Requires/ordering fail closed before any container can start;
+  # reloading this unit atomically replaces both nft tables without a gap.
+  systemd.services.polpetta-raw-firewall = {
+    description = "Isolate declared container raw endpoints";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "firewall.service" ];
+    before = [ "containerd.service" ];
+    reloadIfChanged = true;
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.nftables}/bin/nft -f ${config.polpetta.generated.rawFirewallFile}";
+      ExecReload = "${pkgs.nftables}/bin/nft -f ${config.polpetta.generated.rawFirewallFile}";
+      ExecStop = "${pkgs.nftables}/bin/nft -f ${rawFirewallRemoval}";
+    };
+  };
+  systemd.services.containerd.requires = [ "polpetta-raw-firewall.service" ];
+
   networking.firewall = {
     # serverone is a Tailscale subnet router for the nerdctl bridge. Packets
     # addressed to container IPs are forwarded, so allowedUDPPorts/allowedTCPPorts
@@ -120,6 +145,7 @@ in
           iptables -w -t nat -A POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE
         ip6tables -w -t nat -C POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE 2>/dev/null ||
           ip6tables -w -t nat -A POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE
+
       '';
     extraStopCommands = # sh
       ''

@@ -92,6 +92,10 @@ let
   publicRawEntries = lib.filter (e: e.raw.access == "public") rawEntries;
   recordEntries = lib.filter (e: e.raw.record != null) rawEntries;
 
+  rawFirewall = import ./raw-firewall.nix {
+    inherit lib services;
+  };
+
   tcpProbeTargets = map (e: {
     name = e.name;
     address = "10.0.1.${toString e.id}:${toString e.raw.port}";
@@ -376,6 +380,16 @@ in
                         description = "Port opened on the vps; defaults to port.";
                       };
 
+                      allowedSources = lib.mkOption {
+                        type = lib.types.nullOr (lib.types.listOf (lib.types.strMatching "[0-9./]+"));
+                        default = null;
+                        description = ''
+                          Optional IPv4/CIDR allowlist replacing the tier's source
+                          ranges for direct connections. The host bridge gateway
+                          remains allowed for administration and monitoring.
+                        '';
+                      };
+
                       record = lib.mkOption {
                         type = lib.types.nullOr (lib.types.strMatching "[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?");
                         default = null;
@@ -404,6 +418,12 @@ in
     };
 
     generated = {
+      rawFirewallFile = lib.mkOption {
+        description = "nftables rules enforcing raw endpoint tiers and source allowlists.";
+        type = lib.types.package;
+        readOnly = true;
+      };
+
       nginxVhostsFile = lib.mkOption {
         description = "nginx vhosts generated from all web endpoints.";
         type = lib.types.package;
@@ -470,6 +490,7 @@ in
       nginxVhostsFile = pkgs.writeText "polpetta-services-vhosts.conf" nginxVhostsText;
       frpcProxies = frpcProxies;
       bind9Records = bind9Records;
+      rawFirewallFile = pkgs.writeText "polpetta-raw-firewall.nft" rawFirewall.ruleset;
     };
   }
   # Mirroring is the only container-dependent part: service files keep

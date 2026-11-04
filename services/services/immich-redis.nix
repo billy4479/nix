@@ -39,6 +39,7 @@ in
       {
         port = 6379;
         access = "local";
+        allowedSources = [ "10.0.1.3/32" ];
         probe.enable = true;
       }
     ];

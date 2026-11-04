@@ -45,13 +45,14 @@ polpetta.services.<name> = {
   };
 
   # Raw TCP/UDP ports, independent of the web endpoint. `access = "public"`
-  # is tunneled through frp; tailnet/local are never tunneled and exist to
-  # declare (and optionally name or probe) the port.
+  # is tunneled through frp; tailnet/local are never tunneled. Direct access
+  # is filtered on the host and bridge according to the tier/allowlist.
   raw = [
     {
       port = 25565;                # remotePort defaults to port
       proto = "tcp";               # or "udp"
       access = "public";
+      # allowedSources = [ "10.0.1.3/32" ]; # optional direct-access allowlist
       # record = "mc";             # optional bind9 record name → container IP
       # probe.enable = true;       # blackbox tcp_connect probe (tcp only)
     }
@@ -80,6 +81,19 @@ proxy_protocol), so every vhost listens uniformly on 443 and 4443; the tier
 only decides which ACL snippet is applied. The frp edge IP is explicitly
 denied for non-public tiers as defense in depth.
 
+For declared raw endpoints, independent nftables hooks enforce the source
+policy before CNI's iptables accept rules. Both routed and same-bridge traffic
+are covered. `allowedSources` replaces the tier's default IPv4 ranges; the host
+bridge gateway (`10.0.1.1`) always remains allowed for administration and probes.
+The caches allow only their own application container, and PostgreSQL allows
+only Immich and Outline, in addition to the gateway. DNS uses `tailnet`, because
+VPN clients and all service containers need it. These rules protect declared
+raw ports, not every undeclared port inside each container.
+
+`polpetta-raw-firewall.service` loads this policy before containerd, which
+requires it. Its reload is an atomic ruleset replacement; restarting the
+ordinary NixOS firewall does not remove the raw-port policy.
+
 The access tier is independent of the domain suffix; the suffix remains purely
 a DNS/certificate convention (see below).
 
@@ -102,6 +116,7 @@ wildcards `*.polpetta.online` to the vps.
 | nginx vhost         | `web`: one explicit server block (listen 443 + 4443 proxy_protocol, TLS/headers snippets, tier ACL, `extraConfig` in `location /`) plus the `map $host $backend` entries it proxies through |
 | frpc proxies        | `raw` entries with `access = "public"`           |
 | frps `allowPorts` + vps firewall | `raw` entries with `access = "public"` (`remotePort`; allowPorts ranges are proto-agnostic and deduplicated) |
+| host and bridge raw-port firewall | non-public `raw` tiers, or any `allowedSources` override; loaded independently of the CNI filter chains |
 | bind9 zone records  | `raw` entries with `record` (→ container IP, wg/tailnet view) |
 | blackbox probes     | every `web` endpoint (URL/port inferred; `probe.enable`/`probe.unauth`/`probe.path`/`probe.headers` tune it) plus tcp probes of `raw` entries with `probe.enable = true`; consumed by serverone's monitoring.nix, which declares no targets itself |
 | `useNginx` ordering | presence of `web` (auto-set on the mirrored container) |
@@ -117,9 +132,9 @@ in `sites/homepage/`, mounted into the nginx container at `/srv/homepage`):
 it is plain static files with no backend container, and the apex name is
 not a `.polpetta.online` subdomain, so it cannot be a service entry.
 
-Non-public raw ports are not tunneled: reachability is inherent (subnet router
-+ LAN routing to container IPs); the `record` option just makes them
-addressable by name.
+Non-public raw ports are not tunneled. The subnet router and LAN routes provide
+the network path, but the generated raw-port firewall still enforces the tier
+or explicit application allowlist. The `record` option only supplies a name.
 
 ## Assertions
 

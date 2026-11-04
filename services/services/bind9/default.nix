@@ -78,13 +78,13 @@ in
       {
         port = 53;
         proto = "tcp";
-        access = "local";
+        access = "tailnet";
         probe.enable = true;
       }
       {
         port = 53;
         proto = "udp";
-        access = "local";
+        access = "tailnet";
       }
     ];
   };

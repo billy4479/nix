@@ -162,6 +162,10 @@ in
       {
         port = 5432;
         access = "local";
+        allowedSources = [
+          "10.0.1.3/32"
+          "10.0.1.24/32"
+        ];
         probe.enable = true;
       }
     ];
