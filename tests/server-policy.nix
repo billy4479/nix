@@ -43,6 +43,9 @@ assert lib.all (
 ) vps.users.users.derp-cert-sync.openssh.authorizedKeys.keys;
 assert serverone.nerdctl-containers.openchamber.privateNixStore.wipeAboveGib == null;
 assert serverone.systemd.timers.openchamber-nix-gc.timerConfig.OnCalendar == "daily";
+assert lib.hasSuffix (
+  " exec openchamber /bin/nh clean user --elevation-strategy none --keep 5 --keep-since 7d --keep-one --max 107374182400"
+) serverone.systemd.services.openchamber-nix-gc.serviceConfig.ExecStart;
 assert lib.elem "polpetta-raw-firewall.service" serverone.systemd.services.containerd.requires;
 assert serverone.systemd.services.polpetta-raw-firewall.reloadIfChanged;
 assert lib.all (exporter: exporter.listenAddress == "127.0.0.1") localExporters;

@@ -65,6 +65,7 @@ let
         less
         openssh
         nix
+        nh
         git
         tini
       ]
@@ -327,12 +328,14 @@ in
   };
 
   systemd.services.openchamber-nix-gc = lib.mkIf (options ? nerdctl-containers) {
-    description = "Collect unrooted OpenChamber build results";
+    description = "Prune stale OpenChamber GC roots and collect build results";
     after = [ "nerdctl-openchamber.service" ];
     serviceConfig = {
       Type = "oneshot";
       ExecCondition = "${pkgs.systemd}/bin/systemctl is-active --quiet nerdctl-openchamber.service";
-      ExecStart = "${lib.getExe pkgs.nerdctl} exec openchamber /bin/nix store gc --max ${
+      # Run as the container's own UID, without elevation. Preserve live direnv
+      # roots while aging out old result roots and retaining profile generations.
+      ExecStart = "${lib.getExe pkgs.nerdctl} exec openchamber /bin/nh clean user --elevation-strategy none --keep 5 --keep-since 7d --keep-one --max ${
         toString (100 * 1024 * 1024 * 1024)
       }";
       TimeoutStartSec = "30min";

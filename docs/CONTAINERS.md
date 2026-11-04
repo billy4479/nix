@@ -98,12 +98,25 @@ cat result/nginx.conf result/vhosts.conf
 
 ## Private Nix store maintenance
 
-OpenChamber runs ordinary `nix store gc --max 107374182400` daily, inside its own
-container. GC preserves roots and active build locks, and attempts to free up
-to 100 GiB of unrooted paths per run; that number is not a hard store-size cap.
-It is skipped when the container is inactive. Host Nix GC cannot collect this
-separate store. ZFS snapshots can retain blocks after GC, so pool usage and
-snapshot retention still matter.
+OpenChamber runs `nh clean user` daily, inside its own container as its normal
+UID, with no privilege elevation:
+
+```sh
+nh clean user --elevation-strategy none --keep 5 --keep-since 7d --keep-one --max 107374182400
+```
+
+This removes orphaned root registrations and ages out build-result roots older
+than seven days, retaining at least five profile generations and any generations
+younger than seven days. With the pinned nh version, `--keep-one` preserves all
+live direnv roots. The container runtime seed roots are not age-cleanup targets.
+Expired result-root registrations can be removed even while their `result`
+symlink remains on disk; that output may then become collectable.
+
+The subsequent GC preserves remaining roots and active build locks, attempting
+to free up to 100 GiB per run. This is not a hard store-size cap. The job is
+skipped when the container is inactive. Host nh/GC operates on a different store
+and cannot clean this private one. ZFS snapshots can retain blocks after GC, so
+pool usage and snapshot retention still matter.
 
 Automatic full-store wiping is disabled for OpenChamber. The generic
 `privateNixStore.wipeAboveGib` option remains an explicit destructive opt-in,
