@@ -64,6 +64,7 @@ fi
 date --iso-8601=seconds >"$output/measurement-start.txt"
 cat /proc/diskstats >"$output/diskstats-start.txt"
 capture process-names ps -eo pid,ppid,user,comm
+capture filesystem-map findmnt -rn -t zfs,tmpfs -o MAJ:MIN,SOURCE,TARGET
 
 # Capture the same one-minute workload window in parallel.
 capture process-io timeout 75 pidstat -d 5 12 &
@@ -71,19 +72,45 @@ pidstat_job=$!
 capture disk-io timeout 75 iostat -dxm -y 5 12 &
 iostat_job=$!
 if [[ -n $bpftrace ]]; then
-  # Successful VFS writes grouped by process, with no file names or contents.
-  # This is logical write volume, not physical write amplification. mmap and
-  # other write paths may be missed; asynchronous workers may appear by name.
+  # Count regular files only, separating RAM-backed files from ZFS. Map keys:
+  # process name, PID, filesystem magic, device major, device minor.
+  # ZFS magic is 0x2fc12fc1; tmpfs magic is 0x01021994.
+  # No file names or contents. mmap and other write paths may be missed;
+  # asynchronous workers may appear by name. This is logical write volume,
+  # not physical write amplification.
+  # shellcheck disable=SC2016 # Dollar-prefixed names belong to bpftrace.
   capture logical-writes timeout --signal=INT --kill-after=5s 90 "$bpftrace" -e '
+    kprobe:vfs_write,
+    kprobe:vfs_iter_write
+    {
+      $inode = ((struct file *)arg0)->f_inode;
+      if (($inode->i_mode & 0xf000) == 0x8000) {
+        @tracked[tid] = 1;
+        @magic[tid] = $inode->i_sb->s_magic;
+        @device[tid] = $inode->i_sb->s_dev;
+      }
+    }
     kretprobe:vfs_write,
     kretprobe:vfs_iter_write
-    /retval > 0/
+    /@tracked[tid]/
     {
-      @written_bytes[comm, pid] = sum(retval);
+      if ((int64)retval > 0) {
+        $dev = @device[tid];
+        @written_bytes[comm, pid, @magic[tid], $dev >> 20, $dev & 1048575] = sum(retval);
+      }
+      delete(@tracked, tid);
+      delete(@magic, tid);
+      delete(@device, tid);
     }
     interval:s:60
     {
       exit();
+    }
+    END
+    {
+      clear(@tracked);
+      clear(@magic);
+      clear(@device);
     }
   ' &
   trace_job=$!
