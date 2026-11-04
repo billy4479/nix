@@ -157,6 +157,11 @@
         inherit system overlays;
       };
 
+      # Exposed as a flake package and added to the devShell: inside nix
+      # devShells coreutils' `fmt` would otherwise shadow the one from the
+      # home profile (see the devShell packages comment below).
+      fmtPkg = pkgsForFlake.callPackage ./user/modules/applications/editor/nvim/fmt/package.nix { };
+
       lazyNixPrefetchDocker =
         pkgsForFlake.writeShellScriptBin "nix-prefetch-docker" # sh
           ''
@@ -249,32 +254,40 @@
           '';
         };
         exec-in-container = hosts.nixosConfigurations.serverone.config.system.build.execInContainer;
+
+        fmt = fmtPkg;
       };
 
       devShells.${system}.default = pkgsForFlake.mkShell {
-        packages = with pkgsForFlake; [
-          stylua
-          shfmt
-          nixfmt
-          ruff
+        # fmtPkg must come from the flake (not the home profile): nix
+        # devShells put coreutils on PATH ahead of the profile, so without
+        # this `fmt` would be the GNU text formatter inside direnv shells.
+        packages =
+          with pkgsForFlake;
+          [
+            stylua
+            shfmt
+            nixfmt
+            ruff
 
-          # formatters the nvim conform setup and the fmt CLI expect for
-          # filetypes present in this repo
-          jq
-          prettierd
-          rustfmt
+            # formatters the nvim conform setup and the fmt CLI expect for
+            # filetypes present in this repo
+            jq
+            prettierd
+            rustfmt
 
-          lua-language-server
-          nixd
+            lua-language-server
+            nixd
 
-          sops
-          age
+            sops
+            age
 
-          dig
+            dig
 
-          lazyPrefetchAllImages
-          lazyNixPrefetchDocker
-        ];
+            lazyPrefetchAllImages
+            lazyNixPrefetchDocker
+          ]
+          ++ [ fmtPkg ];
       };
     }
     // hosts;
