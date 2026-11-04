@@ -1,6 +1,7 @@
 { config, ... }:
 {
   imports = [
+    ./fmt
     ./plugins
     ./spell.nix
   ];
