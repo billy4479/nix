@@ -88,6 +88,24 @@ no CJK font on purpose, so East Asian text renders as tofu).
 It also passes `--disable-dev-shm-usage` because the container's `/dev/shm` is
 small. The extension itself adds the headless and remote-debugging flags.
 
+## Formatting
+
+The container ships `nvim-fmt`, the same headless formatter CLI the Home
+Manager installs on the desktop hosts (`user/modules/applications/editor/nvim/fmt`).
+It formats files with the user's conform.nvim setup, including
+treesitter-injected code blocks, so agents can reformat a repository exactly
+like the interactive editor would.
+
+The container home has no Neovim configuration, so
+`services/services/openchamber.nix` evaluates the nvim Home Manager module
+subtree itself and bundles the wrapped nvim, the generated `init.lua`, and the
+plugin pack directory into one store path. The `nvim-fmt` wrapper pins
+`XDG_CONFIG_HOME` and `XDG_DATA_HOME` to that bundle, which keeps the agent
+home untouched. Formatter binaries (nixfmt, stylua, shfmt, ruff, prettier, ...)
+are deliberately not bundled: conform finds them on `PATH`, and projects
+provide them in their flake devShells, exactly like on the desktop hosts. In a
+project without the needed formatter, `nvim-fmt` warns and skips the file.
+
 ## Workspaces
 
 The SSD directory `/mnt/SSD/apps/openchamber/workspaces` is mounted at

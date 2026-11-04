@@ -54,6 +54,68 @@ let
         echo openchamber-container
       '';
 
+  # `nvim-fmt` formats files with the same conform.nvim setup as the
+  # interactive Neovim, whose config and plugins normally come from the Home
+  # Manager homes on the desktop hosts. The container home has none of that,
+  # so evaluate the nvim module subtree here and bundle its outputs (wrapped
+  # nvim, generated init.lua, plugin pack dir) into one self-contained
+  # package. The wrapper pins XDG_CONFIG_HOME and XDG_DATA_HOME to the bundle,
+  # leaving the agent home untouched. Formatter binaries stay out on purpose:
+  # conform picks them up from each project's devShell (see fmt.lua), matching
+  # how the interactive editor behaves.
+  nvimFmt =
+    let
+      # Only feeds the colorscheme setup, which headless formatting ignores;
+      # these are the defaults from flake/system.nix (identical on all hosts).
+      extraConfig = {
+        catppuccinColors = {
+          flavor = "frappe";
+          accent = "green";
+          flavorWithAccent = "Frappé";
+          upper = {
+            flavor = "Frappe";
+            accent = "Green";
+            flavorWithAccent = "Frappé";
+          };
+        };
+      };
+
+      hmConfig = flakeInputs.home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [
+          ../../user/modules/applications/editor/nvim
+          {
+            home = {
+              username = "openchamber";
+              homeDirectory = "/home/openchamber";
+              # Same generation the user homes are on (see user/default.nix).
+              stateVersion = "23.11";
+            };
+          }
+        ];
+        extraSpecialArgs = { inherit extraConfig flakeInputs; };
+      };
+
+      nvimFiles = hmConfig.config.home-files;
+    in
+    pkgs.symlinkJoin {
+      name = "openchamber-nvim-fmt";
+      paths = [
+        (pkgs.callPackage ../../user/modules/applications/editor/nvim/fmt/package.nix {
+          neovim = hmConfig.config.programs.neovim.finalPackage;
+        })
+      ];
+      nativeBuildInputs = [ pkgs.makeWrapper ];
+      postBuild = ''
+        mkdir -p "$out/config" "$out/data"
+        ln -s ${nvimFiles}/.config/nvim "$out/config/nvim"
+        ln -s ${nvimFiles}/.local/share/nvim "$out/data/nvim"
+        wrapProgram "$out/bin/nvim-fmt" \
+          --set XDG_CONFIG_HOME "$out/config" \
+          --set XDG_DATA_HOME "$out/data"
+      '';
+    };
+
   runtime = pkgs.buildEnv {
     name = "openchamber-container-runtime";
     paths =
@@ -74,6 +136,8 @@ let
         artifacts.package
         # Wrapper providing /bin/chromium; pulls in the full browser closure.
         chromiumWrapper
+        # Self-contained headless formatter (see the comment above).
+        nvimFmt
       ];
     pathsToLink = [
       "/bin"
