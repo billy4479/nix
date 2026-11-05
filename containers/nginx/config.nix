@@ -1,5 +1,6 @@
 {
   stdenvNoCC,
+  lib,
 
   externalTrafficFrom,
   ...
@@ -19,7 +20,9 @@ stdenvNoCC.mkDerivation {
 
   postPatch = # sh
     ''
-      find . -type f -exec \
-        sed -i 's/@@EXTERNAL_TRAFFIC@@/${externalTrafficFrom}/g' {} \;
+      substituteInPlace nginx.conf --replace-fail '@@EXTERNAL_TRAFFIC@@' \
+        ${lib.escapeShellArg (
+          lib.concatMapStringsSep "\n" (ip: "set_real_ip_from ${ip};") externalTrafficFrom
+        )}
     '';
 }

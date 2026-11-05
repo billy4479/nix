@@ -4,6 +4,7 @@
 
   nginx,
   openssl,
+  python3,
 
   # The web edge IP (the vps tunnel address), derived from the serverone
   # host config.
@@ -32,6 +33,7 @@ runCommand "polpetta-nginx-config"
     mkdir -p $out
     cp -r ${infraConfig}/. $out/
     cp ${nginxVhostsFile} $out/vhosts.conf
+    ${python3}/bin/python ${../../tests/nginx-edge.py} "$out"
 
     # Validate with `nginx -t`: reassemble the config in a writable
     # tree with the absolute include/cert paths rewritten to it

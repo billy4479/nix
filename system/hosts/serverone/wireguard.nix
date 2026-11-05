@@ -26,7 +26,11 @@ let
   wgMark = "0x1";
 in
 {
-  sops.secrets.wireguard-key = { };
+  sops.secrets.wireguard-key = {
+    # Same startup-only consumer concern as the vps side: restart the
+    # interface when the key rotates or the tunnel breaks silently.
+    restartUnits = [ "wireguard-wg0.service" ];
+  };
 
   # headscale's module declares this too; mkDefault keeps the two compatible
   # while still forwarding if headscale ever moves off the host.

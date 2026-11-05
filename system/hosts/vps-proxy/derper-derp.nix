@@ -92,7 +92,6 @@ in
       # relay stays up, only admission is unverified for that window.
       ExecStart = "${pkgs.derper}/bin/derper -derp=true -stun=false -a 127.0.0.1:${toString port} -http-port -1 -certmode=manual -certdir ${certDir}/current -hostname ${hostname} -verify-client-url=https://headscale.polpetta.online/verify -c /var/lib/${name}/derper.conf";
 
-
       Type = "simple";
       Restart = "on-failure";
       RestartSec = 15;

@@ -13,7 +13,12 @@ let
   # Trusted for real_ip restoration and denied for non-public tiers (defense
   # in depth: without a valid PP header the source would stay the edge
   # address, which matches `allow 10.0.0.0/8`).
-  externalTrafficFrom = "10.100.0.1";
+  # Keep the retiring frp address trusted and denied until both hosts have
+  # migrated. Reserve 10.0.1.131 while it remains in this list.
+  externalTrafficFrom = [
+    "10.100.0.1"
+    "10.0.1.131"
+  ];
   nginxConfig = pkgs.callPackage ./config.nix { inherit externalTrafficFrom; };
   homepage = pkgs.callPackage ../../sites/homepage { };
 in

@@ -30,8 +30,23 @@ public `raw` entries plus `:80`, same as the old frps `allowPorts` model.
 
 ## Stages
 
-Each stage is one or two git commits, deployed in order. serverone is
-deployed **before** the vps in stages 2 and 3.
+The stages below document the original commit sequence, not a safe sequence
+of revisions to deploy. **Do not deploy the historical stage commits**:
+stage 2 replaces the trusted edge address without a compatibility window.
+
+For a new migration:
+
+1. Complete stage 0, then build the current branch tip for both hosts.
+2. Deploy the current tip to **serverone first**, then to `vps-proxy`.
+   Removing frpc interrupts public web and raw ports until the vps switches.
+3. Run the verification checks below for the tunnel, web, raw ports and HTTP/3.
+
+The current config trusts both `10.0.1.131` (retiring frp) and `10.100.0.1`
+(WireGuard) for PROXY protocol and explicitly denies both on restricted
+vhosts. Keep `10.0.1.131` reserved until this compatibility entry is removed.
+Remove it only after both hosts have migrated and rollback is no longer
+needed. Switching only the trusted/denied address is unsafe in either deploy
+order: the other edge falls through to the RFC1918 allow rule.
 
 | stage | commits | effect |
 |-------|---------|--------|
@@ -42,9 +57,10 @@ deployed **before** the vps in stages 2 and 3.
 | 4     | `edge: enable HTTP/3` (optional) | QUIC on udp/443 |
 | 5     | `monitoring: probe the public edge` (optional) | dead tunnel alerts |
 
-Rolling back = redeploying the previous commit on both hosts, in reverse
-order (vps last). Until stage 3, frps is still running and owning the old
-remote ports, so a stage-1/2 rollback is exact.
+To roll back the current tip, restore the pre-migration generation on the
+vps first, then on serverone. The dual-edge serverone config accepts the
+returning frp path without bypassing restricted-tier ACLs. Expect an outage
+until frpc returns. The stage-specific notes below are historical context.
 
 ## Stage 0 — secrets and preflight
 
@@ -103,11 +119,10 @@ no-op at this point.
 
 Deploy **serverone first**, then `vps-proxy`.
 
-Window note: once serverone trusts only `10.100.0.1`, frp-era connections
-(no longer real_ip-restored) log the edge address on public vhosts until the
-vps redeploys. ACLs stay correct throughout (that is what the explicit
-`deny <edge>` line is for). Public web answers 401/redirects during the
-seconds between the two deployments' `switch-to-configuration`.
+Safety note: the original stage-2 commit trusts only `10.100.0.1`. Deploying
+it serverone-first leaves frp traffic un-restored as `10.0.1.131`, which
+passes the RFC1918 allow rule on restricted vhosts. Use the current tip and
+the migration procedure above instead.
 
 Verify:
 
@@ -227,8 +242,9 @@ nix shell nixpkgs#tcpdump nixpkgs#conntrack-tools -c \
   instead of client IPs means proxy_protocol wasn't restored — check
   `set_real_ip_from` in the rendered nginx.conf. Internet clients getting
   **200** on `*.internal.polpetta.online` is the one security-relevant
-  failure: it means stage 2 was deployed vps-first (nginx trusts only the
-  tunnel address while the demuxer still sends via frp) — redeploy
+  failure: check that **both** edge addresses are trusted and explicitly
+  denied before the RFC1918 allow rules. A historical stage-2 deployment in
+  either order can create this gap; deploy the current dual-edge config on
   serverone.
 - **HTTP/3** — `curl -sI https://<host>` must show `Alt-Svc: h3=":443"`;
   h3 failing while h2 works is a silent degradation by design, verify with

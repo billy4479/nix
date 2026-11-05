@@ -125,7 +125,7 @@ let
 
   # The web edge must not be able to reach restricted tiers; nginx enforces
   # on the proxy_protocol-restored client address, so ordering matters.
-  externalIp =
+  externalIps =
     if cfg.externalTrafficFrom != null then
       cfg.externalTrafficFrom
     else
@@ -136,7 +136,7 @@ let
     if access == "public" then
       [ ]
     else
-      [ "  deny ${externalIp};" ]
+      (map (ip: "  deny ${ip};") externalIps)
       ++ lib.optionals (access == "tailnet") [ "  allow 100.64.0.0/10;" ]
       ++ [
         "  allow 10.0.0.0/8;"
@@ -421,8 +421,8 @@ in
     };
 
     externalTrafficFrom = lib.mkOption {
-      description = "The address public web traffic arrives from (the vps tunnel edge, set by the nginx container definition); trusted for real_ip and denied for non-public tiers.";
-      type = lib.types.nullOr lib.types.str;
+      description = "The addresses public web traffic arrives from (including retiring edges during migration); trusted for real_ip and denied for non-public tiers.";
+      type = lib.types.nullOr (lib.types.listOf lib.types.str);
       default = null;
     };
 

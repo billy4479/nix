@@ -83,8 +83,11 @@ Tiers are cumulative:
 
 Enforcement happens in nginx on the **real client IP** (restored from
 proxy_protocol), so every vhost listens uniformly on 443 and 4443; the tier
-only decides which ACL snippet is applied. The edge address (the vps's
-tunnel IP) is explicitly denied for non-public tiers as defense in depth.
+only decides which ACL snippet is applied. Both the vps tunnel IP and the
+retiring frp address are trusted for PROXY protocol and explicitly denied for
+non-public tiers as defense in depth during migration. Reserve `10.0.1.131`
+until its compatibility entry is removed after migration and rollback needs
+have ended.
 
 For declared raw endpoints, independent nftables hooks enforce the source
 policy before CNI's iptables accept rules. Both routed and same-bridge traffic

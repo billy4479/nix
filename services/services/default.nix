@@ -1,6 +1,7 @@
 # The complete service set, imported by every host that evaluates
 # polpetta.services (serverone runs the containers; the vps only consumes the
-# frps/firewall/dns projection). Keeping a single import list here guarantees
+# edge DNAT/firewall/dns projection). Keeping a single import list here guarantees
+
 # both hosts always agree on the service set; a service defined but imported
 # on only one host would silently lose its vps-side projection.
 {

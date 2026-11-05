@@ -185,6 +185,7 @@ The shared PostgreSQL container is initialized and migrated according to
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
 | PostgreSQL | 130 | 10.0.1.130 |
+| Retired frp (reserved during edge migration) | 131 | 10.0.1.131 |
 | Certbot | 132 | 10.0.1.132 |
 | Outline (valkey) | 133 | 10.0.1.133 |
 | Byparr | 134 | 10.0.1.134 |

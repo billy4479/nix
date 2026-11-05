@@ -60,7 +60,12 @@ let
   '') edgeForwards;
 in
 {
-  sops.secrets.wireguard-key = { };
+  sops.secrets.wireguard-key = {
+    # The unit reads the key once at start; without a restart a rotated key
+    # would leave the interface authenticated with the stale key and the
+    # tunnel would silently break.
+    restartUnits = [ "wireguard-wg0.service" ];
+  };
 
   # Public traffic is DNAT'd into the tunnel (FORWARD, not INPUT); without
   # forwarding the vps is a dead end.

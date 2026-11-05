@@ -31,9 +31,22 @@ in
 assert lib.assertMsg (lib.all (
   consumer: lib.elem consumer.unit consumer.restarts
 ) consumerChecks) "Every container-consumed sops file must restart its consumer on rotation";
-assert lib.assertMsg (lib.elem "frp.service"
-  vps.sops.templates."frps.toml".restartUnits
-) "FRPS must reload its runtime copy on token rotation";
+assert lib.assertMsg (lib.all
+  (
+    host:
+    lib.all (
+      interface:
+      let
+        unit = host.systemd.services."wireguard-${interface}".name;
+      in
+      lib.elem unit host.sops.secrets.wireguard-key.restartUnits
+    ) (builtins.attrNames host.networking.wireguard.interfaces)
+  )
+  [
+    serverone
+    vps
+  ]
+) "Every wireguard interface must restart on key rotation";
 assert serverone.systemd.timers.certbot-renew.timerConfig.OnCalendar == "*-*-* 00,12:00:00";
 assert !(serverone.systemd.services.certbot-renew.serviceConfig.RemainAfterExit or false);
 assert vps.systemd.services.derper-derp-cert-sync.serviceConfig.TimeoutStartSec == "60s";

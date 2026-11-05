@@ -186,8 +186,9 @@ Quick checks:
    only for the restricted `derp-cert-sync` account).
 3. Deploy `vps-proxy` (relay + STUN + path unit come up; relay crashloops
    until the first cert push).
-4. Deploy `serverone` (headscale starts advertising the new map, frpc stops
-   forwarding STUN). Kick the first push with
+4. Deploy `serverone` (headscale starts advertising the new map). Kick the
+   first push with
+
    `sudo systemctl start certbot-renew.service` — the fetch comes back
    empty against the missing copy, so it always pushes on first run.
 
