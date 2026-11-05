@@ -39,6 +39,9 @@ polpetta.services.<name> = {
     # probe.path = "/admin";      # blackbox probe path (default "")
     # probe.headers = { };        # extra HTTP headers sent by the probe
     #                             # (generates an http_custom_<name> module)
+    # probe.timeout = "5m";       # per-probe timeout override (http probes
+    #                             # default 30s; moves the probe to the slow
+    #                             # blackbox job)
     # nginx.extraConfig = ''       # raw nginx text, injected into location /
     #   client_max_body_size 10M;
     # '';

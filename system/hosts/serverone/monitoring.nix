@@ -47,18 +47,23 @@ let
   # https module pinning the grafana internal vhost (used to watch the
   # wildcard certificate), an http module for services whose only unauth
   # answers are 401/404 (which still prove the HTTP server is alive) and a
-  # plain tcp module for non-http services.
+  # plain tcp module for non-http services. The HTTP modules allow 30s per
+  # probe: some health endpoints are legitimately slow (e.g. they drive a
+  # page load through a headless browser), and a tight budget turns a
+  # healthy but slow app into flapping ContainerDown alerts. The scrape
+  # jobs carry a matching 35s scrape_timeout on a 1m interval; tcp stays
+  # at 5s since a connect answers in milliseconds or fails immediately.
   staticModules = {
     http_2xx = {
       prober = "http";
-      timeout = "5s";
+      timeout = "30s";
       http = {
         preferred_ip_protocol = "ip4";
       };
     };
     http_unauth = {
       prober = "http";
-      timeout = "5s";
+      timeout = "30s";
       http = {
         preferred_ip_protocol = "ip4";
         # Don't follow auth redirects: an unauthenticated probe that lands
@@ -79,7 +84,7 @@ let
     };
     https_internal = {
       prober = "http";
-      timeout = "5s";
+      timeout = "30s";
       http = {
         preferred_ip_protocol = "ip4";
         headers = {
@@ -98,21 +103,30 @@ let
 
   httpProbeTargets = config.polpetta.generated.probeHttpTargets;
 
-  # blackbox_exporter takes http headers only from the module config, so a
-  # service with probe.headers gets its own module: a copy of its base module
-  # with the headers merged in. The generated target carries the base module
-  # name and the headers (see services/module.nix).
-  headerModules = lib.listToAttrs (
+  # Probes with an overridden timeout cannot share the fast job: a scrape
+  # is cut off at its scrape_timeout, and prometheus refuses a scrape
+  # timeout above the job interval. The slow job gives them 5m30s per
+  # scrape on a 6m interval.
+  slowHttpTargets = lib.filter (t: t ? timeout) httpProbeTargets;
+  fastHttpTargets = lib.filter (t: !(t ? timeout)) httpProbeTargets;
+
+  # blackbox_exporter takes http headers and the module timeout only from
+  # the module config, so a service with probe.headers or probe.timeout
+  # gets its own module: a copy of its base module with both merged in.
+  # The generated target carries the base module name and the override
+  # (see services/module.nix).
+  customModules = lib.listToAttrs (
     map (t: {
       name = t.module;
-      value = lib.recursiveUpdate staticModules.${t.baseModule} {
-        http.headers = t.headers;
-      };
-    }) (lib.filter (t: t ? headers) httpProbeTargets)
+      value = lib.recursiveUpdate staticModules.${t.baseModule} (
+        (lib.optionalAttrs (t ? headers) { http.headers = t.headers; })
+        // (lib.optionalAttrs (t ? timeout) { inherit (t) timeout; })
+      );
+    }) (lib.filter (t: (t ? headers) || (t ? timeout)) httpProbeTargets)
   );
 
   blackboxConfig = yamlFormat.generate "blackbox-exporter.yml" {
-    modules = staticModules // headerModules // edgeModules;
+    modules = staticModules // customModules // edgeModules;
   };
 
   alertRules = yamlFormat.generate "serverone-alerts.yml" {
@@ -271,8 +285,11 @@ let
         name = "containers";
         rules = [
           {
+            # last_over_time bridges the 6m sample gaps of the slow job:
+            # with the default 5m lookback a blackbox-http-slow sample goes
+            # stale between scrapes and would keep resetting the timer.
             alert = "ContainerDown";
-            expr = "probe_success{job=~\"blackbox-(http|tcp)\"} == 0";
+            expr = "last_over_time(probe_success{job=~\"blackbox-(http|tcp|http-slow)\"}[10m]) == 0";
             for = "5m";
             labels.severity = "critical";
             annotations = {
@@ -526,10 +543,27 @@ in
       {
         job_name = "blackbox-http";
         metrics_path = "/probe";
+        # The HTTP modules allow 30s per probe; the default 10s scrape
+        # timeout would cut a slow probe short before it can report
+        # probe_success = 0, so give the scrape 35s on a 1m interval.
+        scrape_interval = "1m";
+        scrape_timeout = "35s";
         params = {
           module = [ "http_2xx" ];
         };
-        static_configs = probeStaticConfigs "url" httpProbeTargets;
+        static_configs = probeStaticConfigs "url" fastHttpTargets;
+        relabel_configs = blackboxRelabelConfigs;
+      }
+      {
+        job_name = "blackbox-http-slow";
+        metrics_path = "/probe";
+        # scrape_timeout must exceed the largest module timeout here or a
+        # failing probe's result would be lost to a scrape abort, and
+        # prometheus refuses a scrape timeout above the job interval.
+        params.module = [ "http_2xx" ];
+        scrape_interval = "6m";
+        scrape_timeout = "5m30s";
+        static_configs = probeStaticConfigs "url" slowHttpTargets;
         relabel_configs = blackboxRelabelConfigs;
       }
       {
@@ -544,6 +578,9 @@ in
       {
         job_name = "blackbox-https";
         metrics_path = "/probe";
+        # https_internal allows 30s per probe like the other HTTP modules.
+        scrape_interval = "1m";
+        scrape_timeout = "35s";
         params = {
           module = [ "https_internal" ];
         };

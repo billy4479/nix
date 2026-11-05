@@ -99,6 +99,64 @@ let
           }
         ];
       }
+      {
+        interval = "1m";
+        input_series = [
+          {
+            series = ''probe_success{job="blackbox-http",service="jackett",instance="http://10.0.1.8:9112/health"}'';
+            values = "0x12";
+          }
+        ];
+        alert_rule_test = [
+          {
+            eval_time = "6m";
+            alertname = "ContainerDown";
+            exp_alerts = [
+              {
+                exp_labels = {
+                  job = "blackbox-http";
+                  service = "jackett";
+                  instance = "http://10.0.1.8:9112/health";
+                  severity = "critical";
+                };
+                exp_annotations.summary = "jackett is unreachable";
+                exp_annotations.description = "The blackbox probe against http://10.0.1.8:9112/health has been failing for more than 5 minutes.";
+              }
+            ];
+          }
+        ];
+      }
+      {
+        # The slow job scrapes every 6m, past the 5m lookback default, so a
+        # probe_success sample goes stale between scrapes and the == 0
+        # selector would keep resetting the pending timer. last_over_time
+        # in the alert must bridge the gap.
+        interval = "6m";
+        input_series = [
+          {
+            series = ''probe_success{job="blackbox-http-slow",service="byparr",instance="http://10.0.1.134:8191/health"}'';
+            values = "1 0 0";
+          }
+        ];
+        alert_rule_test = [
+          {
+            eval_time = "13m";
+            alertname = "ContainerDown";
+            exp_alerts = [
+              {
+                exp_labels = {
+                  job = "blackbox-http-slow";
+                  service = "byparr";
+                  instance = "http://10.0.1.134:8191/health";
+                  severity = "critical";
+                };
+                exp_annotations.summary = "byparr is unreachable";
+                exp_annotations.description = "The blackbox probe against http://10.0.1.134:8191/health has been failing for more than 5 minutes.";
+              }
+            ];
+          }
+        ];
+      }
     ];
   };
 in

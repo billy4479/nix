@@ -187,7 +187,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "probe_success{job=\"blackbox-http\"}",
+          "expr": "probe_success{job=~\"blackbox-http.*\"}",
           "instant": true,
           "format": "table",
           "refId": "A"
@@ -321,7 +321,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "probe_duration_seconds{job=\"blackbox-http\"}",
+          "expr": "probe_duration_seconds{job=~\"blackbox-http.*\"}",
           "legendFormat": "{{service}}",
           "range": true,
           "refId": "A"
@@ -386,7 +386,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "probe_http_status_code{job=\"blackbox-http\"}",
+          "expr": "probe_http_status_code{job=~\"blackbox-http.*\"}",
           "instant": true,
           "format": "table",
           "refId": "A"

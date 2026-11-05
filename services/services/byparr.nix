@@ -98,6 +98,12 @@ in
       # / redirects to /docs, which stays 200 even when the browser driver is
       # dead and every solve 500s; /health actually reflects app health.
       probe.path = "/health";
+      # /health checks the browser driver by driving it through a real
+      # google.com page load, so even a healthy answer takes 4-6.5s and
+      # bursts past the probe timeout flapped ContainerDown in the evening
+      # hours when jackett and mircrewrr solve more. 5m makes the probe
+      # alert only when the browser is truly gone.
+      probe.timeout = "5m";
     };
   };
 }
