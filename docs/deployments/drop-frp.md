@@ -28,6 +28,16 @@ home NAT needs no configuration and WAN IP changes heal automatically.
 rule from `polpetta.generated.dnatForwards` — the exposure is exactly the
 public `raw` entries plus `:80`, same as the old frps `allowPorts` model.
 
+`edge-forwarding.service` owns the `POLPETTA-EDGE` NAT chain and its
+PREROUTING jump, plus the tunnel MSS rules. It restarts on configuration
+changes, removing the old rules before installing the new list. Removing
+the unit during rollback also removes its rules. Ordinary firewall reloads
+leave this independent unit's rules in place.
+
+If a pre-fix revision of this branch already installed DNAT rules directly
+in PREROUTING, reboot the VPS once after deploying this revision to clear
+those old, unowned rules. Subsequent switches and rollbacks need no reboot.
+
 ## Stages
 
 The stages below document the original commit sequence, not a safe sequence
@@ -153,7 +163,7 @@ Verify:
 
 ```sh
 # DNAT present on the vps:
-ssh vps-proxy 'sudo iptables -t nat -S PREROUTING | grep DNAT'
+ssh vps-proxy 'sudo iptables -t nat -S POLPETTA-EDGE'
 # TCP (minecraft): real player IP visible in the server log / ss:
 ssh serverone 'sudo ss -tn "sport = :25565"'   # peer = client public IP, not 10.0.1.x
 # UDP (bedrock + luna) from an external client, then on serverone:
@@ -182,10 +192,12 @@ Rollback: revert the commit (drop the udp DNAT; h2 continues to work).
 
 ## Stage 5 — edge probe (optional)
 
-Deploy serverone. The `public-edge` blackbox target hairpins
-serverone → vps → tunnel → nginx → calendar-proxy, so a dead tunnel, missing
-DNAT or broken demuxer turns `probe_success{service="public-edge"}` off and
-fires the existing probe alert. It cannot see which leg broke — check
+Deploy serverone. The `public-edge` blackbox target pins the VPS IP, Host
+header and TLS SNI, so split DNS cannot bypass the edge. It hairpins
+serverone → vps → tunnel → nginx → calendar-proxy, so a dead tunnel or
+broken demuxer turns `probe_success{job="blackbox-edge",service="public-edge"}`
+off and fires the public endpoint alert. It expects calendar-proxy's 401
+response without a token. It cannot see which leg broke — check
 `wg show` and the vps DNAT rules when it fires.
 
 ## Debugging
@@ -213,7 +225,7 @@ nix shell nixpkgs#tcpdump nixpkgs#conntrack-tools -c \
 | packet stops at | check | usual cause |
 |---|---|---|
 | never arrives on vps eth0 | DNS on the client: from LAN/tailnet, `*.internal.*` resolves to `10.0.1.6`, not the edge — force the public path with `curl --resolve <host>:443:87.106.25.93` | testing the wrong path |
-| on vps eth0, not on wg0 | `sudo iptables -t nat -S PREROUTING \| grep DNAT` (rule present?) and `-t nat -L PREROUTING -nv` (counter moving?); `conntrack -L -p tcp --dport <port>` | DNAT rule missing (stage 3 not deployed) or `-d` anchor mismatch |
+| on vps eth0, not on wg0 | `systemctl status edge-forwarding`; `sudo iptables -t nat -S POLPETTA-EDGE` (rule present?) and `-t nat -L POLPETTA-EDGE -nv` (counter moving?); `conntrack -L -p tcp --dport <port>` | forwarding unit failed, DNAT rule missing (stage 3 not deployed), or PREROUTING jump/`-d` anchor mismatch |
 | leaves vps wg0, absent on serverone wg0 | `wg show wg0` on **both**: `latest handshake` < ~3 min, `transfer` increasing; `ping 10.100.0.x` across | tunnel down: sops key missing, `wireguard-wg0` failed, vps `:51820/udp` firewall, or serverone endpoint stale (only while keepalives are also broken) |
 | on serverone wg0, not on nerdctl0 | `sudo iptables -L FORWARD -nv` (wg0→nerdctl0 accept, counter moving); `ip route get 10.0.1.<id>` | FORWARD rules missing |
 | reaches container, no reply on nerdctl0 | container listening (`nerdctl exec <svc> ss -tln`), app log | the service itself is down — not an edge problem |
@@ -231,9 +243,9 @@ nix shell nixpkgs#tcpdump nixpkgs#conntrack-tools -c \
   each host. A failed sops unit means the stage-0 key is missing
   (`wireguard-wg0` then fails on the absent key file). A failed **firewall**
   unit is urgent: NixOS INPUT rules are in that unit, so the vps sits with
-  an unfiltered INPUT until it runs. The `-C … || -A` rule pattern means a
-  leftover variant from an older deploy only duplicates a rule (harmless),
-  it cannot fail the unit.
+  an unfiltered INPUT until it runs. On the VPS, also check
+  `systemctl status edge-forwarding`: it installs DNAT and MSS rules
+  independently, and cleans them up if setup fails.
 - **Web (443)** — the demuxer is userspace, so tcpdump shows a *vps-local*
   connection: `nc -vz 10.0.1.6 4443` from the vps must connect through the
   tunnel, `journalctl -u nginx` shows relay errors, and
@@ -266,7 +278,7 @@ nix shell nixpkgs#tcpdump nixpkgs#conntrack-tools -c \
 `probe_success{service="public-edge"} == 0` says the chain
 serverone → vps demuxer → tunnel → nginx → calendar-proxy broke somewhere —
 not which leg. Check cheapest first: `wg show` on both hosts → vps `nginx`
-running → DNAT counters (`iptables -t nat -L PREROUTING -nv`) → container
+running → forwarding unit and DNAT counters (`iptables -t nat -L POLPETTA-EDGE -nv`) → container
 up. The LAN probes staying green while it fires is the intended signal:
 the services are alive, the edge in front of them is not.
 

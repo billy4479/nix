@@ -61,6 +61,8 @@ assert lib.hasSuffix (
 ) serverone.systemd.services.openchamber-nix-gc.serviceConfig.ExecStart;
 assert lib.elem "polpetta-raw-firewall.service" serverone.systemd.services.containerd.requires;
 assert serverone.systemd.services.polpetta-raw-firewall.reloadIfChanged;
+assert vps.systemd.services.edge-forwarding.restartIfChanged;
+assert !vps.systemd.services.edge-forwarding.reloadIfChanged;
 assert lib.all (exporter: exporter.listenAddress == "127.0.0.1") localExporters;
 assert serverone.services.prometheus.alertmanager.listenAddress == "127.0.0.1";
 pkgs.runCommand "server-security-policy-test" { } # sh

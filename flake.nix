@@ -221,6 +221,9 @@
         monitoring = import ./tests/monitoring.nix {
           pkgs = pkgsForFlake;
           ruleFiles = hosts.nixosConfigurations.serverone.config.services.prometheus.ruleFiles;
+          scrapeConfigs = hosts.nixosConfigurations.serverone.config.services.prometheus.scrapeConfigs;
+          blackboxConfig =
+            hosts.nixosConfigurations.serverone.config.services.prometheus.exporters.blackbox.configFile;
         };
         derp-certificates = pkgsForFlake.callPackage ./services/derp-certificates/test.nix { };
         private-store-threshold = pkgsForFlake.callPackage ./containers/private-store-wipe/test.nix { };
@@ -229,6 +232,7 @@
           ruleset = hosts.nixosConfigurations.serverone.config.polpetta.generated.rawFirewallFile;
           rawUnit = hosts.nixosConfigurations.serverone.config.systemd.services.polpetta-raw-firewall;
         };
+        edge-forwarding = import ./tests/edge-forwarding.nix { pkgs = pkgsForFlake; };
       };
 
       packages.${system} = rec {

@@ -25,6 +25,13 @@ let
       host = "polpetta.online";
       path = "/";
     }
+    {
+      # Hairpin through the demuxer and tunnel, even with split DNS enabled.
+      name = "public-edge";
+      host = "calendar-proxy.polpetta.online";
+      path = "/";
+      validStatusCodes = [ 401 ];
+    }
   ];
   edgeModules = lib.listToAttrs (
     map (target: {
@@ -35,7 +42,7 @@ let
         http = {
           preferred_ip_protocol = "ip4";
           follow_redirects = false;
-          valid_status_codes = [ 200 ];
+          valid_status_codes = target.validStatusCodes or [ 200 ];
           headers.Host = target.host;
           tls_config.server_name = target.host;
         };
@@ -103,19 +110,7 @@ let
     };
   };
 
-  # LAN probes verify the services themselves; this one goes out to the
-  # public edge and hairpins back (serverone → vps SNI demuxer → wireguard
-  # tunnel → nginx → calendar-proxy), so it fails when the tunnel, the vps
-  # DNAT or the demuxer break — which the LAN probes cannot see.
-  httpProbeTargets = config.polpetta.generated.probeHttpTargets ++ [
-    {
-      name = "public-edge";
-      # Answers 401 without a token, which http_unauth accepts; the
-      # wildcard certificate covers the public name.
-      url = "https://calendar-proxy.polpetta.online";
-      module = "http_unauth";
-    }
-  ];
+  httpProbeTargets = config.polpetta.generated.probeHttpTargets;
 
   # Probes with an overridden timeout cannot share the fast job: a scrape
   # is cut off at its scrape_timeout, and prometheus refuses a scrape

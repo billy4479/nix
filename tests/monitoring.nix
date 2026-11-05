@@ -1,9 +1,41 @@
-{ pkgs, ruleFiles }:
+{
+  pkgs,
+  ruleFiles,
+  scrapeConfigs,
+  blackboxConfig,
+}:
 let
+  scrapes = pkgs.writeText "monitoring-scrapes.json" (builtins.toJSON scrapeConfigs);
   tests = (pkgs.formats.yaml { }).generate "monitoring-rule-tests.yml" {
     rule_files = map toString ruleFiles;
     evaluation_interval = "1m";
     tests = [
+      {
+        interval = "1m";
+        input_series = [
+          {
+            series = ''probe_success{job="blackbox-edge",service="public-edge",instance="https://87.106.25.93/"}'';
+            values = "0x5";
+          }
+        ];
+        alert_rule_test = [
+          {
+            eval_time = "4m";
+            alertname = "PublicEndpointDown";
+            exp_alerts = [
+              {
+                exp_labels = {
+                  job = "blackbox-edge";
+                  service = "public-edge";
+                  instance = "https://87.106.25.93/";
+                  severity = "critical";
+                };
+                exp_annotations.summary = "Public endpoint public-edge is unreachable";
+              }
+            ];
+          }
+        ];
+      }
       {
         interval = "1m";
         input_series = [
@@ -162,11 +194,15 @@ let
 in
 pkgs.runCommand "monitoring-alert-regression-test"
   {
-    nativeBuildInputs = [ pkgs.prometheus.cli ];
+    nativeBuildInputs = [
+      pkgs.prometheus.cli
+      (pkgs.python3.withPackages (ps: [ ps.pyyaml ]))
+    ];
   }
   # sh
   ''
     promtool check rules ${pkgs.lib.escapeShellArgs (map toString ruleFiles)}
     promtool test rules ${tests}
+    python ${./edge-probes.py} ${scrapes} ${blackboxConfig}
     touch "$out"
   ''

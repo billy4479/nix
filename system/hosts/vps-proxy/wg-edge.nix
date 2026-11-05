@@ -6,6 +6,7 @@
 {
   config,
   lib,
+  pkgs,
   flakeInputs,
   ...
 }:
@@ -49,17 +50,13 @@ let
     webForward
     http3Forward
   ];
-
-  dnatRules = lib.concatMapStrings (f: ''
-    iptables -w -t nat -C PREROUTING -d ${publicIp} -p ${f.proto} --dport ${toString f.port} -j DNAT --to-destination ${f.target}:${toString f.targetPort} 2>/dev/null ||
-      iptables -w -t nat -A PREROUTING -d ${publicIp} -p ${f.proto} --dport ${toString f.port} -j DNAT --to-destination ${f.target}:${toString f.targetPort}
-  '') edgeForwards;
-
-  unDnatRules = lib.concatMapStrings (f: ''
-    iptables -w -t nat -D PREROUTING -d ${publicIp} -p ${f.proto} --dport ${toString f.port} -j DNAT --to-destination ${f.target}:${toString f.targetPort} 2>/dev/null || true
-  '') edgeForwards;
 in
 {
+  systemd.services.edge-forwarding = import ./edge-forwarding.nix {
+    inherit lib pkgs publicIp;
+    forwards = edgeForwards;
+  };
+
   sops.secrets.wireguard-key = {
     # The unit reads the key once at start; without a restart a rotated key
     # would leave the interface authenticated with the stale key and the
@@ -86,31 +83,6 @@ in
       3478
       51820
     ];
-
-    extraCommands = # sh
-      ''
-        # Edge forwards: rewrite destinations to serverone's containers and
-        # let routing put the packets on the tunnel. No SNAT — the source
-        # address is preserved, services see real client IPs, and conntrack
-        # reverses the translation when the replies come back.
-        ${dnatRules}
-
-        # The tunnel path MTU is 1420 (wireguard encapsulation overhead), while
-        # TCP peers negotiate MSS against the 1500-byte WAN. Without clamping,
-        # bulk transfers stall on full-size packets. Outbound clamps to the
-        # interface PMTU; inbound (tunnel -> WAN) needs the explicit value, since
-        # the PMTU of the output route is the unconstrained 1500.
-        iptables -w -t mangle -C FORWARD -o wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null ||
-          iptables -w -t mangle -A FORWARD -o wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-        iptables -w -t mangle -C FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1360 2>/dev/null ||
-          iptables -w -t mangle -A FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1360
-      '';
-    extraStopCommands = # sh
-      ''
-        ${unDnatRules}
-        iptables -w -t mangle -D FORWARD -o wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu 2>/dev/null || true
-        iptables -w -t mangle -D FORWARD -i wg0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1360 2>/dev/null || true
-      '';
   };
 
   networking.wireguard.interfaces.wg0 = {
