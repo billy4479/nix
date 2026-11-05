@@ -52,8 +52,8 @@ let
           type = lib.types.nullOr lib.types.str;
           default = null;
           description = ''
-            Timeout for this probe, overriding the 30s default of the HTTP
-            probe modules (http probes only). blackbox_exporter only reads
+            Timeout for this probe, overriding the 30s default probe
+            timeout (http probes only). blackbox_exporter only reads
             the timeout from the module config, so a probe with a timeout
             gets a generated http_custom_<name> module and is scraped from
             the slow blackbox job, whose scrape budget allows the longer

@@ -31,7 +31,7 @@ let
       name = target.name;
       value = {
         prober = "http";
-        timeout = "5s";
+        timeout = "30s";
         http = {
           preferred_ip_protocol = "ip4";
           follow_redirects = false;
@@ -47,12 +47,14 @@ let
   # https module pinning the grafana internal vhost (used to watch the
   # wildcard certificate), an http module for services whose only unauth
   # answers are 401/404 (which still prove the HTTP server is alive) and a
-  # plain tcp module for non-http services. The HTTP modules allow 30s per
+  # plain tcp module for non-http services. All modules allow 30s per
   # probe: some health endpoints are legitimately slow (e.g. they drive a
   # page load through a headless browser), and a tight budget turns a
-  # healthy but slow app into flapping ContainerDown alerts. The scrape
-  # jobs carry a matching 35s scrape_timeout on a 1m interval; tcp stays
-  # at 5s since a connect answers in milliseconds or fails immediately.
+  # healthy but slow app into flapping ContainerDown alerts. A probe only
+  # burns the budget when its target actually hangs, so the uniform 30s
+  # costs nothing on healthy targets. The scrape jobs carry a matching
+  # 35s scrape_timeout on a 1m interval; a service needing more than 30s
+  # sets probe.timeout and lands in the slow job below.
   staticModules = {
     http_2xx = {
       prober = "http";
@@ -97,7 +99,7 @@ let
     };
     tcp_connect = {
       prober = "tcp";
-      timeout = "5s";
+      timeout = "30s";
     };
   };
 
@@ -488,6 +490,10 @@ in
       {
         job_name = "blackbox-edge";
         metrics_path = "/probe";
+        # Probe modules allow 30s; the default 10s scrape timeout would
+        # cut a slow probe short before it can report probe_success = 0.
+        scrape_interval = "1m";
+        scrape_timeout = "35s";
         static_configs = map (target: {
           targets = [ "https://87.106.25.93${target.path}" ];
           labels = {
@@ -569,6 +575,9 @@ in
       {
         job_name = "blackbox-tcp";
         metrics_path = "/probe";
+        # tcp_connect allows 30s like every probe module.
+        scrape_interval = "1m";
+        scrape_timeout = "35s";
         params = {
           module = [ "tcp_connect" ];
         };
