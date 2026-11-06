@@ -1,6 +1,7 @@
 { pkgs }:
 let
   extensions = import ./extensions { inherit pkgs; };
+  direnv = import ./direnv.nix { inherit pkgs; };
 in
 pkgs.runCommand "agent-container-tests"
   {
@@ -14,6 +15,7 @@ pkgs.runCommand "agent-container-tests"
     TEST_T3 = "${pkgs.t3code}/bin/t3";
     TEST_OPENCODE = "${pkgs.opencode}/bin/opencode";
     TEST_DIRENV = "${pkgs.direnv}/bin/direnv";
+    TEST_DIRENV_CONFIG = direnv.configuration;
     TEST_BASH = "${pkgs.bash}/bin/bash";
     TEST_EXTENSIONS = extensions;
     TEST_SLEEP = "${pkgs.coreutils}/bin/sleep";
@@ -28,6 +30,7 @@ pkgs.runCommand "agent-container-tests"
     chmod -R u+w agent-config pi
     python3 agent-config/test_migrate.py
     python3 agent-config/test_opencode.py
+    python3 pi/test_direnv_config.py
     node --test pi/test.mjs
     python3 pi/test_t3.py
     touch "$out"
