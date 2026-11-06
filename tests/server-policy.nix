@@ -66,7 +66,9 @@ assert lib.all
     lib.any (
       volume:
       volume.hostPath == "/mnt/SSD/agent-config"
-      && volume.containerPath == "/agent-config"
+      &&
+        volume.containerPath
+        == (if name == "syncthing" then "/var/syncthing/Sync/agent-config" else "/agent-config")
       && !volume.readOnly
       && volume.customPermissionScript == ":"
     ) serverone.nerdctl-containers.${name}.volumes
@@ -75,7 +77,9 @@ assert lib.all
   [
     "openchamber"
     "t3code"
+    "syncthing"
   ];
+assert serverone.nerdctl-containers.syncthing.uid == 5021;
 assert serverone.systemd.timers.openchamber-nix-gc.timerConfig.OnCalendar == "daily";
 assert lib.hasSuffix (
   " exec openchamber /bin/nh clean user --elevation-strategy none --keep 5 --keep-since 7d --keep-one --max 107374182400"

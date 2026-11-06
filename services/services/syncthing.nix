@@ -54,6 +54,12 @@
           hostPath = "/mnt/SSD/apps/openchamber/workspaces/nix";
           containerPath = "/var/syncthing/Sync/nix";
         }
+        {
+          hostPath = "/mnt/SSD/agent-config";
+          containerPath = "/var/syncthing/Sync/agent-config";
+          # Shared with both harnesses; retain the migration's ownership/ACLs.
+          customPermissionScript = ":";
+        }
       ];
 
       id = 2;

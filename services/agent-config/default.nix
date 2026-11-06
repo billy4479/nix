@@ -23,6 +23,7 @@ in
       before = [
         "nerdctl-openchamber.service"
         "nerdctl-t3code.service"
+        "nerdctl-syncthing.service"
       ];
       unitConfig.RequiresMountsFor = [
         home
@@ -42,6 +43,10 @@ in
       after = [ "agent-config-migration.service" ];
     };
     systemd.services.nerdctl-t3code = {
+      requires = [ "agent-config-migration.service" ];
+      after = [ "agent-config-migration.service" ];
+    };
+    systemd.services.nerdctl-syncthing = {
       requires = [ "agent-config-migration.service" ];
       after = [ "agent-config-migration.service" ];
     };

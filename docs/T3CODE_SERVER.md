@@ -60,6 +60,8 @@ the chosen Pi provider's actual callback requirements before adding any mapping.
   containers. Existing Syncthing folders do not change.
 - `/mnt/SSD/agent-config` mounts read-write at `/agent-config` in both
   containers. It contains only `AGENTS.md`, `skills/` and future repo metadata.
+  Syncthing mounts the same directory at `/var/syncthing/Sync/agent-config`,
+  with the same UID and without recursively changing its permissions.
 
 The image root is read-only, capabilities are dropped and no-new-privileges
 is enabled. Limits are 8 GiB RAM, four CPUs and 2048 PIDs. Nix sandboxing stays
@@ -77,7 +79,8 @@ to upgrade.
 
 ## Shared instruction/skill migration
 
-`agent-config-migration.service` runs as UID 5021 before either container.
+`agent-config-migration.service` runs as UID 5021 before either agent container
+and before Syncthing.
 It seeds the host directory from the **live** OpenChamber global AGENTS.md
 and `.config/opencode/skills`, `.agents/skills` and optional `.claude/skills`.
 Symlink targets, including private-store resources, become portable copies.
@@ -105,8 +108,10 @@ Directory mounts keep atomic editor/future Syncthing replacements visible.
 Send `/t3-reload` in an idle Pi thread to refresh resources. OpenCode retains
 its own file watching and `/reload`; a Pi reload does not reload OpenCode.
 
-This prepares a standalone repo and Syncthing folder, but neither is configured
-here. Never sync `.pi`, `.t3`, credentials, sessions or migration backups with
+The directory is available to Syncthing as `~/Sync/agent-config`. Add/share
+that folder through Syncthing's UI when ready; the mount does not configure
+synchronization or initialize a Git repository. Never sync `.pi`, `.t3`,
+credentials, sessions or migration backups with
 agent-config. Coordinate simultaneous edits and resolve sync conflicts before
 loading changed skills.
 

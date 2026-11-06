@@ -114,6 +114,9 @@ are also mounted over Syncthing's existing paths:
 
 - `/mnt/SSD/apps/openchamber/workspaces/code` at `/var/syncthing/Sync/code`.
 - `/mnt/SSD/apps/openchamber/workspaces/nix` at `/var/syncthing/Sync/nix`.
+- `/mnt/SSD/agent-config` at `/var/syncthing/Sync/agent-config`, preserving
+  the shared directory's ownership and ACLs. Adding/sharing this folder in
+  Syncthing remains a separate UI action.
 
 Syncthing still sees `~/Sync/code` and `~/Sync/nix`, so its folder configuration
 does not change. The nested mounts only change the physical storage backing
