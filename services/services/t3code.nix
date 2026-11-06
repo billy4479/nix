@@ -47,6 +47,7 @@ let
       ++ [
         direnv
         development.chromium
+        development.agentBrowser
         development.nvimFmt
         (pkgs.writeShellScriptBin "hostname" # sh
           ''
@@ -225,6 +226,11 @@ in
               chown 5021:5000 "${baseDir}/tmp"
               chmod 0700 "${baseDir}/tmp"
             '';
+        }
+        {
+          hostPath = development.agentBrowserSkill;
+          containerPath = "${home}/.agents/skills/agent-browser";
+          readOnly = true;
         }
         {
           hostPath = "${sshConfig}";

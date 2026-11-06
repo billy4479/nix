@@ -15,6 +15,12 @@ let
         }
         exec ${lib.getExe pkgs.chromium} --no-sandbox --disable-dev-shm-usage "$@"
       '';
+  agentBrowser =
+    pkgs.writeShellScriptBin "agent-browser" # sh
+      ''
+        export AGENT_BROWSER_EXECUTABLE_PATH=${chromium}/bin/chromium
+        exec ${lib.getExe pkgs.agent-browser} "$@"
+      '';
   # Bundle the same headless formatter used on the desktops, but leave language
   # formatter executables to the project's devShell.
   hm = flakeInputs.home-manager.lib.homeManagerConfiguration {
@@ -61,5 +67,6 @@ let
   };
 in
 {
-  inherit chromium nvimFmt;
+  inherit chromium agentBrowser nvimFmt;
+  agentBrowserSkill = "${pkgs.agent-browser}/skills/agent-browser";
 }

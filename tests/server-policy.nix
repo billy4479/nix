@@ -59,6 +59,12 @@ assert serverone.nerdctl-containers.t3code.uid == 5021;
 assert serverone.nerdctl-containers.t3code.id != serverone.nerdctl-containers.outline.id;
 assert serverone.nerdctl-containers.t3code.privateNixStore.wipeAboveGib == null;
 assert serverone.nerdctl-containers.t3code.ports == [ ];
+assert lib.any (
+  volume:
+  volume.hostPath == "${pkgs.agent-browser}/skills/agent-browser"
+  && volume.containerPath == "/home/t3/.agents/skills/agent-browser"
+  && volume.readOnly
+) serverone.nerdctl-containers.t3code.volumes;
 assert serverone.systemd.timers.t3code-nix-gc.timerConfig.OnCalendar == "daily";
 assert lib.all
   (

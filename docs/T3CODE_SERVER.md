@@ -19,7 +19,8 @@ Build validation does not deploy anything:
 ```sh
 nix build .#nixosConfigurations.serverone.config.system.build.toplevel
 nix build .#checks.x86_64-linux.agent-containers \
-  .#checks.x86_64-linux.server-policy .#checks.x86_64-linux.shell-syntax
+  .#checks.x86_64-linux.server-policy .#checks.x86_64-linux.shell-syntax \
+  .#checks.x86_64-linux.agent-browser
 ```
 
 After deployment, authenticate **inside t3code** as UID 5021, with
@@ -71,7 +72,17 @@ containers through shared files.
 
 Chromium with fonts/container-compatible flags, nvim-fmt, Nix, nix-direnv,
 Git/GitHub CLI, SSH and the existing agent utilities are available. Language
-formatters still come from project devShells. The bot SSH secret is read-only
+formatters still come from project devShells. `agent-browser` is installed as a
+CLI only, with its version-matched discovery skill mounted read-only at
+`~/.agents/skills/agent-browser`. Its wrapper selects the same Nix Chromium,
+including fonts, `--no-sandbox` and `--disable-dev-shm-usage`, as OpenChamber.
+No MCP server, npm install, browser download or `install --with-deps` is needed.
+Run `agent-browser skills get core` for usage, then use `agent-browser open`,
+`snapshot` and `close`. Browser sessions/state remain in the writable home/tmp;
+no dashboard or browser port is exposed. Recreate the container after deployment
+and reload existing Pi sessions to discover the skill.
+
+The bot SSH secret is read-only
 and rotation restarts both containers. The daily `t3code-nix-gc` timer uses
 OpenChamber's non-destructive `nh clean user` policy, preserving live direnv
 roots. Runtime/extensions are private-store seed roots. Do not wipe the store
@@ -175,7 +186,8 @@ not run an interactive prompt hook: use `direnv exec /path/to/project bash -c
 Copied skills/instructions are intentionally unchanged:
 
 - OpenChamber browser, rendering, notifications, knowledge, schedules and
-  session tools do not become Pi tools. Chromium alone is not a browser tool.
+  session tools do not become Pi tools. Use the `agent-browser` CLI/skill for
+  shell-driven browser automation instead.
 - `define-plan` references subagents and questions. The requested extension
   supplies `ask_user_question`, but no Pi subagent extension is added.
 - OpenCode/OpenChamber built-in skills and injected harness instructions are
