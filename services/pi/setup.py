@@ -20,7 +20,35 @@ def read_json(path):
     return json.loads(path.read_text()) if path.exists() else {}
 
 
+def share_legacy_skills(home, shared):
+    """Retain old trial copies, but resolve overlapping skills to shared files.
+
+    Pi auto-discovers ~/.agents/skills even when explicit skills are configured.
+    It silently deduplicates aliases of the same real file, not separate copies.
+    Leave unique user skills alone and never overwrite a previous backup.
+    """
+    legacy = home / ".agents/skills"
+    if not legacy.is_dir():
+        return
+    for skill in sorted(legacy.iterdir()):
+        target = shared / "skills" / skill.name
+        if not (skill / "SKILL.md").is_file() or not (target / "SKILL.md").is_file():
+            continue
+        if skill.resolve() == target.resolve():
+            continue
+        backup = home / ".local/state/pi/legacy-skills" / skill.name
+        backup.parent.mkdir(parents=True, exist_ok=True)
+        number = 0
+        original = backup
+        while backup.exists() or backup.is_symlink():
+            number += 1
+            backup = original.with_name(f"{original.name}-{number}")
+        skill.rename(backup)
+        skill.symlink_to(target)
+
+
 def setup(home, extensions, shared=Path("/agent-config")):
+    share_legacy_skills(home, shared)
     agent = home / ".pi/agent"
     agent.mkdir(parents=True, exist_ok=True)
     instructions = agent / "AGENTS.md"

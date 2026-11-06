@@ -112,6 +112,13 @@ loading changed skills.
 
 ## Declarative extensions and direnv
 
+If the T3 home retains `.agents/skills` from an older trial, startup moves
+overlapping skill copies to `.local/state/pi/legacy-skills/` and replaces
+them with aliases to the shared skills. Pi deduplicates identical real paths,
+so its automatic discovery no longer conflicts with the explicit shared
+resource list. Original contents and unique user skills are preserved.
+After deploying this fix, reopen existing Pi threads or use `/t3-reload`.
+
 `services/pi/extensions/default.nix` pins reviewed sources/hashes. Local store
 paths load without npm/Git downloads at startup. `setup.py` reconciles only
 Nix-owned resource entries; custom extensions, model settings and credentials

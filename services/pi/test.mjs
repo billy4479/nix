@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { once } from "node:events";
 import {
   mkdtemp,
@@ -185,6 +186,23 @@ test(
       skill,
       "---\nname: example\ndescription: First skill description\n---\nFirst body\n",
     );
+    const legacy = path.join(root, ".agents/skills/example");
+    await mkdir(legacy, { recursive: true });
+    await writeFile(
+      path.join(legacy, "SKILL.md"),
+      "---\nname: example\ndescription: Stale trial copy\n---\nOld body\n",
+    );
+    const migration = spawnSync(
+      "python3",
+      [
+        "-B",
+        "-c",
+        "from pathlib import Path; from setup import share_legacy_skills; import sys; share_legacy_skills(Path(sys.argv[1]), Path(sys.argv[1]))",
+        root,
+      ],
+      { cwd: path.dirname(fileURLToPath(import.meta.url)), encoding: "utf8" },
+    );
+    assert.equal(migration.status, 0, migration.stderr);
     await writeFile(path.join(profile, "AGENTS.md"), "FIRST_CONTEXT\n");
     const extensionRoot = process.env.TEST_EXTENSIONS;
     // A command probes context without making a model request.
@@ -192,9 +210,14 @@ test(
     await writeFile(
       probe,
       `import {registerAskUserQuestionTool} from ${JSON.stringify(path.join(extensionRoot, "rpiv-ask-user-question/ask-user-question.ts"))};
-  import {createLocalBashOperations} from "@earendil-works/pi-coding-agent";
+  import {createLocalBashOperations, loadSkills} from "@earendil-works/pi-coding-agent";
   import {withDirenv} from ${JSON.stringify(path.join(extensionRoot, "workspace/operations.ts"))};
   export default function(pi) {
+    pi.registerCommand("skill-diagnostics", {handler: (_args, ctx) => {
+      const result = loadSkills({cwd: ctx.cwd, agentDir: process.env.PI_CODING_AGENT_DIR,
+        skillPaths: [ctx.cwd + "/.agents/skills", ctx.cwd + "/skills"], includeDefaults: true});
+      ctx.ui.notify("SKILL_DIAGNOSTICS:" + JSON.stringify(result.diagnostics), "info");
+    }});
     pi.registerCommand("native-probe", {handler: async (args, ctx) => {
       const operations = withDirenv(createLocalBashOperations({shellPath: process.env.TEST_BASH}), {
         direnv: process.env.TEST_DIRENV, bash: process.env.TEST_BASH,
@@ -314,6 +337,11 @@ test(
         child.stdin.write(JSON.stringify({ id, type, ...fields }) + "\n");
       });
     const commands = await request("get_commands");
+    await request("prompt", { message: "/skill-diagnostics" });
+    assert.ok(
+      notices.includes("SKILL_DIAGNOSTICS:[]"),
+      JSON.stringify(notices),
+    );
     assert.ok(
       commands.commands.some((command) => command.name === "t3-reload"),
       stderr,

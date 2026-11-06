@@ -111,6 +111,39 @@ class MigrationTest(unittest.TestCase):
 
 
 class SetupTest(unittest.TestCase):
+    def test_legacy_duplicates_become_aliases_without_losing_edits_or_unique_skills(
+        self,
+    ):
+        with tempfile.TemporaryDirectory() as temporary:
+            home = Path(temporary) / "home"
+            shared = Path(temporary) / "shared"
+            old = home / ".agents/skills/example"
+            current = shared / "skills/example"
+            unique = home / ".agents/skills/unique"
+            for directory in [old, current, unique]:
+                directory.mkdir(parents=True)
+            (old / "SKILL.md").write_text("Old trial copy with edits")
+            (current / "SKILL.md").write_text("Current shared instructions")
+            (unique / "SKILL.md").write_text("Unique user skill")
+            (shared / "AGENTS.md").write_text("Shared instructions")
+            setup.setup(home, Path("/extensions"), shared)
+            backup = home / ".local/state/pi/legacy-skills/example"
+            self.assertEqual(
+                (backup / "SKILL.md").read_text(), "Old trial copy with edits"
+            )
+            self.assertTrue(old.is_symlink())
+            self.assertEqual(old.resolve(), current.resolve())
+            self.assertEqual((unique / "SKILL.md").read_text(), "Unique user skill")
+            self.assertFalse(unique.is_symlink())
+            setup.setup(home, Path("/extensions"), shared)
+            self.assertEqual(list(backup.parent.iterdir()), [backup])
+            replacement = current / "new.md"
+            replacement.write_text("Updated shared instructions")
+            replacement.replace(current / "SKILL.md")
+            self.assertEqual(
+                (old / "SKILL.md").read_text(), "Updated shared instructions"
+            )
+
     def test_reconcile_owned_paths_and_preserve_preferences_and_auth(self):
         with tempfile.TemporaryDirectory() as temporary:
             home = Path(temporary)
