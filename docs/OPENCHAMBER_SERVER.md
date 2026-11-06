@@ -185,7 +185,7 @@ It fixes the containerd socket, namespace, UID, and GID, and places `--` before
 the requested command. It cannot create, remove, reconfigure, or run a
 privileged container. The container module drops capabilities by default, and
 only the low-port bind capability is accepted for an exposed container. The
-wrapper does not allocate a TTY or attach standard input.
+wrapper forwards standard input but does not allocate a TTY.
 
 The sudo permission belongs to `billy`, so every SSH key authorized for that
 account can use the wrapper. Sudo logs the invocation, including its arguments.
@@ -215,5 +215,25 @@ The `openchamber-web` package is overridden to use the same customized OpenCode
 package as the Home Manager installations. The package, configuration, and
 skills are assembled by
 `../user/modules/applications/editor/opencode/artifacts.nix`, however the
-configuration, skills and AGENTS.md are kept non-declarative. What is built in
-`artifacts.nix` is just a reference.
+configuration remains non-declarative. What is built in `artifacts.nix` is
+just a reference.
+
+Global instructions and skills now live on the host at
+`/mnt/SSD/agent-config/{AGENTS.md,skills/}`, mounted read-write at
+`/agent-config` in both OpenChamber and the parallel T3 Code/Pi container.
+OpenCode's global AGENTS.md and skill discovery path link to this shared
+content. Edits from the host or either container affect both harnesses;
+credentials, settings, plugins and sessions remain separate.
+
+Before either container starts, `agent-config-migration.service` seeds exact
+copies of the live instructions and skills, verifies them, and retains the
+originals outside discovery in the home directory's
+`.local/state/agent-config-migration/original/`. Later restarts never overwrite
+shared edits. Host ownership/default admin ACLs allow normal editing without
+recursive permission repairs on the future repository. Git/Syncthing setup
+for this directory is deferred.
+
+OpenCode retains file watching and `/reload`. Pi's `/t3-reload` refreshes only
+Pi. See [T3 Code Server](T3CODE_SERVER.md) for migration, compatibility gaps,
+trust scopes and rollback. OpenChamber remains available as the fallback;
+returning to it does not roll back shared instruction/skill edits.

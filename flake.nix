@@ -227,6 +227,7 @@
         };
         derp-certificates = pkgsForFlake.callPackage ./services/derp-certificates/test.nix { };
         private-store-threshold = pkgsForFlake.callPackage ./containers/private-store-wipe/test.nix { };
+        agent-containers = import ./services/pi/test.nix { pkgs = pkgsForFlake; };
         raw-firewall = import ./tests/raw-firewall.nix {
           pkgs = pkgsForFlake;
           ruleset = hosts.nixosConfigurations.serverone.config.polpetta.generated.rawFirewallFile;

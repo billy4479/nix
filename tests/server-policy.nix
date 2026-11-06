@@ -55,6 +55,27 @@ assert lib.all (
   key: lib.hasPrefix "restrict,command=" key
 ) vps.users.users.derp-cert-sync.openssh.authorizedKeys.keys;
 assert serverone.nerdctl-containers.openchamber.privateNixStore.wipeAboveGib == null;
+assert serverone.nerdctl-containers.t3code.uid == 5021;
+assert serverone.nerdctl-containers.t3code.id != serverone.nerdctl-containers.outline.id;
+assert serverone.nerdctl-containers.t3code.privateNixStore.wipeAboveGib == null;
+assert serverone.nerdctl-containers.t3code.ports == [ ];
+assert serverone.systemd.timers.t3code-nix-gc.timerConfig.OnCalendar == "daily";
+assert lib.all
+  (
+    name:
+    lib.any (
+      volume:
+      volume.hostPath == "/mnt/SSD/agent-config"
+      && volume.containerPath == "/agent-config"
+      && !volume.readOnly
+      && volume.customPermissionScript == ":"
+    ) serverone.nerdctl-containers.${name}.volumes
+    && lib.elem "agent-config-migration.service" serverone.systemd.services."nerdctl-${name}".requires
+  )
+  [
+    "openchamber"
+    "t3code"
+  ];
 assert serverone.systemd.timers.openchamber-nix-gc.timerConfig.OnCalendar == "daily";
 assert lib.hasSuffix (
   " exec openchamber /bin/nh clean user --elevation-strategy none --keep 5 --keep-since 7d --keep-one --max 107374182400"

@@ -7,6 +7,7 @@
 {
   imports = [
     ../module.nix
+    ../agent-config
 
     ./bind9
     ./syncthing.nix
@@ -28,6 +29,7 @@
     ./opencloud.nix
     ./searxng
     ./openchamber.nix
+    ./t3code.nix
 
     ./game-server-runner
     ./lunamultiplayer.nix

@@ -148,6 +148,11 @@ in
     container = {
       inherit id uid;
       workingDirectory = "/workspace";
+      extraPreStart = # sh
+        ''
+          test -f /mnt/SSD/agent-config/AGENTS.md
+          test -d /mnt/SSD/agent-config/skills
+        '';
 
       imageToBuild = pkgs.nix-snapshotter.buildImage {
         inherit name;
@@ -275,6 +280,12 @@ in
         {
           hostPath = workspaceDir;
           containerPath = "/workspace";
+        }
+        {
+          hostPath = "/mnt/SSD/agent-config";
+          containerPath = "/agent-config";
+          # Managed separately, never recursively chown a future synced repo.
+          customPermissionScript = ":";
         }
         {
           hostPath = "${baseDir}/tmp";
