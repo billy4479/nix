@@ -14,7 +14,7 @@ let
         interval = "1m";
         input_series = [
           {
-            series = ''probe_success{job="blackbox-edge",service="public-edge",instance="https://87.106.25.93/"}'';
+            series = ''probe_success{job="blackbox-edge",service="public-edge",instance="https://87.106.25.93/health"}'';
             values = "0x5";
           }
         ];
@@ -27,7 +27,7 @@ let
                 exp_labels = {
                   job = "blackbox-edge";
                   service = "public-edge";
-                  instance = "https://87.106.25.93/";
+                  instance = "https://87.106.25.93/health";
                   severity = "critical";
                 };
                 exp_annotations.summary = "Public endpoint public-edge is unreachable";

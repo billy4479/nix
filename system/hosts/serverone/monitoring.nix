@@ -11,7 +11,8 @@ let
   # Pin both Host and SNI so TLS and routing are checked end to end.
   edgeTargets = [
     {
-      name = "public-headscale";
+      # Hairpin through the demuxer and tunnel, even with split DNS enabled.
+      name = "public-edge";
       host = "headscale.polpetta.online";
       path = "/health";
     }
@@ -24,13 +25,6 @@ let
       name = "public-homepage";
       host = "polpetta.online";
       path = "/";
-    }
-    {
-      # Hairpin through the demuxer and tunnel, even with split DNS enabled.
-      name = "public-edge";
-      host = "calendar-proxy.polpetta.online";
-      path = "/";
-      validStatusCodes = [ 401 ];
     }
   ];
   edgeModules = lib.listToAttrs (

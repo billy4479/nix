@@ -26,9 +26,10 @@ for name, target in edge_targets.items():
 
 public_edge = edge_targets["public-edge"]
 http = modules[public_edge["labels"]["module"]]["http"]
-assert http["headers"]["Host"] == "calendar-proxy.polpetta.online"
-assert http["valid_status_codes"] == [401]
-assert urlparse(public_edge["targets"][0]).path == "/"
+assert http["headers"]["Host"] == "headscale.polpetta.online"
+assert http["valid_status_codes"] == [200]
+assert urlparse(public_edge["targets"][0]).path == "/health"
+assert "public-headscale" not in edge_targets
 for job in scrapes:
     if job["job_name"] == "blackbox-http":
         assert all(

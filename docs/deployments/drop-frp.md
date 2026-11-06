@@ -138,7 +138,7 @@ Verify:
 
 ```sh
 curl -o /dev/null -w '%{http_code}\n' https://headscale.polpetta.online/health   # 200
-curl -o /dev/null -w '%{http_code}\n' https://calendar-proxy.polpetta.online     # 401
+curl -o /dev/null -w '%{http_code}\n' https://calendar-proxy.polpetta.online     # 404 on /
 curl -o /dev/null -w '%{http_code}\n' https://derp.polpetta.online/derp/probe    # 200 (DERP unchanged)
 curl -o /dev/null -w '%{http_code}\n' http://calendar-proxy.polpetta.online      # 301 → https
 # from an external machine: real client IP in the nginx access log
@@ -194,10 +194,10 @@ Rollback: revert the commit (drop the udp DNAT; h2 continues to work).
 
 Deploy serverone. The `public-edge` blackbox target pins the VPS IP, Host
 header and TLS SNI, so split DNS cannot bypass the edge. It hairpins
-serverone → vps → tunnel → nginx → calendar-proxy, so a dead tunnel or
+serverone → vps → tunnel → nginx → headscale, so a dead tunnel or
 broken demuxer turns `probe_success{job="blackbox-edge",service="public-edge"}`
-off and fires the public endpoint alert. It expects calendar-proxy's 401
-response without a token. It cannot see which leg broke — check
+off and fires the public endpoint alert. It expects HTTP 200 from headscale's
+`/health` endpoint. It cannot see which leg broke: check
 `wg show` and the vps DNAT rules when it fires.
 
 ## Debugging
@@ -276,7 +276,7 @@ nix shell nixpkgs#tcpdump nixpkgs#conntrack-tools -c \
 ### Reading the alert
 
 `probe_success{service="public-edge"} == 0` says the chain
-serverone → vps demuxer → tunnel → nginx → calendar-proxy broke somewhere —
+serverone → vps demuxer → tunnel → nginx → headscale broke somewhere:
 not which leg. Check cheapest first: `wg show` on both hosts → vps `nginx`
 running → forwarding unit and DNAT counters (`iptables -t nat -L POLPETTA-EDGE -nv`) → container
 up. The LAN probes staying green while it fires is the intended signal:
