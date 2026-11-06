@@ -140,6 +140,14 @@ remain writable. Installed extensions are:
   after runtime shutdown or hangs. Reload does not upgrade the Pi executable.
   Pi does not count a standalone RPC bash command as busy, so avoid reloading
   while such a command is running.
+- `pi-free-provider` 0.2.5: adds the Cline Free and OpenCode Zen Free model
+  providers. Bun is installed for its loopback-only Zen relay; no extra
+  container port is published. Sign in through `/clinefree` or `/zenfree`
+  in Pi's terminal UI inside the container, since the extension's custom menus
+  are not supported by T3's RPC UI. Credentials and metadata caches stay in
+  `/home/t3/.pi/agent`, outside agent-config and Syncthing. Models/metadata
+  refresh from upstream after authentication; the extension code itself stays
+  pinned in Nix. Existing model preferences are not changed.
 
 Update pinned sources/dependencies in Nix, check, rebuild and deploy. Recreate
 the container to reconcile changed extension paths, then reload existing Pi

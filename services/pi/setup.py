@@ -71,6 +71,7 @@ def setup(home, extensions, shared=Path("/agent-config")):
                 "workspace",
                 "rpiv-ask-user-question",
                 "t3code-reload",
+                "free-provider",
             ]
         ],
         "skills": [str(shared / "skills")],

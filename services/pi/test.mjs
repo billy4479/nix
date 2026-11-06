@@ -252,6 +252,7 @@ test(
           "workspace",
           "rpiv-ask-user-question",
           "t3code-reload",
+          "free-provider",
         ].map((name) => path.join(extensionRoot, name, "index.ts")),
         skills: [path.join(root, "skills")],
       }),
@@ -337,6 +338,12 @@ test(
         child.stdin.write(JSON.stringify({ id, type, ...fields }) + "\n");
       });
     const commands = await request("get_commands");
+    for (const name of ["clinefree", "zenfree"]) {
+      assert.ok(
+        commands.commands.some((command) => command.name === name),
+        stderr,
+      );
+    }
     await request("prompt", { message: "/skill-diagnostics" });
     assert.ok(
       notices.includes("SKILL_DIAGNOSTICS:[]"),

@@ -41,6 +41,8 @@ let
         tini
         t3code
         pi-coding-agent
+        # pi-free-provider's Zen transport starts a local Bun relay.
+        bun
       ])
       ++ [
         direnv

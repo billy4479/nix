@@ -163,7 +163,11 @@ class SetupTest(unittest.TestCase):
             settings = json.loads((agent / "settings.json").read_text())
             self.assertEqual(settings["defaultModel"], "my-model")
             self.assertEqual(settings["extensions"][0], "/my/custom.ts")
-            self.assertEqual(len(settings["extensions"]), 4)
+            self.assertEqual(len(settings["extensions"]), 5)
+            self.assertIn(
+                "/nix/store/new-extensions/free-provider/index.ts",
+                settings["extensions"],
+            )
             self.assertTrue(
                 all("old-extensions" not in p for p in settings["extensions"])
             )
