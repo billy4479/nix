@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787669921,
-        "narHash": "sha256-3RhwwhhmCeldyRc41fTqD1LU+3KslKrXl9QY7GlkQ04=",
+        "lastModified": 1793961660,
+        "narHash": "sha256-BYcZ427I1l2ubZH3X1h6sVeXIEWkRB3mpy5BX2WIv3k=",
         "owner": "billy4479",
         "repo": "agent-up",
-        "rev": "acc6f9c5babafbec4568430dde17f03a4141558f",
+        "rev": "d16f8c267ed5fc0a6c0389f84800734f41a6fe69",
         "type": "github"
       },
       "original": {
@@ -50,10 +50,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1789992501,
-        "narHash": "sha256-bJUHCl17qvJhrVfsqazEQqjzkQNTpL6Or4pijU6Xmfg=",
+        "lastModified": 1793961660,
+        "narHash": "sha256-YJSdFEgQ3EZNy4ZgQApUM+ilHiTZBW7kzKqL3ILKug4=",
         "ref": "master",
-        "rev": "0e8b6225e7e5d0984f08d4d1758796a7e0a56f5a",
+        "rev": "771bb0336186ab00c0199acca092148e3a360105",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/calendar-proxy-v2.git"
@@ -72,11 +72,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793368344,
-        "narHash": "sha256-ojN7KpXLYv6NgJ2OMn7cPioc46g7UB1pd4tBf//3S1U=",
+        "lastModified": 1793950799,
+        "narHash": "sha256-Bs64Wlde5bqcMfw2zkXmxfQ0PKO7Doq7c8C7GWR/fho=",
         "owner": "catppuccin",
         "repo": "nix",
-        "rev": "feac189528d08ca7c46bf1605d84b78ea5fe8263",
+        "rev": "554ec4b3017406fe44b19edc8332f5bae4cf0e71",
         "type": "github"
       },
       "original": {
@@ -94,12 +94,12 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1792975428,
-        "narHash": "sha256-hXaO46GFiQk9OTWzsbnhLlVUwxcLSNfNbaLSF8xG7jw=",
-        "rev": "7dce88a77ee0f714f81f988fd35329dc9b54cdfa",
-        "revCount": 449,
+        "lastModified": 1793885443,
+        "narHash": "sha256-Df2nK3Hzj+DL4xpM5wRkYG/wS6VyUqIgHgxMI3e743o=",
+        "rev": "558e026d9d3c78351170d8f8a797fa0fac541ccf",
+        "revCount": 457,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/determinate/3.24.1/01a175ad-626a-71b1-9aa9-f9508b85d2e9/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/determinate/3.24.2/01a1abec-122b-7762-9bf3-b517e8361a53/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -109,37 +109,37 @@
     "determinate-nixd-aarch64-darwin": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-dXdRD9tiquwh99Zy8C18073liXFKN8Vhyhh0Fy/ONOE=",
+        "narHash": "sha256-yp13xmaS0iLaTAxXOktLkPTal4eLO+mljFdobO8F+Vs=",
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.1/macOS"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.2/macOS"
       },
       "original": {
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.1/macOS"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.2/macOS"
       }
     },
     "determinate-nixd-aarch64-linux": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-aOxaaCn1PRi12GfuNel7X3TwxcarH/Fl/t08XpWWvlw=",
+        "narHash": "sha256-/NUuiSqWlvBnb2hYArrLy/ah0IpGwS24dpe36eukE2E=",
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.1/aarch64-linux"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.2/aarch64-linux"
       },
       "original": {
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.1/aarch64-linux"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.2/aarch64-linux"
       }
     },
     "determinate-nixd-x86_64-linux": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-wsf31M5tU0/8T/cwI74uIv6gfmWS4iX28xuOET22Gwg=",
+        "narHash": "sha256-NxMyglns1ACml2AJ34WF/plypDXc2UCaRB3wnppdE0Q=",
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.1/x86_64-linux"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.2/x86_64-linux"
       },
       "original": {
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.1/x86_64-linux"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.24.2/x86_64-linux"
       }
     },
     "disko": {
@@ -172,10 +172,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1793737734,
-        "narHash": "sha256-kiXssi4Ccwd6hlRYOEKqiho59nagdfT3EKlNz6OQQfc=",
+        "lastModified": 1793961660,
+        "narHash": "sha256-phdveoEfPIPaGMHVwiFGuRKuY+vXUQ2Dj+GtPg1DxKo=",
         "ref": "master",
-        "rev": "887209eadb8ccb99490bae787a81aa371ffcc6eb",
+        "rev": "bd7fbccbc266f024f9217c80c25050711acd601d",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/ff.git"
@@ -305,11 +305,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792622883,
-        "narHash": "sha256-s0XUxd3MZxRCcDZJnL6cXpbhr0F52Bi43jZhf4n/gpQ=",
+        "lastModified": 1793961660,
+        "narHash": "sha256-22yHH9/GumhQyUwEaeQTzT8qfT60iS+snQkJClQivZg=",
         "owner": "billy4479",
         "repo": "game-server-runner",
-        "rev": "91cae45c263a14c0bcc0524069d0a25b4d44c9b5",
+        "rev": "7054b3f5784476727d6c797b99a2ea075392ded0",
         "type": "github"
       },
       "original": {
@@ -350,10 +350,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1792154578,
-        "narHash": "sha256-nnaKSczvfKnzKe0DuLJeYQcch8cEj4W/WEtRAF4ST9o=",
+        "lastModified": 1793961660,
+        "narHash": "sha256-ou2nN5tLCg4w6Pd24FM2LtrndZ6Ansb8kMP78VzgY9s=",
         "ref": "master",
-        "rev": "9a0b5f31546b67811db532f3266f834ab888933b",
+        "rev": "0ba3def2d75b912350e98c04e226d3b40e1ad586",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/giuoco-del-divertimento.git"
@@ -393,11 +393,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793193205,
-        "narHash": "sha256-X6xa6sGA7RnJQuZGbFMC+K+KToWAlBDCCjJXfTwEPsw=",
+        "lastModified": 1793757180,
+        "narHash": "sha256-gyV7AtCwLnOImcrfSETP4J3Ie96bz19DY47B7m7Y3HM=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "095fef2f265c3c0da4fe315efba8f8a04495ab34",
+        "rev": "b787c48e2ec57a9d098f5c2721882a3bc1e16f97",
         "type": "github"
       },
       "original": {
@@ -419,11 +419,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1793714626,
-        "narHash": "sha256-Bxp9+cw//OSHWxKWb8c54l2GK+S+3E+UdxAyIhD/aic=",
+        "lastModified": 1793958445,
+        "narHash": "sha256-ExjGMWAeKumU1a68yM9eN9H7lGTc7b1iv4Yxd88tREE=",
         "owner": "billy4479",
         "repo": "nix-packages",
-        "rev": "21a6c4d8fd91837b5ed58dcfd2d356ee896d822b",
+        "rev": "89dfab62368d415f9b0f939d7773562397739fe2",
         "type": "github"
       },
       "original": {
@@ -501,12 +501,12 @@
         "nixpkgs-regression": "nixpkgs-regression"
       },
       "locked": {
-        "lastModified": 1792969108,
-        "narHash": "sha256-pDSWr7TQd9V9thIxlsqHzVGkuymDkckQpgaXLf7EuJ0=",
-        "rev": "240bbbcb10d3fc4bce957fafc1000b85ffb004d0",
-        "revCount": 27820,
+        "lastModified": 1793808558,
+        "narHash": "sha256-QY69Nw0WhXSvT2n2ldI5gt0h4ofbAVoi7EYGJGyNLl0=",
+        "rev": "f43bee4f45c2d42e7d1f4e37908ec5c7bb0fdba1",
+        "revCount": 27900,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nix-src/3.24.1/01a17596-6fbb-7a40-86cd-21b4eb251403/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nix-src/3.24.2/01a1a784-2356-7ff3-a013-b47d4fd7ed90/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -544,11 +544,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793596991,
-        "narHash": "sha256-l3pqEPQt3L2dPbr/4RXhO6lWSCcsOzx4Gfp6t1KJS+Q=",
+        "lastModified": 1793944645,
+        "narHash": "sha256-qMYr2KAM48CXw8tFtnctYOMdqrxJuVio6qF6C1Aa36E=",
         "owner": "nix-community",
         "repo": "nix-vscode-extensions",
-        "rev": "20014e0e97ee61bed7c09c26bc83861f0d94d7d7",
+        "rev": "dfc54bda15d150e5d38c18d9ac31e640284774e4",
         "type": "github"
       },
       "original": {
@@ -621,12 +621,12 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1791956154,
-        "narHash": "sha256-jBYGPi4udQ9uo4KQp9m2J0546nJVQitG15gvZSaVVAs=",
-        "rev": "55bfb4d7437bd4e09ab7cba58a43bd68eb310044",
-        "revCount": 1092090,
+        "lastModified": 1792773339,
+        "narHash": "sha256-rZLrzrC6i+jnTAlvPZHogKDulY7WWDEv9hJeHieO7Zw=",
+        "rev": "3ec636362e1816bc2f0888fa0fa2c69f1bc9e504",
+        "revCount": 1100280,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.1092090%2Brev-55bfb4d7437bd4e09ab7cba58a43bd68eb310044/01a16f89-3ebc-7b40-b3e1-f415dadf51c8/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.1100280%2Brev-3ec636362e1816bc2f0888fa0fa2c69f1bc9e504/01a19fe6-9a46-7d82-a5bd-b6aa9c96b635/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -635,11 +635,11 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1793540411,
-        "narHash": "sha256-fiPJ88izTVucjeo2EQ3jk4aWmLg03I1D4vxnX2QjEgE=",
+        "lastModified": 1793726008,
+        "narHash": "sha256-jQp1wKvbwWdLBASTXkSi/VYmDJ5AbBi1WvcMt9HWJC8=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "0bb2eedc20e4739f29e8045034f2828ad7054f8f",
+        "rev": "1d060086d60cb76a40cf37109f979d88a5bd6396",
         "type": "github"
       },
       "original": {
@@ -667,11 +667,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1793638797,
-        "narHash": "sha256-n7HH4ebcYTkwVDosIIUsJayrLKG/QTmIOrQ/cfw0XGs=",
+        "lastModified": 1793931395,
+        "narHash": "sha256-o/fiSqoNlQrGcg/MaDMtDXtssBYDLFdr5XKc1qh0EvA=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "26d5654aa04f69a4c6092a1741441ff068ba2196",
+        "rev": "316b4ee37014fa6891a49d3611a63dfc7a9aa813",
         "type": "github"
       },
       "original": {
@@ -764,10 +764,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1793315692,
-        "narHash": "sha256-1qHhkmYsZ6OUteDeq9dBlkJOuIfkj62fS86Jn1kx7oE=",
+        "lastModified": 1793961660,
+        "narHash": "sha256-WbQm21k5N7qwRbm0AxG9AffGbphUz3ux0zkwJSZzMkA=",
         "ref": "master",
-        "rev": "9ebd2b408565dc97882e6d7a9e6857af239cdc62",
+        "rev": "aa0af4d4ee5ffff4b2d9803a801e8bb864375db4",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/quote-bot.git"
@@ -792,11 +792,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787589430,
-        "narHash": "sha256-NYGJBlB+VRE5BIFOWXRSNlFcvlVW3RZjXFx9yDB5BX8=",
+        "lastModified": 1793961660,
+        "narHash": "sha256-5emKYtvud7fKM0g0mobxJzDm0wy62mIBOjzwBIfE5M4=",
         "owner": "billy4479",
         "repo": "read-nix-docs",
-        "rev": "70dfefd06dc1c2a7e3a6ffbf9a431e6847fb303e",
+        "rev": "eea9140b17913133f29b73082137ec3a23047c21",
         "type": "github"
       },
       "original": {
@@ -857,11 +857,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793052255,
-        "narHash": "sha256-Y/JIHTnMlOabDfyaSBubWGLDIVGihLEUuoMhFvQKaDo=",
+        "lastModified": 1793657466,
+        "narHash": "sha256-GoOvpdsjO5hqZuO6T6ok9u6sJEjO0iPli2zRr9oNUNw=",
         "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "60182817ee048ac94b4c68ea76d5ef2e8aac730d",
+        "rev": "b18e01ce148eb3efff5de2f2d3181ca53b2b2a54",
         "type": "github"
       },
       "original": {
@@ -878,11 +878,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1793531264,
-        "narHash": "sha256-rbmfLn4/UWs1mrMJgMEJXMfdhN7o7i++c5jPtUdlP+8=",
+        "lastModified": 1793662659,
+        "narHash": "sha256-a+za5QCDlOe/PsuMlZiBcQ13cyiyOscK17BAJFu1/dE=",
         "owner": "Gerg-L",
         "repo": "spicetify-nix",
-        "rev": "d818ab64010272bc0072d0c325838a63038796e9",
+        "rev": "13e6fed4eb99f809d390fb50f591bed6cb716dc0",
         "type": "github"
       },
       "original": {
