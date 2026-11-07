@@ -12,6 +12,7 @@
     ./derper-stun.nix
     ./derper-derp.nix
     ./wg-edge.nix
+    ./public-health-monitor.nix
     ../../../services/module.nix
 
     # Imported for the edge DNAT projection only (public raw ports). Service

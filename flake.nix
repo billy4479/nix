@@ -238,6 +238,10 @@
           rawUnit = hosts.nixosConfigurations.serverone.config.systemd.services.polpetta-raw-firewall;
         };
         edge-forwarding = import ./tests/edge-forwarding.nix { pkgs = pkgsForFlake; };
+        public-health-monitor = import ./tests/public-health-monitor.nix {
+          pkgs = pkgsForFlake;
+          vps = hosts.nixosConfigurations.vps-proxy.config;
+        };
       };
 
       packages.${system} = rec {

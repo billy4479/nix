@@ -1,4 +1,4 @@
-# Monitoring (serverone)
+# Monitoring (serverone and vps-proxy)
 
 serverone runs a small, native NixOS monitoring stack: Prometheus scrapes a
 bunch of local exporters plus every service container, Alertmanager routes
@@ -6,7 +6,12 @@ alerts to the shared Telegram bot, and Grafana (the only containerized
 piece) provides the dashboards at
 [grafana.internal.polpetta.online](https://grafana.internal.polpetta.online).
 
-Everything lives in two places:
+A separate, independent public health monitor runs on vps-proxy so that an
+outage of serverone, its network, or its monitoring stack can still reach
+Telegram. It is described under
+[Independent public health monitor](#independent-public-health-monitor-vps-proxy).
+
+The serverone stack lives in two places:
 
 - `system/hosts/serverone/monitoring.nix` — Prometheus, exporters,
   Alertmanager, alert rules and the zpool textfile exporter.
@@ -51,6 +56,7 @@ firewall interface for this stack.
 | zpool textfile script | host (root, timer) | writes `/var/lib/prometheus-node-exporter/zpool.prom` | `prometheus-zpool-textfile.{service,timer}` |
 | Grafana | container `10.0.1.23:3000` | https://grafana.internal.polpetta.online | `services/services/grafana` |
 | nginx stub_status | container `10.0.1.6:8082` | `/stub_status` (LAN-only allow/deny) | `containers/nginx/config/nginx.conf` |
+| public health monitor | vps-proxy (root, timer every minute) | probes `https://headscale.polpetta.online/health` via `87.106.25.93` | `system/hosts/vps-proxy/public-health-monitor.nix` |
 
 Notes:
 
@@ -88,15 +94,68 @@ Notes:
 
 All exporters and Alertmanager bind loopback explicitly. Alertmanager's unused
 cluster listener is disabled. Prometheus is the deliberate exception above.
-These checks are not an independent outage monitor: serverone cannot notify
-when its own power, network, Prometheus, or Alertmanager is completely down.
-Independent outage monitoring and off-host backups are deferred by user choice.
+These checks are not enough on their own: serverone cannot notify when its own
+power, network, Prometheus, or Alertmanager is down. vps-proxy therefore runs
+the independent monitor described next. Off-host backups remain out of scope.
+
+## Independent public health monitor (vps-proxy)
+
+serverone is the single point of failure for the main monitoring and
+notification path. During the 2026-11-07 ISP outage `PublicEndpointDown` fired,
+but Alertmanager could not resolve or reach `api.telegram.org`, so no Telegram
+message was delivered. vps-proxy now runs a separate check that shares nothing
+with the serverone stack except the bot account.
+
+- `public-health-monitor.timer` starts `public-health-monitor.service` every
+  minute, with the first run one minute after boot.
+- The probe pins the public name to the VPS address:
+
+  ```sh
+  curl --resolve headscale.polpetta.online:443:87.106.25.93 \
+    https://headscale.polpetta.online/health
+  ```
+
+  It uses the public TLS name and Host header but never internal DNS. On
+  vps-proxy the connection lands on the local `:443` SNI demuxer and then
+  crosses the WireGuard tunnel to serverone's nginx and the Headscale
+  container.
+- The script sends Telegram directly through the Bot API from vps-proxy. It
+  does not use Prometheus, Alertmanager, the tailnet, or any serverone-hosted
+  service.
+- Three consecutive failed probes send one alert. The first successful probe
+  after an alert sends one recovery. A transient failure resets on the next
+  success and never notifies.
+- Delivery failures are retried inside the run (three attempts, five seconds
+  apart) and again on the next timer tick. An alert is marked delivered only
+  after Telegram accepts it, so a Telegram outage during the monitored outage
+  does not lose the message.
+- State is only `failures=N` and `alerted=0|1` in
+  `/var/lib/public-health-monitor/state`. The bot token is read from the sops
+  secret into a 0600 curl config file and is never put on the command line or
+  in the journal; curl error output is discarded.
+
+Limitations:
+
+- The probe runs on vps-proxy, so it cannot report a vps-proxy power or uplink
+  failure. serverone's `blackbox-edge` probes cover the public path from
+  another network; together they cover both sides of the tunnel.
+- The monitor still needs the VPS resolver to resolve `api.telegram.org` and a
+  working Telegram API from the VPS. A VPS-wide DNS or network failure is
+  outside its reach.
+- It is a single endpoint check by design. It does not replace the detailed
+  per-service probes on serverone.
+
+Run it manually with `systemctl start public-health-monitor`, and inspect the
+last result with `systemctl status public-health-monitor` or
+`journalctl -u public-health-monitor`.
 
 ## Alerts
 
 Defined in `system/hosts/serverone/monitoring.nix` (YAML generated at build
-time by the Nix configuration). All alerts go to Telegram through
-Alertmanager; severities are `warning` and `critical`.
+time by the Nix configuration). These Prometheus alerts go to Telegram through
+Alertmanager; severities are `warning` and `critical`. The vps-proxy public
+health monitor is separate and sends its two transition messages directly,
+without Alertmanager.
 
 | Alert | Trigger | Severity |
 |-------|---------|----------|
@@ -206,14 +265,17 @@ notification test can be done the same way by starting `zfs-scrub`.
 
 ## Secrets the user must add
 
-The following keys must be present in `serverone.yaml` of the nix-secrets
-repo (deployment of secrets is manual, as usual):
+The following keys must be present in the nix-secrets repo (deployment of
+secrets is manual, as usual). Unless a row says otherwise the file is
+`serverone.yaml`.
 
 | Key | Used by | Notes |
 |-----|---------|-------|
-| `telegram-bot` | Alertmanager Telegram receiver, smartd long-test and ZFS scrub notifications | shared block with `token` and `chat-id` (numeric id, rendered unquoted into the config); the nested keys `telegram-bot/token` and `telegram-bot/chat-id` are selected with sops `key` |
+| `telegram-bot` | Alertmanager Telegram receiver, smartd long-test, ZFS scrub notifications, vps-proxy public health monitor | shared block with `token` and `chat-id` (numeric id, rendered unquoted into the config); the nested keys `telegram-bot/token` and `telegram-bot/chat-id` are selected with sops `key`. Add the same block to both `serverone.yaml` and `vps-proxy.yaml` |
 | `grafana` | Grafana | block with `admin-password` (admin login) and `secret-key`; both rendered into the `grafana-env` sops template |
 
 `sops-nix` renders the two environment files (`alertmanager-telegram-env`
 for Alertmanager, `grafana-env` for the Grafana container) from these keys at
-`/run/secrets/rendered/` and restarts the affected units when they change.
+`/run/secrets/rendered/` and restarts the affected units when they change. On
+vps-proxy it materializes `telegram-bot-token` and `telegram-bot-chat-id`
+under `/run/secrets/` for the public health monitor.
