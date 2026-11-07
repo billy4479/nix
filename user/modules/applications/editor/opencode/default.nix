@@ -1,12 +1,13 @@
 {
   pkgs,
+  domain,
   config,
   lib,
   flakeInputs,
   ...
 }:
 let
-  artifacts = import ./artifacts.nix { inherit pkgs flakeInputs; };
+  artifacts = import ./artifacts.nix { inherit pkgs flakeInputs domain; };
   opencodeWrapped = artifacts.package;
 in
 {

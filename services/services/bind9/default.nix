@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   config,
   ...
 }:
@@ -10,6 +11,7 @@ let
 
   hosts = pkgs.callPackage ./hosts.nix { };
   bindConfig = pkgs.callPackage ./config.nix {
+    inherit domain;
     bind9-hosts = hosts;
     generated-records = pkgs.writeText "generated-records.zone" config.polpetta.generated.bind9Records;
   };

@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   lib,
   config,
   options,
@@ -7,7 +8,7 @@
 }:
 let
   name = "opencloud";
-  domain = "opencloud.polpetta.online";
+  hostname = "opencloud.${domain}";
 
   # The web frontend's CSP must allow XHRs to the OIDC issuer (discovery,
   # token, userinfo all go to tsidp cross-origin). PROXY_CSP_CONFIG_FILE_
@@ -16,7 +17,7 @@ let
   cspOverride = pkgs.writeText "opencloud-csp.yaml" ''
     directives:
       connect-src:
-        - https://idp.internal.polpetta.online
+        - https://idp.internal.${domain}
   '';
 
   baseSSDDir = "/mnt/SSD/apps/${name}";
@@ -70,7 +71,7 @@ in
         # These are awfully undocumented, some are here but the list is incomplete
         # https://docs.opencloud.eu/docs/dev/server/configuration/global-environment-variables
         "OC_INSECURE" = "false";
-        "OC_URL" = "https://${domain}";
+        "OC_URL" = "https://${hostname}";
         "PROXY_HTTP_ADDR" = "10.0.1.14:9200";
         "PROXY_TLS" = "false";
         "PROXY_CSP_CONFIG_FILE_LOCATION" = "/etc/opencloud/csp-override.yaml";
@@ -88,7 +89,7 @@ in
         # into the opencloud-env template. Full runbook:
         # docs/deployments/tsidp-opencloud.md.
         "OC_EXCLUDE_RUN_SERVICES" = "idp";
-        "OC_OIDC_ISSUER" = "https://idp.internal.polpetta.online";
+        "OC_OIDC_ISSUER" = "https://idp.internal.${domain}";
         # tsidp access tokens are opaque strings, not JWTs, so the proxy must
         # validate them (and read claims) via the userinfo endpoint. The
         # upstream default 'jwt' would try to parse them as JWTs and fail.
@@ -101,7 +102,7 @@ in
         "PROXY_ENABLE_BASIC_AUTH" = "false";
         # Account resolution and auto-provisioning: the `email` claim is the
         # join key. Every headscale user's Email is
-        # <username>@mail.polpetta.online (docs/TSIDP.md invariant), so the
+        # <username>@mail.<domain> (docs/TSIDP.md invariant), so the
         # claim is unique per user, unreachable by display-name edits, and
         # its local part equals the short username. Lookup runs against the
         # LDAP mail attribute; provisioning names fresh accounts after the

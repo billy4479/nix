@@ -12,7 +12,7 @@ set -u
 state_dir="${STATE_DIR:-/var/lib/public-health-monitor}"
 state_file="$state_dir/state"
 failure_threshold="${FAILURE_THRESHOLD:-3}"
-probe_host="${PROBE_HOST:-headscale.polpetta.online}"
+probe_host="${PROBE_HOST:?PROBE_HOST must be set}"
 probe_ip="${PROBE_IP:-87.106.25.93}"
 probe_path="${PROBE_PATH:-/health}"
 probe_timeout="${PROBE_TIMEOUT:-10}"

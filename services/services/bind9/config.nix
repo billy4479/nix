@@ -1,5 +1,7 @@
 {
   stdenvNoCC,
+  lib,
+  domain,
   bind9-hosts,
   generated-records,
   ...
@@ -10,6 +12,11 @@ stdenvNoCC.mkDerivation {
   src = ./config;
 
   dontBuild = true;
+
+  postPatch = # sh
+    ''
+      substituteInPlace named.conf *.zone --replace-fail '@domain@' ${lib.escapeShellArg domain}
+    '';
 
   installPhase = # sh
     ''

@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   flakeInputs,
 }:
 let
@@ -24,8 +25,8 @@ let
 
         wrapProgram "$out/bin/opencode" \
           --prefix PATH : ${path} \
-          --set AGENTUP_URL "https://agent-up.internal.polpetta.online" \
-          --set SEARXNG_BASE_URL "https://searxng.internal.polpetta.online" \
+          --set AGENTUP_URL "https://agent-up.internal.${domain}" \
+          --set SEARXNG_BASE_URL "https://searxng.internal.${domain}" \
           --set SEARXNG_SAFE_SEARCH 0
       '';
   };
@@ -56,6 +57,8 @@ let
 
     postBuild = # sh
       ''
+        rm use-byparr/SKILL.md
+        cp ${pkgs.replaceVars ./skills/use-byparr/SKILL.md { inherit domain; }} use-byparr/SKILL.md
         rm -rf retro-marimo-pair
       '';
   };

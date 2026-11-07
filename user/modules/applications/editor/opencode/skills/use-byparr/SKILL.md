@@ -11,7 +11,7 @@ anti-bot denial. Do not repeatedly retry the same direct `curl` request.
 The existing instance is available at:
 
 ```text
-https://byparr.internal.polpetta.online
+https://byparr.internal.@domain@
 ```
 
 Only use it for public resources the user is entitled to access. Do not send
@@ -46,7 +46,7 @@ curl --fail-with-body --silent --show-error \
   --max-time 130 \
   --header 'Content-Type: application/json' \
   --data-binary @/tmp/opencode/byparr-request.json \
-  'https://byparr.internal.polpetta.online/v1' \
+  'https://byparr.internal.@domain@/v1' \
   --output /tmp/opencode/byparr-response.json
 ```
 

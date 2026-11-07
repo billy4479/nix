@@ -1,5 +1,6 @@
 {
   config,
+  domain,
   flakeInputs,
   lib,
   options,
@@ -74,7 +75,7 @@ let
     Host serverone
       HostName 10.0.1.1
     Host vps-proxy
-      HostName external.polpetta.online
+      HostName external.${domain}
     Host computerone portatilo serverone vps-proxy
       User billy
       IdentityFile ${home}/.ssh/id_ed25519
@@ -184,8 +185,8 @@ in
         XDG_DATA_HOME = "${home}/.local/share";
         XDG_STATE_HOME = "${home}/.local/state";
         PI_CODING_AGENT_DIR = "${home}/.pi/agent";
-        AGENTUP_URL = "https://agent-up.internal.polpetta.online";
-        SEARXNG_BASE_URL = "https://searxng.internal.polpetta.online";
+        AGENTUP_URL = "https://agent-up.internal.${domain}";
+        SEARXNG_BASE_URL = "https://searxng.internal.${domain}";
         SEARXNG_SAFE_SEARCH = "0";
         TMPDIR = "/tmp";
       };

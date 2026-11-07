@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   lib,
   config,
   options,
@@ -8,7 +9,7 @@
 let
   name = "quote-bot";
   baseDir = "/mnt/SSD/apps/${name}";
-  webhookUrl = "https://quote-bot.polpetta.online";
+  webhookUrl = "https://quote-bot.${domain}";
 in
 {
   # sops keys (in secrets-repo, serverone.yaml), rendered into the env

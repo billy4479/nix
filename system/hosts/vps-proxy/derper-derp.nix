@@ -1,12 +1,13 @@
 {
   pkgs,
+  domain,
   lib,
   flakeInputs,
   ...
 }:
 let
   name = "derper-derp";
-  hostname = "derp.polpetta.online";
+  hostname = "derp.${domain}";
   # Loopback only: clients reach the relay through the SNI demuxer on :443
   # (sni-demux.nix), the port itself stays firewall-closed.
   port = 8443;
@@ -90,7 +91,7 @@ in
       # client's node key to /verify and only relays for registered nodes.
       # Fail-open (the default) is deliberate: if headscale is unreachable the
       # relay stays up, only admission is unverified for that window.
-      ExecStart = "${pkgs.derper}/bin/derper -derp=true -stun=false -a 127.0.0.1:${toString port} -http-port -1 -certmode=manual -certdir ${certDir}/current -hostname ${hostname} -verify-client-url=https://headscale.polpetta.online/verify -c /var/lib/${name}/derper.conf";
+      ExecStart = "${pkgs.derper}/bin/derper -derp=true -stun=false -a 127.0.0.1:${toString port} -http-port -1 -certmode=manual -certdir ${certDir}/current -hostname ${hostname} -verify-client-url=https://headscale.${domain}/verify -c /var/lib/${name}/derper.conf";
 
       Type = "simple";
       Restart = "on-failure";

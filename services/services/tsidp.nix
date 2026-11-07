@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   config,
   lib,
   options,
@@ -48,11 +49,11 @@ in
         "-trusted-proxy"
         "10.0.1.6"
         "-server-url"
-        "https://idp.internal.polpetta.online"
+        "https://idp.internal.${domain}"
       ];
 
       environment = {
-        TS_CONTROL_URL = "https://headscale.polpetta.online:443";
+        TS_CONTROL_URL = "https://headscale.${domain}:443";
         TS_HOSTNAME = "idp";
         TAILSCALE_USE_WIP_CODE = "1";
         TSIDP_LOG = "info";
@@ -73,7 +74,7 @@ in
       access = "tailnet";
       # The service name would generate tsidp.internal...; the relying
       # parties (and the sops-seeded clients) know it as idp.
-      domain = "idp.internal.polpetta.online";
+      domain = "idp.internal.${domain}";
 
       # / does WhoIs and 500s for non-tailnet peers (e.g. the blackbox
       # probe); the discovery endpoint is auth-free and proves tsidp is

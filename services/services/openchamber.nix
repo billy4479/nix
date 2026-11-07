@@ -1,5 +1,6 @@
 {
   config,
+  domain,
   flakeInputs,
   lib,
   options,
@@ -18,7 +19,7 @@ let
   caCertificates = pkgs.dockerTools.caCertificates;
 
   artifacts = import ../../user/modules/applications/editor/opencode/artifacts.nix {
-    inherit pkgs flakeInputs;
+    inherit pkgs flakeInputs domain;
   };
   openchamber = pkgs.openchamber-web.override {
     opencode = artifacts.package;
@@ -124,7 +125,7 @@ let
       HostName 10.0.1.1
 
     Host vps-proxy
-      HostName external.polpetta.online
+      HostName external.${domain}
 
     Host computerone portatilo serverone vps-proxy
       User billy

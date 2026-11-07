@@ -1,5 +1,6 @@
 {
   config,
+  domain,
   pkgs,
   lib,
   options,
@@ -19,7 +20,7 @@ in
   sops.templates."ff-env".content = lib.mkIf (options ? nerdctl-containers) (
     # sh
     ''
-      OIDC_ISSUER=https://idp.internal.polpetta.online
+      OIDC_ISSUER=https://idp.internal.${domain}
       OIDC_CLIENT_ID=${config.sops.placeholder."ff-oauth-client-id"}
       OIDC_CLIENT_SECRET=${config.sops.placeholder."ff-oauth-client-secret"}
       SESSION_SECRET=${config.sops.placeholder."ff-session-secret"}
@@ -49,7 +50,7 @@ in
       environment = {
         PORT = "4479";
         ENVIRONMENT = "production";
-        ORIGIN = "https://ff.internal.polpetta.online";
+        ORIGIN = "https://ff.internal.${domain}";
         FF_DATA_PATH = "/data";
       };
 

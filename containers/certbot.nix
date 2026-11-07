@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   lib,
   config,
   ...
@@ -8,7 +9,7 @@ let
   name = "certbot";
   baseSSDDir = "/mnt/SSD/apps/${name}";
   id = 132;
-  derpHostname = "derp.polpetta.online";
+  derpHostname = "derp.${domain}";
   certificateTools = pkgs.callPackage ../services/derp-certificates { };
 in
 {
@@ -71,7 +72,7 @@ in
           ${certificateTools}/bin/derp-certificates send "$live/fullchain.pem" "$live/privkey.pem" |
             ssh -T -i "$key" -o IdentitiesOnly=yes -o BatchMode=yes \
               -o StrictHostKeyChecking=yes -o ConnectTimeout=15 \
-              derp-cert-sync@external.polpetta.online
+              derp-cert-sync@external.${domain}
 
           # Consumed by the node-exporter textfile collector, never a secret.
           install -d -m 0755 /var/lib/prometheus-node-exporter

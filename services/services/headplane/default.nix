@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   lib,
   config,
   options,
@@ -52,14 +53,14 @@ in
 
       volumes = [
         {
-          hostPath = "${./headplane.yaml}";
+          hostPath = "${pkgs.replaceVars ./headplane.yaml { inherit domain; }}";
           containerPath = "/etc/headplane/config.yaml";
           readOnly = true;
         }
         {
           # headplane displays (and validates) headscale's configuration through
           # this mount; the file itself lives with the headscale service.
-          hostPath = "${../headscale/headscale.yaml}";
+          hostPath = "${pkgs.replaceVars ../headscale/headscale.yaml { inherit domain; }}";
           containerPath = "/etc/headscale/config.yaml";
           readOnly = true;
         }

@@ -1,9 +1,13 @@
-{ pkgs, vps }:
+{
+  pkgs,
+  vps,
+  domain,
+}:
 let
   service = vps.systemd.services.public-health-monitor;
   timer = vps.systemd.timers.public-health-monitor;
 in
-assert service.environment.PROBE_HOST == "headscale.polpetta.online";
+assert service.environment.PROBE_HOST == "headscale.${domain}";
 assert service.environment.PROBE_IP == "87.106.25.93";
 assert service.environment.PROBE_PATH == "/health";
 assert service.environment.FAILURE_THRESHOLD == "3";

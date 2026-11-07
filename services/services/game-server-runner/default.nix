@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   lib,
   config,
   options,
@@ -53,7 +54,7 @@ in
   sops.templates."game-server-runner-env".content = lib.mkIf (options ? nerdctl-containers) (
     # sh
     ''
-      OIDC_ISSUER=https://idp.internal.polpetta.online
+      OIDC_ISSUER=https://idp.internal.${domain}
       OIDC_CLIENT_ID=${config.sops.placeholder."game-server-runner-oauth-client-id"}
       OIDC_CLIENT_SECRET=${config.sops.placeholder."game-server-runner-oauth-client-secret"}
       ADMIN_USERNAME=jack
@@ -158,8 +159,8 @@ in
       access = "public";
       # Keep the historical domain: the service was renamed when the
       # mc-runner rewrite landed, but players' bookmarks (and the tsidp
-      # client registration) keep pointing at mc-runner.polpetta.online.
-      domain = "mc-runner.polpetta.online";
+      # client registration) keep pointing at mc-runner.<domain>.
+      domain = "mc-runner.${domain}";
       nginx.extraConfig = ''
         proxy_read_timeout 3600;
         proxy_send_timeout 3600;

@@ -1,5 +1,6 @@
 {
   config,
+  domain,
   lib,
   options,
   pkgs,
@@ -97,9 +98,9 @@ let
     if svc.web.domain != null then
       svc.web.domain
     else if svc.web.access == "public" then
-      "${name}.polpetta.online"
+      "${name}.${domain}"
     else
-      "${name}.internal.polpetta.online";
+      "${name}.internal.${domain}";
 
   rawEntries = lib.concatMap (
     name:
@@ -284,13 +285,13 @@ let
       }
       {
         assertion = lib.all (
-          d: lib.hasSuffix ".polpetta.online" d && !lib.hasSuffix ".internal.polpetta.online" d
+          d: lib.hasSuffix ".${domain}" d && !lib.hasSuffix ".internal.${domain}" d
         ) publicDomains;
-        message = "polpetta.services: public web domains must be under .polpetta.online and not under .internal.polpetta.online: ${lib.concatStringsSep ", " publicDomains}";
+        message = "polpetta.services: public web domains must be under .${domain} and not under .internal.${domain}: ${lib.concatStringsSep ", " publicDomains}";
       }
       {
-        assertion = lib.all (d: lib.hasSuffix ".internal.polpetta.online" d) nonPublicDomains;
-        message = "polpetta.services: non-public web domains must be under .internal.polpetta.online: ${lib.concatStringsSep ", " nonPublicDomains}";
+        assertion = lib.all (d: lib.hasSuffix ".internal.${domain}" d) nonPublicDomains;
+        message = "polpetta.services: non-public web domains must be under .internal.${domain}: ${lib.concatStringsSep ", " nonPublicDomains}";
       }
     ];
 in
@@ -333,8 +334,8 @@ in
                         type = lib.types.nullOr lib.types.str;
                         default = null;
                         description = ''
-                          Override the default domain: <name>.polpetta.online for
-                          public services, <name>.internal.polpetta.online otherwise.
+                          Override the default domain: <name>.${domain} for
+                          public services, <name>.internal.${domain} otherwise.
                         '';
                       };
 

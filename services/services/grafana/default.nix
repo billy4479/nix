@@ -1,5 +1,6 @@
 {
   config,
+  domain,
   pkgs,
   lib,
   options,
@@ -63,14 +64,14 @@ in
 
       environment = {
         GF_SECURITY_ADMIN_USER = "admin";
-        GF_SERVER_ROOT_URL = "https://${name}.internal.polpetta.online";
+        GF_SERVER_ROOT_URL = "https://${name}.internal.${domain}";
         GF_USERS_ALLOW_SIGN_UP = "false";
         GF_AUTH_ANONYMOUS_ENABLED = "false";
         GF_AUTH_GENERIC_OAUTH_ENABLED = "true";
         GF_AUTH_GENERIC_OAUTH_NAME = "tsidp";
-        GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://idp.internal.polpetta.online/authorize";
-        GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://idp.internal.polpetta.online/token";
-        GF_AUTH_GENERIC_OAUTH_API_URL = "https://idp.internal.polpetta.online/userinfo";
+        GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://idp.internal.${domain}/authorize";
+        GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://idp.internal.${domain}/token";
+        GF_AUTH_GENERIC_OAUTH_API_URL = "https://idp.internal.${domain}/userinfo";
         GF_AUTH_GENERIC_OAUTH_SCOPES = "openid profile email";
         GF_AUTH_GENERIC_OAUTH_USE_PKCE = "true";
         # tsidp authenticates any tailnet member, so account creation is gated

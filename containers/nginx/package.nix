@@ -1,5 +1,6 @@
 {
   callPackage,
+  domain,
   runCommand,
 
   nginx,
@@ -14,7 +15,7 @@
   ...
 }:
 let
-  infraConfig = callPackage ./config.nix { inherit externalTrafficFrom; };
+  infraConfig = callPackage ./config.nix { inherit externalTrafficFrom domain; };
 in
 # The complete nginx runtime config as deployed on serverone: the
 # hand-written infrastructure (nginx.conf, snippets) with the web
@@ -33,7 +34,7 @@ runCommand "polpetta-nginx-config"
     mkdir -p $out
     cp -r ${infraConfig}/. $out/
     cp ${nginxVhostsFile} $out/vhosts.conf
-    ${python3}/bin/python ${../../tests/nginx-edge.py} "$out"
+    ${python3}/bin/python ${../../tests/nginx-edge.py} "$out" "${domain}"
 
     # Validate with `nginx -t`: reassemble the config in a writable
     # tree with the absolute include/cert paths rewritten to it
@@ -44,7 +45,7 @@ runCommand "polpetta-nginx-config"
     # cannot check the real certificates, which are mounted at
     # runtime.
     cp -r $out check
-    mkdir -p check/etc/nginx check/certs/live/polpetta.online
+    mkdir -p check/etc/nginx check/certs/live/${domain}
     cp -r $out/snippets check/etc/nginx/snippets
     cp $out/vhosts.conf check/etc/nginx/vhosts.conf
     cp ${nginx}/conf/mime.types check/etc/nginx/mime.types
@@ -52,8 +53,8 @@ runCommand "polpetta-nginx-config"
     find check -name '*.conf' -exec sed -i \
       "s|/etc/nginx/|$PWD/check/etc/nginx/|g; s|/certs/|$PWD/check/certs/|g; s|listen 10.0.1.6:8082|listen 8082|; s|listen 443 |listen 18443 |; s|listen 4443 |listen 24443 |; s|listen 80;|listen 18080;|; s|listen 81 |listen 18081 |" {} +
     openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
-      -keyout check/certs/live/polpetta.online/privkey.pem \
-      -out check/certs/live/polpetta.online/fullchain.pem \
-      -subj "/CN=polpetta.online" 2>/dev/null
+      -keyout check/certs/live/${domain}/privkey.pem \
+      -out check/certs/live/${domain}/fullchain.pem \
+      -subj "/CN=${domain}" 2>/dev/null
     nginx -t -c $PWD/check/nginx.conf -p $PWD/check
   ''

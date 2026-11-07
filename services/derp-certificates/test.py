@@ -10,7 +10,8 @@ import unittest
 from pathlib import Path
 
 SCRIPT = Path(__file__).with_name("certificates.py")
-HOST = "derp.polpetta.online"
+DOMAIN = "example.test"
+HOST = f"derp.{DOMAIN}"
 
 
 class CertificateTransferTest(unittest.TestCase):
@@ -179,8 +180,8 @@ class CertificateTransferTest(unittest.TestCase):
         mismatch["key"] = valid["key"]
         for invalid in [
             mismatch,
-            self.bundle("*.polpetta.online"),
-            self.bundle("other.polpetta.online"),
+            self.bundle(f"*.{DOMAIN}"),
+            self.bundle(f"other.{DOMAIN}"),
             {"certificate": "not PEM", "key": "not PEM"},
             {**valid, "extra": "ignored?"},
         ]:
@@ -192,7 +193,7 @@ class CertificateTransferTest(unittest.TestCase):
     def test_install_revalidates_staging_and_rejects_symlinks(self):
         self.command("install")  # Missing upload on first boot is harmless.
         (self.staging / "bundle.json").write_text(
-            json.dumps(self.bundle("*.polpetta.online"))
+            json.dumps(self.bundle(f"*.{DOMAIN}"))
         )
         self.command("install", success=False)
         (self.staging / "bundle.json").unlink()

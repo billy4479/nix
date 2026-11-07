@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   lib,
   config,
   options,
@@ -95,7 +96,7 @@ in
       access = "tailnet";
       # Historical domain: the UI is served under `immich`, not the container
       # name.
-      domain = "immich.internal.polpetta.online";
+      domain = "immich.internal.${domain}";
 
       # / and /health answer 200 with the SPA's HTML shell; the API ping is
       # the only unauthenticated endpoint that actually reports health.

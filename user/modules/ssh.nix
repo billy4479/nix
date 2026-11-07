@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, domain, ... }:
 {
   sops.secrets = {
     ssh_key = {
@@ -18,13 +18,13 @@
 
     settings = {
       serverone = {
-        HostName = "internal.polpetta.online";
+        HostName = "internal.${domain}";
         ForwardAgent = true;
         AddKeysToAgent = "yes";
       };
 
       vps-proxy = {
-        HostName = "external.polpetta.online";
+        HostName = "external.${domain}";
         ForwardAgent = true;
         AddKeysToAgent = "yes";
       };

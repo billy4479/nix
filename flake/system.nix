@@ -2,6 +2,7 @@
   system,
   inputs,
   overlays,
+  domain,
 }:
 let
   defaultOptions = {
@@ -25,7 +26,14 @@ let
     };
   };
 
-  createAndMergeHosts = import ./createAndMergeHosts.nix { inherit system inputs overlays; };
+  createAndMergeHosts = import ./createAndMergeHosts.nix {
+    inherit
+      system
+      inputs
+      overlays
+      domain
+      ;
+  };
 in
 createAndMergeHosts defaultOptions [
   {

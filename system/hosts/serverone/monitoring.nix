@@ -1,5 +1,6 @@
 {
   config,
+  domain,
   lib,
   pkgs,
   ...
@@ -13,17 +14,17 @@ let
     {
       # Hairpin through the demuxer and tunnel, even with split DNS enabled.
       name = "public-edge";
-      host = "headscale.polpetta.online";
+      host = "headscale.${domain}";
       path = "/health";
     }
     {
       name = "public-derp";
-      host = "derp.polpetta.online";
+      host = "derp.${domain}";
       path = "/derp/probe";
     }
     {
       name = "public-homepage";
-      host = "polpetta.online";
+      host = domain;
       path = "/";
     }
   ];
@@ -91,10 +92,10 @@ let
       http = {
         preferred_ip_protocol = "ip4";
         headers = {
-          Host = "grafana.internal.polpetta.online";
+          Host = "grafana.internal.${domain}";
         };
         tls_config = {
-          server_name = "grafana.internal.polpetta.online";
+          server_name = "grafana.internal.${domain}";
         };
       };
     };

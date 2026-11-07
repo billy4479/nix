@@ -10,7 +10,7 @@
 # 1.30.5). Since `proxy_protocol on` is per-server-block and derper is
 # PP-unaware, the DERP branch rides a loopback hop whose `listen ...
 # proxy_protocol` consumes (strips) the header before the relay on 8443.
-{ ... }:
+{ domain, ... }:
 {
   services.nginx = {
     enable = true;
@@ -20,7 +20,7 @@
     streamConfig = # nginx
       ''
         map $ssl_preread_server_name $sni443 {
-          derp.polpetta.online  127.0.0.1:4441;
+          derp.${domain}  127.0.0.1:4441;
           default               10.0.1.6:4443;
         }
 

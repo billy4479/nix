@@ -12,7 +12,7 @@ server:
   # `{base_url}/admin/oidc/callback` and must be registered in tsidp exactly;
   # keep the default https port implicit (an explicit `:443` is dropped during
   # redirect URI construction, so it would only cause confusion).
-  base_url: "https://headplane.internal.polpetta.online"
+  base_url: "https://headplane.internal.@domain@"
 
   # The secret used to encode and decode web sessions (must be 32 characters)
   # You may also provide `cookie_secret_path` instead to read a value from disk.
@@ -68,7 +68,7 @@ headscale:
 
   # Optional, public URL if its different from the `headscale.url`
   # This affects certain parts of the web UI which shows Headscale's URL
-  public_url: "https://headscale.polpetta.online"
+  public_url: "https://headscale.@domain@"
 
   # Path to the Headscale configuration file
   # This is optional, but HIGHLY recommended for the best experience
@@ -176,7 +176,7 @@ integration:
 oidc:
   # The OIDC issuer URL (tsidp). All endpoints are auto-discovered from
   # /.well-known/openid-configuration, they must not be hardcoded.
-  issuer: "https://idp.internal.polpetta.online"
+  issuer: "https://idp.internal.@domain@"
 
   # The client id/secret of the client registered in tsidp.
   # Do NOT set them here: they are provided through the headplane-env sops

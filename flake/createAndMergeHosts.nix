@@ -2,6 +2,7 @@
   system,
   inputs,
   overlays,
+  domain,
 }:
 let
   lib = inputs.nixpkgs.lib;
@@ -52,6 +53,7 @@ let
       };
 
       specialArgs = {
+        inherit domain;
         extraConfig = removeAttrs (lib.recursiveUpdate defaultedArgs {
           catppuccinColors = mkCatppuccinColors defaultedArgs.catppuccin;
           inherit hostname system;

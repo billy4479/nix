@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   ruleFiles,
   scrapeConfigs,
   blackboxConfig,
@@ -203,6 +204,6 @@ pkgs.runCommand "monitoring-alert-regression-test"
   ''
     promtool check rules ${pkgs.lib.escapeShellArgs (map toString ruleFiles)}
     promtool test rules ${tests}
-    python ${./edge-probes.py} ${scrapes} ${blackboxConfig}
+    python ${./edge-probes.py} ${scrapes} ${blackboxConfig} ${domain}
     touch "$out"
   ''

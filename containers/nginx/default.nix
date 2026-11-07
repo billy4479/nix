@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   config,
   ...
 }:
@@ -19,7 +20,7 @@ let
     "10.100.0.1"
     "10.0.1.131"
   ];
-  nginxConfig = pkgs.callPackage ./config.nix { inherit externalTrafficFrom; };
+  nginxConfig = pkgs.callPackage ./config.nix { inherit externalTrafficFrom domain; };
   homepage = pkgs.callPackage ../../sites/homepage { };
 in
 {

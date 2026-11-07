@@ -1,12 +1,12 @@
 $TTL 60
-@          IN SOA   ns.polpetta.online. billy. (
+@          IN SOA   ns.@domain@. billy. (
                         2026103101 ; serial (YYYYMMDDnn) — bump on changes
                         1h         ; refresh
                         15m        ; retry
                         1w         ; expire
                         1h )       ; negative caching
 
-           IN NS    ns.polpetta.online.
+           IN NS    ns.@domain@.
 
 ns         IN A     10.0.1.11
 
@@ -14,7 +14,7 @@ ns         IN A     10.0.1.11
 ; because the wildcard does not match the apex. Same target as the wildcard.
 @          IN A     10.0.1.6
 
-www        IN CNAME polpetta.online.
+www        IN CNAME @domain@.
 quote-book IN CNAME cname.vercel-dns.com.
 
 *          IN A     10.0.1.6 

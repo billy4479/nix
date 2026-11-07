@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  domain,
   lib,
   options,
   ...
@@ -34,7 +35,7 @@ in
         SEARXNG_SETTINGS_PATH = "/etc/searxng/settings.yml";
         SEARXNG_BIND_ADDRESS = "0.0.0.0";
         SEARXNG_PORT = "8888";
-        SEARXNG_BASE_URL = "https://searxng.internal.polpetta.online/";
+        SEARXNG_BASE_URL = "https://searxng.internal.${domain}/";
         TMPDIR = "/cache";
       };
 
@@ -42,7 +43,7 @@ in
 
       volumes = [
         {
-          hostPath = "${./settings.yml}";
+          hostPath = "${pkgs.replaceVars ./settings.yml { inherit domain; }}";
           containerPath = "/etc/searxng/settings.yml";
           readOnly = true;
         }

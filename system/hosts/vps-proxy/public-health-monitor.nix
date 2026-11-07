@@ -1,5 +1,6 @@
 {
   config,
+  domain,
   pkgs,
   ...
 }:
@@ -32,7 +33,7 @@ in
     environment = {
       STATE_DIR = "/var/lib/public-health-monitor";
       FAILURE_THRESHOLD = "3";
-      PROBE_HOST = "headscale.polpetta.online";
+      PROBE_HOST = "headscale.${domain}";
       PROBE_IP = "87.106.25.93";
       PROBE_PATH = "/health";
       PROBE_TIMEOUT = "10";

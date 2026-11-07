@@ -10,7 +10,7 @@
 #
 # https://myheadscale.example.com:443
 #
-server_url: https://headscale.polpetta.online:443
+server_url: https://headscale.@domain@:443
 
 # Address to listen to / bind to on the server
 #
@@ -263,7 +263,7 @@ dns:
   # `base_domain` must be a FQDN, without the trailing dot.
   # The FQDN of the hosts will be
   # `hostname.base_domain` (e.g., _myhost.example.com_).
-  base_domain: devices.polpetta.online
+  base_domain: devices.@domain@
 
   # Whether to use the local DNS settings of a node or override the local DNS
   # settings (default) and force the use of Headscale's DNS configuration.

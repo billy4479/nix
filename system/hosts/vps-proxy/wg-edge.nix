@@ -38,7 +38,7 @@ let
   # HTTP/3: QUIC arrives as udp/443 and terminates on the same nginx vhosts
   # as tcp/443. It bypasses the SNI demuxer by design (nginx stream cannot
   # SNI-demux UDP, and nothing needs it: derp never speaks h3, so no QUIC
-  # for derp.polpetta.online ever arrives).
+  # for derp.<domain> ever arrives).
   http3Forward = {
     proto = "udp";
     port = 443;

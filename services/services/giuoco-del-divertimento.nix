@@ -1,5 +1,6 @@
 {
   config,
+  domain,
   pkgs,
   lib,
   options,
@@ -19,7 +20,7 @@ in
   sops.templates."giuoco-env".content = lib.mkIf (options ? nerdctl-containers) (
     # sh
     ''
-      OIDC_ISSUER=https://idp.internal.polpetta.online
+      OIDC_ISSUER=https://idp.internal.${domain}
       OIDC_CLIENT_ID=${config.sops.placeholder."giuoco-oauth-client-id"}
       OIDC_CLIENT_SECRET=${config.sops.placeholder."giuoco-oauth-client-secret"}
       SESSION_SECRET=${config.sops.placeholder."giuoco-session-secret"}
@@ -49,7 +50,7 @@ in
       environment = {
         PORT = "4479";
         ENVIRONMENT = "production";
-        ORIGIN = "https://giuoco-del-divertimento.polpetta.online";
+        ORIGIN = "https://giuoco-del-divertimento.${domain}";
         DATABASE_URL = "/data/items.db";
       };
 

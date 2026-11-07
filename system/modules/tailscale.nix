@@ -1,4 +1,9 @@
-{ config, extraConfig, ... }:
+{
+  config,
+  extraConfig,
+  domain,
+  ...
+}:
 {
   sops.secrets.tailscale-key = { };
 
@@ -13,7 +18,7 @@
     ];
     extraUpFlags = [
       "--login-server"
-      "https://headscale.polpetta.online"
+      "https://headscale.${domain}"
     ];
   };
 }

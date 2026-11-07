@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   config,
   lib,
   ...
@@ -17,7 +18,7 @@ let
     "credentials=${config.sops.secrets.cifs_credentials.path}"
   ];
 
-  nas_address = "internal.polpetta.online";
+  nas_address = "internal.${domain}";
 in
 {
   environment.systemPackages = [ pkgs.cifs-utils ];

@@ -1,5 +1,6 @@
 {
   config,
+  domain,
   lib,
   options,
   pkgs,
@@ -59,7 +60,7 @@ in
       workingDirectory = "${pkgs.outline}/share/outline";
 
       environment = {
-        URL = "https://${name}.internal.polpetta.online";
+        URL = "https://${name}.internal.${domain}";
         PORT = "3000";
         # nginx terminates TLS and forwards X-Forwarded-Proto, so Outline only
         # uses this to mark cookies secure and redirect plain http.
@@ -75,9 +76,9 @@ in
         # Auth against tsidp (docs/deployments/outline.md): the client
         # id/secret come from the tsidp client registration, the callback
         # path is fixed by Outline (${URL}/auth/oidc.callback).
-        OIDC_AUTH_URI = "https://idp.internal.polpetta.online/authorize";
-        OIDC_TOKEN_URI = "https://idp.internal.polpetta.online/token";
-        OIDC_USERINFO_URI = "https://idp.internal.polpetta.online/userinfo";
+        OIDC_AUTH_URI = "https://idp.internal.${domain}/authorize";
+        OIDC_TOKEN_URI = "https://idp.internal.${domain}/token";
+        OIDC_USERINFO_URI = "https://idp.internal.${domain}/userinfo";
         OIDC_DISPLAY_NAME = "tsidp";
         OIDC_SCOPES = "openid profile email";
         # tsidp's userinfo has `username` while the ID token carries the same

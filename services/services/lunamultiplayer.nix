@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   lib,
   config,
   options,
@@ -46,7 +47,7 @@ in
   sops.templates."lunamultiplayer-env".content = lib.mkIf (options ? nerdctl-containers) (
     # sh
     ''
-      OIDC_ISSUER=https://idp.internal.polpetta.online
+      OIDC_ISSUER=https://idp.internal.${domain}
       OIDC_CLIENT_ID=${config.sops.placeholder."lunamultiplayer-oauth-client-id"}
       OIDC_CLIENT_SECRET=${config.sops.placeholder."lunamultiplayer-oauth-client-secret"}
       ADMIN_USERNAME=jack
@@ -67,7 +68,7 @@ in
       ''
         db_path = "/data/game-server-runner.db"
         port = 4479
-        connect_url = "lunamultiplayer.polpetta.online:8800"
+        connect_url = "lunamultiplayer.${domain}:8800"
         server_dir = "/data"
         minutes_before_stop = 15
 

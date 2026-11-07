@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 config_dir = Path(sys.argv[1])
+domain = sys.argv[2]
 infrastructure = (config_dir / "nginx.conf").read_text()
 vhosts = (config_dir / "vhosts.conf").read_text()
 edges = ("10.100.0.1", "10.0.1.131")
@@ -20,7 +21,7 @@ for server in servers:
     label = name.group(1) if name else "default server"
     if "listen 443 ssl" in server:
         assert "listen 443 quic" in server, f"Missing QUIC listener: {label}"
-    if name and ".internal.polpetta.online" in label:
+    if name and f".internal.{domain}" in label:
         allow = server.index("allow ")
         for edge in edges:
             assert server.index(f"deny {edge};") < allow, (label, edge)

@@ -1,5 +1,6 @@
 {
   pkgs,
+  domain,
   lib,
   options,
   ...
@@ -43,12 +44,12 @@ in
           containerPath = "/var/run/headscale";
         }
         {
-          hostPath = "${./headscale.yaml}";
+          hostPath = "${pkgs.replaceVars ./headscale.yaml { inherit domain; }}";
           containerPath = "/etc/headscale/config.yaml";
           readOnly = true;
         }
         {
-          hostPath = "${./derp-custom.yaml}";
+          hostPath = "${pkgs.replaceVars ./derp-custom.yaml { inherit domain; }}";
           containerPath = "/etc/headscale/derp-custom.yaml";
           readOnly = true;
         }
