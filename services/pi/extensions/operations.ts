@@ -1,5 +1,7 @@
 import { realpathSync } from "node:fs";
-import { sep } from "node:path";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, sep } from "node:path";
 import type { BashOperations } from "@earendil-works/pi-coding-agent";
 
 export function trustedWorkspace(
@@ -37,12 +39,31 @@ export function withDirenv(
 ): BashOperations {
   return {
     ...local,
-    exec(command, cwd, options) {
-      return local.exec(
-        `exec ${quote(programs.direnv)} exec ${quote(cwd)} ${quote(programs.bash)} --noprofile --norc -c ${quote(command)}`,
-        cwd,
-        options,
-      );
+    async exec(command, cwd, options) {
+      const directory = await mkdtemp(join(tmpdir(), "pi-direnv-"));
+      const log = join(directory, "setup.log");
+      let failed = true;
+      try {
+        // Capture setup only. Restore the original streams and close the spare
+        // descriptors before running the user's command in a fresh shell.
+        const run = `exec ${quote(programs.bash)} --noprofile --norc -c ${quote(command)} 1>&3 2>&4 3>&- 4>&-`;
+        const result = await local.exec(
+          `exec ${quote(programs.direnv)} exec ${quote(cwd)} ${quote(programs.bash)} --noprofile --norc -c ${quote(run)} 3>&1 4>&2 >${quote(log)} 2>&1`,
+          cwd,
+          options,
+        );
+        failed = result.exitCode !== 0;
+        return result;
+      } finally {
+        try {
+          if (failed) {
+            const output = await readFile(log).catch(() => Buffer.alloc(0));
+            if (output.length) options.onData(output);
+          }
+        } finally {
+          await rm(directory, { recursive: true, force: true });
+        }
+      }
     },
   };
 }

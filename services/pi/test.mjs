@@ -58,10 +58,12 @@ test("direnv wraps native operations without changing cancellation, env or timeo
       calls++;
       assert.equal(cwd, "/a project's directory");
       assert.equal(forwarded, options);
-      assert.equal(
-        command,
-        "exec '/bin/direnv' exec '/a project'\\''s directory' '/bin/bash' --noprofile --norc -c 'printf '\\''%s'\\'' \"$SENTINEL\"'",
+      assert.ok(
+        command.startsWith(
+          "exec '/bin/direnv' exec '/a project'\\''s directory' ",
+        ),
       );
+      assert.ok(command.includes("3>&1 4>&2 >"));
       return { exitCode: 7 };
     },
   };
@@ -93,7 +95,7 @@ test("real direnv exports, unsets, blocks unapproved files, and isolates project
     await mkdir(cwd);
     await writeFile(
       path.join(cwd, ".envrc"),
-      `export PROJECT_VALUE=${value}\nunset REMOVE_ME\n`,
+      `echo SETUP_STDOUT\necho SETUP_STDERR >&2\nexport PROJECT_VALUE=${value}\nunset REMOVE_ME\n`,
     );
   }
   // A native backend for exercising the wrapper outside the container's /bin.
@@ -135,6 +137,7 @@ test("real direnv exports, unsets, blocks unapproved files, and isolates project
   let result = await exec(path.join(root, "one"), "echo MUST_NOT_EXECUTE");
   assert.notEqual(result.exitCode, 0);
   assert.ok(!result.output.includes("MUST_NOT_EXECUTE"));
+  assert.match(result.output, /direnv:.*blocked/);
   for (const name of ["one", "two"]) {
     const result = await local.exec(
       `"${process.env.TEST_DIRENV}" allow .`,
@@ -151,12 +154,25 @@ test("real direnv exports, unsets, blocks unapproved files, and isolates project
       ),
     ),
   );
-  assert.match(results[0].output, /RESULT:first:unset/);
-  assert.match(results[1].output, /RESULT:second:unset/);
+  assert.equal(results[0].output, "RESULT:first:unset");
+  assert.equal(results[1].output, "RESULT:second:unset");
+  result = await exec(
+    path.join(root, "one"),
+    "printf COMMAND_ERROR >&2; exit 13",
+  );
+  assert.equal(result.exitCode, 13);
+  assert.match(result.output, /COMMAND_ERROR/);
+  assert.match(result.output, /SETUP_STDOUT/);
+  assert.match(result.output, /SETUP_STDERR/);
+  result = await exec(path.join(root, "one"), "printf COMMAND_STDERR >&2");
+  assert.equal(result.output, "COMMAND_STDERR");
   result = await exec(root, "printf 'RESULT:%s' \"${PROJECT_VALUE-unset}\"");
   assert.match(result.output, /RESULT:unset/);
   assert.equal((await exec(path.join(root, "one"), "exit 13")).exitCode, 13);
-  await writeFile(path.join(root, "one/.envrc"), "return 1\n");
+  await writeFile(
+    path.join(root, "one/.envrc"),
+    "echo SETUP_FAILURE >&2\nreturn 1\n",
+  );
   assert.equal(
     (
       await local.exec(
@@ -167,10 +183,10 @@ test("real direnv exports, unsets, blocks unapproved files, and isolates project
     ).exitCode,
     0,
   );
-  assert.notEqual(
-    (await exec(path.join(root, "one"), "echo MUST_NOT_EXECUTE")).exitCode,
-    0,
-  );
+  result = await exec(path.join(root, "one"), "echo MUST_NOT_EXECUTE");
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.output, /SETUP_FAILURE/);
+  assert.ok(!result.output.includes("MUST_NOT_EXECUTE"));
 });
 
 test(
