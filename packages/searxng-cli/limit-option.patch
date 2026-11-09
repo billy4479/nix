@@ -1,0 +1,37 @@
+diff --git a/src/main.rs b/src/main.rs
+index 091cd61..57f172c 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -41,6 +41,14 @@ enum Commands {
+         /// Print the full JSON response instead of compact output
+         #[arg(short, long)]
+         json: bool,
++        /// Maximum number of results to show, from 1 to 20
++        #[arg(
++            short,
++            long,
++            default_value_t = 10,
++            value_parser = clap::builder::RangedI64ValueParser::<usize>::new().range(1..=20)
++        )]
++        limit: usize,
+     },
+     /// Manage configuration
+     Config {
+@@ -83,6 +91,7 @@ async fn main() -> Result<()> {
+             time_range,
+             safe_search,
+             json,
++            limit,
+         } => {
+             let config = config_manager.load_config()?;
+             let client = SearXNGClient::new(config);
+@@ -99,7 +108,8 @@ async fn main() -> Result<()> {
+             };
+ 
+             match client.search(params).await {
+-                Ok(response) => {
++                Ok(mut response) => {
++                    response.results.truncate(limit);
+                     if json {
+                         let json_output = serde_json::to_string_pretty(&response)?;
+                         println!("{}", json_output);

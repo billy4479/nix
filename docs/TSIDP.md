@@ -16,9 +16,9 @@ impossible by design.
 ## Architecture
 
 The container (id 25, IP `10.0.1.25`) runs a **patched** `tsidp` from
-`myPackages` (the `tsidp` branch of the `nix-packages` repository; the
-patches are `headscale-proxy.patch`, `public-clients.patch` and
-`browser-rp-cors.patch`, wired into `tsidp/default.nix` — see
+`packages/tsidp` in this repository (the patches are
+`headscale-proxy.patch`, `public-clients.patch` and
+`browser-rp-cors.patch`, wired into `packages/tsidp/default.nix`; see
 [deployments/tsidp-opencloud.md](deployments/tsidp-opencloud.md) for the
 purpose of the latter two). The full flag list is in
 `services/services/tsidp.nix`; the non-obvious parts and their reasons:

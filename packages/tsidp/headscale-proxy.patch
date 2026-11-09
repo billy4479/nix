@@ -1,0 +1,385 @@
+diff --git a/README.md b/README.md
+index 6d77c03..95aecab 100644
+--- a/README.md
++++ b/README.md
+@@ -225,6 +225,7 @@ The Docker image exposes the CLI flags through environment variables. If omitted
+ | `TS_HOSTNAME=<hostname>` _\*note prefix_ | `-hostname <hostname>`     |
+ | `TSIDP_PORT=<port>`                      | `-port <port>`             |
+ | `TSIDP_LOCAL_PORT=<local-port>`          | `-local-port <local-port>` |
++| `TSIDP_LISTEN=<addr>`                    | `-listen <addr>`           |
+ | `TSIDP_USE_LOCAL_TAILSCALED=1`           | `-use-local-tailscaled`    |
+ | `TSIDP_USE_FUNNEL=1`                     | `-funnel`                  |
+ | `TSIDP_ENABLE_STS=1`                     | `-enable-sts`              |
+diff --git a/server/appcap.go b/server/appcap.go
+index f0275d9..d89ded9 100644
+--- a/server/appcap.go
++++ b/server/appcap.go
+@@ -78,17 +78,10 @@ func (s *IDPServer) addGrantAccessContext(handler http.HandlerFunc) http.Handler
+ 		// Build the access rules from granted application capabilities
+ 		accessRules := &accessGrantedRules{}
+ 
+-		var remoteAddr string
+-		if s.localTSMode {
+-			remoteAddr = lastForwardedForAddr(r)
+-		} else {
+-			remoteAddr = r.RemoteAddr
+-		}
+-
+ 		var who *apitype.WhoIsResponse
+ 		var err error
+ 
+-		who, err = s.lc.WhoIs(r.Context(), remoteAddr)
++		who, err = s.lc.WhoIs(r.Context(), s.whoisAddr(r))
+ 		if err != nil {
+ 			writeHTTPError(w, r, http.StatusInternalServerError, ecServerError, "Error getting WhoIs", err)
+ 			return
+diff --git a/server/authorize.go b/server/authorize.go
+index 3cd04c2..404ca73 100644
+--- a/server/authorize.go
++++ b/server/authorize.go
+@@ -89,17 +89,9 @@ func (s *IDPServer) serveAuthorize(w http.ResponseWriter, r *http.Request) {
+ 	}
+ 
+ 	// Get user information
+-	var remoteAddr string
+-	if s.localTSMode {
+-		remoteAddr = lastForwardedForAddr(r)
+-	} else {
+-		remoteAddr = r.RemoteAddr
+-	}
+-
+-	// Check who is visiting the authorize endpoint.
+ 	var who *apitype.WhoIsResponse
+ 	var err error
+-	who, err = s.lc.WhoIs(r.Context(), remoteAddr)
++	who, err = s.lc.WhoIs(r.Context(), s.whoisAddr(r))
+ 	if err != nil {
+ 		writeHTTPError(w, r, http.StatusInternalServerError, ecServerError, "failed to authenticate user with WhoIs", err)
+ 		return
+diff --git a/server/proxy_test.go b/server/proxy_test.go
+new file mode 100644
+index 0000000..1ba849f
+--- /dev/null
++++ b/server/proxy_test.go
+@@ -0,0 +1,143 @@
++// Copyright (c) Tailscale Inc & AUTHORS
++// SPDX-License-Identifier: BSD-3-Clause
++
++package server
++
++import (
++	"encoding/json"
++	"net/http"
++	"net/http/httptest"
++	"net/netip"
++	"testing"
++)
++
++// TestWhoisAddrTrustedProxy tests that whoisAddr only honors X-Real-IP for
++// requests that come from the configured trusted proxy.
++func TestWhoisAddrTrustedProxy(t *testing.T) {
++	proxyAddr := netip.MustParseAddr("100.64.0.10")
++
++	tests := []struct {
++		name        string
++		trusted     bool
++		localTSMode bool
++		remoteAddr  string
++		xRealIP     string
++		xff         string
++		want        string
++	}{
++		{
++			name:       "honors X-Real-IP from trusted proxy",
++			trusted:    true,
++			remoteAddr: "100.64.0.10:44312",
++			xRealIP:    "100.101.102.103",
++			want:       "100.101.102.103",
++		},
++		{
++			name:       "ignores X-Real-IP from other addresses",
++			trusted:    true,
++			remoteAddr: "100.64.0.11:44312",
++			xRealIP:    "100.101.102.103",
++			want:       "100.64.0.11:44312",
++		},
++		{
++			name:       "no trusted proxy returns remote addr",
++			remoteAddr: "100.64.0.10:44312",
++			xRealIP:    "100.101.102.103",
++			want:       "100.64.0.10:44312",
++		},
++		{
++			name:       "malformed X-Real-IP returns remote addr",
++			trusted:    true,
++			remoteAddr: "100.64.0.10:44312",
++			xRealIP:    "not-an-ip",
++			want:       "100.64.0.10:44312",
++		},
++		{
++			name:        "local tailscaled mode uses X-Forwarded-For",
++			trusted:     true,
++			localTSMode: true,
++			remoteAddr:  "127.0.0.1:52000",
++			xff:         "100.64.5.6, 100.64.5.7",
++			want:        "100.64.5.7",
++		},
++		{
++			name:        "local tailscaled mode falls back to remote addr",
++			trusted:     true,
++			localTSMode: true,
++			remoteAddr:  "127.0.0.1:52000",
++			want:        "127.0.0.1:52000",
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			s := &IDPServer{
++				localTSMode: tt.localTSMode,
++			}
++			if tt.trusted {
++				s.SetTrustedProxy(proxyAddr)
++			}
++
++			r := httptest.NewRequest("GET", "/authorize", nil)
++			r.RemoteAddr = tt.remoteAddr
++			if tt.xRealIP != "" {
++				r.Header.Set("X-Real-IP", tt.xRealIP)
++			}
++			if tt.xff != "" {
++				r.Header.Set("X-Forwarded-For", tt.xff)
++			}
++
++			if got := s.whoisAddr(r); got != tt.want {
++				t.Errorf("whoisAddr() = %q, want %q", got, tt.want)
++			}
++		})
++	}
++}
++
++// TestSetRawServerURL tests that SetRawServerURL rejects invalid URLs.
++func TestSetRawServerURL(t *testing.T) {
++	s := &IDPServer{}
++
++	const want = "https://idp.internal.polpetta.online"
++	if err := s.SetRawServerURL(want); err != nil {
++		t.Fatalf("SetRawServerURL() error: %v", err)
++	}
++	if got := s.ServerURL(); got != want {
++		t.Errorf("ServerURL() = %q, want %q", got, want)
++	}
++
++	for _, bad := range []string{"", "idp.example.com", "ftp://idp.example.com", "https://"} {
++		if err := s.SetRawServerURL(bad); err == nil {
++			t.Errorf("SetRawServerURL(%q) = nil error, want error", bad)
++		}
++	}
++}
++
++// TestSetRawServerURLIssuer tests that the URL set by SetRawServerURL is
++// advertised as the issuer in the OIDC discovery metadata.
++func TestSetRawServerURLIssuer(t *testing.T) {
++	const want = "https://idp.internal.polpetta.online"
++
++	s := &IDPServer{}
++	if err := s.SetRawServerURL(want); err != nil {
++		t.Fatalf("SetRawServerURL() error: %v", err)
++	}
++
++	req := httptest.NewRequest("GET", "/.well-known/openid-configuration", nil)
++	rr := httptest.NewRecorder()
++	s.serveOpenIDConfig(rr, req)
++
++	if rr.Code != http.StatusOK {
++		t.Fatalf("expected status 200, got %d", rr.Code)
++	}
++
++	var metadata struct {
++		Issuer string `json:"issuer"`
++	}
++	if err := json.Unmarshal(rr.Body.Bytes(), &metadata); err != nil {
++		t.Fatalf("failed to unmarshal metadata: %v", err)
++	}
++	if metadata.Issuer != want {
++		t.Errorf("issuer = %q, want %q", metadata.Issuer, want)
++	}
++}
+diff --git a/server/server.go b/server/server.go
+index af76648..4897f7f 100644
+--- a/server/server.go
++++ b/server/server.go
+@@ -18,6 +18,8 @@ import (
+ 	"log/slog"
+ 	"net"
+ 	"net/http"
++	"net/netip"
++	"net/url"
+ 	"os"
+ 	"path/filepath"
+ 	"strconv"
+@@ -50,6 +52,10 @@ type IDPServer struct {
+ 	localTSMode bool // use local tailscaled instead of tsnet
+ 	enableSTS   bool
+ 
++	// trustedProxy is the address of a reverse proxy in front of tsidp
++	// whose X-Real-IP header is trusted. The zero value means unset.
++	trustedProxy netip.Addr
++
+ 	lazyMux        lazy.SyncValue[http.Handler]
+ 	lazySigningKey lazy.SyncValue[*signingKey]
+ 	lazySigner     lazy.SyncValue[jose.Signer]
+@@ -192,6 +198,50 @@ func (s *IDPServer) ServerURL() string {
+ 	return s.serverURL
+ }
+ 
++// SetRawServerURL sets the server URL directly, instead of deriving it from
++// the tsnet hostname. It returns an error if serverURL is not an absolute
++// http(s) URL, leaving the previous URL in place.
++func (s *IDPServer) SetRawServerURL(serverURL string) error {
++	u, err := url.Parse(serverURL)
++	if err != nil {
++		return err
++	}
++	if (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
++		return fmt.Errorf("server URL %q must be an absolute http(s) URL", serverURL)
++	}
++	s.serverURL = serverURL
++	return nil
++}
++
++// SetTrustedProxy sets the address of a reverse proxy in front of tsidp
++// whose X-Real-IP header is trusted for WhoIs lookups.
++func (s *IDPServer) SetTrustedProxy(addr netip.Addr) {
++	s.trustedProxy = addr
++}
++
++// whoisAddr returns the address to use for the WhoIs lookup of a request:
++// the last X-Forwarded-For hop in local tailscaled mode, the X-Real-IP when
++// the request comes from the trusted proxy, or the request's remote address
++// otherwise.
++func (s *IDPServer) whoisAddr(r *http.Request) string {
++	if s.localTSMode {
++		if addr := lastForwardedForAddr(r); addr != "" {
++			return addr
++		}
++		return r.RemoteAddr
++	}
++	if s.trustedProxy.IsValid() {
++		if ap, err := netip.ParseAddrPort(r.RemoteAddr); err == nil && ap.Addr() == s.trustedProxy {
++			if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
++				if addr, err := netip.ParseAddr(xrip); err == nil {
++					return addr.String()
++				}
++			}
++		}
++	}
++	return r.RemoteAddr
++}
++
+ // SetLoopbackURL sets the loopback URL
+ func (s *IDPServer) SetLoopbackURL(url string) {
+ 	s.loopbackURL = url
+diff --git a/server/token.go b/server/token.go
+index ea1516f..3767340 100644
+--- a/server/token.go
++++ b/server/token.go
+@@ -675,7 +675,7 @@ func (s *IDPServer) identifyClient(r *http.Request) string {
+ 
+ 	// Check node client
+ 	if s.lc != nil {
+-		who, err := s.lc.WhoIs(r.Context(), r.RemoteAddr)
++		who, err := s.lc.WhoIs(r.Context(), s.whoisAddr(r))
+ 		if err == nil {
+ 			return fmt.Sprintf("node:%d", who.Node.ID)
+ 		}
+diff --git a/tsidp-server.go b/tsidp-server.go
+index 00eadc5..4f66597 100644
+--- a/tsidp-server.go
++++ b/tsidp-server.go
+@@ -18,6 +18,8 @@ import (
+ 	"log/slog"
+ 	"net"
+ 	"net/http"
++	"net/netip"
++	"net/url"
+ 	"os"
+ 	"os/signal"
+ 	"strings"
+@@ -46,6 +48,9 @@ var (
+ 	flagEnableSTS          = flag.Bool("enable-sts", envknob.Bool("TSIDP_ENABLE_STS"), "enable OIDC STS token exchange support")
+ 	flagAdvertiseTags      = flag.String("advertise-tags", envknob.String("TS_ADVERTISE_TAGS"), "comma-separated advertise tags (e.g. tag:tsidp,tag:server); required when using OAuth client secrets")
+ 	flagAuthKeyFile        = flag.String("authkey-file", envknob.String("TS_AUTHKEY_FILE"), "read the Tailscale auth key from this file instead of TS_AUTHKEY (e.g. for Docker/Kubernetes secrets); don't set both")
++	flagListen             = flag.String("listen", envknob.String("TSIDP_LISTEN"), "plain HTTP listen address (e.g. 127.0.0.1:8080); tsnet mode only, incompatible with -funnel and -use-local-tailscaled")
++	flagTrustedProxy       = flag.String("trusted-proxy", "", "IP address of the reverse proxy in front of tsidp whose X-Real-IP header is trusted")
++	flagServerURL          = flag.String("server-url", "", "server URL to advertise (e.g. https://idp.example.com) instead of the one derived from the tailnet hostname")
+ 
+ 	// application logging levels
+ 	flagLogLevel = flag.String("log", cmp.Or(envknob.String("TSIDP_LOG"), "info"), "log levels: debug, info, warn, error")
+@@ -80,6 +85,33 @@ func main() {
+ 		os.Exit(1)
+ 	}
+ 
++	if *flagListen != "" {
++		if *flagUseLocalTailscaled {
++			slog.Error("-listen is not compatible with -use-local-tailscaled")
++			os.Exit(1)
++		}
++		if *flagFunnel {
++			slog.Error("-listen is not compatible with -funnel")
++			os.Exit(1)
++		}
++	}
++
++	var trustedProxy netip.Addr
++	if *flagTrustedProxy != "" {
++		tp, tperr := netip.ParseAddr(*flagTrustedProxy)
++		if tperr != nil {
++			slog.Error("invalid -trusted-proxy", slog.String("addr", *flagTrustedProxy), slog.Any("error", tperr))
++			os.Exit(1)
++		}
++		trustedProxy = tp
++	}
++	if *flagServerURL != "" {
++		if u, uerr := url.Parse(*flagServerURL); uerr != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
++			slog.Error("invalid -server-url", slog.String("url", *flagServerURL))
++			os.Exit(1)
++		}
++	}
++
+ 	var (
+ 		lc          *local.Client
+ 		st          *ipnstate.Status
+@@ -195,7 +227,11 @@ func main() {
+ 		}
+ 
+ 		var ln net.Listener
+-		if *flagFunnel {
++		if *flagListen != "" {
++			// Serve plain HTTP on the configured address, typically when
++			// running behind a reverse proxy that terminates TLS.
++			ln, err = net.Listen("tcp", *flagListen)
++		} else if *flagFunnel {
+ 			if err := ipn.CheckFunnelAccess(uint16(*flagPort), st.Self); err != nil {
+ 				slog.Error("funnel access denied", slog.Any("error", err))
+ 				os.Exit(1)
+@@ -221,7 +257,18 @@ func main() {
+ 		*flagEnableSTS,
+ 	)
+ 
+-	srv.SetServerURL(strings.TrimSuffix(st.Self.DNSName, "."), *flagPort)
++	if *flagServerURL != "" {
++		if err := srv.SetRawServerURL(*flagServerURL); err != nil {
++			slog.Error("invalid -server-url", slog.String("url", *flagServerURL), slog.Any("error", err))
++			os.Exit(1)
++		}
++	} else {
++		srv.SetServerURL(strings.TrimSuffix(st.Self.DNSName, "."), *flagPort)
++	}
++
++	if trustedProxy.IsValid() {
++		srv.SetTrustedProxy(trustedProxy)
++	}
+ 
+ 	// Load funnel clients from disk if they exist, regardless of whether funnel is enabled
+ 	// This ensures OIDC clients persist across restarts

@@ -14,7 +14,10 @@
       quote-bot = inputs.quote-bot.packages.${system}.default;
       read-nix-docs = inputs.read-nix-docs.packages.${system}.default;
     }
-    // inputs.myPackages.packages.${system}
+    // (import ../packages {
+      pkgs = prev;
+      inherit inputs;
+    })
   )
   inputs.nix-snapshotter.overlays.default
 ]

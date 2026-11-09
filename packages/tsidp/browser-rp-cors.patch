@@ -1,0 +1,642 @@
+diff --git a/server/clients.go b/server/clients.go
+index 4c5d043..050b5ba 100644
+--- a/server/clients.go
++++ b/server/clients.go
+@@ -209,6 +209,10 @@ func (s *IDPServer) serveNewClient(w http.ResponseWriter, r *http.Request) {
+ 		return
+ 	}
+ 
++	// The new client's redirect origins become trusted immediately, so a
++	// browser-based client can make cross-origin requests right away.
++	s.trustClientOrigins(client.RedirectURIs)
++
+ 	json.NewEncoder(w).Encode(client)
+ }
+ 
+@@ -392,6 +396,11 @@ func (s *IDPServer) serveDynamicClientRegistration(w http.ResponseWriter, r *htt
+ 		return
+ 	}
+ 
++	// The new client's redirect origins become trusted immediately (e.g.
++	// OpenCloud's web SPA), so a browser-based client can complete its
++	// flow right away.
++	s.trustClientOrigins(client.RedirectURIs)
++
+ 	// Return the client configuration as per RFC 7591
+ 	w.Header().Set("Content-Type", "application/json")
+ 	w.WriteHeader(http.StatusCreated)
+diff --git a/server/cors.go b/server/cors.go
+new file mode 100644
+index 0000000..c562ca7
+--- /dev/null
++++ b/server/cors.go
+@@ -0,0 +1,130 @@
++// Copyright (c) Tailscale Inc & AUTHORS
++// SPDX-License-Identifier: BSD-3-Clause
++
++package server
++
++import (
++	"net"
++	"net/http"
++	"net/url"
++	"strings"
++
++	"filippo.io/csrf"
++)
++
++// csrfProtection returns the server's cross-origin protection. It is created
++// lazily so that a zero-valued IDPServer works, and created only once so that
++// trusted origins registered when a client is registered later apply to the
++// mux handler built by newMux.
++func (s *IDPServer) csrfProtection() *csrf.Protection {
++	return s.lazyCSRF.Get(func() *csrf.Protection {
++		return csrf.New()
++	})
++}
++
++// originOf returns the origin of uri as it would appear in a browser's Origin
++// header: "scheme://host[:port]", lowercased, with default ports elided and
++// any path, query or fragment dropped. It reports false when uri does not
++// carry both a scheme and a host (e.g. a relative URI or a custom-scheme
++// mobile redirect), in which case it names no browser origin.
++func originOf(uri string) (string, bool) {
++	u, err := url.Parse(strings.TrimSpace(uri))
++	if err != nil || u.Scheme == "" || u.Host == "" {
++		return "", false
++	}
++	host := strings.ToLower(u.Hostname())
++	if p := u.Port(); p != "" &&
++		!(u.Scheme == "https" && p == "443") &&
++		!(u.Scheme == "http" && p == "80") {
++		host = net.JoinHostPort(host, p)
++	}
++	return u.Scheme + "://" + host, true
++}
++
++// redirectURIOrigins returns the browser origins of the given redirect URIs.
++// Origins that cannot be derived (relative or custom-scheme URIs) are
++// skipped.
++func redirectURIOrigins(uris []string) []string {
++	var origins []string
++	for _, uri := range uris {
++		if o, ok := originOf(uri); ok {
++			origins = append(origins, o)
++		}
++	}
++	return origins
++}
++
++// registeredClientOrigins returns the origins of every registered client's
++// redirect URIs.
++func (s *IDPServer) registeredClientOrigins() []string {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	var origins []string
++	for _, c := range s.funnelClients {
++		origins = append(origins, redirectURIOrigins(c.RedirectURIs)...)
++	}
++	return origins
++}
++
++// clientRedirectOrigins returns the origins of a registered client's redirect
++// URIs, or nil when clientID is not registered.
++func (s *IDPServer) clientRedirectOrigins(clientID string) []string {
++	s.mu.Lock()
++	c, ok := s.funnelClients[clientID]
++	s.mu.Unlock()
++	if !ok {
++		return nil
++	}
++	return redirectURIOrigins(c.RedirectURIs)
++}
++
++// trustClientOrigins adds the origins of the given redirect URIs to the
++// cross-origin protection's trusted origins, so that a browser-based relying
++// party can make cross-origin token requests from its own origin. The
++// protection is safe for concurrent use and applies new trusted origins to
++// future requests.
++func (s *IDPServer) trustClientOrigins(redirectURIs []string) {
++	for _, o := range redirectURIOrigins(redirectURIs) {
++		s.csrfProtection().AddTrustedOrigin(o)
++	}
++}
++
++// tokenRequestClientOrigins resolves the origins of the registered client
++// addressed by a token request's credentials: HTTP basic auth, or the
++// client_id form field. The client is not authenticated here; this only
++// decides whether the request's origin may be told it can read the response,
++// which is safe because the grant handlers still enforce client
++// authentication before any token is issued.
++func (s *IDPServer) tokenRequestClientOrigins(r *http.Request) []string {
++	clientID, _, _ := r.BasicAuth()
++	if clientID == "" {
++		clientID = r.FormValue("client_id")
++	}
++	if clientID == "" {
++		return nil
++	}
++	return s.clientRedirectOrigins(clientID)
++}
++
++// setCorsHeaders reflects the request's Origin as Access-Control-Allow-Origin
++// when it matches one of the allowed origins, adding Vary: Origin and the
++// request headers a browser relying party sends. It reports whether the
++// headers were set. Call it before any response is written, so error
++// responses carry the headers too and remain readable by the browser.
++func setCorsHeaders(w http.ResponseWriter, r *http.Request, allowed []string) bool {
++	origin := r.Header.Get("Origin")
++	if origin == "" {
++		return false
++	}
++	for _, o := range allowed {
++		if o != origin {
++			continue
++		}
++		h := w.Header()
++		h.Set("Access-Control-Allow-Origin", origin)
++		h.Set("Vary", "Origin")
++		h.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
++		return true
++	}
++	return false
++}
+diff --git a/server/cors_test.go b/server/cors_test.go
+new file mode 100644
+index 0000000..ea468ff
+--- /dev/null
++++ b/server/cors_test.go
+@@ -0,0 +1,329 @@
++// Copyright (c) Tailscale Inc & AUTHORS
++// SPDX-License-Identifier: BSD-3-Clause
++
++package server
++
++import (
++	"encoding/json"
++	"fmt"
++	"net/http"
++	"net/http/httptest"
++	"net/url"
++	"strings"
++	"testing"
++	"time"
++)
++
++// browserSPAOrigin is the origin of a browser-based relying party, like
++// OpenCloud's web SPA, served from a different origin than the issuer.
++const browserSPAOrigin = "https://spa.example.com"
++
++// newBrowserRPTestServer returns a server with a registered public PKCE
++// client whose redirect URI lives on browserSPAOrigin, ready to serve
++// requests through the full mux, including the CSRF protection.
++func newBrowserRPTestServer(t *testing.T) *IDPServer {
++	t.Helper()
++	s := New(nil, "", false, false, false)
++	s.serverURL = "https://idp.test.ts.net"
++	s.stateDir = t.TempDir()
++	s.funnelClients["spa-client"] = &FunnelClient{
++		ID:           "spa-client",
++		RedirectURIs: []string{browserSPAOrigin + "/oidc-callback.html"},
++	}
++	// Allow DCR and the /clients/ API without a WhoIs capability, like the
++	// registerDCRClient helper does.
++	s.bypassAppCapCheck = true
++	s.lazySigner.Set(oidcTestingSigner(t))
++	return s
++}
++
++// browserRequest marks r as a cross-site browser request from origin.
++func browserRequest(r *http.Request, origin string) {
++	r.Header.Set("Origin", origin)
++	r.Header.Set("Sec-Fetch-Site", "cross-site")
++}
++
++// putAuthorizationCode stores a fresh authorization code for the client fc,
++// using its first redirect URI and, when pkce is set, an S256 challenge.
++func putAuthorizationCode(t *testing.T, s *IDPServer, code string, fc *FunnelClient, pkce bool) {
++	t.Helper()
++	ar := &AuthRequest{
++		FunnelRP:    fc,
++		ClientID:    fc.ID,
++		RedirectURI: fc.RedirectURIs[0],
++		Scopes:      []string{"openid"},
++		RemoteUser:  testRemoteUser(),
++		ValidTill:   time.Now().Add(5 * time.Minute),
++	}
++	if pkce {
++		ar.CodeChallenge = testCodeChallenge(t)
++		ar.CodeChallengeMethod = "S256"
++	}
++	s.mu.Lock()
++	s.code[code] = ar
++	s.mu.Unlock()
++}
++
++// postToken sends a cross-site browser POST /token from origin through the
++// full mux, exercising the CSRF protection.
++func postToken(t *testing.T, s *IDPServer, origin string, form url.Values) *httptest.ResponseRecorder {
++	t.Helper()
++	req := postTokenForm(form)
++	browserRequest(req, origin)
++	rr := httptest.NewRecorder()
++	s.ServeHTTP(rr, req)
++	return rr
++}
++
++// TestOriginOf covers the origin derivation from redirect URIs: path and
++// query are dropped, hosts are lowercased, default ports are elided and URIs
++// without a browser origin yield false.
++func TestOriginOf(t *testing.T) {
++	tests := []struct {
++		uri  string
++		want string
++	}{
++		{"https://spa.example.com/oidc-callback.html", "https://spa.example.com"},
++		{"https://spa.example.com/oidc-silent-redirect.html?x=1#f", "https://spa.example.com"},
++		{"https://spa.example.com", "https://spa.example.com"},
++		{"https://SPA.Example.COM/oidc-callback.html", "https://spa.example.com"},
++		{"https://spa.example.com:443/oidc-callback.html", "https://spa.example.com"},
++		{"http://localhost:9200/oauth2-redirect", "http://localhost:9200"},
++		{"http://localhost:80/oauth2-redirect", "http://localhost"},
++		{"io.opencloud.mobile:/oauth2redirect", ""},
++		{"/oidc-callback.html", ""},
++		{"", ""},
++	}
++
++	for _, tt := range tests {
++		got, ok := originOf(tt.uri)
++		if tt.want == "" {
++			if ok {
++				t.Errorf("originOf(%q) = %q, want no origin", tt.uri, got)
++			}
++			continue
++		}
++		if !ok || got != tt.want {
++			t.Errorf("originOf(%q) = %q, %v; want %q", tt.uri, got, ok, tt.want)
++		}
++	}
++}
++
++// TestBrowserClientTokenFlowTrustedOrigin tests that a pre-registered
++// client's redirect origin is trusted at mux setup: a cross-site browser
++// POST /token passes the CSRF check end-to-end, and the CORS headers are
++// present both on a successful response and on an error response, so the SPA
++// can read OAuth errors too.
++func TestBrowserClientTokenFlowTrustedOrigin(t *testing.T) {
++	const code = "test-code"
++
++	s := newBrowserRPTestServer(t)
++	fc := s.funnelClients["spa-client"]
++	redirectURI := fc.RedirectURIs[0]
++
++	// Successful exchange: the redirect origin is trusted and the response
++	// carries the CORS headers.
++	putAuthorizationCode(t, s, code, fc, true)
++	rr := postToken(t, s, browserSPAOrigin, url.Values{
++		"grant_type":    {"authorization_code"},
++		"code":          {code},
++		"redirect_uri":  {redirectURI},
++		"client_id":     {fc.ID},
++		"code_verifier": {testCodeVerifier},
++	})
++	if rr.Code != http.StatusOK {
++		t.Fatalf("POST /token = %d: %s", rr.Code, rr.Body.String())
++	}
++	if got := rr.Header().Get("Access-Control-Allow-Origin"); got != browserSPAOrigin {
++		t.Errorf("Access-Control-Allow-Origin = %q, want %q", got, browserSPAOrigin)
++	}
++	if got := rr.Header().Get("Vary"); got != "Origin" {
++		t.Errorf("Vary = %q, want Origin", got)
++	}
++	if got := rr.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, Authorization" {
++		t.Errorf("Access-Control-Allow-Headers = %q, want %q", got, "Content-Type, Authorization")
++	}
++
++	// Error responses must carry the CORS headers too, so the SPA can read
++	// the OAuth error instead of an opaque CORS failure.
++	putAuthorizationCode(t, s, code, fc, true)
++	rr = postToken(t, s, browserSPAOrigin, url.Values{
++		"grant_type":    {"authorization_code"},
++		"code":          {"unknown-code"},
++		"redirect_uri":  {redirectURI},
++		"client_id":     {fc.ID},
++		"code_verifier": {testCodeVerifier},
++	})
++	if rr.Code != http.StatusBadRequest {
++		t.Fatalf("POST /token with unknown code = %d, want 400", rr.Code)
++	}
++	if got := rr.Header().Get("Access-Control-Allow-Origin"); got != browserSPAOrigin {
++		t.Errorf("error response Access-Control-Allow-Origin = %q, want %q", got, browserSPAOrigin)
++	}
++}
++
++// TestDCRClientOriginTrusted tests that a client registered over DCR has its
++// redirect origins trusted immediately: a cross-site browser token request
++// from the newly registered origin passes the CSRF check and carries the
++// CORS headers.
++func TestDCRClientOriginTrusted(t *testing.T) {
++	const (
++		redirectURI = "https://cloud.example.com/oidc-callback.html"
++		code        = "test-code"
++	)
++
++	s := newBrowserRPTestServer(t)
++
++	// Register the OpenCloud-style public client over DCR through the full
++	// mux.
++	body := fmt.Sprintf(`{
++		"redirect_uris": [%q],
++		"client_name": "opencloud",
++		"token_endpoint_auth_method": "none"
++	}`, redirectURI)
++	req := httptest.NewRequest("POST", "/register", strings.NewReader(body))
++	req.Header.Set("Content-Type", "application/json")
++	rr := httptest.NewRecorder()
++	s.ServeHTTP(rr, req)
++	if rr.Code != http.StatusCreated {
++		t.Fatalf("POST /register = %d: %s", rr.Code, rr.Body.String())
++	}
++	var reg struct {
++		ClientID string `json:"client_id"`
++	}
++	if err := json.Unmarshal(rr.Body.Bytes(), &reg); err != nil {
++		t.Fatalf("failed to unmarshal registration response: %v", err)
++	}
++
++	s.mu.Lock()
++	fc := s.funnelClients[reg.ClientID]
++	s.mu.Unlock()
++	if fc == nil {
++		t.Fatalf("client %s not stored after registration", reg.ClientID)
++	}
++
++	putAuthorizationCode(t, s, code, fc, true)
++	rr = postToken(t, s, "https://cloud.example.com", url.Values{
++		"grant_type":    {"authorization_code"},
++		"code":          {code},
++		"redirect_uri":  {redirectURI},
++		"client_id":     {fc.ID},
++		"code_verifier": {testCodeVerifier},
++	})
++	if rr.Code != http.StatusOK {
++		t.Fatalf("POST /token = %d: %s", rr.Code, rr.Body.String())
++	}
++	if got := rr.Header().Get("Access-Control-Allow-Origin"); got != "https://cloud.example.com" {
++		t.Errorf("Access-Control-Allow-Origin = %q, want %q", got, "https://cloud.example.com")
++	}
++}
++
++// TestUntrustedOriginRejected tests that a cross-site browser token request
++// from an origin that no registered client's redirect URI names is still
++// rejected by the CSRF protection, with no CORS headers on the response.
++func TestUntrustedOriginRejected(t *testing.T) {
++	s := newBrowserRPTestServer(t)
++	fc := s.funnelClients["spa-client"]
++
++	putAuthorizationCode(t, s, "test-code", fc, true)
++	rr := postToken(t, s, "https://evil.example.com", url.Values{
++		"grant_type":    {"authorization_code"},
++		"code":          {"test-code"},
++		"redirect_uri":  {fc.RedirectURIs[0]},
++		"client_id":     {fc.ID},
++		"code_verifier": {testCodeVerifier},
++	})
++	if rr.Code != http.StatusForbidden {
++		t.Fatalf("POST /token from untrusted origin = %d, want 403: %s", rr.Code, rr.Body.String())
++	}
++	if got := rr.Header().Get("Access-Control-Allow-Origin"); got != "" {
++		t.Errorf("Access-Control-Allow-Origin = %q, want no header for an untrusted origin", got)
++	}
++	if !strings.Contains(rr.Body.String(), "cross-origin") {
++		t.Errorf("expected a cross-origin rejection body, got %q", rr.Body.String())
++	}
++}
++
++// TestBrowserCORSPreflight tests that OPTIONS on /token and /userinfo answer
++// 204 with the CORS headers for registered origins, and without them for
++// unregistered origins.
++func TestBrowserCORSPreflight(t *testing.T) {
++	s := newBrowserRPTestServer(t)
++
++	for _, path := range []string{"/token", "/userinfo"} {
++		req := httptest.NewRequest("OPTIONS", path, nil)
++		browserRequest(req, browserSPAOrigin)
++		rr := httptest.NewRecorder()
++		s.ServeHTTP(rr, req)
++
++		if rr.Code != http.StatusNoContent {
++			t.Errorf("OPTIONS %s = %d, want 204", path, rr.Code)
++		}
++		if got := rr.Header().Get("Access-Control-Allow-Origin"); got != browserSPAOrigin {
++			t.Errorf("OPTIONS %s Access-Control-Allow-Origin = %q, want %q", path, got, browserSPAOrigin)
++		}
++	}
++
++	req := httptest.NewRequest("OPTIONS", "/token", nil)
++	browserRequest(req, "https://evil.example.com")
++	rr := httptest.NewRecorder()
++	s.ServeHTTP(rr, req)
++	if rr.Code != http.StatusNoContent {
++		t.Errorf("OPTIONS /token from untrusted origin = %d, want 204", rr.Code)
++	}
++	if got := rr.Header().Get("Access-Control-Allow-Origin"); got != "" {
++		t.Errorf("OPTIONS /token from untrusted origin set Access-Control-Allow-Origin = %q, want no header", got)
++	}
++}
++
++// TestUserInfoCORSForTokenClient tests that cross-origin /userinfo responses
++// carry the CORS headers of the token's client: the SPA can read the profile
++// of the tokens it obtained, while an unregistered origin cannot.
++func TestUserInfoCORSForTokenClient(t *testing.T) {
++	s := newBrowserRPTestServer(t)
++	fc := s.funnelClients["spa-client"]
++
++	// Obtain an access token for the SPA client through the browser flow.
++	putAuthorizationCode(t, s, "test-code", fc, true)
++	rr := postToken(t, s, browserSPAOrigin, url.Values{
++		"grant_type":    {"authorization_code"},
++		"code":          {"test-code"},
++		"redirect_uri":  {fc.RedirectURIs[0]},
++		"client_id":     {fc.ID},
++		"code_verifier": {testCodeVerifier},
++	})
++	if rr.Code != http.StatusOK {
++		t.Fatalf("POST /token = %d: %s", rr.Code, rr.Body.String())
++	}
++	var tokenResp oidcTokenResponse
++	if err := json.Unmarshal(rr.Body.Bytes(), &tokenResp); err != nil {
++		t.Fatalf("failed to unmarshal token response: %v", err)
++	}
++
++	// Cross-origin /userinfo from the client's own origin works.
++	req := httptest.NewRequest("GET", "/userinfo", nil)
++	req.Header.Set("Authorization", "Bearer "+tokenResp.AccessToken)
++	browserRequest(req, browserSPAOrigin)
++	rr = httptest.NewRecorder()
++	s.ServeHTTP(rr, req)
++	if rr.Code != http.StatusOK {
++		t.Fatalf("GET /userinfo = %d: %s", rr.Code, rr.Body.String())
++	}
++	if got := rr.Header().Get("Access-Control-Allow-Origin"); got != browserSPAOrigin {
++		t.Errorf("Access-Control-Allow-Origin = %q, want %q", got, browserSPAOrigin)
++	}
++
++	// An origin registered by no client gets no CORS headers, even though
++	// the CSRF protection lets safe methods through.
++	req = httptest.NewRequest("GET", "/userinfo", nil)
++	req.Header.Set("Authorization", "Bearer "+tokenResp.AccessToken)
++	browserRequest(req, "https://evil.example.com")
++	rr = httptest.NewRecorder()
++	s.ServeHTTP(rr, req)
++	if rr.Code != http.StatusOK {
++		t.Fatalf("GET /userinfo from untrusted origin = %d: %s", rr.Code, rr.Body.String())
++	}
++	if got := rr.Header().Get("Access-Control-Allow-Origin"); got != "" {
++		t.Errorf("Access-Control-Allow-Origin = %q, want no header for an untrusted origin", got)
++	}
++}
+diff --git a/server/server.go b/server/server.go
+index 4897f7f..d08d9c0 100644
+--- a/server/server.go
++++ b/server/server.go
+@@ -59,6 +59,7 @@ type IDPServer struct {
+ 	lazyMux        lazy.SyncValue[http.Handler]
+ 	lazySigningKey lazy.SyncValue[*signingKey]
+ 	lazySigner     lazy.SyncValue[jose.Signer]
++	lazyCSRF       lazy.SyncValue[*csrf.Protection]
+ 
+ 	mu            sync.Mutex               // guards the fields below
+ 	code          map[string]*AuthRequest  // keyed by random hex
+@@ -313,8 +314,20 @@ func (s *IDPServer) newMux() http.Handler {
+ 	// Register UI handler - must be last as it handles "/"
+ 	mux.Handle("/", s.addGrantAccessContext(s.handleUI))
+ 
+-	protect := csrf.New()
++	protect := s.csrfProtection()
+ 	protect.AddTrustedOrigin(s.serverURL)
++
++	// Trust the origin of every registered client's redirect URIs, so that
++	// browser-based relying parties (e.g. the OpenCloud web SPA) can
++	// complete the authorization code + PKCE flow from their own origin:
++	// the protection would otherwise reject their cross-origin token
++	// requests. The funnel clients are loaded from disk before the server
++	// starts serving, so by the time this lazy mux is built all persisted
++	// clients are known; clients registered later are trusted by the
++	// registration handlers themselves.
++	for _, origin := range s.registeredClientOrigins() {
++		protect.AddTrustedOrigin(origin)
++	}
+ 	return protect.Handler(mux)
+ }
+ 
+diff --git a/server/token.go b/server/token.go
+index 51f478b..6ec33fe 100644
+--- a/server/token.go
++++ b/server/token.go
+@@ -144,16 +144,22 @@ func (tc tailscaleClaims) toMap() map[string]any {
+ 
+ // serveToken is the main /token endpoint handler
+ func (s *IDPServer) serveToken(w http.ResponseWriter, r *http.Request) {
+-	h := w.Header()
+-	h.Set("Access-Control-Allow-Origin", "*")
+-	h.Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+-	h.Set("Access-Control-Allow-Headers", "*")
+-
+ 	if r.Method == "OPTIONS" {
++		// A browser CORS preflight. The client that will issue the actual
++		// request is not known yet, so allow the origins registered by any
++		// client's redirect URIs.
++		setCorsHeaders(w, r, s.registeredClientOrigins())
+ 		w.WriteHeader(http.StatusNoContent)
+ 		return
+ 	}
+ 
++	// Browser-based relying parties (e.g. the OpenCloud web SPA) make
++	// cross-origin token requests. Reflect the CORS headers of the
++	// addressed client's registered origins before any processing, so both
++	// success and error responses stay readable by the browser that made
++	// the request.
++	setCorsHeaders(w, r, s.tokenRequestClientOrigins(r))
++
+ 	if r.Method != "POST" {
+ 		writeHTTPError(w, r, http.StatusMethodNotAllowed, ecInvalidRequest, "method not allowed", nil)
+ 		return
+diff --git a/server/token_test.go b/server/token_test.go
+index 6e6795f..e0a607c 100644
+--- a/server/token_test.go
++++ b/server/token_test.go
+@@ -1590,26 +1590,32 @@ func TestServeTokenWithClientValidation(t *testing.T) {
+ }
+ 
+ func TestTokenCORSHeaders(t *testing.T) {
+-	s := &IDPServer{
+-		serverURL: "https://idp.test.ts.net",
++	s := New(nil, "", false, false, false)
++	s.serverURL = "https://idp.test.ts.net"
++	const origin = "https://rp.example.com"
++	s.funnelClients["test-client"] = &FunnelClient{
++		ID:           "test-client",
++		RedirectURIs: []string{origin + "/callback"},
+ 	}
++
+ 	req := httptest.NewRequest("OPTIONS", "/token", nil)
++	req.Header.Set("Origin", origin)
++	req.Header.Set("Sec-Fetch-Site", "cross-site")
+ 	rr := httptest.NewRecorder()
+ 	s.ServeHTTP(rr, req)
+ 
+ 	ao := rr.Header().Get("Access-Control-Allow-Origin")
+-	am := rr.Header().Get("Access-Control-Allow-Methods")
+ 	ah := rr.Header().Get("Access-Control-Allow-Headers")
+ 
+-	if ao != "*" {
+-		t.Errorf("expected Access-Control-Allow-Origin to be '*', got %s", ao)
++	if rr.Code != http.StatusNoContent {
++		t.Errorf("expected status 204, got %d", rr.Code)
+ 	}
+ 
+-	if am != "POST, OPTIONS" {
+-		t.Errorf("expected Access-Control-Allow-Methods to be 'POST, OPTIONS, got %s", am)
++	if ao != origin {
++		t.Errorf("expected Access-Control-Allow-Origin to be %q, got %s", origin, ao)
+ 	}
+ 
+-	if ah != "*" {
+-		t.Errorf("expected AccessControl-Allow-Headers to be '*', got %s", ah)
++	if ah != "Content-Type, Authorization" {
++		t.Errorf("expected Access-Control-Allow-Headers to be 'Content-Type, Authorization', got %s", ah)
+ 	}
+ }
+diff --git a/server/userinfo.go b/server/userinfo.go
+index 4edd0bf..8dd463c 100644
+--- a/server/userinfo.go
++++ b/server/userinfo.go
+@@ -49,6 +49,15 @@ func (ui userInfo) toMap() map[string]any {
+ 
+ // serveUserInfo handles the /userinfo endpoint
+ func (s *IDPServer) serveUserInfo(w http.ResponseWriter, r *http.Request) {
++	if r.Method == "OPTIONS" {
++		// A browser CORS preflight. No bearer token is presented on a
++		// preflight, so allow the origins registered by any client's
++		// redirect URIs.
++		setCorsHeaders(w, r, s.registeredClientOrigins())
++		w.WriteHeader(http.StatusNoContent)
++		return
++	}
++
+ 	if r.Method != "GET" {
+ 		writeHTTPError(w, r, http.StatusMethodNotAllowed, ecInvalidRequest, "method not allowed", nil)
+ 		return
+@@ -67,6 +76,11 @@ func (s *IDPServer) serveUserInfo(w http.ResponseWriter, r *http.Request) {
+ 		return
+ 	}
+ 
++	// The access token identifies the client it was issued to; allow that
++	// client's registered origins to read this response, including the
++	// error responses below.
++	setCorsHeaders(w, r, s.clientRedirectOrigins(ar.ClientID))
++
+ 	if ar.ValidTill.Before(time.Now()) {
+ 		writeBearerError(w, http.StatusUnauthorized, "invalid_token", "token expired")
+ 		s.mu.Lock()

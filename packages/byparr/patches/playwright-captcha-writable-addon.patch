@@ -1,0 +1,22 @@
+diff --git a/playwright_captcha/utils/camoufox_add_init_script/add_init_script.py b/playwright_captcha/utils/camoufox_add_init_script/add_init_script.py
+--- a/playwright_captcha/utils/camoufox_add_init_script/add_init_script.py
++++ b/playwright_captcha/utils/camoufox_add_init_script/add_init_script.py
+@@ -13,9 +13,16 @@ def get_addon_path() -> str:
+     :return: Absolute path to the addon's directory
+     """
+ 
+-    current_dir = Path(__file__).parent
+-
+-    addon_path = current_dir / "addon"
++    cache_dir = Path(os.environ.get("BYPARR_CACHE_DIR", os.environ.get("XDG_CACHE_HOME", "/tmp/byparr-cache")))
++    addon_path = cache_dir / "playwright-captcha-addon"
++    if not addon_path.exists():
++        import shutil
++
++        shutil.copytree(Path(__file__).parent / "addon", addon_path)
++        for root, dirs, files in os.walk(addon_path):
++            for name in dirs + files:
++                os.chmod(Path(root) / name, 0o700)
++        os.chmod(addon_path, 0o700)
+ 
+     return str(addon_path.resolve())

@@ -42,6 +42,20 @@
     blackboxConfig =
       hosts.nixosConfigurations.serverone.config.services.prometheus.exporters.blackbox.configFile;
   };
+  package-updates =
+    pkgs.runCommand "package-updates-test"
+      {
+        nativeBuildInputs = with pkgs; [
+          python3
+          bash
+          git
+        ];
+      }
+      # sh
+      ''
+        python ${../tests/package-updates.py} ${../packages}
+        touch "$out"
+      '';
   derp-certificates = pkgs.callPackage ../services/derp-certificates/test.nix { };
   private-store-threshold = pkgs.callPackage ../containers/private-store-wipe/test.nix { };
   agent-containers = import ../services/pi/test.nix { inherit pkgs; };

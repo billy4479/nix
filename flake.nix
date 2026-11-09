@@ -94,14 +94,27 @@
       # inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # My flakes
-    myPackages = {
-      url = "github:billy4479/nix-packages";
+    pyproject-nix = {
+      url = "github:pyproject-nix/pyproject.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    uv2nix = {
+      url = "github:pyproject-nix/uv2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+    };
+
+    pyproject-build-systems = {
+      url = "github:pyproject-nix/build-system-pkgs";
       inputs = {
         nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
+        pyproject-nix.follows = "pyproject-nix";
+        uv2nix.follows = "uv2nix";
       };
     };
+
+    # My flakes
 
     agent-up = {
       url = "github:billy4479/agent-up";
@@ -200,9 +213,11 @@
           ;
       };
 
-      packages.${system} = import ./flake/packages.nix {
-        inherit pkgs hosts domain;
-      };
+      packages.${system} =
+        (import ./packages { inherit pkgs inputs; })
+        // (import ./flake/packages.nix {
+          inherit pkgs hosts domain;
+        });
 
       devShells.${system}.default = import ./flake/devShell.nix {
         inherit pkgs inputs;

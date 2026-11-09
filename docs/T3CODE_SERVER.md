@@ -6,7 +6,7 @@ Container ID 27 (`10.0.1.27:3000`) uses UID 5021/GID 5000, shared with
 OpenChamber and workspace Syncthing. OpenChamber remains the fallback. Avoid
 concurrent edits to the same Git working tree from both UIs.
 
-T3 comes from the pinned `myPackages` input, Pi from nixpkgs. Pi is the only
+T3 comes from `packages/t3code` in this repository, Pi from nixpkgs. Pi is the only
 installed harness in the new container. Initial chat and auxiliary generation
 selections use Pi's default model, with **Full access** tool permissions.
 These are seeded defaults, not choices reset on every restart.

@@ -18,10 +18,10 @@ the app commit's security claim. Required order:
 2. `nix flake lock --update-input giuoco-del-divertimento`,
 3. deploy.
 
-Bump the `ff` and `myPackages` inputs in the same deploy batch. Those two
-fail safe (`ff` stays tailnet-only; an unpatched tsidp only breaks OpenCloud
-logins, nothing is exposed), but they belong in the same batch —
-`myPackages` because OpenCloud login needs the patched tsidp.
+Bump the `ff` input in the same deploy batch and include the local
+`packages/tsidp` patches required for OpenCloud login. Those two fail safe
+(`ff` stays tailnet-only; an unpatched tsidp only breaks OpenCloud logins,
+nothing is exposed), but they belong in the same batch.
 
 ## Access model
 

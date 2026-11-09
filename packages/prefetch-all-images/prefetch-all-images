@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+total=$(wc -l "$1" | awk '{print $1}')
+i=0
+out="$1.nix"
+
+echo "# GENERATED FILE - DO NOT EDIT" >"$out"
+echo "{" >>"$out"
+
+sort "$1" |
+while IFS= read -r line; do
+  i=$((i + 1))
+  arr=(${line//:/ })
+  echo -ne "[$i/$total]\t"
+  echo -n "${arr[0]}"
+  echo "\"${arr[0]}\" = " >>"$out"
+  nix-prefetch-docker --image-name "${arr[0]}" --image-tag "${arr[1]}" --arch amd64 --os linux --quiet >>$out
+  echo ";" >>"$out"
+  echo -e "\tDone."
+done
+echo "}" >>"$out"
+
+nixfmt "$out"

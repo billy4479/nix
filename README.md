@@ -14,6 +14,11 @@ flag on subsequent builds.
 and Home Manager. All allow unfree packages; CUDA support is enabled only for
 hosts with `hasCuda = true`.
 
+Local package definitions live in [`packages/`](packages/README.md), sharing
+this flake's inputs and `flake.lock`. They are available through `pkgs` in
+system/home configurations and as `nix build .#<package>` outputs. Update them
+with `./packages/update.sh` or `./packages/update.sh <package> ...`.
+
 ## Domain
 
 The `domain` binding in `flake.nix` is the single source of truth for the base

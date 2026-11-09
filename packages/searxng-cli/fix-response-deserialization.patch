@@ -1,0 +1,74 @@
+diff --git a/src/lib.rs b/src/lib.rs
+index 81803fe..4f9cdb3 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -31,13 +31,21 @@ impl Default for SearXNGConfig {
+ pub struct SearchResult {
+     pub title: String,
+     pub url: String,
++    #[serde(default)]
+     pub content: String,
++    #[serde(default)]
+     pub engine: String,
++    #[serde(default)]
+     pub parsed_url: Vec<String>,
++    #[serde(default)]
+     pub template: String,
++    #[serde(default)]
+     pub engines: Vec<String>,
++    #[serde(default)]
+     pub positions: Vec<u32>,
++    #[serde(default)]
+     pub score: f64,
++    #[serde(default)]
+     pub category: String,
+ }
+ 
+@@ -45,12 +53,18 @@ pub struct SearchResult {
+ #[derive(Debug, Serialize, Deserialize)]
+ pub struct SearXNGResponse {
+     pub query: String,
++    #[serde(default)]
+     pub number_of_results: u32,
+     pub results: Vec<SearchResult>,
++    #[serde(default)]
+     pub answers: Vec<String>,
++    #[serde(default)]
+     pub corrections: Vec<String>,
++    #[serde(default)]
+     pub infoboxes: Vec<serde_json::Value>,
++    #[serde(default)]
+     pub suggestions: Vec<String>,
++    #[serde(default)]
+     pub unresponsive_engines: Vec<Vec<String>>,
+ }
+ 
+@@ -189,10 +203,12 @@ impl SearXNGClient {
+         }
+ 
+         let config: serde_json::Value = response.json().await?;
+-        if let Some(engines) = config.get("engines").and_then(|e| e.as_object()) {
++        if let Some(engines) = config.get("engines").and_then(|e| e.as_array()) {
+             let mut result = HashMap::new();
+-            for (key, value) in engines {
+-                result.insert(key.clone(), value.clone());
++            for engine in engines {
++                if let Some(name) = engine.get("name").and_then(|n| n.as_str()) {
++                    result.insert(name.to_string(), engine.clone());
++                }
+             }
+             Ok(result)
+         } else {
+diff --git a/src/main.rs b/src/main.rs
+index e4db642..1c47f66 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -191,7 +191,7 @@ fn print_compact_results(response: &searxng_client::SearXNGResponse) {
+ 
+         if !result.content.is_empty() {
+             let content = if result.content.len() > 200 {
+-                format!("{}...", &result.content[..200])
++                format!("{}...", result.content.chars().take(200).collect::<String>())
+             } else {
+                 result.content.clone()
+             };

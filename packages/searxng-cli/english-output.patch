@@ -1,0 +1,92 @@
+diff --git a/src/config.rs b/src/config.rs
+index 9af61f4..14c8521 100644
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -84,7 +84,7 @@ impl ConfigManager {
+         println!("  Base URL: {}", config.base_url);
+         println!(
+             "  Default search engine: {}",
+-            config.default_engine.unwrap_or_else(|| "Aucun".to_string())
++            config.default_engine.unwrap_or_else(|| "None".to_string())
+         );
+         println!(
+             "  Default category: {}",
+@@ -93,7 +93,7 @@ impl ConfigManager {
+                 .unwrap_or_else(|| "None".to_string())
+         );
+         println!(
+-            "  Langue: {}",
++            "  Language: {}",
+             config.language.unwrap_or_else(|| "None".to_string())
+         );
+         println!(
+@@ -101,7 +101,7 @@ impl ConfigManager {
+             config
+                 .safe_search
+                 .map(|s| s.to_string())
+-                .unwrap_or_else(|| "Undefines".to_string())
++                .unwrap_or_else(|| "Undefined".to_string())
+         );
+         Ok(())
+     }
+diff --git a/src/lib.rs b/src/lib.rs
+index 4f9cdb3..59b1809 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -142,7 +142,7 @@ impl SearXNGClient {
+ 
+         if !response.status().is_success() {
+             return Err(anyhow!(
+-                "Erreur HTTP: {} - {}",
++                "HTTP error: {} - {}",
+                 response.status(),
+                 response
+                     .text()
+diff --git a/src/main.rs b/src/main.rs
+index f448f12..091cd61 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -20,13 +20,13 @@ enum Commands {
+     Search {
+         /// Lookup word(s)
+         query: String,
+-        /// Catégories (ex: general,images,videos)
++        /// Categories (e.g. general,images,videos)
+         #[arg(short, long)]
+         categories: Option<String>,
+-        /// Selected engines (ex: google,bing)
++        /// Selected engines (e.g. google,bing)
+         #[arg(short, long)]
+         engines: Option<String>,
+-        /// Search language (ex: fr, en)
++        /// Search language (e.g. fr, en)
+         #[arg(short, long)]
+         language: Option<String>,
+         /// Page number
+@@ -122,7 +122,7 @@ async fn main() -> Result<()> {
+                 match config_manager.update_config_value(&key, &value) {
+                     Ok(_) => println!("✅ Configuration updated: {} = {}", key, value),
+                     Err(e) => {
+-                        eprintln!("❌ Erreur: {}", e);
++                        eprintln!("❌ Error: {}", e);
+                         std::process::exit(1);
+                     }
+                 }
+@@ -130,7 +130,7 @@ async fn main() -> Result<()> {
+             ConfigCommands::Reset => {
+                 let default_config = searxng_client::SearXNGConfig::default();
+                 config_manager.save_config(&default_config)?;
+-                println!("✅ Configuration reseted with default values");
++                println!("✅ Configuration reset to default values");
+             }
+         },
+ 
+@@ -157,7 +157,7 @@ async fn main() -> Result<()> {
+             let config = config_manager.load_config()?;
+             let client = SearXNGClient::new(config);
+ 
+-            println!("📋 Retreiving available search engines...");
++            println!("📋 Retrieving available search engines...");
+ 
+             match client.get_engines().await {
+                 Ok(engines) => {

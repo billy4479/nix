@@ -7,10 +7,9 @@ source of truth. What is not in that file:
 - OpenCloud's clients (web, desktop, Android, iOS) are **public OAuth
   clients**: authorization code + PKCE, no client secret. tsidp in the
   pinned build only accepts secret-carrying clients at the token
-  endpoint, so two patches live in `nix-packages` (the `tsidp` branch,
-  wired into `tsidp/default.nix` after `tsidp/headscale-proxy.patch` —
-  update `myPackages` in the flake lock to pick them up):
-  - `tsidp/public-clients.patch` — registered clients **without** a
+  endpoint, so two patches live in this repository under `packages/tsidp`
+  (wired into `packages/tsidp/default.nix` after `headscale-proxy.patch`):
+  - `packages/tsidp/public-clients.patch` — registered clients **without** a
     secret authenticate by `client_id` alone, but only when the
     authorization request carried a PKCE S256 challenge (`code_verifier`
     enforcement is untouched). Clients holding a registered secret keep
@@ -18,7 +17,7 @@ source of truth. What is not in that file:
     registration choice: DCR with `token_endpoint_auth_method: "none"`
     stores a secret-less client, the admin UI only mints confidential
     ones.
-  - `tsidp/browser-rp-cors.patch` — adds every registered client's
+  - `packages/tsidp/browser-rp-cors.patch` — adds every registered client's
     redirect-URI origin to tsidp's csrf protection and reflects CORS
     headers on `/token` and `/userinfo`, so the web SPA can complete the
     flow in the browser (server-side RPs never needed this). Already

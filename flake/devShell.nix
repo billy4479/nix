@@ -9,7 +9,7 @@ let
   lazyPrefetchAllImages =
     pkgs.writeShellScriptBin "prefetch-all-images" # sh
       ''
-        exec ${inputs.myPackages}/prefetch-all-images/prefetch-all-images "$@"
+        exec ${../packages/prefetch-all-images/prefetch-all-images} "$@"
       '';
 in
 pkgs.mkShell {

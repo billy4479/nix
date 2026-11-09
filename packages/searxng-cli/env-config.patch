@@ -1,0 +1,238 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 0fe0c5d..3fa60a4 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -25,8 +25,6 @@ serde = { version = "1.0", features = ["derive"] }
+ serde_json = "1.0"
+ clap = { version = "4.0", features = ["derive"] }
+ anyhow = "1.0"
+-dirs = "5.0"
+-toml = "0.8"
+ url = "2.4"
+ 
+ 
+diff --git a/src/config.rs b/src/config.rs
+index 14c8521..9f4fe51 100644
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -1,103 +1,53 @@
+ use anyhow::{anyhow, Result};
+-use dirs::config_dir;
+ use searxng_client::SearXNGConfig;
+-use std::fs;
+-use std::path::PathBuf;
+ 
+-const APP_NAME: &str = "searxng-cli";
+-const CONFIG_FILE: &str = "config.toml";
++const BASE_URL_ENV: &str = "SEARXNG_BASE_URL";
++const SAFE_SEARCH_ENV: &str = "SEARXNG_SAFE_SEARCH";
+ 
+-/// XDG config manager
+-pub struct ConfigManager {
+-    config_path: PathBuf,
+-}
++/// Environment based configuration manager
++pub struct ConfigManager;
+ 
+ impl ConfigManager {
+     pub fn new() -> Result<Self> {
+-        let config_dir = config_dir()
+-            .ok_or_else(|| anyhow!("Unable to find configuration path"))?
+-            .join(APP_NAME);
+-
+-        if !config_dir.exists() {
+-            fs::create_dir_all(&config_dir)?;
+-        }
+-
+-        let config_path = config_dir.join(CONFIG_FILE);
+-
+-        Ok(Self { config_path })
++        Ok(Self)
+     }
+ 
+-    /// Try to load the configuration from the file in XDG, otherwise default.
++    /// Load the configuration from environment variables, otherwise default.
+     pub fn load_config(&self) -> Result<SearXNGConfig> {
+-        if !self.config_path.exists() {
+-            // Default configuration if it does not exists
+-            let default_config = SearXNGConfig::default();
+-            self.save_config(&default_config)?;
+-            return Ok(default_config);
+-        }
+-
+-        let config_content = fs::read_to_string(&self.config_path)?;
+-        let config: SearXNGConfig = toml::from_str(&config_content)?;
+-        Ok(config)
+-    }
+-
+-    /// Save configuration in the config file
+-    pub fn save_config(&self, config: &SearXNGConfig) -> Result<()> {
+-        let config_content = toml::to_string_pretty(config)?;
+-        fs::write(&self.config_path, config_content)?;
+-        Ok(())
+-    }
++        let base_url = match std::env::var(BASE_URL_ENV) {
++            Ok(url) if !url.trim().is_empty() => url,
++            _ => SearXNGConfig::default().base_url,
++        };
+ 
+-    pub fn get_config_path(&self) -> &PathBuf {
+-        &self.config_path
+-    }
+-
+-    /// Update configuration value from a key
+-    pub fn update_config_value(&self, key: &str, value: &str) -> Result<SearXNGConfig> {
+-        let mut config = self.load_config()?;
+-
+-        match key {
+-            "base_url" => config.base_url = value.to_string(),
+-            "default_engine" => config.default_engine = Some(value.to_string()),
+-            "default_category" => config.default_category = Some(value.to_string()),
+-            "language" => config.language = Some(value.to_string()),
+-            "safe_search" => {
++        let safe_search = match std::env::var(SAFE_SEARCH_ENV) {
++            Ok(value) => {
+                 let safe_search_value: u8 = value
++                    .trim()
+                     .parse()
+-                    .map_err(|_| anyhow!("safe_search must be between 0 and 2"))?;
++                    .map_err(|_| anyhow!("{SAFE_SEARCH_ENV} must be 0, 1 or 2"))?;
+                 if safe_search_value > 2 {
+-                    return Err(anyhow!("safe_search must be between 0 and 2"));
++                    return Err(anyhow!("{SAFE_SEARCH_ENV} must be 0, 1 or 2"));
+                 }
+-                config.safe_search = Some(safe_search_value);
++                Some(safe_search_value)
+             }
+-            _ => return Err(anyhow!("Unknown configuration key: {}", key)),
+-        }
++            Err(_) => None,
++        };
+ 
+-        self.save_config(&config)?;
+-        Ok(config)
++        Ok(SearXNGConfig {
++            base_url,
++            safe_search,
++        })
+     }
+ 
+     pub fn show_config(&self) -> Result<()> {
+         let config = self.load_config()?;
+         println!("SearXNG CLI configuration:");
+-        println!("  File: {}", self.config_path.display());
+-        println!("  Base URL: {}", config.base_url);
+-        println!(
+-            "  Default search engine: {}",
+-            config.default_engine.unwrap_or_else(|| "None".to_string())
+-        );
+-        println!(
+-            "  Default category: {}",
+-            config
+-                .default_category
+-                .unwrap_or_else(|| "None".to_string())
+-        );
+         println!(
+-            "  Language: {}",
+-            config.language.unwrap_or_else(|| "None".to_string())
++            "  Base URL: {} ({BASE_URL_ENV})",
++            config.base_url
+         );
+         println!(
+-            "  Safe Search: {}",
++            "  Safe Search: {} ({SAFE_SEARCH_ENV})",
+             config
+                 .safe_search
+                 .map(|s| s.to_string())
+diff --git a/src/lib.rs b/src/lib.rs
+index 59b1809..ab632e1 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -8,9 +8,6 @@ use url::Url;
+ #[derive(Debug, Clone, Serialize, Deserialize)]
+ pub struct SearXNGConfig {
+     pub base_url: String,
+-    pub default_engine: Option<String>,
+-    pub default_category: Option<String>,
+-    pub language: Option<String>,
+     pub safe_search: Option<u8>,
+ }
+ 
+@@ -18,10 +15,7 @@ impl Default for SearXNGConfig {
+     fn default() -> Self {
+         Self {
+             base_url: "https://searx.be".to_string(),
+-            default_engine: None,
+-            default_category: Some("general".to_string()),
+-            language: Some("fr".to_string()),
+-            safe_search: Some(1),
++            safe_search: None,
+         }
+     }
+ }
+@@ -101,21 +95,15 @@ impl SearXNGClient {
+         // Buid search params
+         let mut query_params = vec![("q", params.query.clone()), ("format", "json".to_string())];
+ 
+-        if let Some(categories) = params
+-            .categories
+-            .or_else(|| self.config.default_category.clone())
+-        {
++        if let Some(categories) = params.categories {
+             query_params.push(("categories", categories));
+         }
+ 
+-        if let Some(engines) = params
+-            .engines
+-            .or_else(|| self.config.default_engine.clone())
+-        {
++        if let Some(engines) = params.engines {
+             query_params.push(("engines", engines));
+         }
+ 
+-        if let Some(language) = params.language.or_else(|| self.config.language.clone()) {
++        if let Some(language) = params.language {
+             query_params.push(("language", language));
+         }
+ 
+diff --git a/src/main.rs b/src/main.rs
+index 57f172c..758d167 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -65,15 +65,6 @@ enum Commands {
+ enum ConfigCommands {
+     /// Display current configuration
+     Show,
+-    /// Update configuration value
+-    Set {
+-        /// Key to change (base_url, default_engine, default_category, language, safe_search)
+-        key: String,
+-        /// New value
+-        value: String,
+-    },
+-    /// Reset configuration
+-    Reset,
+ }
+ 
+ #[tokio::main]
+@@ -128,20 +119,6 @@ async fn main() -> Result<()> {
+             ConfigCommands::Show => {
+                 config_manager.show_config()?;
+             }
+-            ConfigCommands::Set { key, value } => {
+-                match config_manager.update_config_value(&key, &value) {
+-                    Ok(_) => println!("✅ Configuration updated: {} = {}", key, value),
+-                    Err(e) => {
+-                        eprintln!("❌ Error: {}", e);
+-                        std::process::exit(1);
+-                    }
+-                }
+-            }
+-            ConfigCommands::Reset => {
+-                let default_config = searxng_client::SearXNGConfig::default();
+-                config_manager.save_config(&default_config)?;
+-                println!("✅ Configuration reset to default values");
+-            }
+         },
+ 
+         Commands::Test => {

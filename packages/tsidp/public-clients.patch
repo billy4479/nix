@@ -1,0 +1,702 @@
+diff --git a/server/clients.go b/server/clients.go
+index 1f82c9a..4c5d043 100644
+--- a/server/clients.go
++++ b/server/clients.go
+@@ -335,12 +335,22 @@ func (s *IDPServer) serveDynamicClientRegistration(w http.ResponseWriter, r *htt
+ 	}
+ 
+ 	clientID := generateClientID()
+-	clientSecret := generateClientSecret()
+ 
+ 	// Set defaults
+ 	if registrationRequest.TokenEndpointAuthMethod == "" {
+ 		registrationRequest.TokenEndpointAuthMethod = "client_secret_basic"
+ 	}
++
++	// Public clients (token_endpoint_auth_method "none") are registered
++	// without a secret: they authenticate at the token endpoint with their
++	// client_id alone, protected by a PKCE S256 challenge (see
++	// allowRelyingParty). The stored client and the RFC 7591 response both
++	// omit client_secret entirely. Every other auth method gets a generated
++	// secret.
++	clientSecret := ""
++	if registrationRequest.TokenEndpointAuthMethod != "none" {
++		clientSecret = generateClientSecret()
++	}
+ 	if len(registrationRequest.GrantTypes) == 0 {
+ 		registrationRequest.GrantTypes = []string{"authorization_code"}
+ 	}
+diff --git a/server/oauth-metadata.go b/server/oauth-metadata.go
+index 5135ed2..da035fe 100644
+--- a/server/oauth-metadata.go
++++ b/server/oauth-metadata.go
+@@ -73,7 +73,7 @@ var (
+ 
+ 	// OAuth 2.0 specific metadata constants
+ 	oauthSupportedGrantTypes               = views.SliceOf([]string{"authorization_code", "refresh_token"})
+-	oauthSupportedTokenEndpointAuthMethods = views.SliceOf([]string{"client_secret_post", "client_secret_basic"})
++	oauthSupportedTokenEndpointAuthMethods = views.SliceOf([]string{"client_secret_post", "client_secret_basic", "none"})
+ 
+ 	// PKCE support (RFC 7636)
+ 	pkceCodeChallengeMethodsSupported = views.SliceOf([]string{"plain", "S256"})
+diff --git a/server/publicclients_test.go b/server/publicclients_test.go
+new file mode 100644
+index 0000000..fc727d5
+--- /dev/null
++++ b/server/publicclients_test.go
+@@ -0,0 +1,620 @@
++// Copyright (c) Tailscale Inc & AUTHORS
++// SPDX-License-Identifier: BSD-3-Clause
++
++package server
++
++import (
++	"encoding/json"
++	"fmt"
++	"net/http"
++	"net/http/httptest"
++	"net/url"
++	"strings"
++	"testing"
++	"time"
++
++	"tailscale.com/client/tailscale/apitype"
++	"tailscale.com/tailcfg"
++)
++
++const (
++	// testCodeVerifier is a valid PKCE code_verifier (43 unreserved characters).
++	testCodeVerifier = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopq"
++)
++
++// testCodeChallenge computes the S256 challenge for testCodeVerifier.
++func testCodeChallenge(t *testing.T) string {
++	t.Helper()
++	challenge, err := generateCodeChallenge(testCodeVerifier, "S256")
++	if err != nil {
++		t.Fatalf("generateCodeChallenge() error: %v", err)
++	}
++	return challenge
++}
++
++func testRemoteUser() *apitype.WhoIsResponse {
++	return &apitype.WhoIsResponse{
++		Node: &tailcfg.Node{
++			ID:   1,
++			Name: "node1.example.ts.net",
++			User: tailcfg.UserID(1),
++		},
++		UserProfile: &tailcfg.UserProfile{
++			LoginName: "user@example.com",
++		},
++	}
++}
++
++// postTokenForm builds a POST /token request with the given form values.
++func postTokenForm(form url.Values) *http.Request {
++	req := httptest.NewRequest("POST", "/token", strings.NewReader(form.Encode()))
++	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
++	return req
++}
++
++// TestAllowRelyingPartyPublicClient tests that allowRelyingParty accepts
++// secret-less requests (public clients) only when the registered client has
++// no secret of its own, the authorization request carried a PKCE S256
++// challenge and the client_id matches. A client holding a registered secret
++// must keep presenting it.
++func TestAllowRelyingPartyPublicClient(t *testing.T) {
++	const (
++		clientID = "test-client"
++		secret   = "generated-secret"
++	)
++
++	tests := []struct {
++		name string
++		// authorization request state
++		codeChallenge       string
++		codeChallengeMethod string
++		// registered client state
++		hasRegisteredSecret bool
++		// token request state
++		clientIDForm     string
++		clientSecretForm string
++		wantStatus       int
++	}{
++		{
++			name:                "no secret registered, PKCE S256, no secret sent",
++			codeChallenge:       testCodeChallenge(t),
++			codeChallengeMethod: "S256",
++			clientIDForm:        clientID,
++			wantStatus:          http.StatusOK,
++		},
++		{
++			name:         "public client without PKCE",
++			clientIDForm: clientID,
++			wantStatus:   http.StatusUnauthorized,
++		},
++		{
++			name:                "public client with plain PKCE",
++			codeChallenge:       testCodeVerifier,
++			codeChallengeMethod: "plain",
++			clientIDForm:        clientID,
++			wantStatus:          http.StatusUnauthorized,
++		},
++		{
++			name:       "public client without client_id",
++			wantStatus: http.StatusUnauthorized,
++		},
++		{
++			name:                "public client with wrong client_id",
++			codeChallenge:       testCodeChallenge(t),
++			codeChallengeMethod: "S256",
++			clientIDForm:        "other-client",
++			wantStatus:          http.StatusBadRequest,
++		},
++		{
++			name:                "registered secret exists but is not sent, PKCE S256",
++			codeChallenge:       testCodeChallenge(t),
++			codeChallengeMethod: "S256",
++			hasRegisteredSecret: true,
++			clientIDForm:        clientID,
++			wantStatus:          http.StatusUnauthorized,
++		},
++		{
++			name:                "confidential client with correct secret",
++			hasRegisteredSecret: true,
++			clientIDForm:        clientID,
++			clientSecretForm:    secret,
++			wantStatus:          http.StatusOK,
++		},
++		{
++			name:                "confidential client with wrong secret",
++			hasRegisteredSecret: true,
++			clientIDForm:        clientID,
++			clientSecretForm:    "wrong-secret",
++			wantStatus:          http.StatusUnauthorized,
++		},
++		{
++			name:                "public client with a stray client_secret takes the public path",
++			codeChallenge:       testCodeChallenge(t),
++			codeChallengeMethod: "S256",
++			clientIDForm:        clientID,
++			clientSecretForm:    "stray-secret",
++			wantStatus:          http.StatusOK,
++		},
++		{
++			name:       "no credentials at all",
++			wantStatus: http.StatusUnauthorized,
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			fc := &FunnelClient{ID: clientID}
++			if tt.hasRegisteredSecret {
++				fc.Secret = secret
++			}
++			ar := &AuthRequest{
++				FunnelRP:            fc,
++				ClientID:            clientID,
++				CodeChallenge:       tt.codeChallenge,
++				CodeChallengeMethod: tt.codeChallengeMethod,
++			}
++
++			form := url.Values{
++				"grant_type": {"authorization_code"},
++			}
++			if tt.clientIDForm != "" {
++				form.Set("client_id", tt.clientIDForm)
++			}
++			if tt.clientSecretForm != "" {
++				form.Set("client_secret", tt.clientSecretForm)
++			}
++
++			status, err := ar.allowRelyingParty(postTokenForm(form))
++			if status != tt.wantStatus {
++				t.Errorf("allowRelyingParty() status = %d, want %d (err: %v)", status, tt.wantStatus, err)
++			}
++			if tt.wantStatus == http.StatusOK && err != nil {
++				t.Errorf("allowRelyingParty() unexpected error for want OK: %v", err)
++			}
++		})
++	}
++}
++
++// newPublicClientAuthRequest returns a fresh AuthRequest for the OpenCloud
++// style public client flow (authorization code + PKCE S256).
++func newPublicClientAuthRequest(fc *FunnelClient) *AuthRequest {
++	return &AuthRequest{
++		FunnelRP:            fc,
++		ClientID:            fc.ID,
++		RedirectURI:         fc.RedirectURIs[0],
++		Scopes:              []string{"openid"},
++		CodeChallenge:       "",
++		CodeChallengeMethod: "",
++		RemoteUser:          testRemoteUser(),
++		ValidTill:           time.Now().Add(5 * time.Minute),
++	}
++}
++
++// TestAuthorizationCodeGrantPublicClient runs the full authorization code
++// grant through serveToken for a public client: the token request sends no
++// client_secret, only client_id and code_verifier.
++func TestAuthorizationCodeGrantPublicClient(t *testing.T) {
++	const (
++		code        = "test-code"
++		redirectURI = "https://example.com/callback"
++	)
++
++	s := New(nil, "", false, false, false)
++	// A public client: registered with no secret at all.
++	s.funnelClients["test-client"] = &FunnelClient{
++		ID:           "test-client",
++		RedirectURIs: []string{redirectURI},
++	}
++
++	tests := []struct {
++		name        string
++		pkce        bool
++		code        string
++		verifier    string
++		wantStatus  int
++		wantErrText string
++	}{
++		{
++			name:       "valid code_verifier succeeds",
++			pkce:       true,
++			code:       code,
++			verifier:   testCodeVerifier,
++			wantStatus: http.StatusOK,
++		},
++		{
++			name:        "missing code_verifier fails",
++			pkce:        true,
++			code:        code,
++			wantStatus:  http.StatusBadRequest,
++			wantErrText: "code_verifier is required",
++		},
++		{
++			name:        "wrong code_verifier fails",
++			pkce:        true,
++			code:        code,
++			verifier:    "wrong-verifier-wrong-verifier-wrong-verifier-wrong",
++			wantStatus:  http.StatusBadRequest,
++			wantErrText: "code verification failed",
++		},
++		{
++			name:        "secret-less request without PKCE fails",
++			code:        code,
++			verifier:    testCodeVerifier,
++			wantStatus:  http.StatusUnauthorized,
++			wantErrText: "invalid_client",
++		},
++		{
++			name:        "unknown code fails",
++			pkce:        true,
++			code:        "unknown-code",
++			verifier:    testCodeVerifier,
++			wantStatus:  http.StatusBadRequest,
++			wantErrText: "code not found",
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			// serveToken consumes the stored AuthRequest; insert a fresh one
++			// for every subtest.
++			ar := newPublicClientAuthRequest(s.funnelClients["test-client"])
++			if tt.pkce {
++				ar.CodeChallenge = testCodeChallenge(t)
++				ar.CodeChallengeMethod = "S256"
++			}
++			s.mu.Lock()
++			s.code[code] = ar
++			s.mu.Unlock()
++
++			form := url.Values{
++				"grant_type":   {"authorization_code"},
++				"code":         {tt.code},
++				"redirect_uri": {redirectURI},
++				"client_id":    {"test-client"},
++			}
++			if tt.verifier != "" {
++				form.Set("code_verifier", tt.verifier)
++			}
++
++			rr := httptest.NewRecorder()
++			s.serveToken(rr, postTokenForm(form))
++
++			if rr.Code != tt.wantStatus {
++				t.Errorf("expected status %d, got %d: %s", tt.wantStatus, rr.Code, rr.Body.String())
++			}
++			if tt.wantErrText != "" && !strings.Contains(rr.Body.String(), tt.wantErrText) {
++				t.Errorf("expected error containing %q, got %q", tt.wantErrText, rr.Body.String())
++			}
++			if tt.wantStatus == http.StatusOK {
++				var tokenResp oidcTokenResponse
++				if err := json.Unmarshal(rr.Body.Bytes(), &tokenResp); err != nil {
++					t.Fatalf("failed to unmarshal token response: %v", err)
++				}
++				if tokenResp.IDToken == "" || tokenResp.AccessToken == "" {
++					t.Errorf("expected non-empty id_token and access_token, got %q / %q", tokenResp.IDToken, tokenResp.AccessToken)
++				}
++			}
++		})
++	}
++}
++
++// TestRefreshTokenGrantPublicClient tests that a public client can refresh
++// its tokens without a client secret, and only when its authorization
++// request used PKCE S256.
++func TestRefreshTokenGrantPublicClient(t *testing.T) {
++	tests := []struct {
++		name       string
++		withPKCE   bool
++		wantStatus int
++	}{
++		{
++			name:       "refresh without secret succeeds after PKCE login",
++			withPKCE:   true,
++			wantStatus: http.StatusOK,
++		},
++		{
++			name:       "refresh without secret fails without PKCE",
++			wantStatus: http.StatusUnauthorized,
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			s := New(nil, "", false, false, false)
++			s.funnelClients["test-client"] = &FunnelClient{
++				ID: "test-client",
++			}
++
++			ar := &AuthRequest{
++				FunnelRP:   s.funnelClients["test-client"],
++				ClientID:   "test-client",
++				Scopes:     []string{"openid"},
++				RemoteUser: testRemoteUser(),
++				ValidTill:  time.Now().Add(time.Hour),
++			}
++			if tt.withPKCE {
++				ar.CodeChallenge = testCodeChallenge(t)
++				ar.CodeChallengeMethod = "S256"
++			}
++			s.refreshToken["test-refresh-token"] = ar
++
++			form := url.Values{
++				"grant_type":    {"refresh_token"},
++				"refresh_token": {"test-refresh-token"},
++				"client_id":     {"test-client"},
++			}
++
++			rr := httptest.NewRecorder()
++			s.serveToken(rr, postTokenForm(form))
++
++			if rr.Code != tt.wantStatus {
++				t.Errorf("expected status %d, got %d: %s", tt.wantStatus, rr.Code, rr.Body.String())
++			}
++		})
++	}
++}
++
++// registerDCRClient POSTs the given JSON registration body to /register and
++// returns both the raw RFC 7591 response document and the stored FunnelClient.
++func registerDCRClient(t *testing.T, body string) (map[string]any, *FunnelClient) {
++	t.Helper()
++
++	s := &IDPServer{
++		serverURL:         "https://idp.test.ts.net",
++		stateDir:          t.TempDir(),
++		funnelClients:     make(map[string]*FunnelClient),
++		bypassAppCapCheck: true,
++	}
++
++	req := httptest.NewRequest("POST", "/register", strings.NewReader(body))
++	req.Header.Set("Content-Type", "application/json")
++	rr := httptest.NewRecorder()
++	s.ServeHTTP(rr, req)
++
++	if rr.Code != http.StatusCreated {
++		t.Fatalf("POST /register status = %d, want 201: %s", rr.Code, rr.Body.String())
++	}
++
++	var raw map[string]any
++	if err := json.Unmarshal(rr.Body.Bytes(), &raw); err != nil {
++		t.Fatalf("failed to unmarshal registration response: %v", err)
++	}
++
++	id, ok := raw["client_id"].(string)
++	if !ok || id == "" {
++		t.Fatalf("registration response has no client_id: %s", rr.Body.String())
++	}
++
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	client, ok := s.funnelClients[id]
++	if !ok {
++		t.Fatalf("client %s not stored after registration", id)
++	}
++	return raw, client
++}
++
++// TestDCRPublicClientRegistration tests that DCR with
++// token_endpoint_auth_method "none" registers a secret-less client, and that
++// per RFC 7591 the response echoes the auth method with no client_secret.
++func TestDCRPublicClientRegistration(t *testing.T) {
++	raw, client := registerDCRClient(t, `{
++		"redirect_uris": ["https://cloud.example.com/oauth2-redirect", "http://localhost:9200/oauth2-redirect"],
++		"client_name": "opencloud",
++		"token_endpoint_auth_method": "none",
++		"grant_types": ["authorization_code", "refresh_token"],
++		"response_types": ["code"],
++		"scope": "openid profile email"
++	}`)
++
++	if _, ok := raw["client_secret"]; ok {
++		t.Error("expected no client_secret field in the response for a public client")
++	}
++	if got, want := raw["token_endpoint_auth_method"], "none"; got != want {
++		t.Errorf("token_endpoint_auth_method = %v, want %v", got, want)
++	}
++	if client.Secret != "" {
++		t.Errorf("stored Secret = %q, want empty for a public client", client.Secret)
++	}
++	if client.TokenEndpointAuthMethod != "none" {
++		t.Errorf("stored TokenEndpointAuthMethod = %q, want %q", client.TokenEndpointAuthMethod, "none")
++	}
++	if !client.DynamicallyRegistered {
++		t.Error("expected dynamically_registered to be true")
++	}
++}
++
++// TestDCRConfidentialClientRegistration tests that DCR with a secret-based
++// token_endpoint_auth_method still generates and returns a client secret.
++func TestDCRConfidentialClientRegistration(t *testing.T) {
++	raw, client := registerDCRClient(t, `{
++		"redirect_uris": ["https://example.com/callback"],
++		"client_name": "confidential",
++		"token_endpoint_auth_method": "client_secret_post"
++	}`)
++
++	secret, ok := raw["client_secret"].(string)
++	if !ok || secret == "" {
++		t.Fatalf("expected non-empty client_secret in the response, got %v", raw["client_secret"])
++	}
++	if client.Secret != secret {
++		t.Errorf("stored Secret = %q, want the returned %q", client.Secret, secret)
++	}
++	if got, want := raw["token_endpoint_auth_method"], "client_secret_post"; got != want {
++		t.Errorf("token_endpoint_auth_method = %v, want %v", got, want)
++	}
++}
++
++// TestDCRDefaultClientRegistration tests that DCR without an explicit
++// token_endpoint_auth_method keeps defaulting to client_secret_basic with a
++// generated secret.
++func TestDCRDefaultClientRegistration(t *testing.T) {
++	raw, client := registerDCRClient(t, `{
++		"redirect_uris": ["https://example.com/callback"],
++		"client_name": "default-auth"
++	}`)
++
++	if _, ok := raw["client_secret"]; !ok {
++		t.Error("expected client_secret field in the response for a confidential client")
++	}
++	if client.Secret == "" {
++		t.Error("expected a generated secret to be stored")
++	}
++	if client.TokenEndpointAuthMethod != "client_secret_basic" {
++		t.Errorf("stored TokenEndpointAuthMethod = %q, want %q", client.TokenEndpointAuthMethod, "client_secret_basic")
++	}
++}
++
++// TestDCRPublicClientTokenFlow runs the authorization code grant through
++// serveToken for a client registered over DCR with auth method "none": the
++// token request carries only client_id and a PKCE code_verifier (any stray
++// client_secret is ignored), and PKCE is mandatory.
++func TestDCRPublicClientTokenFlow(t *testing.T) {
++	const (
++		code          = "test-code"
++		cloudRedirect = "https://cloud.example.com/oauth2-redirect"
++		labRedirect   = "http://localhost:9200/oauth2-redirect"
++	)
++
++	_, fc := registerDCRClient(t, fmt.Sprintf(`{
++		"redirect_uris": [%q, %q],
++		"client_name": "opencloud",
++		"token_endpoint_auth_method": "none",
++		"grant_types": ["authorization_code", "refresh_token"],
++		"response_types": ["code"],
++		"scope": "openid profile email"
++	}`, cloudRedirect, labRedirect))
++	if fc.Secret != "" {
++		t.Fatalf("expected DCR to store no secret for auth method none, got %q", fc.Secret)
++	}
++
++	s := New(nil, "", false, false, false)
++	s.funnelClients[fc.ID] = fc
++
++	tests := []struct {
++		name        string
++		pkce        bool
++		straySecret bool
++		wantStatus  int
++		wantErrText string
++	}{
++		{
++			name:       "token exchange with PKCE S256 verifier succeeds",
++			pkce:       true,
++			wantStatus: http.StatusOK,
++		},
++		{
++			name:        "token exchange without PKCE fails",
++			wantStatus:  http.StatusUnauthorized,
++			wantErrText: "invalid_client",
++		},
++		{
++			name:        "stray client_secret is ignored on a public client",
++			pkce:        true,
++			straySecret: true,
++			wantStatus:  http.StatusOK,
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			// serveToken consumes the stored AuthRequest; insert a fresh one
++			// for every subtest.
++			ar := newPublicClientAuthRequest(fc)
++			if tt.pkce {
++				ar.CodeChallenge = testCodeChallenge(t)
++				ar.CodeChallengeMethod = "S256"
++			}
++			s.mu.Lock()
++			s.code[code] = ar
++			s.mu.Unlock()
++
++			form := url.Values{
++				"grant_type":    {"authorization_code"},
++				"code":          {code},
++				"redirect_uri":  {cloudRedirect},
++				"client_id":     {fc.ID},
++				"code_verifier": {testCodeVerifier},
++			}
++			if tt.straySecret {
++				form.Set("client_secret", "leftover-secret")
++			}
++
++			rr := httptest.NewRecorder()
++			s.serveToken(rr, postTokenForm(form))
++
++			if rr.Code != tt.wantStatus {
++				t.Errorf("expected status %d, got %d: %s", tt.wantStatus, rr.Code, rr.Body.String())
++			}
++			if tt.wantErrText != "" && !strings.Contains(rr.Body.String(), tt.wantErrText) {
++				t.Errorf("expected error containing %q, got %q", tt.wantErrText, rr.Body.String())
++			}
++			if tt.wantStatus == http.StatusOK {
++				var tokenResp oidcTokenResponse
++				if err := json.Unmarshal(rr.Body.Bytes(), &tokenResp); err != nil {
++					t.Fatalf("failed to unmarshal token response: %v", err)
++				}
++				if tokenResp.IDToken == "" || tokenResp.AccessToken == "" {
++					t.Errorf("expected non-empty id_token and access_token, got %q / %q", tokenResp.IDToken, tokenResp.AccessToken)
++				}
++			}
++		})
++	}
++}
++
++// TestMetadataAdvertisesNone tests that the discovery documents advertise
++// support for the "none" token endpoint auth method, which the token endpoint
++// implements for public PKCE clients.
++func TestMetadataAdvertisesNone(t *testing.T) {
++	s := &IDPServer{
++		serverURL:   "https://idp.test.ts.net",
++		loopbackURL: "http://localhost:8080",
++	}
++
++	tests := []struct {
++		name     string
++		endpoint string
++		serveFn  func(http.ResponseWriter, *http.Request)
++	}{
++		{
++			name:     "OpenID Connect metadata",
++			endpoint: "/.well-known/openid-configuration",
++			serveFn:  s.serveOpenIDConfig,
++		},
++		{
++			name:     "OAuth 2.0 metadata",
++			endpoint: "/.well-known/oauth-authorization-server",
++			serveFn:  s.serveOAuthMetadata,
++		},
++	}
++
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			req := httptest.NewRequest("GET", tt.endpoint, nil)
++			req.RemoteAddr = "127.0.0.1:12345"
++			rr := httptest.NewRecorder()
++			tt.serveFn(rr, req)
++
++			var metadata map[string]any
++			if err := json.Unmarshal(rr.Body.Bytes(), &metadata); err != nil {
++				t.Fatalf("failed to unmarshal metadata: %v", err)
++			}
++
++			methods, ok := metadata["token_endpoint_auth_methods_supported"].([]any)
++			if !ok {
++				t.Fatal("token_endpoint_auth_methods_supported not found or wrong type")
++			}
++
++			found := false
++			for _, m := range methods {
++				if s, ok := m.(string); ok && s == "none" {
++					found = true
++					break
++				}
++			}
++			if !found {
++				t.Errorf("expected %q in token_endpoint_auth_methods_supported, got %v", "none", methods)
++			}
++		})
++	}
++}
+diff --git a/server/token.go b/server/token.go
+index 3767340..6f45a8a 100644
+--- a/server/token.go
++++ b/server/token.go
+@@ -910,6 +910,30 @@ func (ar *AuthRequest) allowRelyingParty(r *http.Request) (int, error) {
+ 		clientSecret = r.FormValue("client_secret")
+ 	}
+ 
++	// Public clients are registered with token_endpoint_auth_method "none"
++	// and therefore hold no secret (e.g. the OpenCloud web client). Take the
++	// public path whenever the registered client has no secret, whether or
++	// not the request carries a stray client_secret: a client that was told
++	// not to authenticate has no secret to check against, and requiring one
++	// would break it. They are authenticated by client_id alone, and the
++	// public path requires the authorization request to have carried a PKCE
++	// S256 challenge; the code_verifier is then enforced by
++	// handleAuthorizationCodeGrant before any token is issued. A client that
++	// holds a registered secret must keep presenting it and falls through to
++	// the credential check below.
++	if ar.FunnelRP.Secret == "" {
++		if clientID == "" {
++			return http.StatusUnauthorized, fmt.Errorf("tsidp: missing client credentials")
++		}
++		if subtle.ConstantTimeCompare([]byte(clientID), []byte(ar.FunnelRP.ID)) != 1 {
++			return http.StatusBadRequest, fmt.Errorf("tsidp: client_id mismatch")
++		}
++		if ar.CodeChallenge == "" || ar.CodeChallengeMethod != "S256" {
++			return http.StatusUnauthorized, fmt.Errorf("tsidp: public clients must use PKCE S256")
++		}
++		return http.StatusOK, nil
++	}
++
+ 	if clientID == "" || clientSecret == "" {
+ 		return http.StatusUnauthorized, fmt.Errorf("tsidp: missing client credentials")
+ 	}

@@ -1,0 +1,143 @@
+diff --git a/Server/Command/Command/BanPlayerCommand.cs b/Server/Command/Command/BanPlayerCommand.cs
+index b64f019..dad9815 100644
+--- a/Server/Command/Command/BanPlayerCommand.cs
++++ b/Server/Command/Command/BanPlayerCommand.cs
+@@ -1,10 +1,10 @@
+-﻿using Server.Client;
++using Server.Client;
+ using Server.Command.Command.Base;
+ using Server.Command.Common;
++using Server.Context;
+ using Server.Log;
+ using Server.Server;
+ using Server.System;
+-using System;
+ using System.Collections.Generic;
+ using System.IO;
+ 
+@@ -46,7 +46,7 @@ public override bool Execute(string commandArgs)
+ 
+         public static IEnumerable<string> GetBannedPlayers()
+         {
+-            return FileHandler.ReadFileLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LMPPlayerBans.txt"));
++            return FileHandler.ReadFileLines(Path.Combine(ServerContext.ServerDirectory, "LMPPlayerBans.txt"));
+         }
+     }
+ }
+diff --git a/Server/Command/Command/Base/HandledCommand.cs b/Server/Command/Command/Base/HandledCommand.cs
+index 778f4c9..82ce8cc 100644
+--- a/Server/Command/Command/Base/HandledCommand.cs
++++ b/Server/Command/Command/Base/HandledCommand.cs
+@@ -1,4 +1,5 @@
+-﻿using Server.Log;
++using Server.Context;
++using Server.Log;
+ using Server.System;
+ using System;
+ using System.Collections.Generic;
+@@ -18,7 +19,7 @@ public abstract class HandledCommand : SimpleCommand
+ 
+         protected virtual List<string> Items { get; set; } = new List<string>();
+ 
+-        protected string FullPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
++        protected string FullPath => Path.Combine(ServerContext.ServerDirectory, FileName);
+ 
+         #region Protected methods
+ 
+diff --git a/Server/Context/ServerContext.cs b/Server/Context/ServerContext.cs
+index 766a4de..474acab 100644
+--- a/Server/Context/ServerContext.cs
++++ b/Server/Context/ServerContext.cs
+@@ -25,10 +25,11 @@ public static class ServerContext
+         public static bool UsePassword => !string.IsNullOrEmpty(GeneralSettings.SettingsStore.Password);
+ 
+         public static Stopwatch ServerClock = new Stopwatch();
+-        public static string UniverseDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Universe");
+-        public static string ConfigDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config");
++        public static string ServerDirectory = GetServerDirectory();
++        public static string UniverseDirectory = Path.Combine(ServerDirectory, "Universe");
++        public static string ConfigDirectory = Path.Combine(ServerDirectory, "Config");
+         public static string ModFilePath = Path.Combine(ConfigDirectory, "LMPModControl.xml");
+-        public static string OldModFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LMPModControl.xml");
++        public static string OldModFilePath = Path.Combine(ServerDirectory, "LMPModControl.xml");
+ 
+         // Configuration object
+         public static NetPeerConfiguration Config { get; } = new NetPeerConfiguration("LMP")
+@@ -50,5 +51,15 @@ public static void Shutdown(string reason)
+             ServerStarting = false;
+             ServerRunning = false;
+         }
++
++        private static string GetServerDirectory()
++        {
++            var configuredDirectory = Environment.GetEnvironmentVariable("LUNAMULTIPLAYER_DIR");
++            var serverDirectory = string.IsNullOrWhiteSpace(configuredDirectory)
++                ? Directory.GetCurrentDirectory()
++                : configuredDirectory;
++
++            return Path.GetFullPath(serverDirectory);
++        }
+     }
+ }
+diff --git a/Server/Log/LunaLog.cs b/Server/Log/LunaLog.cs
+index bd9c5ce..bb3f272 100644
+--- a/Server/Log/LunaLog.cs
++++ b/Server/Log/LunaLog.cs
+@@ -1,6 +1,7 @@
+ using LmpCommon;
+ using LmpCommon.Enums;
+ using Server.Events;
++using Server.Context;
+ using Server.Settings.Structures;
+ using Server.System;
+ using System;
+@@ -32,7 +33,7 @@ namespace Server.Log
+     {
+         private static readonly BaseLogger Singleton = new LunaLog();
+ 
+-        public static string LogFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
++        public static string LogFolder = Path.Combine(ServerContext.ServerDirectory, "logs");
+ 
+         /// <summary>
+         /// Serializes all access to <see cref="_writer"/>, <see cref="_currentPath"/>, and the
+diff --git a/Server/MainServer.cs b/Server/MainServer.cs
+index 72d3b9e..1259beb 100644
+--- a/Server/MainServer.cs
++++ b/Server/MainServer.cs
+@@ -82,7 +82,7 @@ public static async Task Main()
+                 //Set day for log change
+                 ServerContext.Day = LunaNetworkTime.Now.Day;
+ 
+-                LunaLog.Normal($"Luna Server version: {LmpVersioning.CurrentVersion} ({AppContext.BaseDirectory})");
++                LunaLog.Normal($"Luna Server version: {LmpVersioning.CurrentVersion} ({ServerContext.ServerDirectory})");
+ 
+                 Universe.CheckUniverse();
+                 LoadSettingsAndGroups();
+diff --git a/Server/Plugin/LmpPluginHandler.cs b/Server/Plugin/LmpPluginHandler.cs
+index 20dd0dc..412c0ee 100644
+--- a/Server/Plugin/LmpPluginHandler.cs
++++ b/Server/Plugin/LmpPluginHandler.cs
+@@ -5,6 +5,7 @@
+ using System.Reflection;
+ using LmpCommon.Message.Interface;
+ using Server.Client;
++using Server.Context;
+ using Server.Log;
+ using Server.System;
+ 
+@@ -35,7 +36,7 @@ private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEven
+ 
+         public static void LoadPlugins()
+         {
+-            var pluginDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Plugins");
++            var pluginDirectory = Path.Combine(ServerContext.ServerDirectory, "Plugins");
+             if (!FileHandler.FolderExists(pluginDirectory))
+                 FileHandler.FolderCreate(pluginDirectory);
+             LunaLog.Debug("Loading plugins...");
+@@ -274,4 +275,4 @@ public static void FireOnMessageSent(ClientStructure client, IServerMessageBase
+             }
+         }
+     }
+-}
+\ No newline at end of file
++}

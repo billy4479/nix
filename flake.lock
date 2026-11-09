@@ -406,32 +406,6 @@
         "type": "github"
       }
     },
-    "myPackages": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "pyproject-build-systems": "pyproject-build-systems",
-        "pyproject-nix": "pyproject-nix",
-        "uv2nix": "uv2nix"
-      },
-      "locked": {
-        "lastModified": 1794223750,
-        "narHash": "sha256-kHmTOfdDhUEgmJg4xLcyG8+RNvA6LP11bhMLPDZNxLc=",
-        "owner": "billy4479",
-        "repo": "nix-packages",
-        "rev": "73e1b77c24204533a04c9290f8f4a5ff446560db",
-        "type": "github"
-      },
-      "original": {
-        "owner": "billy4479",
-        "repo": "nix-packages",
-        "type": "github"
-      }
-    },
     "niri": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -707,15 +681,12 @@
     "pyproject-build-systems": {
       "inputs": {
         "nixpkgs": [
-          "myPackages",
           "nixpkgs"
         ],
         "pyproject-nix": [
-          "myPackages",
           "pyproject-nix"
         ],
         "uv2nix": [
-          "myPackages",
           "uv2nix"
         ]
       },
@@ -736,7 +707,6 @@
     "pyproject-nix": {
       "inputs": {
         "nixpkgs": [
-          "myPackages",
           "nixpkgs"
         ]
       },
@@ -818,18 +788,20 @@
         "game-server-runner": "game-server-runner",
         "giuoco-del-divertimento": "giuoco-del-divertimento",
         "home-manager": "home-manager",
-        "myPackages": "myPackages",
         "niri": "niri",
         "nix-snapshotter": "nix-snapshotter",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs_3",
         "noctalia": "noctalia",
         "plasma-manager": "plasma-manager",
+        "pyproject-build-systems": "pyproject-build-systems",
+        "pyproject-nix": "pyproject-nix",
         "quote-bot": "quote-bot",
         "read-nix-docs": "read-nix-docs",
         "secrets-repo": "secrets-repo",
         "sops-nix": "sops-nix",
-        "spicetify-nix": "spicetify-nix"
+        "spicetify-nix": "spicetify-nix",
+        "uv2nix": "uv2nix"
       }
     },
     "secrets-repo": {
@@ -924,11 +896,9 @@
     "uv2nix": {
       "inputs": {
         "nixpkgs": [
-          "myPackages",
           "nixpkgs"
         ],
         "pyproject-nix": [
-          "myPackages",
           "pyproject-nix"
         ]
       },

@@ -1,0 +1,41 @@
+diff --git a/src/main.rs b/src/main.rs
+index 1d3412c..f448f12 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -38,9 +38,9 @@ enum Commands {
+         /// Safe search level (0, 1, 2)
+         #[arg(short, long)]
+         safe_search: Option<u8>,
+-        /// Compact output
+-        #[arg(long)]
+-        compact: bool,
++        /// Print the full JSON response instead of compact output
++        #[arg(short, long)]
++        json: bool,
+     },
+     /// Manage configuration
+     Config {
+@@ -82,7 +82,7 @@ async fn main() -> Result<()> {
+             page,
+             time_range,
+             safe_search,
+-            compact,
++            json,
+         } => {
+             let config = config_manager.load_config()?;
+             let client = SearXNGClient::new(config);
+@@ -100,11 +100,11 @@ async fn main() -> Result<()> {
+ 
+             match client.search(params).await {
+                 Ok(response) => {
+-                    if compact {
+-                        print_compact_results(&response);
+-                    } else {
++                    if json {
+                         let json_output = serde_json::to_string_pretty(&response)?;
+                         println!("{}", json_output);
++                    } else {
++                        print_compact_results(&response);
+                     }
+                 }
+                 Err(e) => {

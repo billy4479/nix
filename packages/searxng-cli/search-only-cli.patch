@@ -1,0 +1,314 @@
+diff --git a/src/config.rs b/src/config.rs
+deleted file mode 100644
+index 9f4fe51..0000000
+--- a/src/config.rs
++++ /dev/null
+@@ -1,58 +0,0 @@
+-use anyhow::{anyhow, Result};
+-use searxng_client::SearXNGConfig;
+-
+-const BASE_URL_ENV: &str = "SEARXNG_BASE_URL";
+-const SAFE_SEARCH_ENV: &str = "SEARXNG_SAFE_SEARCH";
+-
+-/// Environment based configuration manager
+-pub struct ConfigManager;
+-
+-impl ConfigManager {
+-    pub fn new() -> Result<Self> {
+-        Ok(Self)
+-    }
+-
+-    /// Load the configuration from environment variables, otherwise default.
+-    pub fn load_config(&self) -> Result<SearXNGConfig> {
+-        let base_url = match std::env::var(BASE_URL_ENV) {
+-            Ok(url) if !url.trim().is_empty() => url,
+-            _ => SearXNGConfig::default().base_url,
+-        };
+-
+-        let safe_search = match std::env::var(SAFE_SEARCH_ENV) {
+-            Ok(value) => {
+-                let safe_search_value: u8 = value
+-                    .trim()
+-                    .parse()
+-                    .map_err(|_| anyhow!("{SAFE_SEARCH_ENV} must be 0, 1 or 2"))?;
+-                if safe_search_value > 2 {
+-                    return Err(anyhow!("{SAFE_SEARCH_ENV} must be 0, 1 or 2"));
+-                }
+-                Some(safe_search_value)
+-            }
+-            Err(_) => None,
+-        };
+-
+-        Ok(SearXNGConfig {
+-            base_url,
+-            safe_search,
+-        })
+-    }
+-
+-    pub fn show_config(&self) -> Result<()> {
+-        let config = self.load_config()?;
+-        println!("SearXNG CLI configuration:");
+-        println!(
+-            "  Base URL: {} ({BASE_URL_ENV})",
+-            config.base_url
+-        );
+-        println!(
+-            "  Safe Search: {} ({SAFE_SEARCH_ENV})",
+-            config
+-                .safe_search
+-                .map(|s| s.to_string())
+-                .unwrap_or_else(|| "Undefined".to_string())
+-        );
+-        Ok(())
+-    }
+-}
+diff --git a/src/main.rs b/src/main.rs
+index 758d167..a8276e2 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -1,161 +1,104 @@
+-mod config;
++use anyhow::{anyhow, Result};
++use clap::Parser;
++use searxng_client::{SearXNGClient, SearXNGConfig, SearchParams};
+ 
+-use anyhow::Result;
+-use clap::{Parser, Subcommand};
+-use config::ConfigManager;
+-use searxng_client::{SearXNGClient, SearchParams};
++const BASE_URL_ENV: &str = "SEARXNG_BASE_URL";
++const SAFE_SEARCH_ENV: &str = "SEARXNG_SAFE_SEARCH";
+ 
+ #[derive(Parser)]
+ #[command(name = "searxng")]
+ #[command(about = "CLI for SearXNG")]
+ #[command(version = "0.1.0")]
+ struct Cli {
+-    #[command(subcommand)]
+-    command: Commands,
++    /// Lookup word(s)
++    query: String,
++    /// Categories (e.g. general,images,videos)
++    #[arg(short, long)]
++    categories: Option<String>,
++    /// Selected engines (e.g. google,bing)
++    #[arg(short, long)]
++    engines: Option<String>,
++    /// Search language (e.g. fr, en)
++    #[arg(short, long)]
++    language: Option<String>,
++    /// Page number
++    #[arg(short, long)]
++    page: Option<u32>,
++    /// Time range (day, week, month, year)
++    #[arg(short, long)]
++    time_range: Option<String>,
++    /// Safe search level (0, 1, 2)
++    #[arg(short, long)]
++    safe_search: Option<u8>,
++    /// Print the full JSON response instead of compact output
++    #[arg(short, long)]
++    json: bool,
++    /// Maximum number of results to show, from 1 to 20
++    #[arg(
++        short = 'n',
++        long,
++        default_value_t = 10,
++        value_parser = clap::builder::RangedI64ValueParser::<usize>::new().range(1..=20)
++    )]
++    limit: usize,
+ }
+ 
+-#[derive(Subcommand)]
+-enum Commands {
+-    /// Perform a search
+-    Search {
+-        /// Lookup word(s)
+-        query: String,
+-        /// Categories (e.g. general,images,videos)
+-        #[arg(short, long)]
+-        categories: Option<String>,
+-        /// Selected engines (e.g. google,bing)
+-        #[arg(short, long)]
+-        engines: Option<String>,
+-        /// Search language (e.g. fr, en)
+-        #[arg(short, long)]
+-        language: Option<String>,
+-        /// Page number
+-        #[arg(short, long)]
+-        page: Option<u32>,
+-        /// Time range (day, week, month, year)
+-        #[arg(short, long)]
+-        time_range: Option<String>,
+-        /// Safe search level (0, 1, 2)
+-        #[arg(short, long)]
+-        safe_search: Option<u8>,
+-        /// Print the full JSON response instead of compact output
+-        #[arg(short, long)]
+-        json: bool,
+-        /// Maximum number of results to show, from 1 to 20
+-        #[arg(
+-            short,
+-            long,
+-            default_value_t = 10,
+-            value_parser = clap::builder::RangedI64ValueParser::<usize>::new().range(1..=20)
+-        )]
+-        limit: usize,
+-    },
+-    /// Manage configuration
+-    Config {
+-        #[command(subcommand)]
+-        action: ConfigCommands,
+-    },
+-    /// SearXNG instance connection test
+-    Test,
+-    /// List available search engines
+-    Engines,
+-}
++fn load_config() -> Result<SearXNGConfig> {
++    let base_url = match std::env::var(BASE_URL_ENV) {
++        Ok(url) if !url.trim().is_empty() => url,
++        _ => SearXNGConfig::default().base_url,
++    };
++
++    let safe_search = match std::env::var(SAFE_SEARCH_ENV) {
++        Ok(value) => {
++            let safe_search_value: u8 = value
++                .trim()
++                .parse()
++                .map_err(|_| anyhow!("{SAFE_SEARCH_ENV} must be 0, 1 or 2"))?;
++            if safe_search_value > 2 {
++                return Err(anyhow!("{SAFE_SEARCH_ENV} must be 0, 1 or 2"));
++            }
++            Some(safe_search_value)
++        }
++        Err(_) => None,
++    };
+ 
+-#[derive(Subcommand)]
+-enum ConfigCommands {
+-    /// Display current configuration
+-    Show,
++    Ok(SearXNGConfig {
++        base_url,
++        safe_search,
++    })
+ }
+ 
+ #[tokio::main]
+ async fn main() -> Result<()> {
+     let cli = Cli::parse();
+-    let config_manager = ConfigManager::new()?;
+-
+-    match cli.command {
+-        Commands::Search {
+-            query,
+-            categories,
+-            engines,
+-            language,
+-            page,
+-            time_range,
+-            safe_search,
+-            json,
+-            limit,
+-        } => {
+-            let config = config_manager.load_config()?;
+-            let client = SearXNGClient::new(config);
+-
+-            let params = SearchParams {
+-                query,
+-                categories,
+-                engines,
+-                language,
+-                pageno: page,
+-                time_range,
+-                format: Some("json".to_string()),
+-                safe_search,
+-            };
+-
+-            match client.search(params).await {
+-                Ok(mut response) => {
+-                    response.results.truncate(limit);
+-                    if json {
+-                        let json_output = serde_json::to_string_pretty(&response)?;
+-                        println!("{}", json_output);
+-                    } else {
+-                        print_compact_results(&response);
+-                    }
+-                }
+-                Err(e) => {
+-                    eprintln!("❌ Error while performing the search: {e}");
+-                    std::process::exit(1);
+-                }
+-            }
+-        }
+-
+-        Commands::Config { action } => match action {
+-            ConfigCommands::Show => {
+-                config_manager.show_config()?;
+-            }
+-        },
+-
+-        Commands::Test => {
+-            let config = config_manager.load_config()?;
+-            let client = SearXNGClient::new(config.clone());
+-
+-            println!("🔗 Trying to connect to {}...", config.base_url);
+-
+-            match client.test_connection().await {
+-                Ok(true) => println!("✅ Successful connection!"),
+-                Ok(false) => {
+-                    println!("❌ Connection failed");
+-                    std::process::exit(1);
+-                }
+-                Err(e) => {
+-                    eprintln!("❌ Connection error: {e}");
+-                    std::process::exit(1);
+-                }
++    let config = load_config()?;
++    let client = SearXNGClient::new(config);
++
++    let params = SearchParams {
++        query: cli.query,
++        categories: cli.categories,
++        engines: cli.engines,
++        language: cli.language,
++        pageno: cli.page,
++        time_range: cli.time_range,
++        format: Some("json".to_string()),
++        safe_search: cli.safe_search,
++    };
++
++    match client.search(params).await {
++        Ok(mut response) => {
++            response.results.truncate(cli.limit);
++            if cli.json {
++                let json_output = serde_json::to_string_pretty(&response)?;
++                println!("{}", json_output);
++            } else {
++                print_compact_results(&response);
+             }
+         }
+-
+-        Commands::Engines => {
+-            let config = config_manager.load_config()?;
+-            let client = SearXNGClient::new(config);
+-
+-            println!("📋 Retrieving available search engines...");
+-
+-            match client.get_engines().await {
+-                Ok(engines) => {
+-                    let json_output = serde_json::to_string_pretty(&engines)?;
+-                    println!("{}", json_output);
+-                }
+-                Err(e) => {
+-                    eprintln!("❌ Error: {}", e);
+-                    std::process::exit(1);
+-                }
+-            }
++        Err(e) => {
++            eprintln!("❌ Error while performing the search: {e}");
++            std::process::exit(1);
+         }
+     }
+ 
