@@ -168,7 +168,7 @@
 
       system = "x86_64-linux";
 
-      pkgsForFlake = import ./flake/pkgs.nix {
+      pkgs = import ./flake/pkgs.nix {
         inherit inputs system overlays;
       };
 
@@ -187,11 +187,11 @@
     {
       inherit domain;
 
-      formatter.${system} = pkgsForFlake.nixfmt;
+      formatter.${system} = pkgs.nixfmt;
 
       checks.${system} = import ./flake/checks.nix {
-        pkgs = pkgsForFlake;
         inherit
+          pkgs
           hosts
           inputs
           system
@@ -201,13 +201,11 @@
       };
 
       packages.${system} = import ./flake/packages.nix {
-        pkgs = pkgsForFlake;
-        inherit hosts domain;
+        inherit pkgs hosts domain;
       };
 
       devShells.${system}.default = import ./flake/devShell.nix {
-        pkgs = pkgsForFlake;
-        inherit inputs;
+        inherit pkgs inputs;
       };
     }
     // hosts;
