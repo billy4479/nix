@@ -65,6 +65,16 @@ assert lib.any (
   && volume.containerPath == "/home/t3/.agents/skills/agent-browser"
   && volume.readOnly
 ) serverone.nerdctl-containers.t3code.volumes;
+assert serverone.sops.secrets.mail-watch-google-client-id.key == "google-api/client-id";
+assert serverone.sops.secrets.mail-watch-google-client-secret.key == "google-api/client-secret";
+assert serverone.sops.templates.mail-watch-google-client.owner == "container-5021";
+assert serverone.sops.templates.mail-watch-google-client.mode == "0400";
+assert lib.any (
+  volume:
+  volume.hostPath == serverone.sops.templates.mail-watch-google-client.path
+  && volume.containerPath == "/run/secrets/mail-watch-google-client.json"
+  && volume.readOnly
+) serverone.nerdctl-containers.t3code.volumes;
 assert serverone.systemd.timers.t3code-nix-gc.timerConfig.OnCalendar == "daily";
 assert lib.all
   (

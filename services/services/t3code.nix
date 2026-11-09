@@ -134,11 +134,10 @@ let
   };
 in
 {
-  sops.secrets.openchamber-ssh-key.restartUnits = lib.mkIf (options ? nerdctl-containers) [
-    "nerdctl-t3code.service"
-  ];
-
   sops.secrets = lib.mkIf (options ? nerdctl-containers) {
+    openchamber-ssh-key.restartUnits = [ "nerdctl-t3code.service" ];
+    mail-watch-google-client-id.key = "google-api/client-id";
+    mail-watch-google-client-secret.key = "google-api/client-secret";
     mail-watch-telegram-token = {
       key = "telegram-bot/token";
       owner = "container-${toString uid}";
@@ -152,6 +151,19 @@ in
       group = "containers";
       mode = "0400";
       restartUnits = [ "nerdctl-t3code.service" ];
+    };
+  };
+
+  sops.templates.mail-watch-google-client = lib.mkIf (options ? nerdctl-containers) {
+    owner = "container-${toString uid}";
+    group = "containers";
+    mode = "0400";
+    restartUnits = [ "nerdctl-t3code.service" ];
+    content = builtins.toJSON {
+      installed = {
+        client_id = config.sops.placeholder.mail-watch-google-client-id;
+        client_secret = config.sops.placeholder.mail-watch-google-client-secret;
+      };
     };
   };
 
@@ -254,6 +266,11 @@ in
         {
           hostPath = "${sshConfig}";
           containerPath = "${home}/.ssh/config";
+          readOnly = true;
+        }
+        {
+          hostPath = config.sops.templates.mail-watch-google-client.path;
+          containerPath = "/run/secrets/mail-watch-google-client.json";
           readOnly = true;
         }
         {

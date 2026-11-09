@@ -273,7 +273,9 @@ def mark(ids, notify=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("authorize").add_argument("client_json")
+    commands.add_parser("authorize").add_argument(
+        "client_json", nargs="?", default="/run/secrets/mail-watch-google-client.json"
+    )
     pending_parser = commands.add_parser("pending")
     pending_parser.add_argument("--limit", type=int, default=50)
     for name in ("notify", "dismiss"):

@@ -118,26 +118,34 @@ class MailWatchTest(unittest.TestCase):
         self.assertEqual(watch.reviewed(), {"ab": "dismissed"})
 
     def test_network_errors_do_not_leak_bot_token(self):
-        with patch(
-            "urllib.request.urlopen", side_effect=urllib.error.URLError("SECRET")
+        with (
+            patch(
+                "urllib.request.urlopen", side_effect=urllib.error.URLError("SECRET")
+            ),
+            self.assertRaisesRegex(RuntimeError, "^Remote API connection failed$"),
         ):
-            with self.assertRaisesRegex(RuntimeError, "^Remote API connection failed$"):
-                watch.request("https://api.telegram.org/botSECRET/sendMessage")
+            watch.request("https://api.telegram.org/botSECRET/sendMessage")
+
+    def test_authorize_defaults_to_sops_mount(self):
+        with patch("sys.argv", ["mail-watch", "authorize"]):
+            with patch.object(watch, "authorize") as authorize:
+                self.assertEqual(watch.main(), 0)
+        authorize.assert_called_once_with("/run/secrets/mail-watch-google-client.json")
 
     def test_authorization_checks_state_before_exchanging_code(self):
         client = Path(self.temporary.name) / "client.json"
         watch.save(
             client, {"installed": {"client_id": "id", "client_secret": "secret"}}
         )
-        with patch(
-            "builtins.input",
-            return_value="http://127.0.0.1:8765/?code=code&state=wrong",
+        with (
+            patch(
+                "builtins.input",
+                return_value="http://127.0.0.1:8765/?code=code&state=wrong",
+            ),
+            patch.object(watch, "request") as exchange,
+            self.assertRaisesRegex(RuntimeError, "Invalid authorization callback"),
         ):
-            with patch.object(watch, "request") as exchange:
-                with self.assertRaisesRegex(
-                    RuntimeError, "Invalid authorization callback"
-                ):
-                    watch.authorize(client)
+            watch.authorize(client)
         exchange.assert_not_called()
 
 

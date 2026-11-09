@@ -12,19 +12,31 @@ responsibility. No task is enabled by this change. The desired schedule is
 
 ## One-time authorization
 
-1. In Google Cloud, create/select a project, enable the Gmail API, configure
-   the OAuth consent screen and create an OAuth client of type **Desktop app**.
-   Download its client JSON. Authorize only the intended Gmail account.
+The existing **Desktop app** client is stored in `serverone.yaml` under
+`google-api/client-id` and `google-api/client-secret`. The container receives a
+read-only JSON template at `/run/secrets/mail-watch-google-client.json`; no
+manual download or copying of client credentials is needed. Plaintext values
+are rendered by sops at runtime, never embedded in the Nix store.
+
+Before deployment, push the secrets repository's local `serverone: add google
+api` commit, then run `nix flake update secrets-repo` in this repository and
+commit the lock update. The current pinned secrets revision predates these keys.
+Do not deploy this integration against that older secrets revision.
+
+1. Keep the OAuth client's **Desktop app** type. In its Google Cloud project,
+   enable the Gmail API and configure the consent screen if needed. Authorize
+   only the intended Gmail account.
 2. For unattended use, do not leave an external consent app in Testing:
    Gmail refresh tokens in that mode normally expire after seven days.
    Use the appropriate production/internal configuration for your account;
    Google may show an unverified-app warning or impose additional requirements.
-3. Place the downloaded JSON privately inside the container, outside Git and
-   `/agent-config`. In the container terminal, run:
+3. After deployment, in the container terminal, run:
 
    ```sh
-   mail-watch authorize /path/to/client.json
+   mail-watch authorize
    ```
+
+   An optional client JSON path can still be supplied for manual setups.
 
    Open the printed Google URL on your own computer. After consenting, Google
    redirects to `http://127.0.0.1:8765/`. No callback server is started, so the
@@ -32,8 +44,9 @@ responsibility. No task is enabled by this change. The desired schedule is
    it into the waiting command. The helper validates OAuth state and uses PKCE.
    Do not paste the callback URL into an agent conversation or shared logs.
 4. The refresh token/client credentials are written atomically with mode 0600
-   to `~/.config/mail-watch/credentials.json`. Delete the downloaded client JSON
-   when no longer needed. Do not commit or sync either credential file.
+   to `~/.config/mail-watch/credentials.json`. Do not commit or sync this file.
+   This includes a private local copy of the client credentials alongside the
+   refresh token. If you replace the Google OAuth client, authorize again.
 
 The token permits reading the entire mailbox. Label restriction is implemented
 by the helper, not enforced by Google's OAuth scope. The agent runs under the
