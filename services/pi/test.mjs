@@ -161,14 +161,14 @@ test("real direnv exports, unsets, blocks unapproved files, and isolates project
     "printf COMMAND_ERROR >&2; exit 13",
   );
   assert.equal(result.exitCode, 13);
-  assert.match(result.output, /COMMAND_ERROR/);
-  assert.match(result.output, /SETUP_STDOUT/);
-  assert.match(result.output, /SETUP_STDERR/);
+  assert.equal(result.output, "COMMAND_ERROR");
   result = await exec(path.join(root, "one"), "printf COMMAND_STDERR >&2");
   assert.equal(result.output, "COMMAND_STDERR");
   result = await exec(root, "printf 'RESULT:%s' \"${PROJECT_VALUE-unset}\"");
   assert.match(result.output, /RESULT:unset/);
-  assert.equal((await exec(path.join(root, "one"), "exit 13")).exitCode, 13);
+  result = await exec(path.join(root, "one"), "exit 13");
+  assert.equal(result.exitCode, 13);
+  assert.equal(result.output, "");
   await writeFile(
     path.join(root, "one/.envrc"),
     "echo SETUP_FAILURE >&2\nreturn 1\n",

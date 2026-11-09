@@ -183,8 +183,9 @@ roots, without saving a blanket `always` policy; normal trust applies elsewhere.
 
 Each Pi bash call runs `direnv exec` at its execution cwd. Changes/unsets stay
 in the child process; native Pi streaming, cancellation and timeouts remain.
-Setup output is hidden on success and shown on failure (including cancellation
-or timeout); command stdout/stderr always stream normally.
+Setup output is shown only if direnv fails (including cancellation or timeout
+during setup), never because the command fails. Command stdout/stderr always
+stream normally.
 A blocked/failed `.envrc` prevents command execution. Project-cwd changes
 between calls select the new environment. A `cd` **inside one command** does
 not run an interactive prompt hook: use `direnv exec /path/to/project bash -c
