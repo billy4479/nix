@@ -57,6 +57,7 @@ Defaults are fine unless noted:
 | OpenID Endpoint | `https://idp.internal.polpetta.online/.well-known/openid-configuration` |
 | OpenID Client ID / secret | from the tsidp registration (secret shown once) |
 | Enabled | **on** |
+| Scheme Override | `https` (without `://`): nginx terminates TLS, so the plugin may otherwise generate an HTTP iframe URL that the browser blocks as mixed content, leaving a blank callback page |
 | Enable Authorization by Plugin | **off** — with this off the plugin never touches permissions: `jack` stays admin, existing users keep their access, and auto-created users get Jellyfin's defaults (non-admin, all libraries, playback enabled). If it were on, every SSO login would demote users unless roles match, and tsidp has no roles to offer |
 | Roles / AdminRoles / Role Claim | empty — empty `Roles` is what lets every tailnet identity pass the login gate |
 | Request Additional Scopes | `email` (one line; the field is required — the plugin always sends `openid profile` itself, which covers every claim used) |
