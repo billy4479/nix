@@ -28,6 +28,7 @@ jobs:
             ${{ secrets.FF_DEPLOY_KEY }}
             ${{ secrets.CALENDAR_PROXY_DEPLOY_KEY }}
             ${{ secrets.GIUOCO_DEL_DIVERTIMENTO_DEPLOY_KEY }}
+            ${{ secrets.QUOTE_BOT_DEPLOY_KEY }}
 
       - name: Add github.com to known hosts
         run: ssh-keyscan github.com >> ~/.ssh/known_hosts
@@ -68,6 +69,7 @@ jobs:
             ${{ secrets.FF_DEPLOY_KEY }}
             ${{ secrets.CALENDAR_PROXY_DEPLOY_KEY }}
             ${{ secrets.GIUOCO_DEL_DIVERTIMENTO_DEPLOY_KEY }}
+            ${{ secrets.QUOTE_BOT_DEPLOY_KEY }}
 
       - name: Add github.com to known hosts
         run: ssh-keyscan github.com >> ~/.ssh/known_hosts
