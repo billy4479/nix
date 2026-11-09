@@ -47,6 +47,7 @@ let
       ])
       ++ [
         direnv
+        (import ../mail-watch { inherit pkgs; })
         development.chromium
         development.agentBrowser
         development.nvimFmt
@@ -136,6 +137,23 @@ in
   sops.secrets.openchamber-ssh-key.restartUnits = lib.mkIf (options ? nerdctl-containers) [
     "nerdctl-t3code.service"
   ];
+
+  sops.secrets = lib.mkIf (options ? nerdctl-containers) {
+    mail-watch-telegram-token = {
+      key = "telegram-bot/token";
+      owner = "container-${toString uid}";
+      group = "containers";
+      mode = "0400";
+      restartUnits = [ "nerdctl-t3code.service" ];
+    };
+    mail-watch-telegram-chat-id = {
+      key = "telegram-bot/chat-id";
+      owner = "container-${toString uid}";
+      group = "containers";
+      mode = "0400";
+      restartUnits = [ "nerdctl-t3code.service" ];
+    };
+  };
 
   polpetta.services.t3code = {
     container = {
@@ -236,6 +254,16 @@ in
         {
           hostPath = "${sshConfig}";
           containerPath = "${home}/.ssh/config";
+          readOnly = true;
+        }
+        {
+          hostPath = config.sops.secrets.mail-watch-telegram-token.path;
+          containerPath = "/run/secrets/telegram-bot-token";
+          readOnly = true;
+        }
+        {
+          hostPath = config.sops.secrets.mail-watch-telegram-chat-id.path;
+          containerPath = "/run/secrets/telegram-bot-chat-id";
           readOnly = true;
         }
         {
