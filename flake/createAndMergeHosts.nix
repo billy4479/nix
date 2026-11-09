@@ -39,17 +39,9 @@ let
       defaultedArgs = lib.recursiveUpdate defaultOptions args;
       user = defaultedArgs.user;
 
-      # This is undocumented like everywhere
-      # https://github.com/NixOS/nixpkgs/blob/master/pkgs/top-level/config.nix
-      # https://discourse.nixos.org/t/where-are-options-like-config-cudasupport-documented/17805/7
-      nixpkgsConfig = {
-        allowUnfree = true;
+      pkgs = import ./pkgs.nix {
+        inherit inputs system overlays;
         cudaSupport = defaultedArgs.hasCuda;
-      };
-
-      pkgs = import inputs.nixpkgs {
-        config = nixpkgsConfig;
-        inherit system overlays;
       };
 
       specialArgs = {
@@ -79,10 +71,7 @@ let
           ../system
           inputs.sops-nix.nixosModules.sops
           {
-            nixpkgs = {
-              config = nixpkgsConfig;
-              inherit overlays;
-            };
+            nixpkgs.pkgs = pkgs;
           }
         ]
         ++ lib.optionals (!specialArgs.extraConfig.standaloneHomeManager) [
@@ -105,16 +94,7 @@ let
             "${user.username}@${hostname}" = inputs.home-manager.lib.homeManagerConfiguration {
               inherit pkgs;
               extraSpecialArgs = specialArgs;
-              modules = defaultHomeManagerModules ++ [
-                {
-                  # Not sure why we need thise here too
-                  # https://nix-community.github.io/home-manager/options.xhtml#opt-nixpkgs.config
-                  nixpkgs = {
-                    config = nixpkgsConfig;
-                    inherit overlays;
-                  };
-                }
-              ];
+              modules = defaultHomeManagerModules;
             };
           }
         else

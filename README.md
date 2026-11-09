@@ -2,6 +2,18 @@
 
 This flake contains my NixOS + home-manager configuration.
 
+## Binary caches and packages
+
+Cache URLs and public keys live in `flake.nix` under `nixConfig`. NixOS reuses
+these through `flake/caches.nix`, enabling the CUDA cache only on CUDA hosts.
+CI builds use `--accept-flake-config` to accept the caches non-interactively.
+Locally, accept and remember the settings when Nix prompts to avoid passing the
+flag on subsequent builds.
+
+`flake/pkgs.nix` is the shared package-set constructor for flake tools, NixOS,
+and Home Manager. All allow unfree packages; CUDA support is enabled only for
+hosts with `hasCuda = true`.
+
 ## Domain
 
 The `domain` binding in `flake.nix` is the single source of truth for the base

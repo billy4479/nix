@@ -1,6 +1,26 @@
 {
   description = "NixOS config flake";
 
+  nixConfig = {
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+      "https://catppuccin.cachix.org"
+      "https://install.determinate.systems"
+      "https://cache.nixos.org/"
+      "https://noctalia.cachix.org"
+      "https://cache.nixos-cuda.org"
+    ];
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU="
+      "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
+      "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+      "computerone-1:FwphMHwxn0KLInwuouQcqsNn4J5fkzJNAd4QlJa4Lk8="
+      "portatilo-1:KM4PhszcXObDUqfnN0BZNwnya6B+2br39PURy8hy6nA="
+      "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
+    ];
+  };
+
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
@@ -153,9 +173,8 @@
 
       system = "x86_64-linux";
 
-      pkgsForFlake = import nixpkgs {
-        # config.allowUnfree = true;
-        inherit system overlays;
+      pkgsForFlake = import ./flake/pkgs.nix {
+        inherit inputs system overlays;
       };
 
       # The `nvim-fmt` CLI (named to avoid colliding with GNU coreutils'
@@ -210,6 +229,10 @@
       formatter.${system} = pkgsForFlake.nixfmt;
 
       checks.${system} = {
+        nix-settings = import ./tests/nix-settings.nix {
+          pkgs = pkgsForFlake;
+          inherit hosts;
+        };
         domain = import ./tests/domain.nix {
           pkgs = pkgsForFlake;
           mkHosts =
