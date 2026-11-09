@@ -1,0 +1,71 @@
+name: Build local packages
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - packages/**
+      - flake.nix
+      - flake.lock
+      - flake/overlays.nix
+      - flake/pkgs.nix
+      - .github/workflows/packages.yml
+  pull_request:
+    paths:
+      - packages/**
+      - flake.nix
+      - flake.lock
+      - flake/overlays.nix
+      - flake/pkgs.nix
+      - .github/workflows/packages.yml
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    name: Discover local packages
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.packages.outputs.names }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v22
+      - name: Generate package matrix
+        id: packages
+        run: |
+          names=$(nix eval --impure --json --expr \
+            'builtins.attrNames (import ./packages { pkgs = {}; inputs = {}; })')
+          echo "names=$names" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.package }}
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.discover.outputs.packages) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up SSH keys for flake inputs
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.NIX_SECRETS_DEPLOY_KEY }}
+            ${{ secrets.FF_DEPLOY_KEY }}
+            ${{ secrets.CALENDAR_PROXY_DEPLOY_KEY }}
+            ${{ secrets.GIUOCO_DEL_DIVERTIMENTO_DEPLOY_KEY }}
+            ${{ secrets.QUOTE_BOT_DEPLOY_KEY }}
+      - name: Add github.com to known hosts
+        run: ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - uses: DeterminateSystems/nix-installer-action@v22
+      - name: Build package
+        env:
+          PACKAGE: ${{ matrix.package }}
+        run: |
+          nix build \
+            --print-build-logs \
+            --accept-flake-config \
+            --no-link \
+            ".#$PACKAGE"

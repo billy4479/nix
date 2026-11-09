@@ -7,6 +7,13 @@ pinned in the repository's root `flake.lock`.
 Package outputs are available with `nix build .#<package>` from the repository
 root, and the shared overlay exposes them to NixOS and Home Manager.
 
+The **Build local packages** GitHub Actions workflow builds every local output
+in an independent `x86_64-linux` matrix job. The matrix is generated from
+`packages/default.nix`, so new packages are included automatically. It runs on
+package/flake changes and can also be started manually. Builds use the same
+SSH deploy-key secrets as the system workflow for private flake inputs;
+those secrets are unavailable to pull requests from forks.
+
 ## Packaging
 
 Check Nixpkgs before adding a package and follow its manual for the relevant
