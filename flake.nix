@@ -162,13 +162,8 @@
   };
 
   outputs =
-    {
-      nixpkgs,
-      myPackages,
-      ...
-    }@inputs:
+    { nixpkgs, ... }@inputs:
     let
-      lib = nixpkgs.lib;
       domain = "polpetta.online";
 
       system = "x86_64-linux";
@@ -177,41 +172,7 @@
         inherit inputs system overlays;
       };
 
-      # The `nvim-fmt` CLI (named to avoid colliding with GNU coreutils'
-      # `fmt`, which would otherwise shadow it inside nix devShells).
-      fmtPkg = pkgsForFlake.callPackage ./user/modules/applications/editor/nvim/fmt/package.nix { };
-
-      lazyNixPrefetchDocker =
-        pkgsForFlake.writeShellScriptBin "nix-prefetch-docker" # sh
-          ''
-            exec nix run ${nixpkgs}#nix-prefetch-docker -- "$@"
-          '';
-
-      lazyPrefetchAllImages =
-        pkgsForFlake.writeShellScriptBin "prefetch-all-images" # sh
-          ''
-            exec ${myPackages}/prefetch-all-images/prefetch-all-images "$@"
-          '';
-
-      overlays = [
-        (
-          final: prev:
-          {
-            inherit (inputs.ff.packages.${system}) ff;
-            # The app flake exposes the binary as `default`; no mc-java
-            # equivalent is needed: the image carries the java version
-            # the world runs on (see the service file).
-            game-server-runner = inputs.game-server-runner.packages.${system}.default;
-            inherit (inputs.calendar-proxy.packages.${system}) calendar-proxy;
-            inherit (inputs.giuoco-del-divertimento.packages.${system}) giuoco-del-divertimento;
-            inherit (inputs.agent-up.packages.${system}) agent-up agent-up-server;
-            quote-bot = inputs.quote-bot.packages.${system}.default;
-            read-nix-docs = inputs.read-nix-docs.packages.${system}.default;
-          }
-          // inputs.myPackages.packages.${system}
-        )
-        inputs.nix-snapshotter.overlays.default
-      ];
+      overlays = import ./flake/overlays.nix { inherit inputs system; };
 
       hosts = import ./flake/system.nix {
         inherit
@@ -228,143 +189,25 @@
 
       formatter.${system} = pkgsForFlake.nixfmt;
 
-      checks.${system} = {
-        nix-settings = import ./tests/nix-settings.nix {
-          pkgs = pkgsForFlake;
-          inherit hosts;
-        };
-        domain = import ./tests/domain.nix {
-          pkgs = pkgsForFlake;
-          mkHosts =
-            domain:
-            import ./flake/system.nix {
-              inherit
-                system
-                inputs
-                overlays
-                domain
-                ;
-            };
-        };
-        shell-syntax = import ./tests/shell-syntax.nix {
-          pkgs = pkgsForFlake;
-          hosts = {
-            serverone = hosts.nixosConfigurations.serverone.config;
-            vps-proxy = hosts.nixosConfigurations.vps-proxy.config;
-          };
-        };
-        server-policy = import ./tests/server-policy.nix {
-          pkgs = pkgsForFlake;
-          serverone = hosts.nixosConfigurations.serverone.config;
-          vps = hosts.nixosConfigurations.vps-proxy.config;
-        };
-        monitoring = import ./tests/monitoring.nix {
-          inherit domain;
-          pkgs = pkgsForFlake;
-          ruleFiles = hosts.nixosConfigurations.serverone.config.services.prometheus.ruleFiles;
-          scrapeConfigs = hosts.nixosConfigurations.serverone.config.services.prometheus.scrapeConfigs;
-          blackboxConfig =
-            hosts.nixosConfigurations.serverone.config.services.prometheus.exporters.blackbox.configFile;
-        };
-        derp-certificates = pkgsForFlake.callPackage ./services/derp-certificates/test.nix { };
-        private-store-threshold = pkgsForFlake.callPackage ./containers/private-store-wipe/test.nix { };
-        agent-containers = import ./services/pi/test.nix { pkgs = pkgsForFlake; };
-        mail-watch = import ./services/mail-watch/test.nix { pkgs = pkgsForFlake; };
-        agent-browser = import ./tests/agent-browser.nix {
-          pkgs = pkgsForFlake;
-          flakeInputs = inputs;
-        };
-        raw-firewall = import ./tests/raw-firewall.nix {
-          pkgs = pkgsForFlake;
-          ruleset = hosts.nixosConfigurations.serverone.config.polpetta.generated.rawFirewallFile;
-          rawUnit = hosts.nixosConfigurations.serverone.config.systemd.services.polpetta-raw-firewall;
-        };
-        edge-forwarding = import ./tests/edge-forwarding.nix { pkgs = pkgsForFlake; };
-        public-health-monitor = import ./tests/public-health-monitor.nix {
-          inherit domain;
-          pkgs = pkgsForFlake;
-          vps = hosts.nixosConfigurations.vps-proxy.config;
-        };
+      checks.${system} = import ./flake/checks.nix {
+        pkgs = pkgsForFlake;
+        inherit
+          hosts
+          inputs
+          system
+          overlays
+          domain
+          ;
       };
 
-      packages.${system} = rec {
-        all-systems =
-          let
-            mkLink =
-              name: target: # sh
-              ''
-                ln -s ${target} "$out/${name}"
-              '';
-
-            systemLinks = lib.mapAttrsToList (
-              hostname: config: mkLink "${hostname}-system" config.config.system.build.toplevel
-            ) hosts.nixosConfigurations;
-
-            homeLinks = lib.mapAttrsToList (
-              homeName: config:
-              let
-                hostname = lib.last (lib.splitString "@" homeName);
-              in
-              mkLink "${hostname}-home" config.activationPackage
-            ) hosts.homeConfigurations;
-          in
-          pkgsForFlake.runCommand "all-systems" { } # sh
-            ''
-              mkdir "$out"
-              ${lib.concatStrings (systemLinks ++ homeLinks)}
-            '';
-
-        # The full nginx runtime config as deployed on serverone,
-        # validated with `nginx -t`; see containers/nginx/package.nix.
-        nginx-config =
-          let
-            serverone = hosts.nixosConfigurations.serverone.config;
-          in
-          pkgsForFlake.callPackage ./containers/nginx/package.nix {
-            inherit domain;
-            externalTrafficFrom = serverone.polpetta.externalTrafficFrom;
-            nginxVhostsFile = serverone.polpetta.generated.nginxVhostsFile;
-          };
-
-        bind9-hosts = pkgsForFlake.callPackage ./services/services/bind9/hosts.nix { };
-        bind9-config = pkgsForFlake.callPackage ./services/services/bind9/config.nix {
-          inherit domain;
-          inherit bind9-hosts;
-          # Standalone validation stub: the real per-host fragment is
-          # generated by services/module.nix into the container config.
-          generated-records = pkgsForFlake.writeText "generated-records.zone" ''
-            ; Stub for offline validation; see services/services/bind9.
-          '';
-        };
-        exec-in-container = hosts.nixosConfigurations.serverone.config.system.build.execInContainer;
-
-        nvim-fmt = fmtPkg;
+      packages.${system} = import ./flake/packages.nix {
+        pkgs = pkgsForFlake;
+        inherit hosts domain;
       };
 
-      devShells.${system}.default = pkgsForFlake.mkShell {
-        packages = with pkgsForFlake; [
-          stylua
-          shfmt
-          nixfmt
-          ruff
-
-          # formatters the nvim conform setup and the nvim-fmt CLI expect for
-          # filetypes present in this repo
-          jq
-          prettier
-          rustfmt
-
-          lua-language-server
-          nixd
-
-          sops
-          age
-
-          dig
-
-          lazyPrefetchAllImages
-          lazyNixPrefetchDocker
-        ];
+      devShells.${system}.default = import ./flake/devShell.nix {
+        pkgs = pkgsForFlake;
+        inherit inputs;
       };
     }
     // hosts;
