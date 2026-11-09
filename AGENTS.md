@@ -26,6 +26,19 @@ In non-server machines (i.e. `computerone` and `portatilo`) home-manager is inst
 nix build .#homeConfigurations.USERNAME@HOSTNAME.activationPackage
 ```
 
+## Local packages
+
+`packages/` contains my personal package collection, sharing the root flake
+and `flake.lock`. Keep packaging complexity low and make sure closures contain
+only what is actually needed.
+
+Before adding a package, check whether Nixpkgs already provides it. If it does,
+notify the user and use its implementation as a reference. Consult the Nixpkgs
+manual for the relevant language, framework, toolkit, or build system.
+
+Build local packages with `nix build .#<package>` and their `passthru.tests`
+where provided. Update them with `./packages/update.sh [<package> ...]`.
+
 ## Style
 
 When you need to embed another language in a nix file (for example for writing shell scripts or lua configs) you should annotate which language you're using:
