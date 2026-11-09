@@ -124,7 +124,7 @@ in
 
       environment = {
         LIBVA_DRIVER_NAME = "iHD";
-        LIBVA_DRIVER_PATH = "${pkgs.intel-media-driver}/lib/dri:${pkgs.intel-vaapi-driver}/lib/dri";
+        LIBVA_DRIVERS_PATH = "${pkgs.intel-media-driver}/lib/dri:${pkgs.intel-vaapi-driver}/lib/dri";
       };
 
       extraOptions = [
