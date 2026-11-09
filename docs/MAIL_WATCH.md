@@ -61,11 +61,14 @@ Inside the container:
 mkdir -p ~/.config/mail-watch
 chmod 700 ~/.config/mail-watch
 printf '%s\n' '{"label":"EXACT LABEL NAME"}' > ~/.config/mail-watch/config.json
-cp /workspace/nix/services/mail-watch/prompt.md ~/.config/mail-watch/prompt.md
 ```
 
-Edit the prompt's importance criteria and remove the TODO. Label names are
-case-sensitive. There is deliberately no default label or importance policy.
+The prompt lives only at `~/.config/mail-watch/prompt.md` in the persistent
+`t3code` home, outside this repository and the Nix store. Edit its importance
+criteria and remove the TODO before enabling a task. Nix does not create,
+overwrite or back up this file; preserve it when migrating the container home.
+Label names are case-sensitive. There is deliberately no default label or
+importance policy.
 
 The first review includes **all existing messages in that label**, not just
 recent/unread messages. To avoid a large historical review, start with a new
