@@ -57,9 +57,9 @@ let
 
     postBuild = # sh
       ''
-        rm use-byparr/SKILL.md
-        cp ${pkgs.replaceVars ./skills/use-byparr/SKILL.md { inherit domain; }} use-byparr/SKILL.md
-        rm -rf retro-marimo-pair
+        rm "$out/use-byparr/SKILL.md"
+        cp ${pkgs.replaceVars ./skills/use-byparr/SKILL.md { inherit domain; }} "$out/use-byparr/SKILL.md"
+        rm -rf "$out/retro-marimo-pair"
       '';
   };
 in
