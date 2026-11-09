@@ -7,7 +7,7 @@
 }:
 
 let
-  version = "3.0.4";
+  version = "3.1.1";
   source = callPackage ./source.nix { inherit version; };
   pythonEnv = callPackage ./python-env.nix {
     inherit

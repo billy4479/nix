@@ -6,6 +6,6 @@
 # latest build at runtime.
 fetchurl {
   name = "geoip-aio-all.mmdb";
-  url = "https://github.com/daijro/geoip-all-in-one/releases/download/2026.10.28/geoip-aio-all.mmdb";
-  hash = "sha256-KVCbThSG8x8o1NKKmIaEN6Rn8INrY4c/58uRK5CYqmE=";
+  url = "https://github.com/daijro/geoip-all-in-one/releases/download/2026.11.04/geoip-aio-all.mmdb";
+  hash = "sha256-KOkLXnwl80U+H1zxOCuzMjlet1LjpW2p0j8Gthevlyw=";
 }

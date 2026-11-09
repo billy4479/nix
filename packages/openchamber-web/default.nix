@@ -34,7 +34,7 @@ stdenv.mkDerivation (finalAttrs: {
       "--linker=hoisted"
       "--no-progress"
     ];
-    hash = "sha256-KCHqOb2u5edEqny/LA4A5nTA/G7JtFV3iUcZ00KvDf4=";
+    hash = "sha256-SJMVigRf8SnSQPyZCrg3Zbn5rmwnsiFJ+Sru8cKBImY=";
   };
 
   runtimeNodeModules = common.mkBunModules {
@@ -48,7 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
       "--no-progress"
       "--production"
     ];
-    hash = "sha256-X25ich9niC+OEmu3A7xxhti+Ig6Y6gC4Td6A4OoS2IE=";
+    hash = "sha256-Bq7FLG/NBV4RTLcWGsBnoQ2ufoXaYtfetxh/4sU76Dc=";
   };
 
   nativeBuildInputs = [
@@ -116,7 +116,8 @@ stdenv.mkDerivation (finalAttrs: {
       cp -R packages/web/{bin,dist,public,server,package.json,README.md} $out/lib/openchamber-web
       mkdir -p $out/lib/openchamber-web/packages/sdk
       cp -R packages/sdk/{package.json,dist} $out/lib/openchamber-web/packages/sdk/
-      rm -f $out/lib/openchamber-web/node_modules/.bin/openchamber-guest-bundle
+      # Guest development tools point at SDK sources omitted from the runtime.
+      rm -f $out/lib/openchamber-web/node_modules/.bin/openchamber-guest-{bundle,check}
 
       makeWrapper ${lib.getExe nodejs-slim} $out/bin/openchamber \
         --add-flags $out/lib/openchamber-web/bin/cli.js \

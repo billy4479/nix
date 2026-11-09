@@ -47,8 +47,8 @@ let
   # so a stale pin fails loudly, and byparr/update.sh rewrites this pin from
   # the seal on every run.
   engineArchive = fetchurl {
-    url = "https://github.com/feder-cr/firefox_antidetect_patch/releases/download/firefox-20/firefox-151.0-stealth-linux-x86_64.tar.gz";
-    hash = "sha256-1WWIgMv41sNPjXEEOhiscujKWilpKOtffvnjKkZR2IQ=";
+    url = "https://github.com/feder-cr/firefox_antidetect_patch/releases/download/firefox-55/firefox-159.0-stealth-linux-x86_64.tar.gz";
+    hash = "sha256-H18c4NG18lnlYQotjzUNPcqfed+bOUZd4acD6khhKXQ=";
   };
 
   runtimeLibraryPath = lib.makeLibraryPath [
@@ -90,7 +90,7 @@ let
 in
 stdenvNoCC.mkDerivation {
   pname = "stealthfox";
-  version = "151.0";
+  version = "159.0";
 
   src = engineArchive;
 
