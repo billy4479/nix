@@ -1,0 +1,21 @@
+name: Set up Nix with repository caches
+description: Install Nix and configure the shared binary caches explicitly for CI.
+runs:
+  using: composite
+  steps:
+    - uses: DeterminateSystems/nix-installer-action@v22
+    - name: Configure binary caches
+      shell: bash
+      run: |
+        {
+          echo 'NIX_CONFIG<<REPOSITORY_NIX_CONFIG'
+          printf '%s\n' "${NIX_CONFIG:-}"
+          nix eval --raw --file flake/caches.nix --apply '
+            caches: let settings = caches { cudaSupport = true; }; in
+            builtins.concatStringsSep "\n" (
+              builtins.map
+                (name: "extra-${name} = ${builtins.concatStringsSep " " settings.${name}}")
+                (builtins.attrNames settings)
+            )'
+          printf '\nREPOSITORY_NIX_CONFIG\n'
+        } >> "$GITHUB_ENV"

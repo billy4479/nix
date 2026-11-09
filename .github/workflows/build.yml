@@ -34,13 +34,12 @@ jobs:
         run: ssh-keyscan github.com >> ~/.ssh/known_hosts
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v22
+        uses: ./.github/actions/setup-nix
 
       - name: Build ${{ matrix.host }}
         run: |
           nix build \
             --print-build-logs \
-            --accept-flake-config \
             ".#nixosConfigurations.${{ matrix.host }}.config.system.build.toplevel"
 
   build-home:
@@ -71,11 +70,10 @@ jobs:
         run: ssh-keyscan github.com >> ~/.ssh/known_hosts
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v22
+        uses: ./.github/actions/setup-nix
 
       - name: Build billy@${{ matrix.host }}
         run: |
           nix build \
             --print-build-logs \
-            --accept-flake-config \
             '.#homeConfigurations."billy@${{ matrix.host }}".activationPackage'

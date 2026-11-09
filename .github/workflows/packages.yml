@@ -9,6 +9,8 @@ on:
       - flake.lock
       - flake/overlays.nix
       - flake/pkgs.nix
+      - flake/caches.nix
+      - .github/actions/setup-nix/**
       - .github/workflows/packages.yml
   pull_request:
     paths:
@@ -17,6 +19,8 @@ on:
       - flake.lock
       - flake/overlays.nix
       - flake/pkgs.nix
+      - flake/caches.nix
+      - .github/actions/setup-nix/**
       - .github/workflows/packages.yml
 
 permissions:
@@ -59,13 +63,12 @@ jobs:
             ${{ secrets.QUOTE_BOT_DEPLOY_KEY }}
       - name: Add github.com to known hosts
         run: ssh-keyscan github.com >> ~/.ssh/known_hosts
-      - uses: DeterminateSystems/nix-installer-action@v22
+      - uses: ./.github/actions/setup-nix
       - name: Build package
         env:
           PACKAGE: ${{ matrix.package }}
         run: |
           nix build \
             --print-build-logs \
-            --accept-flake-config \
             --no-link \
             ".#$PACKAGE"

@@ -1,6 +1,7 @@
 { pkgs, hosts }:
 let
   lib = pkgs.lib;
+  flakeConfig = (import ../flake.nix).nixConfig or { };
   checkHost =
     name: host:
     let
@@ -18,6 +19,10 @@ let
         lib.any (key: lib.hasPrefix "cache.nixos-cuda.org:" key) settings.trusted-public-keys == cudaSupport
     ) "${name}: package policy or shared caches differ from the expected configuration";
 in
+# Cache trust belongs to the daemon, not client-supplied flake settings.
+assert lib.assertMsg (
+  !(flakeConfig ? trusted-public-keys) && !(flakeConfig ? extra-trusted-public-keys)
+) "Flake-supplied cache keys trigger restricted-setting warnings for untrusted users";
 assert pkgs.config.allowUnfree && !pkgs.config.cudaSupport;
 assert lib.all (value: value) (lib.mapAttrsToList checkHost hosts.nixosConfigurations);
 pkgs.writeText "nix-settings" "Shared cache and package policies match.\n"

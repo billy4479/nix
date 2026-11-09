@@ -4,11 +4,13 @@ This flake contains my NixOS + home-manager configuration.
 
 ## Binary caches and packages
 
-Cache URLs and public keys live in `flake.nix` under `nixConfig`. NixOS reuses
-these through `flake/caches.nix`, enabling the CUDA cache only on CUDA hosts.
-CI builds use `--accept-flake-config` to accept the caches non-interactively.
-Locally, accept and remember the settings when Nix prompts to avoid passing the
-flag on subsequent builds.
+Cache URLs and public keys live in `flake/caches.nix`. NixOS installs these
+system-wide, enabling the CUDA cache only on CUDA hosts. CI configures the same
+caches explicitly through `.github/actions/setup-nix` (including the CUDA cache).
+The flake does not override cache settings on the client: doing so causes
+restricted-setting warnings for untrusted users, even when the daemon already
+trusts those keys. No local flake-cache approval or additional user privileges
+are needed on managed hosts.
 
 `flake/pkgs.nix` is the shared package-set constructor for flake tools, NixOS,
 and Home Manager. All allow unfree packages; CUDA support is enabled only for
