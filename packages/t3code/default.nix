@@ -13,6 +13,7 @@
   spdx-license-list-data,
   makeWrapper,
   autoPatchelfHook,
+  vulkan-loader,
   gitMinimal,
   gh,
   writeShellScript,
@@ -20,13 +21,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "t3code";
-  version = "0.1.7";
+  version = "0.1.8";
 
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-oQLmDCDuJPNBsf8MHMD2xhMq+CF6L836/PQesM91Clw=";
+    hash = "sha256-QPZpT/1zm5sLIDw3AOzUCIrmOFPwUU8jP/q1A8GzLow=";
   };
 
   # Restore persisted Pi sessions before rollback on a fresh runtime.
@@ -49,7 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
       ;
     pnpm = pnpm_12;
     fetcherVersion = 5;
-    hash = "sha256-d3o4kSc4K/YkMuSwGJrAnoSRK7k9iFGdGwyVE9c1aYU=";
+    hash = "sha256-UpAKQndN8Dpv3cGpr0QW/I3choqv9c7vINFCHQstrKQ=";
   };
 
   nativeBuildInputs = [
@@ -62,7 +63,10 @@ stdenv.mkDerivation (finalAttrs: {
     autoPatchelfHook
   ];
 
-  buildInputs = [ stdenv.cc.cc.lib ];
+  buildInputs = [
+    stdenv.cc.cc.lib
+    vulkan-loader
+  ];
 
   strictDeps = true;
   env = {
@@ -117,6 +121,9 @@ stdenv.mkDerivation (finalAttrs: {
       # nor its optional dependency links belong in this glibc runtime.
       find "$out/lib/t3code/node_modules" \( -name '*-linux-*-musl' -o -name '*-linux-*-musl@*' \) \
         -prune -exec rm -rf {} +
+      # Koffi bundles glibc and musl addons in the same platform package.
+      find "$out/lib/t3code/node_modules" -type d -path '*/@koromix/koffi-linux-*/musl_*' \
+        -prune -exec rm -rf {} +
       find "$out/lib/t3code" -name '*.map' -type f -delete
       find "$out/lib/t3code" -type d -name .bin -prune -exec rm -rf {} +
       install -Dm644 LICENSE "$out/share/licenses/t3code/LICENSE"
@@ -129,7 +136,6 @@ stdenv.mkDerivation (finalAttrs: {
             gh
           ]
         }
-
       runHook postInstall
     '';
 

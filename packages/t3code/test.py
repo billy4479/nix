@@ -31,6 +31,7 @@ import pty from './node_modules/node-pty/lib/index.js';
 await import('@ff-labs/fff-node');
 await import('@napi-rs/keyring');
 await import('ffi-rs');
+await import('transcribe-cpp');
 const term = pty.spawn(process.argv[1], ['-c', 'printf t3-pty-ok'], { env: process.env });
 let output = '';
 term.onData(data => { output += data; });
