@@ -41,7 +41,11 @@ Every package with an upstream has an `update.sh` next to it (wired up as
 
 The scripts bump the version and refresh every hash themselves, including
 lock files like `deps.json` and the node_modules hashes — and then build the
-package as verification. Nothing is committed automatically.
+package as verification. `./packages/update.sh` commits each successful update
+separately, including hash-only changes. Unchanged packages produce no commit;
+failed updates stay uncommitted. Packages with existing local changes are skipped
+and reported as failures, and unrelated changes are not included in commits.
+Running a per-package script directly does not commit anything.
 
 Requirements: nix with flakes, `curl` and `jq`; `nix-update` is fetched from
 the nixpkgs registry when not installed. Set `GITHUB_TOKEN` to raise the

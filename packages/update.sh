@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Update packages: everything with an update.sh by default, or the ones named
-# as arguments. Continues past failures and reports them at the end.
+# as arguments. Commits each successful update separately. Continues past
+# failures and reports them at the end.
 #
 #   ./packages/update.sh                 # all packages
 #   ./packages/update.sh derper tsidp    # a subset
@@ -28,12 +29,29 @@ fi
 
 failed=()
 for pkg in "${packages[@]}"; do
+  if [[ $pkg == */* || $pkg == . || $pkg == .. || -z $pkg ]]; then
+    echo "==> $pkg: expected a package directory name" >&2
+    failed+=("$pkg")
+    continue
+  fi
   if [[ ! -x $pkg/update.sh ]]; then
     echo "==> $pkg: no update.sh, skipping" >&2
     continue
   fi
+  if [[ -n $(git status --porcelain -- "$pkg/") ]]; then
+    echo "==> $pkg: has local changes, skipping" >&2
+    failed+=("$pkg")
+    continue
+  fi
   echo "==> updating $pkg"
   if "./$pkg/update.sh"; then
+    if [[ -n $(git status --porcelain -- "$pkg/") ]]; then
+      if ! { git add -- "$pkg/" && git commit --only -m "$pkg: update package" -- "$pkg/"; }; then
+        echo "==> $pkg: commit FAILED" >&2
+        failed+=("$pkg")
+        continue
+      fi
+    fi
     echo "==> $pkg ok"
   else
     echo "==> $pkg FAILED" >&2
