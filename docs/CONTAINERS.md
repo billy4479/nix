@@ -14,6 +14,9 @@ The containers under `../containers/` are infrastructure only (the engine,
 nginx, certbot) and set `nerdctl-containers` directly.
 
 Prefer building an image from nix packages rather then pulling one.
+Certbot uses `nix-snapshotter.buildImage` with Nixpkgs' Certbot and its
+Cloudflare DNS plugin. Its certificate, work, and log mounts and renewal timer
+remain independent of the image; no upstream Docker image is needed.
 
 If you decide to pull an image you should add it to `../containers/images` and update `../containers/images.nix` using
 ```sh

@@ -101,7 +101,17 @@ in
 
   nerdctl-containers.${name} = {
     inherit id;
-    imageToPull = "docker.io/certbot/dns-cloudflare";
+    imageToBuild = pkgs.nix-snapshotter.buildImage {
+      inherit name;
+      tag = "nix-local";
+
+      copyToRoot = [
+        (pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]))
+        pkgs.coreutils
+        pkgs.dockerTools.binSh
+        pkgs.dockerTools.caCertificates
+      ];
+    };
 
     volumes = [
       {
