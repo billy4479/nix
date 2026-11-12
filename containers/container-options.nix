@@ -15,10 +15,25 @@ lib.types.submodule (
         description = "UID used to run the container and own its writable volumes.";
       };
 
+      userName = lib.mkOption {
+        type = lib.types.strMatching "[a-z_][a-z0-9_-]*";
+        default = config.environment.USER or "container-${toString config.uid}";
+        defaultText = lib.literalExpression ''environment.USER or "container-''${toString uid}"'';
+        description = ''
+          Name of the configured UID in the image's passwd file. Its home and
+          shell follow environment.HOME and environment.SHELL, defaulting to
+          /var/empty and /bin/sh. This does not change the runtime UID or GID.
+        '';
+      };
+
       copyToRoot = lib.mkOption {
         type = lib.types.listOf lib.types.package;
         default = [ ];
-        description = "Packages and filesystem trees to copy into the image root.";
+        description = ''
+          Additional packages and filesystem trees to copy into the image root.
+          A shell, CA certificates, coreutils, Tini and identity/NSS files are
+          included automatically.
+        '';
       };
 
       labels = lib.mkOption {
@@ -178,7 +193,7 @@ lib.types.submodule (
 
       entrypoint = lib.mkOption {
         type = lib.types.nonEmptyListOf (lib.types.coercedTo lib.types.package toString lib.types.str);
-        description = "Entrypoint executable and fixed arguments, embedded in the image.";
+        description = "Application executable and fixed arguments; the image automatically prepends tini --.";
       };
 
       dependsOn = lib.mkOption {

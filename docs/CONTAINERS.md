@@ -15,9 +15,9 @@ nginx, certbot) and set `nerdctl-containers` directly.
 
 Provide a `copyToRoot` list and a nonempty `entrypoint` list. The module builds
 an image with `pkgs.nix-snapshotter.buildImage`, automatically using the container
-name and the `nix-local` tag. `copyToRoot` defaults to `[]`; executables referenced
-by Nix store paths in `entrypoint` are included in the image closure without
-needing to copy them into `/bin`.
+name and the `nix-local` tag. `copyToRoot` defaults to `[]` and adds to the shared
+base described below. Executables referenced by Nix store paths in `entrypoint`
+are included in the image closure without needing to copy them into `/bin`.
 
 Images are loaded locally and run with `--snapshotter nix --pull never`.
 There is no upstream Docker image pull or prefetch machinery.
@@ -27,18 +27,38 @@ For example:
 ```nix
 copyToRoot = [
   (pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]))
-  pkgs.coreutils
-  pkgs.dockerTools.binSh
-  pkgs.dockerTools.caCertificates
 ];
 entrypoint = [ "/bin/sh" ];
 cmd = [ "-c" "trap : TERM INT; sleep infinity & wait" ];
 ```
 
-`entrypoint` contains the executable and any fixed arguments (including wrapper
-scripts or `tini --`). Use `cmd` for runtime arguments and `environment` for
-runtime environment variables; no environment settings belong in the image.
-Volumes, working directory, and other runtime options remain separate.
+`entrypoint` contains the application executable and any fixed arguments or
+wrapper script. The module always prepends `tini --` to reap orphaned children
+and forward signals; do not add Tini yourself. Use `cmd` for runtime arguments
+and `environment` for runtime environment variables; no environment settings
+belong in the image. Volumes, working directory, and other runtime options
+remain separate.
+
+### Shared image base
+
+Every image includes:
+
+- `dockerTools.binSh` (`/bin/sh`)
+- `dockerTools.caCertificates` (the CA trust store)
+- `coreutils` and `tini`
+- `/etc/passwd` and `/etc/group`, with root, the configured container user
+  (its `uid` and GID 5000), and nobody/nogroup
+- `/etc/nsswitch.conf`, using files for users/groups and files/DNS for hosts
+
+`userName` defaults to `environment.USER`, or `container-<uid>` when unset.
+Set it explicitly for applications requiring a specific account name (Bind9
+uses `bind`, PostgreSQL uses `postgres`). The passwd home and shell follow
+`environment.HOME` and `environment.SHELL`, defaulting to `/var/empty` and
+`/bin/sh`. These names do not change the numeric UID/GID used by nerdctl.
+
+The module merges the base and `copyToRoot` into one filesystem tree. Explicit
+application packages take precedence over defaults, so richer runtimes can
+provide Bash and their own command variants without duplicate-path failures.
 
 Generated images can be built individually with:
 
@@ -137,6 +157,11 @@ younger than seven days. With the pinned nh version, `--keep-one` preserves all
 live direnv roots. The container runtime seed roots are not age-cleanup targets.
 Expired result-root registrations can be removed even while their `result`
 symlink remains on disk; that output may then become collectable.
+
+The module automatically copies and roots the complete merged image filesystem
+in each private Nix store, in addition to `privateNixStore.seedPackages`.
+This preserves the shared shell, CA store, coreutils, Tini, identity files, and
+application root files when the private `/nix` mount hides the host store.
 
 The subsequent GC preserves remaining roots and active build locks, attempting
 to free up to 100 GiB per run. This is not a hard store-size cap. The job is

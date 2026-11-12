@@ -36,7 +36,6 @@ in
       id = 17;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         ff
       ];
       entrypoint = [ "/bin/ff" ];

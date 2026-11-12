@@ -16,13 +16,54 @@ let
         "immich-redis"
         "grafana"
       ];
-  casesFile = pkgs.writeText "container-image-cases.json" (builtins.toJSON cases);
+  roots = lib.mapAttrs (
+    name: container: pkgs.callPackage ../containers/image-root.nix { inherit name container; }
+  ) containers;
+  identities = lib.mapAttrsToList (name: container: {
+    inherit name;
+    root = roots.${name}.identity;
+    user = container.userName;
+    uid = container.uid;
+    home = container.environment.HOME or "/var/empty";
+    shell = container.environment.SHELL or "/bin/sh";
+  }) containers;
+  overlapRoot = pkgs.callPackage ../containers/image-root.nix {
+    name = "overlapping-runtime-test";
+    container = containers.certbot // {
+      copyToRoot = [
+        pkgs.bashInteractive
+        pkgs.coreutils
+      ];
+    };
+  };
+  casesFile = pkgs.writeText "container-image-cases.json" (
+    builtins.toJSON {
+      images = cases;
+      inherit identities;
+      tini = "${pkgs.tini}/bin/tini";
+      overlap = {
+        root = overlapRoot;
+        shell = "${pkgs.bashInteractive}/bin/sh";
+      };
+    }
+  );
 in
 assert lib.all (name: images.${name}.image == "${name}:nix-local") (lib.attrNames containers);
 assert containers.immich-redis.copyToRoot == [ ];
 assert builtins.length containers.grafana.entrypoint == 2;
 assert containers.grafana.cmd == [ "--homepath=${pkgs.grafana}/share/grafana" ];
 assert containers.grafana.environment.GF_PATHS_DATA == "/var/lib/grafana";
+assert containers.bind9.userName == "bind";
+assert containers.postgresql.userName == "postgres";
+assert containers.openchamber.userName == "openchamber";
+assert containers.t3code.userName == "t3";
+# Default store paths must be copied and rooted when a private /nix hides them.
+assert lib.all (
+  name:
+  lib.hasInfix (builtins.unsafeDiscardStringContext (
+    toString roots.${name}
+  )) serverone.systemd.services."nerdctl-${name}".preStart
+) (lib.attrNames (lib.filterAttrs (_: container: container.privateNixStore.enable) containers));
 assert lib.all (
   name:
   let

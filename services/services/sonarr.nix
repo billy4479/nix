@@ -25,10 +25,6 @@ in
     container = {
       id = 9;
 
-      copyToRoot = with pkgs.dockerTools; [
-        caCertificates
-        (pkgs.writeTextDir "/etc/passwd" "container-5009:x:5009:5000:User for container sonarr:/var/empty:/run/current-system/sw/bin/nologin")
-      ];
       entrypoint = [ (lib.getExe pkgs.sonarr) ];
       cmd = [
         "-nobrowser"

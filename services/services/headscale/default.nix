@@ -22,7 +22,6 @@ in
 
       copyToRoot = with pkgs; [
         headscale
-        dockerTools.caCertificates
       ];
       entrypoint = [ "/bin/headscale" ];
       cmd = [ "serve" ];

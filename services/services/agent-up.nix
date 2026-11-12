@@ -9,7 +9,6 @@ in
       id = 22;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         agent-up-server
       ];
       entrypoint = [ "/bin/agent-up-server" ];

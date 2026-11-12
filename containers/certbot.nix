@@ -103,9 +103,6 @@ in
     inherit id;
     copyToRoot = [
       (pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]))
-      pkgs.coreutils
-      pkgs.dockerTools.binSh
-      pkgs.dockerTools.caCertificates
     ];
 
     volumes = [

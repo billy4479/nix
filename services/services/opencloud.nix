@@ -48,8 +48,6 @@ in
       id = 14;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
-        dockerTools.binSh
         opencloud
       ];
 

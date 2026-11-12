@@ -25,10 +25,6 @@ in
 
   polpetta.services.${name} = {
     container = {
-      copyToRoot = [
-        pkgs.dockerTools.caCertificates
-        pkgs.coreutils
-      ];
       entrypoint = [ (lib.getExe pkgs.immich) ];
 
       id = 3;

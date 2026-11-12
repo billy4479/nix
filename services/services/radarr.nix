@@ -25,10 +25,6 @@ in
     container = {
       id = 7;
 
-      copyToRoot = with pkgs.dockerTools; [
-        caCertificates
-        (pkgs.writeTextDir "/etc/passwd" "container-5007:x:5007:5000:User for container radarr:/var/empty:/run/current-system/sw/bin/nologin")
-      ];
       entrypoint = [ (lib.getExe pkgs.radarr) ];
       cmd = [
         "-nobrowser"

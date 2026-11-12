@@ -103,7 +103,6 @@ in
       id = 13;
 
       copyToRoot = [
-        pkgs.dockerTools.caCertificates
         imageRoot
       ];
       entrypoint = [ "/bin/game-server-runner" ];

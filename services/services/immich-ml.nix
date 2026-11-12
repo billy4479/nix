@@ -6,10 +6,6 @@ in
   polpetta.services.immich-ml = {
     container = {
       id = 128;
-      copyToRoot = [
-        pkgs.dockerTools.caCertificates
-        pkgs.dockerTools.binSh
-      ];
       entrypoint = [ (lib.getExe pkgs.immich-machine-learning) ];
       volumes = [
         {

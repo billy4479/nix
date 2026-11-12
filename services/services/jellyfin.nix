@@ -76,7 +76,6 @@ in
   polpetta.services.jellyfin = {
     container = {
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         intel-media-driver
         intel-vaapi-driver
         vpl-gpu-rt

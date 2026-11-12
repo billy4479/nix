@@ -18,7 +18,6 @@ in
       id = 4;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         calendar-proxy
       ];
       entrypoint = [ "/bin/calendar-proxy-v2" ];

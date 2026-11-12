@@ -41,7 +41,6 @@ in
       id = 135;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         mircrewrr
       ];
       entrypoint = [ "/bin/mircrewrr" ];

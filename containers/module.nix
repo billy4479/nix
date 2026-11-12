@@ -7,6 +7,10 @@
 let
   containerSubmodule = import ./container-options.nix { inherit lib; };
 
+  imageRoots = lib.mapAttrs (
+    name: container: pkgs.callPackage ./image-root.nix { inherit name container; }
+  ) config.nerdctl-containers;
+
   duplicates =
     list: lib.attrNames (lib.filterAttrs (_: v: lib.length v > 1) (lib.groupBy (x: x) list));
 
@@ -197,7 +201,9 @@ let
               let
                 nix = lib.getExe pkgs.nix;
                 nixStore = lib.getExe' pkgs.nix "nix-store";
-                seedPaths = map toString cfg.privateNixStore.seedPackages;
+                # /nix is hidden by the private store, including the paths
+                # referenced by the default root files and Tini entrypoint.
+                seedPaths = map toString (cfg.privateNixStore.seedPackages ++ [ imageRoots.${name} ]);
                 seedArgs = lib.escapeShellArgs seedPaths;
                 wipeAboveGib = cfg.privateNixStore.wipeAboveGib;
                 wipeTool = pkgs.callPackage ./private-store-wipe { };
@@ -348,8 +354,12 @@ in
         pkgs.nix-snapshotter.buildImage {
           inherit name;
           tag = "nix-local";
-          inherit (container) copyToRoot;
-          config.entrypoint = container.entrypoint;
+          copyToRoot = [ imageRoots.${name} ];
+          config.entrypoint = [
+            "${pkgs.tini}/bin/tini"
+            "--"
+          ]
+          ++ container.entrypoint;
         }
       ) config.nerdctl-containers;
 

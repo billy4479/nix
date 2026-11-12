@@ -36,7 +36,6 @@ in
     container = {
       id = 16;
 
-      copyToRoot = [ pkgs.dockerTools.caCertificates ];
       entrypoint = [ (lib.getExe pkgs.headplane) ];
 
       dependsOn = [ "headscale" ];

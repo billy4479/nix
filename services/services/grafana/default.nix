@@ -37,7 +37,6 @@ in
       id = 23;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         grafana
         tzdata
       ];

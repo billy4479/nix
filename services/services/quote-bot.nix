@@ -45,7 +45,6 @@ in
       id = 26;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         quote-bot
       ];
       entrypoint = [ "/bin/quote-bot" ];

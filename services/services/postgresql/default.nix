@@ -12,7 +12,6 @@ let
   # stays evaluable on hosts without the containers module.
   # Must match containers/module.nix: uid = 5000 + id, gid = 5000.
   uid = 5000 + id;
-  gid = 5000;
   dataDir = "/mnt/SSD/apps/postgresql/18";
   containerDataDir = "/var/lib/postgresql/data";
 
@@ -27,11 +26,6 @@ let
   ]);
 
   localeArchive = "${pkgs.glibcLocales}/lib/locale/locale-archive";
-
-  fakeNss = pkgs.dockerTools.fakeNss.override {
-    extraPasswdLines = [ "postgres:x:${toString uid}:${toString gid}:PostgreSQL:/tmp:/bin/sh" ];
-    extraGroupLines = [ "containers:x:${toString gid}:postgres" ];
-  };
 
   entrypoint = pkgs.writeShellApplication {
     name = "postgresql-entrypoint";
@@ -104,10 +98,9 @@ in
     container = {
       inherit id;
 
+      userName = "postgres";
       copyToRoot = [
-        pkgs.dockerTools.binSh
         entrypoint
-        fakeNss
         pkgs.glibcLocales
         postgresql
       ];

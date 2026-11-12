@@ -29,7 +29,6 @@ in
 
       copyToRoot = with pkgs; [
         tsidp
-        dockerTools.caCertificates
       ];
       entrypoint = [ "/bin/tsidp" ];
 

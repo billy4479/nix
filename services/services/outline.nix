@@ -42,8 +42,6 @@ in
       id = 24;
 
       copyToRoot = with pkgs; [
-        dockerTools.binSh
-        dockerTools.caCertificates
         outline
         tzdata
       ];

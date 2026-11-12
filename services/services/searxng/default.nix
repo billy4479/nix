@@ -20,7 +20,6 @@ in
       id = 19;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         searxng
       ];
       entrypoint = [ "/bin/searxng-run" ];

@@ -39,7 +39,6 @@ let
         nix
         nh
         git
-        tini
         t3code
         pi-coding-agent
         # pi-free-provider's Zen transport starts a local Bun relay.
@@ -86,16 +85,6 @@ let
   files = pkgs.symlinkJoin {
     name = "t3code-container-config";
     paths = [
-      (pkgs.writeTextDir "/etc/passwd" ''
-        root:x:0:0:root:/root:/bin/bash
-        t3:x:5021:5000:T3 Code agent:${home}:/bin/bash
-        nobody:x:65534:65534:nobody:/nonexistent:/bin/sh
-      '')
-      (pkgs.writeTextDir "/etc/group" ''
-        root:x:0:
-        containers:x:5000:t3
-        nogroup:x:65534:
-      '')
       (pkgs.writeTextDir "/etc/nix/nix.conf" ''
         experimental-features = nix-command flakes
         sandbox = false
@@ -174,13 +163,8 @@ in
       copyToRoot = [
         runtime
         files
-        pkgs.dockerTools.caCertificates
       ];
-      entrypoint = [
-        "/bin/tini"
-        "--"
-        entrypoint
-      ];
+      entrypoint = [ entrypoint ];
       privateNixStore = {
         enable = true;
         hostPath = "${baseDir}/nix-root";
@@ -189,7 +173,6 @@ in
           files
           extensions
           entrypoint
-          pkgs.dockerTools.caCertificates
         ];
       };
       cmd = [

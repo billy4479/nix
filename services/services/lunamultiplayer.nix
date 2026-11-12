@@ -86,7 +86,6 @@ in
       id = 20;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         game-server-runner
         lunamultiplayer-server
       ];

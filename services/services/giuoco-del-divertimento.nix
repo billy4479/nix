@@ -36,7 +36,6 @@ in
       id = 18;
 
       copyToRoot = with pkgs; [
-        dockerTools.caCertificates
         giuoco-del-divertimento
       ];
       entrypoint = [ "/bin/giuoco-del-divertimento" ];

@@ -7,7 +7,6 @@ in
 {
   polpetta.services.jackett = {
     container = {
-      copyToRoot = [ pkgs.dockerTools.caCertificates ];
       entrypoint = [ (lib.getExe pkgs.jackett) ];
       environment = {
         XDG_DATA_HOME = "/config";

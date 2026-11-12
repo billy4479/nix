@@ -16,7 +16,6 @@ let
   baseDir = "/mnt/SSD/apps/${name}";
   workspaceDir = "${baseDir}/workspaces";
   privateStoreRoot = "${baseDir}/nix-root";
-  caCertificates = pkgs.dockerTools.caCertificates;
 
   artifacts = import ../../user/modules/applications/editor/opencode/artifacts.nix {
     inherit pkgs flakeInputs domain;
@@ -48,7 +47,6 @@ let
         nix
         nh
         git
-        tini
       ]
       ++ [
         openchamber
@@ -80,16 +78,6 @@ let
   identityFiles = pkgs.symlinkJoin {
     name = "openchamber-container-identity";
     paths = [
-      (pkgs.writeTextDir "/etc/passwd" ''
-        root:x:0:0:root:/root:/bin/bash
-        openchamber:x:${uidString}:5000:OpenChamber agent:/home/openchamber:/bin/bash
-        nobody:x:65534:65534:nobody:/nonexistent:/bin/sh
-      '')
-      (pkgs.writeTextDir "/etc/group" ''
-        root:x:0:
-        containers:x:5000:openchamber
-        nogroup:x:65534:
-      '')
       # libgit2 does not support Git's safe.directory path globs, so trust all
       # repositories in this dedicated development container.
       (pkgs.writeTextDir "/etc/gitconfig" ''
@@ -159,13 +147,8 @@ in
         runtime
         nixConfig
         identityFiles
-        caCertificates
       ];
-      entrypoint = [
-        "/bin/tini"
-        "--"
-        "/bin/openchamber"
-      ];
+      entrypoint = [ "/bin/openchamber" ];
 
       privateNixStore = {
         enable = true;
@@ -175,7 +158,6 @@ in
           artifacts.skills
           nixConfig
           identityFiles
-          caCertificates
         ];
         # Preserve registered store paths across upgrades. Ordinary GC below
         # removes unrooted results without wiping the store on the next start.

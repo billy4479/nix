@@ -16,7 +16,6 @@
 
   polpetta.services.syncthing = {
     container = {
-      copyToRoot = [ pkgs.dockerTools.caCertificates ];
       entrypoint = [ (lib.getExe pkgs.syncthing) ];
       environment = {
         HOME = "/var/syncthing";

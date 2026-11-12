@@ -2,8 +2,6 @@
 let
   name = "byparr";
   id = 134;
-  uid = 5000 + id;
-  uidString = toString uid;
   baseSSDDir = "/mnt/SSD/apps/${name}";
 in
 {
@@ -11,14 +9,7 @@ in
     container = {
       inherit id;
 
-      # tini as PID 1: every browser session byparr spawns leaves
-      # orphaned children (forkserver, RDD Process, Utility Process)
-      # that reparent to the container init, which is the python
-      # process by default and never reaps them. They accumulated at
-      # ~15k zombies per day; tini reaps them instead.
       entrypoint = [
-        "${pkgs.tini}/bin/tini"
-        "--"
         (pkgs.writeShellScript "byparr-entrypoint" # sh
           ''
             export PATH=${
@@ -44,22 +35,9 @@ in
 
       copyToRoot = [
         pkgs.byparr
-        pkgs.coreutils
-        pkgs.dockerTools.binSh
-        pkgs.dockerTools.caCertificates
         pkgs.fontconfig
         pkgs.noto-fonts
         pkgs.xvfb
-        (pkgs.writeTextDir "/etc/passwd" ''
-          root:x:0:0:root:/root:/bin/sh
-          container-${uidString}:x:${uidString}:5000:User for container ${name}:/var/empty:/bin/sh
-          nobody:x:65534:65534:nobody:/nonexistent:/bin/sh
-        '')
-        (pkgs.writeTextDir "/etc/group" ''
-          root:x:0:
-          containers:x:5000:
-          nogroup:x:65534:
-        '')
       ];
 
       environment = {

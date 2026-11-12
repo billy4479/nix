@@ -15,21 +15,11 @@ let
     bind9-hosts = hosts;
     generated-records = pkgs.writeText "generated-records.zone" config.polpetta.generated.bind9Records;
   };
-  # Kept local (instead of reading config.nerdctl-containers / users.groups)
-  # so this file stays evaluable on hosts without the containers module.
-  # Must match containers/module.nix: uid = 5000 + id, gid = 5000.
-  uid = toString (5000 + id);
-  gid = "5000";
 in
 {
   polpetta.services.${name} = {
     container = {
-      copyToRoot = [
-        (pkgs.writeTextDir "/etc/passwd" ''
-          bind:x:${uid}:${gid}:bind9 user:/var/empty:/run/current-system/sw/bin/nologin
-        '')
-        pkgs.dockerTools.binSh
-      ];
+      userName = "bind";
       entrypoint = [
         (pkgs.writeScript "bind9-entrypoint"
           # sh
