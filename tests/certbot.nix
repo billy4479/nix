@@ -3,7 +3,6 @@ let
   container = serverone.nerdctl-containers.certbot;
   certbot = pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]);
 in
-assert container.imageToPull == null;
 assert container.imageToBuild.image == "certbot:nix-local";
 pkgs.runCommand "certbot-cloudflare-test" { } # sh
   ''

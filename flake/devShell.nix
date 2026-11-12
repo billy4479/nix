@@ -1,17 +1,4 @@
-{ pkgs, inputs }:
-let
-  lazyNixPrefetchDocker =
-    pkgs.writeShellScriptBin "nix-prefetch-docker" # sh
-      ''
-        exec nix run ${inputs.nixpkgs}#nix-prefetch-docker -- "$@"
-      '';
-
-  lazyPrefetchAllImages =
-    pkgs.writeShellScriptBin "prefetch-all-images" # sh
-      ''
-        exec ${../packages/prefetch-all-images/prefetch-all-images} "$@"
-      '';
-in
+{ pkgs }:
 pkgs.mkShell {
   packages = with pkgs; [
     stylua
@@ -33,7 +20,5 @@ pkgs.mkShell {
 
     dig
 
-    lazyPrefetchAllImages
-    lazyNixPrefetchDocker
   ];
 }

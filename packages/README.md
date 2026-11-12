@@ -51,5 +51,4 @@ Requirements: nix with flakes, `curl` and `jq`; `nix-update` is fetched from
 the nixpkgs registry when not installed. Set `GITHUB_TOKEN` to raise the
 GitHub API rate limit.
 
-`searxng-cli` has no update script on purpose, and `prefetch-all-images` has
-no upstream to track.
+`searxng-cli` has no update script on purpose.

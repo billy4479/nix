@@ -5,8 +5,6 @@
   ...
 }:
 let
-  images = import ./images.nix;
-
   containerSubmodule = import ./container-options.nix { inherit lib; };
 
   duplicates =
@@ -23,11 +21,8 @@ let
   badImageRefs = lib.mapAttrsToList (name: _: name) (
     lib.filterAttrs (
       name: cfg:
-      cfg.imageToBuild != null
-      && (
-        cfg.imageToBuild.passthru.name or null != name
-        || cfg.imageToBuild.passthru.tag or null != "nix-local"
-      )
+      cfg.imageToBuild.passthru.name or null != name
+      || cfg.imageToBuild.passthru.tag or null != "nix-local"
     ) config.nerdctl-containers
   );
 
@@ -95,20 +90,7 @@ let
       # Image Logic
       tag = "nix-local";
       imageName = "${name}:${tag}";
-      nixImage =
-        if cfg.imageToBuild != null then
-          cfg.imageToBuild
-        else if cfg.imageToPull != null then
-          let
-            imageData = images."${cfg.imageToPull}";
-            srcImage = pkgs.dockerTools.pullImage imageData;
-          in
-          pkgs.nix-snapshotter.buildImage {
-            inherit name tag;
-            fromImage = srcImage;
-          }
-        else
-          throw "mkContainerService: Must provide either imageToPull or imageToBuild";
+      nixImage = cfg.imageToBuild;
 
       namespace = "default";
       address = "/run/containerd/containerd.sock";

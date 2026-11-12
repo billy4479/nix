@@ -54,6 +54,12 @@ assert vps.systemd.timers.derper-derp-cert-sync.timerConfig.OnCalendar == "hourl
 assert lib.all (
   key: lib.hasPrefix "restrict,command=" key
 ) vps.users.users.derp-cert-sync.openssh.authorizedKeys.keys;
+assert lib.all (
+  container:
+  !(container ? imageToPull)
+  && lib.isDerivation container.imageToBuild
+  && container.imageToBuild ? copyToContainerd
+) (lib.attrValues serverone.nerdctl-containers);
 assert serverone.nerdctl-containers.openchamber.privateNixStore.wipeAboveGib == null;
 assert serverone.nerdctl-containers.t3code.uid == 5021;
 assert serverone.nerdctl-containers.t3code.id != serverone.nerdctl-containers.outline.id;

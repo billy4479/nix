@@ -15,16 +15,12 @@ lib.types.submodule (
         description = "UID used to run the container and own its writable volumes.";
       };
 
-      imageToPull = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = "Image name key from images.nix to pull.";
-      };
-
       imageToBuild = lib.mkOption {
-        type = lib.types.nullOr lib.types.package;
-        default = null;
-        description = "Nix derivation of the image to build.";
+        type = lib.types.package;
+        description = ''
+          Required image built with nix-snapshotter.buildImage, with name matching
+          the container and tag = "nix-local". Loaded locally and never pulled.
+        '';
       };
 
       labels = lib.mkOption {

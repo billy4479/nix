@@ -7,7 +7,6 @@ let
 in
 rec {
   google-sans = callPackage ./google-sans { };
-  prefetch-all-images = callPackage ./prefetch-all-images { };
   inherit (byparrPackages) byparr;
   byparr-source = byparrPackages.source;
   byparr-python-env = byparrPackages.pythonEnv;

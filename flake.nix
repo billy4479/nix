@@ -200,7 +200,7 @@
         });
 
       devShells.${system}.default = import ./flake/devShell.nix {
-        inherit pkgs inputs;
+        inherit pkgs;
       };
     }
     // hosts;
