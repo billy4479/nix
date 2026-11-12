@@ -30,6 +30,10 @@
       vps-proxy = hosts.nixosConfigurations.vps-proxy.config;
     };
   };
+  container-images = import ../tests/container-images.nix {
+    inherit pkgs;
+    serverone = hosts.nixosConfigurations.serverone.config;
+  };
   certbot = import ../tests/certbot.nix {
     inherit pkgs;
     serverone = hosts.nixosConfigurations.serverone.config;
