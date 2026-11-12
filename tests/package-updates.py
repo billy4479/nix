@@ -36,6 +36,24 @@ class PackageUpdates(unittest.TestCase):
                 f"exit {status}\n"
             )
             script.chmod(0o755)
+        subprocess.run(["git", "-C", str(self.root), "add", "."], check=True)
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(self.root),
+                "-c",
+                "user.name=Package update tests",
+                "-c",
+                "user.email=tests@example.invalid",
+                "-c",
+                "commit.gpgsign=false",
+                "commit",
+                "-qm",
+                "Initialize fixtures",
+            ],
+            check=True,
+        )
 
     def run_updates(self, *names, cwd=None):
         return subprocess.run(
@@ -51,6 +69,19 @@ class PackageUpdates(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stderr)
         self.assertEqual(self.log.read_text().splitlines(), ["alpha", "beta", "gamma"])
         self.assertIn("failed packages: beta", result.stderr)
+
+    def test_skips_modified_packages_and_continues(self):
+        script = self.packages / "alpha/update.sh"
+        modified = script.read_text() + "# Local change\n"
+        script.write_text(modified)
+
+        result = self.run_updates("alpha", "gamma")
+
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("alpha: has local changes, skipping", result.stderr)
+        self.assertIn("failed packages: alpha", result.stderr)
+        self.assertEqual(self.log.read_text().splitlines(), ["gamma"])
+        self.assertEqual(script.read_text(), modified)
 
     def test_subset_from_outside_repository(self):
         result = self.run_updates("gamma", "alpha", cwd=self.root.parent)
