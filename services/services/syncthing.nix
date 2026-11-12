@@ -16,20 +16,12 @@
 
   polpetta.services.syncthing = {
     container = {
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        name = "syncthing";
-        tag = "nix-local";
-
-        copyToRoot = [ pkgs.dockerTools.caCertificates ];
-
-        config = {
-          entrypoint = [ "${lib.getExe pkgs.syncthing}" ];
-          env = [
-            "HOME=/var/syncthing"
-            "STHOMEDIR=/var/syncthing/config"
-            "STGUIADDRESS=0.0.0.0:8384"
-          ];
-        };
+      copyToRoot = [ pkgs.dockerTools.caCertificates ];
+      entrypoint = [ (lib.getExe pkgs.syncthing) ];
+      environment = {
+        HOME = "/var/syncthing";
+        STHOMEDIR = "/var/syncthing/config";
+        STGUIADDRESS = "0.0.0.0:8384";
       };
       ports = [
         "22000:22000/tcp"

@@ -3,7 +3,8 @@ let
   container = serverone.nerdctl-containers.certbot;
   certbot = pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]);
 in
-assert container.imageToBuild.image == "certbot:nix-local";
+assert serverone.system.build.containerImages.certbot.image == "certbot:nix-local";
+assert container.entrypoint == [ "/bin/sh" ];
 pkgs.runCommand "certbot-cloudflare-test" { } # sh
   ''
     ${certbot}/bin/certbot plugins --authenticators \

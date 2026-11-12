@@ -25,17 +25,11 @@ in
 
   polpetta.services.${name} = {
     container = {
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = [
-          pkgs.dockerTools.caCertificates
-          pkgs.coreutils
-        ];
-
-        config.entrypoint = [ (lib.getExe pkgs.immich) ];
-      };
+      copyToRoot = [
+        pkgs.dockerTools.caCertificates
+        pkgs.coreutils
+      ];
+      entrypoint = [ (lib.getExe pkgs.immich) ];
 
       id = 3;
       volumes = [

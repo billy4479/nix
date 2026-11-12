@@ -17,19 +17,11 @@ in
     container = {
       id = 4;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          dockerTools.caCertificates
-          calendar-proxy
-        ];
-
-        config.entrypoint = [
-          "/bin/calendar-proxy-v2"
-        ];
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        calendar-proxy
+      ];
+      entrypoint = [ "/bin/calendar-proxy-v2" ];
 
       environment = {
         PORT = "4479";

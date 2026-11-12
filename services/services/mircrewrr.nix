@@ -40,17 +40,11 @@ in
     container = {
       id = 135;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          dockerTools.caCertificates
-          mircrewrr
-        ];
-
-        config.entrypoint = [ "/bin/mircrewrr" ];
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        mircrewrr
+      ];
+      entrypoint = [ "/bin/mircrewrr" ];
 
       # Cloudflare Turnstile solves go through the byparr container.
       dependsOn = [ "byparr" ];

@@ -75,25 +75,17 @@ in
 
   polpetta.services.jellyfin = {
     container = {
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        config = {
-          entrypoint = [ (lib.getExe pkgs.jellyfin) ];
-          cmd = [
-            "--datadir=/config"
-            "--cachedir=/cache"
-          ];
-        };
-
-        copyToRoot = with pkgs; [
-          dockerTools.caCertificates
-          intel-media-driver
-          intel-vaapi-driver
-          vpl-gpu-rt
-        ];
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        intel-media-driver
+        intel-vaapi-driver
+        vpl-gpu-rt
+      ];
+      entrypoint = [ (lib.getExe pkgs.jellyfin) ];
+      cmd = [
+        "--datadir=/config"
+        "--cachedir=/cache"
+      ];
 
       id = containerId;
 

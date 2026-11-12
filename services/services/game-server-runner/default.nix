@@ -102,17 +102,11 @@ in
     container = {
       id = 13;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        name = "game-server-runner";
-        tag = "nix-local";
-
-        copyToRoot = [
-          pkgs.dockerTools.caCertificates
-          imageRoot
-        ];
-
-        config.entrypoint = [ "/bin/game-server-runner" ];
-      };
+      copyToRoot = [
+        pkgs.dockerTools.caCertificates
+        imageRoot
+      ];
+      entrypoint = [ "/bin/game-server-runner" ];
 
       # CONFIG_PATH is the only env var the app reads itself; the rest
       # of its config now lives in config.toml (above). PATH carries the

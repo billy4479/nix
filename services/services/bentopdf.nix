@@ -9,11 +9,8 @@ in
     container = {
       id = 12;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = pkgs.buildEnv {
+      copyToRoot = [
+        (pkgs.buildEnv {
           name = "image-root";
 
           pathsToLink = [
@@ -27,19 +24,16 @@ in
               cp -r ${pkgs.bentopdf}/. $out/share/bentopdf/
             '')
           ];
-        };
-
-        config = {
-          Entrypoint = [
-            "darkhttpd"
-            "/share/bentopdf"
-            "--port"
-            "8080"
-            "--addr"
-            "0.0.0.0"
-          ];
-        };
-      };
+        })
+      ];
+      entrypoint = [
+        "darkhttpd"
+        "/share/bentopdf"
+        "--port"
+        "8080"
+        "--addr"
+        "0.0.0.0"
+      ];
     };
 
     web = {

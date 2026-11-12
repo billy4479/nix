@@ -20,19 +20,12 @@ in
     container = {
       id = 15;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        name = "headscale";
-        tag = "nix-local";
-        config = {
-          Entrypoint = [ "/bin/headscale" ];
-          Cmd = [ "serve" ];
-        };
-
-        copyToRoot = with pkgs; [
-          headscale
-          dockerTools.caCertificates
-        ];
-      };
+      copyToRoot = with pkgs; [
+        headscale
+        dockerTools.caCertificates
+      ];
+      entrypoint = [ "/bin/headscale" ];
+      cmd = [ "serve" ];
 
       volumes = [
         {

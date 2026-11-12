@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   options,
   pkgs,
@@ -87,21 +88,6 @@ let
       '';
   };
 
-  image = pkgs.nix-snapshotter.buildImage {
-    inherit name;
-    tag = "nix-local";
-
-    copyToRoot = [
-      pkgs.dockerTools.binSh
-      entrypoint
-      fakeNss
-      pkgs.glibcLocales
-      postgresql
-    ];
-
-    config.entrypoint = [ (lib.getExe entrypoint) ];
-  };
-
   test = pkgs.callPackage ./test.nix {
     inherit
       expectedExtensions
@@ -118,7 +104,14 @@ in
     container = {
       inherit id;
 
-      imageToBuild = image;
+      copyToRoot = [
+        pkgs.dockerTools.binSh
+        entrypoint
+        fakeNss
+        pkgs.glibcLocales
+        postgresql
+      ];
+      entrypoint = [ (lib.getExe entrypoint) ];
 
       environment = {
         PGDATA = containerDataDir;
@@ -242,7 +235,7 @@ in
   environment.systemPackages = lib.mkIf (options ? nerdctl-containers) [ pkgs.rsync ];
 
   system.build = lib.mkIf (options ? nerdctl-containers) {
-    postgresqlImage = image;
+    postgresqlImage = config.system.build.containerImages.${name};
     postgresqlPackage = postgresql;
     postgresqlTest = test;
   };

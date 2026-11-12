@@ -13,28 +13,38 @@ container plus how it is exposed (domain, access tier, raw ports).
 The containers under `../containers/` are infrastructure only (the engine,
 nginx, certbot) and set `nerdctl-containers` directly.
 
-Every container requires an `imageToBuild` from `pkgs.nix-snapshotter.buildImage`,
-with `name` matching the container name and `tag = "nix-local"`. Images are built
-from Nix packages, loaded locally, and run with `--snapshotter nix --pull never`.
+Provide a `copyToRoot` list and a nonempty `entrypoint` list. The module builds
+an image with `pkgs.nix-snapshotter.buildImage`, automatically using the container
+name and the `nix-local` tag. `copyToRoot` defaults to `[]`; executables referenced
+by Nix store paths in `entrypoint` are included in the image closure without
+needing to copy them into `/bin`.
+
+Images are loaded locally and run with `--snapshotter nix --pull never`.
 There is no upstream Docker image pull or prefetch machinery.
 
 For example:
 
 ```nix
-imageToBuild = pkgs.nix-snapshotter.buildImage {
-  name = "certbot";
-  tag = "nix-local";
-  copyToRoot = [
-    (pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]))
-    pkgs.coreutils
-    pkgs.dockerTools.binSh
-    pkgs.dockerTools.caCertificates
-  ];
-};
+copyToRoot = [
+  (pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]))
+  pkgs.coreutils
+  pkgs.dockerTools.binSh
+  pkgs.dockerTools.caCertificates
+];
+entrypoint = [ "/bin/sh" ];
+cmd = [ "-c" "trap : TERM INT; sleep infinity & wait" ];
 ```
 
-Certbot's certificate, work, and log mounts and renewal timer remain independent
-of the image.
+`entrypoint` contains the executable and any fixed arguments (including wrapper
+scripts or `tini --`). Use `cmd` for runtime arguments and `environment` for
+runtime environment variables; no environment settings belong in the image.
+Volumes, working directory, and other runtime options remain separate.
+
+Generated images can be built individually with:
+
+```sh
+nix build .#nixosConfigurations.serverone.config.system.build.containerImages.certbot
+```
 
 ## Process privileges
 

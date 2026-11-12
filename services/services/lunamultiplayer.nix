@@ -85,18 +85,12 @@ in
     container = {
       id = 20;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          dockerTools.caCertificates
-          game-server-runner
-          lunamultiplayer-server
-        ];
-
-        config.entrypoint = [ "/bin/game-server-runner" ];
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        game-server-runner
+        lunamultiplayer-server
+      ];
+      entrypoint = [ "/bin/game-server-runner" ];
 
       environment = {
         CONFIG_PATH = "/game-server-runner/config.toml";

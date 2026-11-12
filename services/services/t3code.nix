@@ -171,20 +171,16 @@ in
     container = {
       inherit id uid;
       workingDirectory = "/workspace";
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-        copyToRoot = [
-          runtime
-          files
-          pkgs.dockerTools.caCertificates
-        ];
-        config.entrypoint = [
-          "/bin/tini"
-          "--"
-          entrypoint
-        ];
-      };
+      copyToRoot = [
+        runtime
+        files
+        pkgs.dockerTools.caCertificates
+      ];
+      entrypoint = [
+        "/bin/tini"
+        "--"
+        entrypoint
+      ];
       privateNixStore = {
         enable = true;
         hostPath = "${baseDir}/nix-root";

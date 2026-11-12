@@ -41,19 +41,13 @@ in
     container = {
       id = 24;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          dockerTools.binSh
-          dockerTools.caCertificates
-          outline
-          tzdata
-        ];
-
-        config.entrypoint = [ "${pkgs.outline}/bin/outline-server" ];
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.binSh
+        dockerTools.caCertificates
+        outline
+        tzdata
+      ];
+      entrypoint = [ "${pkgs.outline}/bin/outline-server" ];
 
       # Outline resolves its onboarding content and public assets relative to
       # the working directory (the NixOS module does the same).

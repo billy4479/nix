@@ -24,25 +24,21 @@ in
 {
   polpetta.services.${name} = {
     container = {
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-        copyToRoot = [
-          (pkgs.writeTextDir "/etc/passwd" ''
-            bind:x:${uid}:${gid}:bind9 user:/var/empty:/run/current-system/sw/bin/nologin
-          '')
-          pkgs.dockerTools.binSh
-        ];
-        config.Entrypoint = [
-          (pkgs.writeScript "bind9-entrypoint"
-            # sh
-            ''
-              #!/bin/sh
-              exec ${pkgs.bind}/bin/named -g -c /etc/bind/named.conf
-            ''
-          )
-        ];
-      };
+      copyToRoot = [
+        (pkgs.writeTextDir "/etc/passwd" ''
+          bind:x:${uid}:${gid}:bind9 user:/var/empty:/run/current-system/sw/bin/nologin
+        '')
+        pkgs.dockerTools.binSh
+      ];
+      entrypoint = [
+        (pkgs.writeScript "bind9-entrypoint"
+          # sh
+          ''
+            #!/bin/sh
+            exec ${pkgs.bind}/bin/named -g -c /etc/bind/named.conf
+          ''
+        )
+      ];
 
       inherit id;
       capabilities = [ "CAP_NET_BIND_SERVICE" ];

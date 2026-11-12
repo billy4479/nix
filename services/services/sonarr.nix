@@ -25,26 +25,16 @@ in
     container = {
       id = 9;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        config = {
-          env = [
-            "XDG_CONFIG_HOME=/config"
-          ];
-          entrypoint = [ (lib.getExe pkgs.sonarr) ];
-          cmd = [
-            "-nobrowser"
-            "-data=/config"
-          ];
-        };
-
-        copyToRoot = with pkgs.dockerTools; [
-          caCertificates
-          (pkgs.writeTextDir "/etc/passwd" "container-5009:x:5009:5000:User for container sonarr:/var/empty:/run/current-system/sw/bin/nologin")
-        ];
-      };
+      copyToRoot = with pkgs.dockerTools; [
+        caCertificates
+        (pkgs.writeTextDir "/etc/passwd" "container-5009:x:5009:5000:User for container sonarr:/var/empty:/run/current-system/sw/bin/nologin")
+      ];
+      entrypoint = [ (lib.getExe pkgs.sonarr) ];
+      cmd = [
+        "-nobrowser"
+        "-data=/config"
+      ];
+      environment.XDG_CONFIG_HOME = "/config";
 
       dependsOn = [
         "qbittorrent"

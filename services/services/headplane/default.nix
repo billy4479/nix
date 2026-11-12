@@ -36,16 +36,8 @@ in
     container = {
       id = 16;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        name = "headplane";
-        tag = "nix-local";
-
-        copyToRoot = [
-          pkgs.dockerTools.caCertificates
-        ];
-
-        config.entrypoint = [ (lib.getExe pkgs.headplane) ];
-      };
+      copyToRoot = [ pkgs.dockerTools.caCertificates ];
+      entrypoint = [ (lib.getExe pkgs.headplane) ];
 
       dependsOn = [ "headscale" ];
 

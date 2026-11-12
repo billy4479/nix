@@ -15,12 +15,10 @@ lib.types.submodule (
         description = "UID used to run the container and own its writable volumes.";
       };
 
-      imageToBuild = lib.mkOption {
-        type = lib.types.package;
-        description = ''
-          Required image built with nix-snapshotter.buildImage, with name matching
-          the container and tag = "nix-local". Loaded locally and never pulled.
-        '';
+      copyToRoot = lib.mkOption {
+        type = lib.types.listOf lib.types.package;
+        default = [ ];
+        description = "Packages and filesystem trees to copy into the image root.";
       };
 
       labels = lib.mkOption {
@@ -139,7 +137,7 @@ lib.types.submodule (
       cmd = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
-        description = "Command to run in the container.";
+        description = "Runtime arguments appended to the image entrypoint.";
       };
 
       workingDirectory = lib.mkOption {
@@ -179,9 +177,8 @@ lib.types.submodule (
       };
 
       entrypoint = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = "Entrypoint for the container.";
+        type = lib.types.nonEmptyListOf (lib.types.coercedTo lib.types.package toString lib.types.str);
+        description = "Entrypoint executable and fixed arguments, embedded in the image.";
       };
 
       dependsOn = lib.mkOption {

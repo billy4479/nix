@@ -44,17 +44,11 @@ in
     container = {
       id = 26;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          dockerTools.caCertificates
-          quote-bot
-        ];
-
-        config.entrypoint = [ "/bin/quote-bot" ];
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        quote-bot
+      ];
+      entrypoint = [ "/bin/quote-bot" ];
 
       environment = {
         PORT = "4479";

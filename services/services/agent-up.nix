@@ -8,19 +8,11 @@ in
     container = {
       id = 22;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          dockerTools.caCertificates
-          agent-up-server
-        ];
-
-        config.entrypoint = [
-          "/bin/agent-up-server"
-        ];
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        agent-up-server
+      ];
+      entrypoint = [ "/bin/agent-up-server" ];
 
       volumes = [
         {

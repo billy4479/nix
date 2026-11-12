@@ -5,24 +5,17 @@ in
 {
   polpetta.services.outline-valkey = {
     container = {
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        name = "outline-valkey";
-        tag = "nix-local";
-
-        config = {
-          entrypoint = [ (lib.getExe' pkgs.valkey "valkey-server") ];
-          cmd = [
-            "--daemonize"
-            "no"
-            "--bind"
-            "0.0.0.0"
-            "--protected-mode"
-            "no"
-            "--dir"
-            "/data"
-          ];
-        };
-      };
+      entrypoint = [ (lib.getExe' pkgs.valkey "valkey-server") ];
+      cmd = [
+        "--daemonize"
+        "no"
+        "--bind"
+        "0.0.0.0"
+        "--protected-mode"
+        "no"
+        "--dir"
+        "/data"
+      ];
       volumes = [
         {
           hostPath = "${baseSSDDir}/valkey";

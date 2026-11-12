@@ -101,17 +101,12 @@ in
 
   nerdctl-containers.${name} = {
     inherit id;
-    imageToBuild = pkgs.nix-snapshotter.buildImage {
-      inherit name;
-      tag = "nix-local";
-
-      copyToRoot = [
-        (pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]))
-        pkgs.coreutils
-        pkgs.dockerTools.binSh
-        pkgs.dockerTools.caCertificates
-      ];
-    };
+    copyToRoot = [
+      (pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]))
+      pkgs.coreutils
+      pkgs.dockerTools.binSh
+      pkgs.dockerTools.caCertificates
+    ];
 
     volumes = [
       {
@@ -133,7 +128,7 @@ in
       }
     ];
 
-    entrypoint = "/bin/sh";
+    entrypoint = [ "/bin/sh" ];
     cmd = [
       "-c"
       "trap : TERM INT; sleep infinity & wait"

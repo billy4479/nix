@@ -6,18 +6,11 @@ in
   polpetta.services.immich-ml = {
     container = {
       id = 128;
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        name = "immich-ml";
-        tag = "nix-local";
-
-        copyToRoot = [
-          pkgs.dockerTools.caCertificates
-          pkgs.dockerTools.binSh
-        ];
-
-        config.entrypoint = [ (lib.getExe pkgs.immich-machine-learning) ];
-
-      };
+      copyToRoot = [
+        pkgs.dockerTools.caCertificates
+        pkgs.dockerTools.binSh
+      ];
+      entrypoint = [ (lib.getExe pkgs.immich-machine-learning) ];
       volumes = [
         {
           hostPath = "${baseHDDDir}/model-cache";

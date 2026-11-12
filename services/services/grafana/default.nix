@@ -36,33 +36,23 @@ in
     container = {
       id = 23;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          dockerTools.caCertificates
-          grafana
-          tzdata
-        ];
-
-        config = {
-          entrypoint = [
-            "${pkgs.grafana}/bin/grafana"
-            "server"
-          ];
-          cmd = [ "--homepath=${pkgs.grafana}/share/grafana" ];
-          env = [
-            "GF_PATHS_DATA=/var/lib/grafana"
-            "GF_PATHS_LOGS=/var/lib/grafana/logs"
-            "GF_PATHS_PLUGINS=/var/lib/grafana/plugins"
-            "GF_PATHS_PROVISIONING=/etc/grafana/provisioning"
-            "ZONEINFO=${pkgs.tzdata}/share/zoneinfo"
-          ];
-        };
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        grafana
+        tzdata
+      ];
+      entrypoint = [
+        "${pkgs.grafana}/bin/grafana"
+        "server"
+      ];
+      cmd = [ "--homepath=${pkgs.grafana}/share/grafana" ];
 
       environment = {
+        GF_PATHS_DATA = "/var/lib/grafana";
+        GF_PATHS_LOGS = "/var/lib/grafana/logs";
+        GF_PATHS_PLUGINS = "/var/lib/grafana/plugins";
+        GF_PATHS_PROVISIONING = "/etc/grafana/provisioning";
+        ZONEINFO = "${pkgs.tzdata}/share/zoneinfo";
         GF_SECURITY_ADMIN_USER = "admin";
         GF_SERVER_ROOT_URL = "https://${name}.internal.${domain}";
         GF_USERS_ALLOW_SIGN_UP = "false";

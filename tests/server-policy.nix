@@ -57,8 +57,9 @@ assert lib.all (
 assert lib.all (
   container:
   !(container ? imageToPull)
-  && lib.isDerivation container.imageToBuild
-  && container.imageToBuild ? copyToContainerd
+  && !(container ? imageToBuild)
+  && container.entrypoint != [ ]
+  && lib.all lib.isDerivation container.copyToRoot
 ) (lib.attrValues serverone.nerdctl-containers);
 assert serverone.nerdctl-containers.openchamber.privateNixStore.wipeAboveGib == null;
 assert serverone.nerdctl-containers.t3code.uid == 5021;

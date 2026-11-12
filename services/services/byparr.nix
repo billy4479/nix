@@ -11,63 +11,56 @@ in
     container = {
       inherit id;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
+      # tini as PID 1: every browser session byparr spawns leaves
+      # orphaned children (forkserver, RDD Process, Utility Process)
+      # that reparent to the container init, which is the python
+      # process by default and never reaps them. They accumulated at
+      # ~15k zombies per day; tini reaps them instead.
+      entrypoint = [
+        "${pkgs.tini}/bin/tini"
+        "--"
+        (pkgs.writeShellScript "byparr-entrypoint" # sh
+          ''
+            export PATH=${
+              lib.makeBinPath [
+                pkgs.xkbcomp
+                pkgs.coreutils
+              ]
+            }
+            mkdir -p /tmp/.X11-unix
+            chmod 1777 /tmp/.X11-unix
+            ${pkgs.xvfb}/bin/Xvfb :99 \
+              -screen 0 1920x1080x24 \
+              -xkbdir ${pkgs.xkeyboard_config}/share/X11/xkb &
+            xvfbPid=$!
+            until [ -S /tmp/.X11-unix/X99 ]; do
+              kill -0 "$xvfbPid" 2>/dev/null || exit 1
+              sleep 0.1
+            done
+            exec ${lib.getExe pkgs.byparr}
+          ''
+        )
+      ];
 
-        config = {
-          # tini as PID 1: every browser session byparr spawns leaves
-          # orphaned children (forkserver, RDD Process, Utility Process)
-          # that reparent to the container init, which is the python
-          # process by default and never reaps them. They accumulated at
-          # ~15k zombies per day; tini reaps them instead.
-          entrypoint = [
-            "${pkgs.tini}/bin/tini"
-            "--"
-            (pkgs.writeShellScript "byparr-entrypoint" # sh
-              ''
-                export PATH=${
-                  lib.makeBinPath [
-                    pkgs.xkbcomp
-                    pkgs.coreutils
-                  ]
-                }
-                mkdir -p /tmp/.X11-unix
-                chmod 1777 /tmp/.X11-unix
-                ${pkgs.xvfb}/bin/Xvfb :99 \
-                  -screen 0 1920x1080x24 \
-                  -xkbdir ${pkgs.xkeyboard_config}/share/X11/xkb &
-                xvfbPid=$!
-                until [ -S /tmp/.X11-unix/X99 ]; do
-                  kill -0 "$xvfbPid" 2>/dev/null || exit 1
-                  sleep 0.1
-                done
-                exec ${lib.getExe pkgs.byparr}
-              ''
-            )
-          ];
-        };
-
-        copyToRoot = [
-          pkgs.byparr
-          pkgs.coreutils
-          pkgs.dockerTools.binSh
-          pkgs.dockerTools.caCertificates
-          pkgs.fontconfig
-          pkgs.noto-fonts
-          pkgs.xvfb
-          (pkgs.writeTextDir "/etc/passwd" ''
-            root:x:0:0:root:/root:/bin/sh
-            container-${uidString}:x:${uidString}:5000:User for container ${name}:/var/empty:/bin/sh
-            nobody:x:65534:65534:nobody:/nonexistent:/bin/sh
-          '')
-          (pkgs.writeTextDir "/etc/group" ''
-            root:x:0:
-            containers:x:5000:
-            nogroup:x:65534:
-          '')
-        ];
-      };
+      copyToRoot = [
+        pkgs.byparr
+        pkgs.coreutils
+        pkgs.dockerTools.binSh
+        pkgs.dockerTools.caCertificates
+        pkgs.fontconfig
+        pkgs.noto-fonts
+        pkgs.xvfb
+        (pkgs.writeTextDir "/etc/passwd" ''
+          root:x:0:0:root:/root:/bin/sh
+          container-${uidString}:x:${uidString}:5000:User for container ${name}:/var/empty:/bin/sh
+          nobody:x:65534:65534:nobody:/nonexistent:/bin/sh
+        '')
+        (pkgs.writeTextDir "/etc/group" ''
+          root:x:0:
+          containers:x:5000:
+          nogroup:x:65534:
+        '')
+      ];
 
       environment = {
         HOST = "0.0.0.0";

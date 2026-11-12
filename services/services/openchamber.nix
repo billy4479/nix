@@ -155,23 +155,17 @@ in
           test -d /mnt/SSD/agent-config/skills
         '';
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = [
-          runtime
-          nixConfig
-          identityFiles
-          caCertificates
-        ];
-
-        config.entrypoint = [
-          "/bin/tini"
-          "--"
-          "/bin/openchamber"
-        ];
-      };
+      copyToRoot = [
+        runtime
+        nixConfig
+        identityFiles
+        caCertificates
+      ];
+      entrypoint = [
+        "/bin/tini"
+        "--"
+        "/bin/openchamber"
+      ];
 
       privateNixStore = {
         enable = true;

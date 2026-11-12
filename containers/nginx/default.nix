@@ -27,16 +27,8 @@ in
   polpetta.externalTrafficFrom = externalTrafficFrom;
 
   nerdctl-containers.${name} = {
-    imageToBuild = pkgs.nix-snapshotter.buildImage {
-      inherit name;
-      tag = "nix-local";
-
-      config = {
-        entrypoint = [ "/bin/nginx" ];
-      };
-
-      copyToRoot = [ pkgs.nginx ];
-    };
+    copyToRoot = [ pkgs.nginx ];
+    entrypoint = [ "/bin/nginx" ];
 
     id = 6;
     cmd = [

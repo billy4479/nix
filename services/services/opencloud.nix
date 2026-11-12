@@ -47,27 +47,16 @@ in
     container = {
       id = 14;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          dockerTools.caCertificates
-          dockerTools.binSh
-          opencloud
-        ];
-
-        config = {
-          entrypoint = [ "/bin/sh" ];
-          env = [
-            "WEB_ASSET_CORE_PATH=${pkgs.opencloud.web}"
-            "OC_CONFIG_DIR=/etc/opencloud"
-            "OC_BASE_DATA_PATH=/var/lib/opencloud"
-          ];
-        };
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        dockerTools.binSh
+        opencloud
+      ];
 
       environment = {
+        WEB_ASSET_CORE_PATH = "${pkgs.opencloud.web}";
+        OC_CONFIG_DIR = "/etc/opencloud";
+        OC_BASE_DATA_PATH = "/var/lib/opencloud";
         # These are awfully undocumented, some are here but the list is incomplete
         # https://docs.opencloud.eu/docs/dev/server/configuration/global-environment-variables
         "OC_INSECURE" = "false";
@@ -141,7 +130,7 @@ in
         }
       ];
 
-      entrypoint = "/bin/sh";
+      entrypoint = [ "/bin/sh" ];
       cmd = [
         "-c"
         "opencloud init || true; opencloud server"

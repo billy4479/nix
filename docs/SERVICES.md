@@ -26,7 +26,7 @@ polpetta.services.<name> = {
   # mirrored into nerdctl-containers.<name> on serverone only.
   container = {
     id = 13;
-    # imageToBuild / volumes / environment / dependsOn / ... unchanged
+    # copyToRoot / entrypoint / cmd / volumes / environment / dependsOn / ...
   };
 
   # At most one proxied (HTTP) endpoint. Its presence generates the nginx vhost.
@@ -155,10 +155,6 @@ The `record` option only makes them addressable by name.
 - `record` names unique across services
 - container IDs unique across all containers (services plus infrastructure);
   duplicate IDs would mean duplicate IPs on the bridge
-- built image references match their container (`nix-snapshotter.buildImage
-  name`/`tag` must be the service name and `nix-local`): the unit runs the
-  image as `<name>:nix-local` with `--pull never`, so a mismatch would only
-  surface as a crash loop at deploy time
 - `probe.unauth` is false on tcp (raw) probes; it only applies to http
 - non-public domains fall under `.internal.polpetta.online`, public ones under
   `polpetta.online` (wildcard DNS + cert are the only PKI)
@@ -193,7 +189,7 @@ name):
 {
   polpetta.services.immich-server = {
     container = {
-      # imageToBuild, volumes, environmentFiles, environment, dependsOn ...
+      # copyToRoot, entrypoint, cmd, volumes, environmentFiles, environment, dependsOn ...
       id = 3;
       dependsOn = [
         "postgresql"

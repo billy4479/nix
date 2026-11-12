@@ -7,21 +7,11 @@ in
 {
   polpetta.services.jackett = {
     container = {
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        config = {
-          env = [
-            "XDG_DATA_HOME=/config"
-            "XDG_CONFIG_HOME=/config"
-          ];
-          entrypoint = [ (lib.getExe pkgs.jackett) ];
-        };
-
-        copyToRoot = with pkgs.dockerTools; [
-          caCertificates
-        ];
+      copyToRoot = [ pkgs.dockerTools.caCertificates ];
+      entrypoint = [ (lib.getExe pkgs.jackett) ];
+      environment = {
+        XDG_DATA_HOME = "/config";
+        XDG_CONFIG_HOME = "/config";
       };
 
       id = 8;

@@ -27,23 +27,14 @@ in
 {
   polpetta.services.qbittorrent = {
     container = {
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        config = {
-          env = [
-            "HOME=/config"
-            "QBT_CONFIRM_LEGAL_NOTICE=TRUE"
-            "QBT_PROFILE=/config"
-          ];
-          entrypoint = [ (lib.getExe pkgs.qbittorrent-nox) ];
-        };
-      };
+      entrypoint = [ (lib.getExe pkgs.qbittorrent-nox) ];
 
       inherit id;
 
       environment = {
+        HOME = "/config";
+        QBT_CONFIRM_LEGAL_NOTICE = "TRUE";
+        QBT_PROFILE = "/config";
         "QBT_TORRENTING_PORT" = torrentingPort;
         "QBT_WEBUI_PORT" = webUiPort;
       };

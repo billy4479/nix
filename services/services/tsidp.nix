@@ -27,19 +27,11 @@ in
     container = {
       id = 25;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          tsidp
-          dockerTools.caCertificates
-        ];
-
-        config = {
-          Entrypoint = [ "/bin/tsidp" ];
-        };
-      };
+      copyToRoot = with pkgs; [
+        tsidp
+        dockerTools.caCertificates
+      ];
+      entrypoint = [ "/bin/tsidp" ];
 
       cmd = [
         "-dir"

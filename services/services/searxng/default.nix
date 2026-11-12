@@ -19,17 +19,11 @@ in
     container = {
       id = 19;
 
-      imageToBuild = pkgs.nix-snapshotter.buildImage {
-        inherit name;
-        tag = "nix-local";
-
-        copyToRoot = with pkgs; [
-          dockerTools.caCertificates
-          searxng
-        ];
-
-        config.entrypoint = [ "/bin/searxng-run" ];
-      };
+      copyToRoot = with pkgs; [
+        dockerTools.caCertificates
+        searxng
+      ];
+      entrypoint = [ "/bin/searxng-run" ];
 
       environment = {
         SEARXNG_SETTINGS_PATH = "/etc/searxng/settings.yml";
