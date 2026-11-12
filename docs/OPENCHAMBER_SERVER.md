@@ -171,7 +171,7 @@ server container:
 
 ```sh
 ssh serverone sudo /run/current-system/sw/bin/exec-in-container openchamber nix store gc
-ssh serverone sudo /run/current-system/sw/bin/exec-in-container nginx nginx -s reload
+ssh serverone sudo /run/current-system/sw/bin/exec-in-container postgresql psql --version
 ```
 
 The wrapper is also exposed as the flake package

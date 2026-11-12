@@ -41,10 +41,7 @@ in
     container = {
       id = 24;
 
-      copyToRoot = with pkgs; [
-        outline
-        tzdata
-      ];
+      copyToRoot = [ pkgs.tzdata ];
       entrypoint = [ "${pkgs.outline}/bin/outline-server" ];
 
       # Outline resolves its onboarding content and public assets relative to

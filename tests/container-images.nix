@@ -10,11 +10,23 @@ let
         inherit name;
         image = images.${name};
         entrypoint = containers.${name}.entrypoint;
+        absentRootFiles =
+          {
+            nginx = [ "bin/nginx" ];
+            grafana = [ "bin/grafana" ];
+            bentopdf = [
+              "bin/darkhttpd"
+              "share/bentopdf"
+            ];
+          }
+          .${name} or [ ];
       })
       [
         "certbot"
         "immich-redis"
         "grafana"
+        "nginx"
+        "bentopdf"
       ];
   roots = lib.mapAttrs (
     name: container: pkgs.callPackage ../containers/image-root.nix { inherit name container; }
@@ -40,6 +52,7 @@ let
     builtins.toJSON {
       images = cases;
       inherit identities;
+      gameRuntime = builtins.head containers.game-server-runner.copyToRoot;
       tini = "${pkgs.tini}/bin/tini";
       overlap = {
         root = overlapRoot;
@@ -49,7 +62,20 @@ let
   );
 in
 assert lib.all (name: images.${name}.image == "${name}:nix-local") (lib.attrNames containers);
-assert containers.immich-redis.copyToRoot == [ ];
+assert lib.all (name: containers.${name}.copyToRoot == [ ]) [
+  "agent-up"
+  "bentopdf"
+  "calendar-proxy"
+  "ff"
+  "giuoco-del-divertimento"
+  "immich-redis"
+  "mircrewrr"
+  "nginx"
+  "opencloud"
+  "quote-bot"
+  "searxng"
+  "tsidp"
+];
 assert builtins.length containers.grafana.entrypoint == 2;
 assert containers.grafana.cmd == [ "--homepath=${pkgs.grafana}/share/grafana" ];
 assert containers.grafana.environment.GF_PATHS_DATA == "/var/lib/grafana";

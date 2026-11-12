@@ -48,6 +48,8 @@ class ContainerImages(unittest.TestCase):
 
                     layer_path = "blobs/" + layer["digest"].replace(":", "/")
                     with tarfile.open(fileobj=archive.extractfile(layer_path)) as root:
+                        for path in case["absentRootFiles"]:
+                            self.assertNotIn(path, root.getnames())
                         for path in [
                             "bin/sh",
                             "bin/env",
@@ -78,6 +80,12 @@ class ContainerImages(unittest.TestCase):
                                 self.assertEqual(
                                     target.read_text(), expected.read_text()
                                 )
+
+    def test_game_support_tools_remain_available(self):
+        root = Path(CASES["gameRuntime"])
+        self.assertTrue((root / "bin/restic").exists())
+        self.assertTrue((root / "lib/openjdk/bin/java").exists())
+        self.assertFalse((root / "bin/game-server-runner").exists())
 
     def test_explicit_runtime_overrides_defaults(self):
         root = Path(CASES["overlap"]["root"])

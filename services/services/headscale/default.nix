@@ -20,10 +20,9 @@ in
     container = {
       id = 15;
 
-      copyToRoot = with pkgs; [
-        headscale
-      ];
-      entrypoint = [ "/bin/headscale" ];
+      # Keep the administration CLI on PATH for exec-in-container.
+      copyToRoot = [ pkgs.headscale ];
+      entrypoint = [ (lib.getExe pkgs.headscale) ];
       cmd = [ "serve" ];
 
       volumes = [

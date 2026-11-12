@@ -11,20 +11,16 @@ let
   baseDir = "/mnt/SSD/apps/${name}";
   worldDir = "/mnt/SSD/minecraft/Friends-Git";
 
-  # One merged tree for the image root: the runner binary, restic and
-  # the java the world in use runs on. Needed because nix-snapshotter's
-  # copyToRoot merge cannot join the jdk tree raw — its top-level dirs
-  # are themselves symlinks (bin -> lib/openjdk/bin) and collide with
-  # the /bin another package creates (and symlinkJoin silently drops
-  # them too). The real directory /lib/openjdk/bin survives the merge,
-  # so the container PATH includes it for `command = "java"`; bump the
-  # jdk here together with the world.
+  # The runner invokes restic and java by name. Merge restic first to create
+  # a real /bin directory, then use the JDK's interior lib/openjdk/bin through
+  # PATH: symlinkJoin does not merge its top-level bin symlink into /bin.
+  # The runner itself is referenced directly by the entrypoint. Bump the JDK
+  # here together with the world.
   imageRoot = pkgs.symlinkJoin {
     name = "game-server-runner-image";
     paths = [
-      pkgs.game-server-runner
-      pkgs.jdk21_headless
       pkgs.restic
+      pkgs.jdk21_headless
     ];
   };
 in
@@ -105,7 +101,7 @@ in
       copyToRoot = [
         imageRoot
       ];
-      entrypoint = [ "/bin/game-server-runner" ];
+      entrypoint = [ (lib.getExe pkgs.game-server-runner) ];
 
       # CONFIG_PATH is the only env var the app reads itself; the rest
       # of its config now lives in config.toml (above). PATH carries the

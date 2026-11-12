@@ -22,7 +22,17 @@ are included in the image closure without needing to copy them into `/bin`.
 Images are loaded locally and run with `--snapshotter nix --pull never`.
 There is no upstream Docker image pull or prefetch machinery.
 
-For example:
+Prefer referencing the main executable directly in `entrypoint`, rather than
+copying its package into the root just to make it available in `/bin`:
+
+```nix
+entrypoint = [ (lib.getExe pkgs.nginx) ];
+cmd = [ "-g" "daemon off;" ];
+```
+
+Keep `copyToRoot` for fixed filesystem layouts, fonts/locales, interactive tools,
+or commands that must be available by name. For example, Certbot stays on PATH
+because the host renewal timer invokes it through `nerdctl exec`:
 
 ```nix
 copyToRoot = [

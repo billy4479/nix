@@ -99,8 +99,8 @@ in
       inherit id;
 
       userName = "postgres";
+      # Keep the client tools available by name for maintenance via nerdctl exec.
       copyToRoot = [
-        entrypoint
         pkgs.glibcLocales
         postgresql
       ];

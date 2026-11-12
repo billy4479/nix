@@ -9,26 +9,9 @@ in
     container = {
       id = 12;
 
-      copyToRoot = [
-        (pkgs.buildEnv {
-          name = "image-root";
-
-          pathsToLink = [
-            "/bin"
-            "/share/bentopdf"
-          ];
-          paths = [
-            pkgs.darkhttpd
-            (pkgs.runCommand "bentopdf-webroot" { } ''
-              mkdir -p $out/share/bentopdf
-              cp -r ${pkgs.bentopdf}/. $out/share/bentopdf/
-            '')
-          ];
-        })
-      ];
       entrypoint = [
-        "darkhttpd"
-        "/share/bentopdf"
+        "${pkgs.darkhttpd}/bin/darkhttpd"
+        "${pkgs.bentopdf}"
         "--port"
         "8080"
         "--addr"

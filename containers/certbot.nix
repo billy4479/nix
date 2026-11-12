@@ -63,7 +63,7 @@ in
             --dns-cloudflare \
             --dns-cloudflare-credentials /cloudflare.ini
 
-          ${lib.getExe pkgs.nerdctl} exec nginx nginx -s reload
+          ${lib.getExe pkgs.nerdctl} exec nginx ${lib.getExe pkgs.nginx} -s reload
 
           # Push one bounded bundle over the pinned SSH connection. The receiver
           # compares certificate AND key, validates them, and publishes atomically.
@@ -101,6 +101,7 @@ in
 
   nerdctl-containers.${name} = {
     inherit id;
+    # The renewal timer invokes certbot by name through nerdctl exec.
     copyToRoot = [
       (pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]))
     ];

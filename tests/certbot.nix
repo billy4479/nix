@@ -5,6 +5,9 @@ let
 in
 assert serverone.system.build.containerImages.certbot.image == "certbot:nix-local";
 assert container.entrypoint == [ "/bin/sh" ];
+assert pkgs.lib.hasInfix
+  (builtins.unsafeDiscardStringContext "exec nginx ${pkgs.lib.getExe pkgs.nginx} -s reload")
+  serverone.systemd.services.certbot-renew.script;
 pkgs.runCommand "certbot-cloudflare-test" { } # sh
   ''
     ${certbot}/bin/certbot plugins --authenticators \

@@ -2,6 +2,7 @@
   pkgs,
   domain,
   config,
+  lib,
   ...
 }:
 let
@@ -27,8 +28,7 @@ in
   polpetta.externalTrafficFrom = externalTrafficFrom;
 
   nerdctl-containers.${name} = {
-    copyToRoot = [ pkgs.nginx ];
-    entrypoint = [ "/bin/nginx" ];
+    entrypoint = [ (lib.getExe pkgs.nginx) ];
 
     id = 6;
     cmd = [

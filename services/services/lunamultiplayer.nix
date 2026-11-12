@@ -85,11 +85,9 @@ in
     container = {
       id = 20;
 
-      copyToRoot = with pkgs; [
-        game-server-runner
-        lunamultiplayer-server
-      ];
-      entrypoint = [ "/bin/game-server-runner" ];
+      # server.toml launches Server by name from the container PATH.
+      copyToRoot = [ pkgs.lunamultiplayer-server ];
+      entrypoint = [ (lib.getExe pkgs.game-server-runner) ];
 
       environment = {
         CONFIG_PATH = "/game-server-runner/config.toml";

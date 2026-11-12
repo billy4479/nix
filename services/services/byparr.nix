@@ -34,10 +34,8 @@ in
       ];
 
       copyToRoot = [
-        pkgs.byparr
         pkgs.fontconfig
         pkgs.noto-fonts
-        pkgs.xvfb
       ];
 
       environment = {

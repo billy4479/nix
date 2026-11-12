@@ -27,10 +27,7 @@ in
     container = {
       id = 25;
 
-      copyToRoot = with pkgs; [
-        tsidp
-      ];
-      entrypoint = [ "/bin/tsidp" ];
+      entrypoint = [ (lib.getExe pkgs.tsidp) ];
 
       cmd = [
         "-dir"

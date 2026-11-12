@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   name = "agent-up";
   baseSSDDir = "/mnt/SSD/apps/${name}";
@@ -8,10 +8,7 @@ in
     container = {
       id = 22;
 
-      copyToRoot = with pkgs; [
-        agent-up-server
-      ];
-      entrypoint = [ "/bin/agent-up-server" ];
+      entrypoint = [ (lib.getExe pkgs.agent-up-server) ];
 
       volumes = [
         {

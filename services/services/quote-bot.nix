@@ -44,10 +44,7 @@ in
     container = {
       id = 26;
 
-      copyToRoot = with pkgs; [
-        quote-bot
-      ];
-      entrypoint = [ "/bin/quote-bot" ];
+      entrypoint = [ (lib.getExe pkgs.quote-bot) ];
 
       environment = {
         PORT = "4479";

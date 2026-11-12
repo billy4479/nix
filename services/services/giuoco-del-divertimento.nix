@@ -35,10 +35,7 @@ in
     container = {
       id = 18;
 
-      copyToRoot = with pkgs; [
-        giuoco-del-divertimento
-      ];
-      entrypoint = [ "/bin/giuoco-del-divertimento" ];
+      entrypoint = [ (lib.getExe pkgs.giuoco-del-divertimento) ];
 
       environment = {
         PORT = "4479";

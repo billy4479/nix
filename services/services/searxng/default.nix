@@ -19,10 +19,7 @@ in
     container = {
       id = 19;
 
-      copyToRoot = with pkgs; [
-        searxng
-      ];
-      entrypoint = [ "/bin/searxng-run" ];
+      entrypoint = [ (lib.getExe pkgs.searxng) ];
 
       environment = {
         SEARXNG_SETTINGS_PATH = "/etc/searxng/settings.yml";

@@ -35,10 +35,7 @@ in
     container = {
       id = 17;
 
-      copyToRoot = with pkgs; [
-        ff
-      ];
-      entrypoint = [ "/bin/ff" ];
+      entrypoint = [ (lib.getExe pkgs.ff) ];
 
       environment = {
         PORT = "4479";

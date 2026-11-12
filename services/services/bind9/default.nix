@@ -20,14 +20,11 @@ in
   polpetta.services.${name} = {
     container = {
       userName = "bind";
-      entrypoint = [
-        (pkgs.writeScript "bind9-entrypoint"
-          # sh
-          ''
-            #!/bin/sh
-            exec ${pkgs.bind}/bin/named -g -c /etc/bind/named.conf
-          ''
-        )
+      entrypoint = [ "${pkgs.bind}/bin/named" ];
+      cmd = [
+        "-g"
+        "-c"
+        "/etc/bind/named.conf"
       ];
 
       inherit id;

@@ -47,10 +47,6 @@ in
     container = {
       id = 14;
 
-      copyToRoot = with pkgs; [
-        opencloud
-      ];
-
       environment = {
         WEB_ASSET_CORE_PATH = "${pkgs.opencloud.web}";
         OC_CONFIG_DIR = "/etc/opencloud";
@@ -128,10 +124,13 @@ in
         }
       ];
 
-      entrypoint = [ "/bin/sh" ];
-      cmd = [
-        "-c"
-        "opencloud init || true; opencloud server"
+      entrypoint = [
+        (pkgs.writeShellScript "opencloud-entrypoint" # sh
+          ''
+            ${lib.getExe pkgs.opencloud} init || true
+            exec ${lib.getExe pkgs.opencloud} server
+          ''
+        )
       ];
     };
 

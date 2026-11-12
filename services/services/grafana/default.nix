@@ -36,10 +36,7 @@ in
     container = {
       id = 23;
 
-      copyToRoot = with pkgs; [
-        grafana
-        tzdata
-      ];
+      copyToRoot = [ pkgs.tzdata ];
       entrypoint = [
         "${pkgs.grafana}/bin/grafana"
         "server"

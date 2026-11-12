@@ -40,10 +40,7 @@ in
     container = {
       id = 135;
 
-      copyToRoot = with pkgs; [
-        mircrewrr
-      ];
-      entrypoint = [ "/bin/mircrewrr" ];
+      entrypoint = [ (lib.getExe pkgs.mircrewrr) ];
 
       # Cloudflare Turnstile solves go through the byparr container.
       dependsOn = [ "byparr" ];

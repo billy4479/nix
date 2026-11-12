@@ -17,10 +17,7 @@ in
     container = {
       id = 4;
 
-      copyToRoot = with pkgs; [
-        calendar-proxy
-      ];
-      entrypoint = [ "/bin/calendar-proxy-v2" ];
+      entrypoint = [ (lib.getExe pkgs.calendar-proxy) ];
 
       environment = {
         PORT = "4479";
