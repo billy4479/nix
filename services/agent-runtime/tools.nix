@@ -3,7 +3,6 @@ with pkgs;
 [
   searxng-cli
   read-nix-docs
-  liteparse
   agent-up
   curl
   diffutils
