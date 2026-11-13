@@ -305,11 +305,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793961660,
-        "narHash": "sha256-22yHH9/GumhQyUwEaeQTzT8qfT60iS+snQkJClQivZg=",
+        "lastModified": 1794587468,
+        "narHash": "sha256-iMIaLNn28SR2+7Q+fcuJ6/EZMmxqT6UtMJYjjnrw5Dw=",
         "owner": "billy4479",
         "repo": "game-server-runner",
-        "rev": "7054b3f5784476727d6c797b99a2ea075392ded0",
+        "rev": "249035baacd57bc8d5839bd1144e7d41e543a6ba",
         "type": "github"
       },
       "original": {
