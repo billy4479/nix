@@ -172,10 +172,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1794572056,
-        "narHash": "sha256-/L6fhki70e13cEt7KwxOF0WIDgOR05KZ3u+q0GpWERo=",
+        "lastModified": 1794589607,
+        "narHash": "sha256-PWRgH62aN22DENPMnGbzgQXO9Gk7FxMim0/MrP1wi40=",
         "ref": "master",
-        "rev": "175206ef07087df4ac23c612623dcbe1d0aa9aca",
+        "rev": "1445b4c7bb4b77aa641190f400065eee65aab932",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/ff.git"
