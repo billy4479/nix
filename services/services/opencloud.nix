@@ -48,7 +48,6 @@ in
       id = 14;
 
       environment = {
-        WEB_ASSET_CORE_PATH = "${pkgs.opencloud.web}";
         OC_CONFIG_DIR = "/etc/opencloud";
         OC_BASE_DATA_PATH = "/var/lib/opencloud";
         # These are awfully undocumented, some are here but the list is incomplete
@@ -127,6 +126,9 @@ in
       entrypoint = [
         (pkgs.writeShellScript "opencloud-entrypoint" # sh
           ''
+            # Reference assets here so the image closure includes them, not only
+            # the host-side environment passed to nerdctl.
+            export WEB_ASSET_CORE_PATH=${pkgs.opencloud.web}
             ${lib.getExe pkgs.opencloud} init || true
             exec ${lib.getExe pkgs.opencloud} server
           ''
@@ -137,7 +139,7 @@ in
     web = {
       port = 9200;
       access = "public";
-      probe.path = "/healthz";
+      probe.path = "/status.php";
       # Deliberately unbuffered: sync clients pull files in parallel and
       # sizes are unbounded, so buffering multi-GB responses to the 2g tmpfs
       # would risk ENOSPC mid-transfer and burn RAM. ocis streams cheaply.

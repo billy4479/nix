@@ -41,6 +41,8 @@ class ContainerImages(unittest.TestCase):
                     store_paths = (
                         (Path(closure) / "store-paths").read_text().splitlines()
                     )
+                    for store_path in case["requiredStorePaths"]:
+                        self.assertIn(store_path, store_paths)
                     for arg in config["Entrypoint"]:
                         if arg.startswith("/nix/store/"):
                             store_path = "/".join(arg.split("/")[:4])

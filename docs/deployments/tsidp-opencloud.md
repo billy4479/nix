@@ -101,6 +101,23 @@ against the IDM's LDAP `mail` attribute — see the comment block in
   dir. Until then desktop users should use app tokens (the desktop client
   supports app-token login). Not tested — treat as unsupported.
 
+## Troubleshooting
+
+- **Web UI returns 404, but `/status.php` and `/config.json` work:** check
+  that `$WEB_ASSET_CORE_PATH/index.html` exists **inside** the container.
+  A store path supplied only through nerdctl's runtime environment is not
+  included in the image closure. The entrypoint exports the web asset path
+  to keep it in the closure; the container image check covers this dependency.
+  The unauthenticated status endpoint is `/status.php`, not `/healthz`.
+- **`could not get spaceID and nodeID from cache` for a deleted file:** in
+  OpenCloud 8.1.0, POSIX `Tree.Delete` defers `DeleteByPath`, while
+  `Trashbin.MoveToTrash` already calls it before moving the file. The second
+  cleanup logs a missing cache entry at error level. Repeated `lock.json`
+  messages were accompanied by matching deleted files in `.Trash/info`.
+  This explains that message without implying lost live files; do not clear
+  caches or recreate the file merely to silence it. The process creating
+  and deleting those files has not been identified.
+
 ## History (2026-10 migration)
 
 The switch from the built-in IdP happened as "Plan A — zero-copy": headscale

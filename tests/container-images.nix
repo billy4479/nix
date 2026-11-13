@@ -10,6 +10,7 @@ let
         inherit name;
         image = images.${name};
         entrypoint = containers.${name}.entrypoint;
+        requiredStorePaths = lib.optionals (name == "opencloud") [ pkgs.opencloud.web ];
         absentRootFiles =
           {
             nginx = [ "bin/nginx" ];
@@ -27,6 +28,7 @@ let
         "grafana"
         "nginx"
         "bentopdf"
+        "opencloud"
       ];
   roots = lib.mapAttrs (
     name: container: pkgs.callPackage ../containers/image-root.nix { inherit name container; }
