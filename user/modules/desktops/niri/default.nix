@@ -129,6 +129,12 @@ in
         "Mod+D".action.spawn = lib.getExe scripts.open-document;
         "Mod+Y".action.spawn = lib.getExe scripts.mpv-url;
 
+        "Mod+Shift+I" = {
+          repeat = false;
+          hotkey-overlay.title = "Toggle keep awake (no dimming or idle suspend)";
+          action.spawn = noctaliaMsg [ "caffeine-toggle" ];
+        };
+
         "Mod+Shift+L".action.spawn = noctaliaMsg [
           "session"
           "lock"

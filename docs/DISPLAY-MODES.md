@@ -1,5 +1,17 @@
 # Laptop display modes
 
+## Keep awake
+
+**Mod+Shift+I** toggles Noctalia's caffeine mode, with on-screen feedback. While
+active, it inhibits swayidle's automatic brightness dimming, screen-off/locking,
+and idle suspension. Press it again to restore normal idle behavior. This binding
+is available on both niri machines.
+
+This prevents idle-triggered actions, not explicit locking/suspending or lid-close
+actions. It does not change your configured brightness or timeout settings.
+
+## Display selection
+
 On `portatilo`, **Mod+Shift+P** opens a display-mode menu:
 
 - **Laptop only** enables the internal panel and disables connected external outputs.
