@@ -11,6 +11,7 @@ let
 
   noctaliaCmd = lib.getExe config.programs.noctalia.package;
   niriCmd = lib.getExe pkgs.niri;
+  displayMode = import ./display-mode.nix { inherit pkgs; };
   brightnessctl = lib.getExe pkgs.brightnessctl;
   systemctl = lib.getExe' pkgs.systemd "systemctl";
 
@@ -241,6 +242,11 @@ in
 
         "Mod+N".action.focus-workspace-down = { };
         "Mod+P".action.focus-workspace-up = { };
+        "Mod+Shift+P" = lib.mkIf (extraConfig.hostname == "portatilo") {
+          repeat = false;
+          hotkey-overlay.title = "Choose display mode";
+          action.spawn = lib.getExe displayMode;
+        };
         "Mod+Shift+J".action.focus-workspace-down = { };
         "Mod+Shift+K".action.focus-workspace-up = { };
 
@@ -377,6 +383,10 @@ in
       screenshot-path = "~/Pictures/Screenshots/%Y-%m-%d_%H-%M-%S.png";
 
       window-rules = [
+        {
+          matches = [ { title = "^niri-display-mirror$"; } ];
+          open-focused = false;
+        }
         {
           default-column-width = {
             proportion = 2. / 3.;
