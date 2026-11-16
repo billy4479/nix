@@ -1,144 +1,111 @@
-# Noctalia Greeter migration investigation
+# Noctalia Greeter
 
-## Recommendation
+## Configuration
 
-Switching from SDDM to greetd with Noctalia Greeter is a good fit for the two
-Niri hosts. Use the existing Nixpkgs package and NixOS module, not another flake
-input. The pinned Nixpkgs already provides `noctalia-greeter` **1.7.0**, and the
-pinned Noctalia shell is **5.4.1**.
+Both Niri hosts use greetd with Noctalia Greeter instead of SDDM. The pinned
+Nixpkgs provides the package (1.7.0) and NixOS module, so no additional flake input
+is needed. KDE and Qtile configurations still select SDDM.
 
-This is an investigation only. No system or Home Manager configuration has been
-changed, built, or deployed.
+- `system/modules/desktops/default.nix` selects the login manager by desktop.
+- `system/modules/noctalia-greeter.nix` configures the greeter's default Niri
+  session, US international and Italian keyboard layouts, Num Lock, and display
+  blanking after five minutes without input.
+- `system/modules/autologin.nix` preserves laptop autologin through greetd's
+  `initial_session`, launching `niri-session` for systemd session startup. Other
+  desktops retain the generic display-manager autologin settings.
 
-## Current setup
-
-- `system/modules/desktops/default.nix` imports `system/modules/sddm.nix` for
-  every desktop, including KDE and Qtile.
-- The SDDM module enables its Wayland mode and forcibly enables Xorg.
-- Both `computerone` and `portatilo` use Niri with Noctalia managed by standalone
-  Home Manager. Their default system session is `niri`.
-- `portatilo` imports `system/modules/autologin.nix`, enabling SDDM autologin for
-  `billy`. `computerone` does not enable autologin.
-- `computerone` uses the proprietary NVIDIA driver and two monitors, with
-  `DP-2` rotated 90 degrees. `DP-1` runs at approximately 170 Hz and `DP-2` at
-  75 Hz.
-- The desktop keyboard configuration is US international plus Italian. The
-  system graphical keyboard default is US international.
-
-## Smallest migration
-
-Add `system/modules/noctalia-greeter.nix` and select it instead of the SDDM
-module for `desktop == "niri"`. Keep SDDM for the KDE and Qtile configurations
-unless those are separately tested.
-
-A starting configuration using the **pinned Nixpkgs module** is:
-
-```nix
-{ ... }:
-{
-  services.displayManager.noctalia-greeter = {
-    enable = true;
-    settings = {
-      session.default = "niri";
-      keyboard = {
-        layout = "us,it";
-        variant = "intl,";
-        numlock = true;
-      };
-      idle.timeout = 300;
-    };
-  };
-}
-```
-
-The module enables greetd, AccountsService and Polkit, creates the greeter state
-directory, and launches the bundled session wrapper. No separate Cage, Niri, or
-Hyprland greeter compositor is necessary: Noctalia Greeter has its own wlroots
-compositor. It does not replace the desktop compositor or the Noctalia lock screen.
+The native module enables greetd, AccountsService and Polkit, creates the
+state directory, and launches the bundled session wrapper. No separate Cage,
+Niri, or Hyprland greeter compositor is needed: the greeter has its own wlroots
+compositor. It does not replace Niri or the Noctalia lock screen.
 
 Removing the SDDM import also removes this repository's forced Xorg enablement.
-An evaluation with the proposed replacement yields `services.xserver.enable =
-false` on both hosts. Do not remove NVIDIA driver configuration merely because
-it lives under `services.xserver.videoDrivers`.
+Xorg is disabled on both Niri hosts, but the NVIDIA driver configuration under
+`services.xserver.videoDrivers` remains necessary and is unchanged.
 
-### Laptop autologin
+### Host behavior
 
-The pinned greetd module does **not** translate
-`services.displayManager.autoLogin` into greetd configuration. To retain the
-current behavior, replace the laptop's existing autologin import with:
+**computerone:** shows the login screen at boot. The greeter explicitly matches
+Niri's monitor layout: `DP-2` on the left, rotated 90 degrees when
+`extraConfig.rotateMonitor` is enabled, and `DP-1` on the right. Both use scale
+1; requested refresh rates are 170 Hz and 75 Hz respectively. The greeter uses
+the EDID-preferred resolution and matches fractional refresh rates within 1 Hz.
+Its display settings are separate from the Home Manager Niri configuration;
+keep both configurations aligned when changing monitors.
+
+**portatilo:** automatically logs `billy` into Niri at boot and shows the greeter
+after logout. To require login at every boot, remove the autologin module import
+from `system/hosts/portatilo/default.nix`. Greeter output selection, scaling and
+lid handling use upstream defaults.
+
+## Optional appearance sync
+
+Open **Noctalia Settings → Security → Noctalia Greeter → Sync Now**, authorize
+it, and log out to see the result. Sync can copy wallpaper, palette, font,
+monitor layout, rotation and scale. Fonts must be available system-wide, not
+only in the user's home directory.
+
+Administrator authorization remains required by default. To allow automatic
+appearance sync without repeated prompts, explicitly opt in with:
 
 ```nix
-{ config, extraConfig, ... }:
-{
-  services.greetd.settings.initial_session = {
-    user = extraConfig.user.username;
-    command = "${config.programs.niri.package}/bin/niri-session";
-  };
-}
+services.displayManager.noctalia-greeter.passwordlessSyncUsers = [ "billy" ];
 ```
 
-Use `niri-session`, rather than bare `niri`, to retain Niri's systemd session
-startup. With this configuration the login screen is skipped initially and
-appears after logout. To see the greeter on every boot, remove autologin instead.
-The existing `services.displayManager.defaultSession = "niri"` can remain, but
-set the greeter's `settings.session.default` explicitly too.
+This authorizes only the constrained appearance-sync helper for an active local
+user. The pinned Noctalia shell (5.4.1) and greeter meet the documented version
+requirements. Appearance sync has not been runtime-tested.
 
-### Appearance and monitors
+Declarative values in `greeter.toml` take precedence over synced values in
+`sync.toml`. In particular, the desktop's explicit output layout, scale,
+rotation and refresh rates remain authoritative after sync.
 
-Appearance sync is optional. Start with administrator-authorized **Sync Now**
-from Noctalia's security settings, then log out to inspect the result. Sync can
-copy wallpaper, palette, font, monitor layout, rotation, and scale. Greeter fonts
-must be installed system-wide, not only in the user's home.
-
-For automatic appearance sync without repeated authorization prompts, the
-Nixpkgs module offers `passwordlessSyncUsers = [ "billy" ];`. This permits the
-constrained appearance-only helper for an active local user; leave it unset
-unless automatic sync is wanted. Noctalia and greeter versions in the current
-pins exceed the documented version requirements, but sync was not runtime-tested.
-
-For `computerone`, sync the display layout or explicitly configure
-`settings.output.transforms`, `layout`, `scales`, and `refresh_rate`. The greeter
-does not automatically read the Niri Home Manager configuration. By default it
-shows the login UI on every connected monitor. On the laptop, verify scaling,
-external displays, and closed-lid behavior.
-
-The upstream flake module has different option spellings, including
-`passwordless-sync-users` and `greeter-args`. Do not copy those into the Nixpkgs
-module, which uses `passwordlessSyncUsers` and `extraArgs`.
+Use Nixpkgs module options, not similarly named upstream flake options. Nixpkgs
+uses `passwordlessSyncUsers` and `extraArgs`; the upstream module instead uses
+`passwordless-sync-users` and `greeter-args`.
 
 ## Validation and rollout
 
-An evaluation-only overlay, held outside the repository, removed the SDDM module
-and enabled the native Noctalia module on both hosts. It successfully evaluated
-both complete system derivations, confirmed SDDM and Xorg were disabled, found
-the `niri` session, and generated the laptop's greetd initial session.
-This verifies module compatibility, not compilation or hardware behavior.
+Both complete system derivations evaluate successfully. Evaluation confirms:
 
-Before deploying an actual implementation:
+- SDDM and Xorg are disabled, greetd is enabled, and `niri` is available.
+- Only the laptop has a greetd initial autologin session.
+- The desktop has its rotated monitor layout and refresh rates configured.
+- Passwordless appearance sync remains disabled on both hosts.
 
-1. Build both affected system configurations using the repository's normal
-   `nix build .#nixosConfigurations.HOST.config.system.build.toplevel` command.
-2. Have the user stage the new generation for the next boot, rather than
-   replacing a running display manager mid-session. Keep the previous boot
-   generation available and ensure TTY or SSH recovery access.
-3. Check password login, failed-password retry, logout and login again, reboot,
-   suspend/resume, keyboard layouts, and any keyring unlock behavior in use.
-4. Test the NVIDIA desktop's actual greeter rendering and both monitor
-   orientations. Niri working today does not prove this separate wlroots
-   compositor works on the same driver.
-5. On the laptop, check that initial autologin and the greeter after logout both
-   work, or intentionally disable autologin.
+The greeter package and both generated greetd service units build successfully.
+A combined full-system build was attempted but exceeded the 20-minute command
+limit while building dependencies, without a greeter-specific error reported.
+Full-system build completion and runtime behavior are not yet verified.
+
+Before deployment, complete the builds:
+
+```sh
+nix build .#nixosConfigurations.portatilo.config.system.build.toplevel
+nix build .#nixosConfigurations.computerone.config.system.build.toplevel
+```
+
+Deployment is the user's responsibility. Prefer staging the new generation for
+the next boot over replacing a running display manager mid-session. Keep the
+previous boot generation available and ensure TTY or SSH recovery access.
+
+After deployment, check password login, failed-password retry, logout and login
+again, reboot, suspend/resume, keyboard layouts, and any keyring unlock behavior
+in use. On the laptop, verify initial autologin, the greeter after logout,
+scaling, external displays, and closed-lid behavior. On the desktop, verify
+actual rendering with the proprietary NVIDIA driver and both monitor
+orientations. Niri working does not prove this separate wlroots compositor
+works on the same driver.
 
 Inspect failures with `journalctl -u greetd -b`. Restore the previous boot
-generation if graphical login fails. Deployment remains the user's responsibility.
+generation if graphical login fails.
 
 ## Sources
 
-- [Noctalia Greeter installation](https://docs.noctalia.dev/greeter/installation/)
+- [Installation](https://docs.noctalia.dev/greeter/installation/)
 - [Display configuration](https://docs.noctalia.dev/greeter/displays/)
 - [Appearance sync](https://docs.noctalia.dev/greeter/sync/)
 - [Troubleshooting](https://docs.noctalia.dev/greeter/troubleshooting/)
 - [Upstream source and flake](https://github.com/noctalia-dev/noctalia-greeter)
 - Pinned Nixpkgs: `nixos/modules/services/display-managers/noctalia-greeter.nix`
-  and `greetd.nix`. These were used to verify the actual available options rather
-  than assuming the latest website examples match the repository's pins.
+  and `greetd.nix`.

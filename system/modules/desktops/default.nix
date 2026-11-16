@@ -11,8 +11,8 @@ in
   imports = [
     ../../modules/main-user.nix
     ../../modules/steam.nix
-    ../../modules/sddm.nix
     ../../modules/sound.nix
+    (if desktop == "niri" then ../../modules/noctalia-greeter.nix else ../../modules/sddm.nix)
   ]
   ++ (
     if desktop == "kde" then
