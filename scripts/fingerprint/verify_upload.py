@@ -44,6 +44,17 @@ class UploadTests(unittest.TestCase):
                 self.assertEqual(trace.waits, [50])
                 self.assertEqual(trace.sleeps, [15, 15])
 
+    def test_official_ite_hard_reset_path_does_not_touch_gpio_or_spi(self):
+        trace = Upload(self.driver)
+
+        def forbid_gpio(_):
+            raise AssertionError("ITE path attempted a GPIO write")
+
+        trace.machine.hooks[0xF878] = forbid_gpio
+        self.assertEqual(trace.machine.call(0xF914, HEAP), 1)
+        self.assertEqual(trace.commands, [])
+        self.assertEqual(trace.writes, [])
+
     def test_valid_existing_key_is_not_overwritten(self):
         trace = Upload(self.driver)
         trace.machine.hooks[0x3F99C] = lambda _: 0

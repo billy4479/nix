@@ -41,11 +41,12 @@ reference laptop, not an identification of portatilo. Matching ACPI ID and
 controller location are encouraging but do not establish the MCU firmware,
 GPIO mapping, sensor die, or calibration parameters of this unit.
 
-The [passive hardware report](FINGERPRINT-HARDWARE.md) confirms the declared
-10 MHz mode-0 SPI transport and rising-edge interrupt. It also shows that GPIO
-numbers are filled from runtime firmware data, so the template numbers and
-reference GPIO offset must not be used blindly. Exact GPIO assignment remains
-unverified; line 279 is only an interrupt candidate from the captured pad state.
+The [hardware report](FINGERPRINT-HARDWARE.md) confirms the declared 10 MHz
+mode-0 SPI transport. A subsequent user-run resource query confirmed interrupt
+line 279, rising-edge/active-high, without any SPI transfers. The output resource
+resolves to line 0, but the passive snapshot shows that pad locked in a native
+function: do not treat it as a reset pin. Template values and the reference
+GPIO offset must not be copied blindly.
 
 ## Passive diagnostic collection
 

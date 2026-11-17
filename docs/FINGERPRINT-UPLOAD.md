@@ -233,7 +233,7 @@ should handle key persistence more carefully rather than reproduce that behavior
   model and upload experiment. SPI writes, randomness, DPAPI, cache files,
   events, locks, and time are simulated.
 - [`scripts/fingerprint/verify_upload.py`](../scripts/fingerprint/verify_upload.py):
-  20 test methods, including both wrapper branches, 19 payload sizes around
+  21 test methods, including both wrapper branches, 19 payload sizes around
   fragmentation/padding boundaries, counter rollover, error/retry paths, the
   real reply parser, native SHA-256, and hash acceptance/rejection.
 
@@ -251,9 +251,10 @@ binary, real device key, real cache, or live upload utility is committed.
 
 ## What is still missing
 
-The subsequent [passive hardware inspection](FINGERPRINT-HARDWARE.md) confirms
-the declared SPI settings but finds dynamic GPIO assignments that are not
-recoverable from the static table dump alone. No sensor communication occurred.
+The subsequent [hardware inspection](FINGERPRINT-HARDWARE.md) and user-run
+resource query confirm the SPI settings and interrupt line 279. The declared
+output line 0 must not be assumed usable as a reset pin. No sensor communication
+occurred.
 
 The host-side bytes and checks are no longer the main unknown. Remaining work
 would be to establish the actual MCU/firmware and ACPI/GPIO resources, implement
