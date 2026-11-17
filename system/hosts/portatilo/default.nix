@@ -1,4 +1,4 @@
-{ ... }:
+{ extraConfig, ... }:
 {
   imports = [
     ./hardware-configuration.nix
@@ -17,6 +17,18 @@
   ];
 
   networking.hostName = "portatilo";
+
+  # Stay-awake mode runs systemd-inhibit from a user unit, which has no logind
+  # session attached. Allow this user to hold the lid-switch inhibitor without
+  # an interactive polkit prompt.
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.login1.inhibit-handle-lid-switch" &&
+          subject.user == "${extraConfig.user.username}") {
+        return polkit.Result.YES;
+      }
+    });
+  '';
 
   swapDevices = [
     {

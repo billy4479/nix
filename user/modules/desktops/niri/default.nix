@@ -75,6 +75,7 @@ in
           command = "${pkgs.writeShellScript "suspend-if-not-powered"
             # sh
             ''
+              ${lib.getExe scripts.stay-awake} status && exit 0
               [ "$(cat /sys/class/power_supply/AC*/online 2>/dev/null)" = 0 ] &&
                 ${noctaliaCmd} msg session lock-and-suspend
             ''
@@ -97,6 +98,19 @@ in
         ]
       else
         [ ];
+  };
+
+  # Stay-awake mode only needs the lid-switch inhibitor on the laptop. The unit
+  # is not enabled at login: stay-awake mode is off until Mod+Shift+I or the bar
+  # button starts it, and it is gone again after logout.
+  systemd.user.services.stay-awake = lib.mkIf (extraConfig.hostname == "portatilo") {
+    Unit = {
+      Description = "Hold a logind lid-switch inhibitor for stay-awake mode";
+    };
+    Service = {
+      ExecStart = "${lib.getExe' pkgs.systemd "systemd-inhibit"} --what=handle-lid-switch --mode=block --who=stay-awake --why=stay-awake ${lib.getExe' pkgs.coreutils "sleep"} infinity";
+      Restart = "no";
+    };
   };
 
   programs.niri = {
@@ -129,10 +143,13 @@ in
         "Mod+D".action.spawn = lib.getExe scripts.open-document;
         "Mod+Y".action.spawn = lib.getExe scripts.mpv-url;
 
-        "Mod+Shift+I" = {
+        "Mod+Shift+I" = lib.mkIf (extraConfig.hostname == "portatilo") {
           repeat = false;
-          hotkey-overlay.title = "Toggle keep awake (no dimming or idle suspend)";
-          action.spawn = noctaliaMsg [ "caffeine-toggle" ];
+          hotkey-overlay.title = "Toggle stay awake (no idle or lid suspend)";
+          action.spawn = [
+            (lib.getExe scripts.stay-awake)
+            "toggle"
+          ];
         };
 
         "Mod+Shift+L".action.spawn = noctaliaMsg [

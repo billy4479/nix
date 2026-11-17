@@ -30,7 +30,8 @@ in
 
         build-host-and-copy
       ]
-      ++ lib.optionals (!extraConfig.wayland) [ dmenu-screenshot ];
+      ++ lib.optionals (!extraConfig.wayland) [ dmenu-screenshot ]
+      ++ lib.optionals (extraConfig.hostname == "portatilo") [ stay-awake ];
 
   sops.secrets =
     lib.optionalAttrs (!extraConfig.isServer) { nix-signing-key = { }; }

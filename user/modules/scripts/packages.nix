@@ -13,6 +13,18 @@ let
 
   mpv = lib.getExe pkgs.mpv;
 
+  # Noctalia is only present on the graphical hosts; scripts stay usable
+  # elsewhere, where the on-screen feedback is simply skipped.
+  noctalia = lib.attrByPath [ "programs" "noctalia" "package" ] null config;
+  noctaliaCmd = if noctalia == null then "" else lib.getExe noctalia;
+  # Keep the shell fragment a plain string so the embedded-shell formatter can
+  # still parse the rest of the script.
+  osdFunction =
+    if noctaliaCmd == "" then
+      "osd() { :; }"
+    else
+      ''osd() { "${noctaliaCmd}" msg osd-show "$1" "$2" >/dev/null 2>&1 || true; }'';
+
   fd = lib.getExe pkgs.fd;
   xdg-open = "${pkgs.xdg-utils}/bin/xdg-open";
 
@@ -60,6 +72,48 @@ let
 in
 {
   inherit mpv-open mpv-open-desktop;
+
+  # Toggles the stay-awake mode: while on, the stay-awake user unit holds a
+  # logind handle-lid-switch inhibitor, so closing the lid does not suspend.
+  # The idle-suspend timeout checks `stay-awake status` before suspending.
+  stay-awake = pkgs.writeShellApplication {
+    name = "stay-awake";
+    runtimeInputs = [ pkgs.systemd ];
+    text = # sh
+      ''
+        unit="stay-awake.service"
+
+        ${osdFunction}
+
+        state="''${1:-toggle}"
+
+        case "$state" in
+        status)
+          exec systemctl --user is-active --quiet "$unit"
+          ;;
+        on | off) ;;
+        toggle)
+          if systemctl --user is-active --quiet "$unit"; then
+            state=off
+          else
+            state=on
+          fi
+          ;;
+        *)
+          echo "usage: stay-awake [on|off|toggle|status]" >&2
+          exit 2
+          ;;
+        esac
+
+        if [ "$state" = on ]; then
+          systemctl --user start "$unit"
+          osd caffeine-on "Stay awake on"
+        else
+          systemctl --user stop "$unit"
+          osd caffeine-off "Stay awake off"
+        fi
+      '';
+  };
 
   mpv-url =
     pkgs.writeScriptBin "mpv-url"

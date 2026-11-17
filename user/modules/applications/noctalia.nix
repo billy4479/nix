@@ -2,8 +2,20 @@
   pkgs,
   flakeInputs,
   config,
+  lib,
+  extraConfig,
   ...
 }:
+let
+  scripts = import ../scripts/packages.nix {
+    inherit
+      pkgs
+      lib
+      config
+      extraConfig
+      ;
+  };
+in
 {
   imports = [
     flakeInputs.noctalia.homeModules.default
@@ -153,7 +165,8 @@
             "battery"
             "volume"
             "clock"
-          ];
+          ]
+          ++ lib.optionals (extraConfig.hostname == "portatilo") [ "stay-awake" ];
 
           capsule_group = [
             {
@@ -232,6 +245,13 @@
         };
 
         clock.format = "{:%H:%M %a, %b %d}";
+
+        stay-awake = {
+          type = "custom_button";
+          glyph = "mug";
+          tooltip = "Toggle stay awake (no idle or lid suspend)";
+          actions.left = "exec ${lib.getExe scripts.stay-awake} toggle";
+        };
       };
 
       theme = {

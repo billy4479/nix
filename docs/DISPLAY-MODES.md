@@ -1,14 +1,32 @@
 # Laptop display modes
 
-## Keep awake
+## Stay awake
 
-**Mod+Shift+I** toggles Noctalia's caffeine mode, with on-screen feedback. While
-active, it inhibits swayidle's automatic brightness dimming, screen-off/locking,
-and idle suspension. Press it again to restore normal idle behavior. This binding
-is available on both niri machines.
+**Mod+Shift+I** or the coffee-mug button in the bar toggles stay-awake mode on
+`portatilo`, with on-screen feedback. While active:
 
-This prevents idle-triggered actions, not explicit locking/suspending or lid-close
-actions. It does not change your configured brightness or timeout settings.
+- swayidle skips its idle-suspend timeout, so the laptop keeps running unattended;
+- closing the lid does not suspend, because `stay-awake.service` holds a
+  `handle-lid-switch` inhibitor with logind;
+- niri still turns off the internal panel when the lid closes, and external
+  displays keep working.
+
+Idle dimming, screen-off/locking and their timeouts are unchanged, and explicit
+locking or suspending still works. The mode is per login: it starts off after
+logout or reboot.
+
+Implementation: the `stay-awake` script in `user/modules/scripts/packages.nix`
+starts and stops the `stay-awake` user unit defined in
+`user/modules/desktops/niri/default.nix`. The swayidle suspend command checks the
+unit state before suspending, and the polkit rule in
+`system/hosts/portatilo/default.nix` lets the user unit hold the lid-switch
+inhibitor. Check or change it from a terminal with:
+
+```sh
+stay-awake status
+stay-awake on
+stay-awake off
+```
 
 ## Display selection
 
