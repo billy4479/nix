@@ -15,6 +15,11 @@ sensor remains untested. No actual device key was obtained or generated.
 The next useful experiment is hardware identification and readback, not a blind
 key upload. Keep password authentication throughout bring-up.
 
+**Follow-up:** [the official upload path](FINGERPRINT-UPLOAD.md) has since been
+traced through original-driver emulation down to individual SPI buffers, with
+mocked acknowledgements, completion replies, and hash readback. This adds a
+verified host-side packet specification, not evidence of real MCU acceptance.
+
 ## Hardware actually observed
 
 Read-only inspection over SSH found:
