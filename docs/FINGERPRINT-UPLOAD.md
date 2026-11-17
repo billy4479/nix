@@ -251,6 +251,10 @@ binary, real device key, real cache, or live upload utility is committed.
 
 ## What is still missing
 
+The subsequent [passive hardware inspection](FINGERPRINT-HARDWARE.md) confirms
+the declared SPI settings but finds dynamic GPIO assignments that are not
+recoverable from the static table dump alone. No sensor communication occurred.
+
 The host-side bytes and checks are no longer the main unknown. Remaining work
 would be to establish the actual MCU/firmware and ACPI/GPIO resources, implement
 a safe ITE transport, and determine whether the firmware permits readback or a
