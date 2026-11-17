@@ -163,6 +163,18 @@ writes forbidden. It supports leaving the output resource alone for the initial
 version query; it does not prove that all driver paths ignore it. The official
 version-retry routine must not be copied wholesale as a supposedly passive probe.
 
+## Prepared first sensor query
+
+The [firmware-version probe](../scripts/fingerprint/version-probe/README.md)
+is prepared for a separate user-run sudo step. It sends one fixed `0xa8` query,
+uses bounded ITE window polling, and requests no GPIO from userspace. The runner
+temporarily binds only this device to spidev and restores the binding/override.
+Linux's normal SPI/ACPI core may resolve the interrupt input during binding;
+this is not a promise that all volatile controller state remains untouched.
+No reset, key write, scan or sensor-configuration upload is available. The
+query bytes were compared with the official driver in offline emulation, but
+no live sensor query has been run by the agent.
+
 ## Consequences for bring-up
 
 - The declared SPI speed, mode and interrupt polarity agree with the ITE

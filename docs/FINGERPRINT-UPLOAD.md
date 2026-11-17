@@ -233,7 +233,8 @@ should handle key persistence more carefully rather than reproduce that behavior
   model and upload experiment. SPI writes, randomness, DPAPI, cache files,
   events, locks, and time are simulated.
 - [`scripts/fingerprint/verify_upload.py`](../scripts/fingerprint/verify_upload.py):
-  21 test methods, including both wrapper branches, 19 payload sizes around
+  22 test methods, including the official version-only query, both wrapper
+  branches, 19 payload sizes around
   fragmentation/padding boundaries, counter rollover, error/retry paths, the
   real reply parser, native SHA-256, and hash acceptance/rejection.
 

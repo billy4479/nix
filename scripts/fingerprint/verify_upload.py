@@ -44,6 +44,19 @@ class UploadTests(unittest.TestCase):
                 self.assertEqual(trace.waits, [50])
                 self.assertEqual(trace.sleeps, [15, 15])
 
+    def test_official_ite_version_query_is_only_a8(self):
+        trace = Upload(self.driver)
+
+        def forbid_reset(_):
+            raise AssertionError("Version query attempted a reset/GPIO write")
+
+        trace.machine.hooks[0xF878] = forbid_reset
+        trace.machine.hooks[0xF914] = forbid_reset
+        self.assertEqual(trace.machine.call(0x5C708, HEAP + 0x1000, 500), 1)
+        self.assertEqual(trace.commands, [(10, 4)])
+        self.assertEqual(trace.writes, parcels(0xA8, bytes(2)))
+        self.assertEqual(trace.writes[0].hex(), "ccf20100a00600a6a803000000ff0000")
+
     def test_official_ite_hard_reset_path_does_not_touch_gpio_or_spi(self):
         trace = Upload(self.driver)
 
