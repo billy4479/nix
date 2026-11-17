@@ -25,7 +25,8 @@ verified host-side packet specification, not evidence of real MCU acceptance.
 Read-only inspection over SSH found:
 
 - Manufacturer/model: HUAWEI `BOD-WXX9`, product version `M1060`.
-- ACPI ID: `GXFP5120`.
+- CPU: 11th Gen Intel Core i5-1135G7.
+- ACPI ID: `GXFP5120`; namespace path `\_SB_.PC00.SPI1.FPNT`.
 - Sensor sysfs device: `spi-GXFP5120:00`.
 - Parent: PCI `0000:00:1e.3`, `pxa2xx-spi.2`, `spi_master/spi1`.
 - No bound driver for the sensor at inspection time.
@@ -39,6 +40,26 @@ The matching community project was developed on a MateBook D 14. That is the
 reference laptop, not an identification of portatilo. Matching ACPI ID and
 controller location are encouraging but do not establish the MCU firmware,
 GPIO mapping, sensor die, or calibration parameters of this unit.
+
+## Passive diagnostic collection
+
+[`scripts/fingerprint/collect-passive.sh`](../scripts/fingerprint/collect-passive.sh)
+collects existing ACPI tables, SPI metadata/statistics, GPIO/pin debugfs state,
+and filtered kernel messages. It does not load modules, bind a device, request
+GPIO lines, or send sensor commands. Only `DSDT` and `SSDT*` ACPI tables are
+copied; the Windows product-key table `MSDM` is excluded.
+
+A copy has been placed at `/home/billy/fingerprint-readonly.sh` on portatilo.
+Run it manually there:
+
+```sh
+sudo /home/billy/fingerprint-readonly.sh
+```
+
+It prints the path of a private, user-owned `fingerprint-passive.*.tar.gz`
+archive in the invoking user's home directory. Root-owned scratch files in
+`/tmp` are removed on exit. Treat the archive as private platform information;
+do not commit or publish raw dumps. Collection requires no extra packages.
 
 ## What the small Windows package contains
 
