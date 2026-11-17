@@ -136,6 +136,15 @@ ACPI method execution, GPIO requests, driver binding, or SPI commands was
 attempted. In particular, loading the dumped tables into an offline interpreter
 with zero-filled GNVS would not recover the real pin numbers.
 
+## Prepared resource-query helper
+
+A [fixed-path ACPI helper](../scripts/fingerprint/acpi-resources/README.md) is
+now available for the next step. It has been built for portatilo's exact kernel
+and tested in three diskless QEMU guests, including dynamic GPIO resources,
+missing-device/wrong-HID refusal, read-only output, and clean unloading. The
+runner also checks the kernel and reviewed DSDT identities before loading.
+It has not yet been loaded on portatilo; the user performs that privileged step.
+
 ## Consequences for bring-up
 
 - The declared SPI speed, mode and interrupt polarity agree with the ITE
