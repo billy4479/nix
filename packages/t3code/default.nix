@@ -21,19 +21,14 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "t3code";
-  version = "0.1.8";
+  version = "0.1.10";
 
   src = fetchFromGitHub {
     owner = "pingdotgg";
     repo = "t3code";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-QPZpT/1zm5sLIDw3AOzUCIrmOFPwUU8jP/q1A8GzLow=";
+    hash = "sha256-zhScbDGW+bD2T7++YRUPY/y83SGE2080LxcGw3Txrso=";
   };
-
-  # Restore persisted Pi sessions before rollback on a fresh runtime.
-  # https://github.com/pingdotgg/t3code/pull/26322
-  # PR head: 2761b809716a1030eca1654e8180db0ad19a728d
-  patches = [ ./pi-rollback.patch ];
 
   pnpmWorkspaces = [
     "@t3tools/monorepo"
@@ -50,7 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
       ;
     pnpm = pnpm_12;
     fetcherVersion = 5;
-    hash = "sha256-UpAKQndN8Dpv3cGpr0QW/I3choqv9c7vINFCHQstrKQ=";
+    hash = "sha256-IkcGAo4w0aQJjvdWL3bMlDmUx37oRyGJYcr4yyMwAh4=";
   };
 
   nativeBuildInputs = [
