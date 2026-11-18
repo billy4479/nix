@@ -28,8 +28,8 @@ let
     modules = [
       ../../user/modules/applications/editor/nvim
       {
-        home.username = "openchamber";
-        home.homeDirectory = "/home/openchamber";
+        home.username = "t3";
+        home.homeDirectory = "/home/t3";
         home.stateVersion = "23.11";
       }
     ];

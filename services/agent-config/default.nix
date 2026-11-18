@@ -17,11 +17,10 @@ in
       "a+ ${directory} - - - - g:admin:rwx,d:g:admin:rwx,d:u::rwx,d:g::rwx,d:o::---"
     ];
     systemd.services.agent-config-migration = {
-      description = "Seed shared agent instructions and skills and redirect OpenChamber";
+      description = "Seed shared agent instructions and skills from the legacy agent home";
       requires = [ "systemd-tmpfiles-setup.service" ];
       after = [ "systemd-tmpfiles-setup.service" ];
       before = [
-        "nerdctl-openchamber.service"
         "nerdctl-t3code.service"
         "nerdctl-syncthing.service"
       ];
@@ -37,10 +36,6 @@ in
         RemainAfterExit = true;
         ExecStart = "${pkgs.python3}/bin/python3 ${./migrate.py} --home ${home} --destination ${directory} --state ${state} --store /mnt/SSD/apps/openchamber/nix-root/nix/store";
       };
-    };
-    systemd.services.nerdctl-openchamber = {
-      requires = [ "agent-config-migration.service" ];
-      after = [ "agent-config-migration.service" ];
     };
     systemd.services.nerdctl-t3code = {
       requires = [ "agent-config-migration.service" ];

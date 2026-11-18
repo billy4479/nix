@@ -28,7 +28,6 @@
     ./bentopdf.nix
     ./opencloud.nix
     ./searxng
-    ./openchamber.nix
     ./t3code.nix
 
     ./game-server-runner

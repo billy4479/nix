@@ -17,7 +17,6 @@ rec {
   tsidp = callPackage ./tsidp { };
   lunamultiplayer-server = callPackage ./lunamultiplayer-server { };
   searxng-cli = callPackage ./searxng-cli { };
-  openchamber-web = callPackage ./openchamber-web { inherit opencode; };
   opencode = callPackage ./opencode { };
   t3code = callPackage ./t3code { };
   wa-crypt-tools = callPackage ./wa-crypt-tools { };

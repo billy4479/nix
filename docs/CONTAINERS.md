@@ -103,14 +103,14 @@ cpus = 4;      # fraction of total CPU time, passed to nerdctl --cpus
 `memory` is enforced by the kernel: processes exceeding it are OOM killed, and
 tmpfs mounts (see below) count towards it. `cpus` throttles rather than
 reserves: the container cannot use more than that share, but idle capacity
-stays available to the rest of the system. Currently only openchamber (8g / 4
+stays available to the rest of the system. Currently only t3code (8g / 4
 cpus) sets these.
 
 ## Start and stop timeouts
 
 The unit's start job includes `preStart`, so volume permission fixes, private
 Nix store seeding, and image loading all count against systemd's default 90s
-start timeout. A preStart that legitimately moves a lot of data (e.g. openchamber
+start timeout. A preStart that legitimately moves a lot of data (e.g. t3code
 copying a fresh runtime closure into its private store after a deploy) should
 raise it:
 
@@ -135,7 +135,7 @@ tmpfs = [ "/tmp:size=512m" ];
 ```
 
 Current overrides: byparr (1g), jellyfin (1g), nginx (2g).
-openchamber opts out entirely with `tmpfs = [ ];`.
+t3code opts out entirely with `tmpfs = [ ];`.
 
 nginx needs the extra space because it buffers large proxied transfers to
 `proxy_temp_path` under `/tmp`: with the 128MB default, any buffered response
@@ -154,7 +154,7 @@ cat result/nginx.conf result/vhosts.conf
 
 ## Private Nix store maintenance
 
-OpenChamber runs `nh clean user` daily, inside its own container as its normal
+T3 Code runs `nh clean user` daily, inside its own container as its normal
 UID, with no privilege elevation:
 
 ```sh
@@ -179,7 +179,7 @@ skipped when the container is inactive. Host nh/GC operates on a different store
 and cannot clean this private one. ZFS snapshots can retain blocks after GC, so
 pool usage and snapshot retention still matter.
 
-Automatic full-store wiping is disabled for OpenChamber. The generic
+Automatic full-store wiping is disabled for T3 Code. The generic
 `privateNixStore.wipeAboveGib` option remains an explicit destructive opt-in,
 with a tested threshold and fail-closed input validation. It restores only seed
 closures, not arbitrary user-rooted environments. Never enable it as a routine
@@ -237,7 +237,6 @@ The shared PostgreSQL container is initialized and migrated according to
 | giuoco-del-divertimento | 18 | 10.0.1.18 |
 | SearXNG | 19 | 10.0.1.19 |
 | Luna Multiplayer | 20 | 10.0.1.20 |
-| OpenChamber | 21 | 10.0.1.21 |
 | AgentUp | 22 | 10.0.1.22 |
 | Grafana | 23 | 10.0.1.23 |
 | Outline | 24 | 10.0.1.24 |

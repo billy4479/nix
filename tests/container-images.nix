@@ -83,7 +83,6 @@ assert containers.grafana.cmd == [ "--homepath=${pkgs.grafana}/share/grafana" ];
 assert containers.grafana.environment.GF_PATHS_DATA == "/var/lib/grafana";
 assert containers.bind9.userName == "bind";
 assert containers.postgresql.userName == "postgres";
-assert containers.openchamber.userName == "openchamber";
 assert containers.t3code.userName == "t3";
 # Default store paths must be copied and rooted when a private /nix hides them.
 assert lib.all (

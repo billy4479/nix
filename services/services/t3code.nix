@@ -124,7 +124,13 @@ let
 in
 {
   sops.secrets = lib.mkIf (options ? nerdctl-containers) {
-    openchamber-ssh-key.restartUnits = [ "nerdctl-t3code.service" ];
+    # Keep the existing agent identity without changing the encrypted secret.
+    openchamber-ssh-key = {
+      owner = "container-${toString uid}";
+      group = "containers";
+      mode = "0400";
+      restartUnits = [ "nerdctl-t3code.service" ];
+    };
     mail-watch-google-client-id.key = "google-api/client-id";
     mail-watch-google-client-secret.key = "google-api/client-secret";
     mail-watch-telegram-token = {

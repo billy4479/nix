@@ -48,13 +48,13 @@
         {
           hostPath = "/mnt/SSD/agent-config";
           containerPath = "/var/syncthing/Sync/agent-config";
-          # Shared with both harnesses; retain the migration's ownership/ACLs.
+          # Shared with T3 Code; retain the migration's ownership/ACLs.
           customPermissionScript = ":";
         }
       ];
 
       id = 2;
-      # OpenChamber and Syncthing must both own synchronized workspace files so
+      # T3 Code and Syncthing must both own synchronized workspace files so
       # that permission synchronization does not revoke either service's access.
       uid = 5021;
     };
