@@ -3,7 +3,7 @@
 ## Stay awake
 
 **Mod+Shift+I** or the coffee-mug button in the bar toggles stay-awake mode on
-`portatilo`, with on-screen feedback. While active:
+`portatilo`, with a desktop notification. While active:
 
 - swayidle skips its idle-suspend timeout, so the laptop keeps running unattended;
 - closing the lid does not suspend, because `stay-awake.service` holds a

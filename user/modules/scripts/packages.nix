@@ -13,18 +13,6 @@ let
 
   mpv = lib.getExe pkgs.mpv;
 
-  # Noctalia is only present on the graphical hosts; scripts stay usable
-  # elsewhere, where the on-screen feedback is simply skipped.
-  noctalia = lib.attrByPath [ "programs" "noctalia" "package" ] null config;
-  noctaliaCmd = if noctalia == null then "" else lib.getExe noctalia;
-  # Keep the shell fragment a plain string so the embedded-shell formatter can
-  # still parse the rest of the script.
-  osdFunction =
-    if noctaliaCmd == "" then
-      "osd() { :; }"
-    else
-      ''osd() { "${noctaliaCmd}" msg osd-show "$1" "$2" >/dev/null 2>&1 || true; }'';
-
   fd = lib.getExe pkgs.fd;
   xdg-open = "${pkgs.xdg-utils}/bin/xdg-open";
 
@@ -78,12 +66,17 @@ in
   # The idle-suspend timeout checks `stay-awake status` before suspending.
   stay-awake = pkgs.writeShellApplication {
     name = "stay-awake";
-    runtimeInputs = [ pkgs.systemd ];
+    runtimeInputs = [
+      pkgs.systemd
+      pkgs.libnotify
+    ];
     text = # sh
       ''
         unit="stay-awake.service"
 
-        ${osdFunction}
+        notify() {
+          notify-send --app-name="Stay awake" "$1" "$2" >/dev/null 2>&1 || true
+        }
 
         state="''${1:-toggle}"
 
@@ -107,10 +100,10 @@ in
 
         if [ "$state" = on ]; then
           systemctl --user start "$unit"
-          osd caffeine-on "Stay awake on"
+          notify "Stay awake on" "Idle and lid-close suspend are disabled"
         else
           systemctl --user stop "$unit"
-          osd caffeine-off "Stay awake off"
+          notify "Stay awake off" "Idle and lid-close suspend are back to normal"
         fi
       '';
   };
