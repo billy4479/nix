@@ -2,7 +2,7 @@
 # Update byparr: latest ThePhaseless/Byparr release, repinning the fetchTree
 # rev + narHash in source.nix and the version in default.nix. Also repins the
 # stealthfox engine archive from the source's new invisible-core seal and the
-# GeoIP database in geoip.nix to the latest daijro/geoip-all-in-one release.
+# GeoIP database in geoip.nix to the latest P3TERX/GeoLite.mmdb release.
 set -euo pipefail
 lib=${UPDATE_COMMON:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/lib/update-common.sh}
 source "$lib"
@@ -76,7 +76,7 @@ if [[ $sf_new_url != "$sf_old_url" || $sf_new_hash != "$sf_old_hash" || $sf_new_
   sed_replace "$sf_file" "version = \"$sf_old_up\"" "version = \"$sf_new_up\""
 fi
 
-# GeoIP database: a dated daijro/geoip-all-in-one release. The new file is
+# GeoIP database: a dated P3TERX/GeoLite.mmdb release. The new file is
 # prefetched to learn its hash: a fetchurl FOD cannot report a URL-only
 # change, since its store path only depends on the pinned hash. The hash is
 # rewritten first so an interrupted run fails loudly on the next build
@@ -84,11 +84,11 @@ fi
 geoip_file=packages/byparr/geoip.nix
 geoip_old_url=$(sed -n 's/ *url = "\(.*\)";/\1/p' "$geoip_file")
 geoip_old_hash=$(sed -n 's/ *hash = "\(.*\)";/\1/p' "$geoip_file")
-geoip_old=$(sed -n 's|.*/releases/download/\([^/]*\)/geoip-aio-all\.mmdb.*|\1|p' "$geoip_file")
+geoip_old=$(sed -n 's|.*/releases/download/\([^/]*\)/GeoLite2-City\.mmdb.*|\1|p' "$geoip_file")
 [[ -n $geoip_old_url && -n $geoip_old_hash && -n $geoip_old ]] ||
   die "could not read the pinned url/hash from $geoip_file"
-new_geoip=$(gh_latest_release daijro/geoip-all-in-one)
-[[ -n $new_geoip ]] || die "no latest release found for daijro/geoip-all-in-one"
+new_geoip=$(gh_latest_release P3TERX/GeoLite.mmdb)
+[[ -n $new_geoip ]] || die "no latest release found for P3TERX/GeoLite.mmdb"
 if [[ $new_geoip != "$geoip_old" ]]; then
   info "geoip targeting $new_geoip, currently $geoip_old"
   geoip_new_url=${geoip_old_url//"$geoip_old"/$new_geoip}
