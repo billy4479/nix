@@ -239,6 +239,13 @@ nix shell nixpkgs#tcpdump nixpkgs#conntrack-tools -c \
   probe fires: handshake under ~3 min and growing `transfer` clears the
   whole tunnel. The peer endpoint on the vps should equal serverone's
   current WAN IP; it roams automatically, but only while keepalives flow.
+  A VPS deploy that recreates `wg0` can leave it without a learned peer
+  endpoint until serverone re-establishes the session. On 2026-11-19 this
+  caused about two minutes of public downtime: the VPS reported `No route
+  to host` despite having a route through `wg0`, while split DNS let
+  tailnet clients bypass the VPS. Verify recovery through the public edge
+  explicitly, even from inside the tailnet:
+  `curl --fail --resolve headscale.polpetta.online:443:87.106.25.93 https://headscale.polpetta.online/health`.
 - **Deploy-time** — `systemctl status sops-nix wireguard-wg0 firewall` on
   each host. A failed sops unit means the stage-0 key is missing
   (`wireguard-wg0` then fails on the absent key file). A failed **firewall**
