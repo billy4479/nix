@@ -144,6 +144,12 @@
       };
     };
 
+    laurea = {
+      url = "github:billy4479/laurea";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
+
     read-nix-docs = {
       url = "github:billy4479/read-nix-docs";
       inputs = {

@@ -33,6 +33,7 @@
     ./game-server-runner
     ./lunamultiplayer.nix
     ./calendar-proxy.nix
+    ./laurea.nix
     ./ff.nix
     ./giuoco-del-divertimento.nix
     ./agent-up.nix

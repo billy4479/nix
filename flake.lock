@@ -406,6 +406,29 @@
         "type": "github"
       }
     },
+    "laurea": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795089028,
+        "narHash": "sha256-vxLaFjw2KLQ9vMqh7q0QMdCH5ySqKDZn0RsLZHazZ/0=",
+        "owner": "billy4479",
+        "repo": "laurea",
+        "rev": "9dbb671fb742b8fa13771da9bd5ed404291c5d50",
+        "type": "github"
+      },
+      "original": {
+        "owner": "billy4479",
+        "repo": "laurea",
+        "type": "github"
+      }
+    },
     "niri": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -788,6 +811,7 @@
         "game-server-runner": "game-server-runner",
         "giuoco-del-divertimento": "giuoco-del-divertimento",
         "home-manager": "home-manager",
+        "laurea": "laurea",
         "niri": "niri",
         "nix-snapshotter": "nix-snapshotter",
         "nix-vscode-extensions": "nix-vscode-extensions",
