@@ -29,6 +29,8 @@
       jq
       pv
 
+      gparted-full
+
       pavucontrol
 
       nixfmt
