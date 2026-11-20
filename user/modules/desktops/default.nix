@@ -29,7 +29,7 @@
       jq
       pv
 
-      gparted-full
+      kdePackages.partitionmanager
 
       pavucontrol
 
