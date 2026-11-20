@@ -1,11 +1,10 @@
+mod router;
+
 use anyhow::{Context, Result, bail, ensure};
+use reqwest::Method;
+use router::Router;
 use serde::Deserialize;
-use std::{
-    collections::BTreeSet,
-    fs,
-    io::Write,
-    process::{Command, Stdio},
-};
+use std::{collections::BTreeSet, fs};
 
 const LOGIN: &str = "/login_sid.lua?version=2";
 const API: &str = "/api/v0/generic/dns_excepted_domains";
@@ -32,74 +31,12 @@ struct Entries {
     domain: Vec<Entry>,
 }
 
-fn request(
-    config: &Config,
-    method: &str,
-    path: &str,
-    sid: Option<&str>,
-    data: Option<(&str, &str)>,
-) -> Result<String> {
-    let mut child = Command::new(option_env!("CURL_PATH").unwrap_or("curl"))
-        .args([
-            "--disable",
-            "--silent",
-            "--insecure",
-            "--pinnedpubkey",
-            &config.pin,
-            "--noproxy",
-            "*",
-            "--connect-timeout",
-            "3",
-            "--max-time",
-            "8",
-            "--write-out",
-            "\n%{http_code}",
-            "--request",
-            method,
-            "--url",
-            &format!("https://{}{path}", config.address),
-            "--config",
-            "-",
-        ])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()
-        .context("start curl")?;
-    let mut input = child.stdin.take().context("open curl stdin")?;
-    if let Some(sid) = sid {
-        writeln!(input, "header = \"Authorization: AVM-SID {sid}\"")?;
-    }
-    if let Some((mime, body)) = data {
-        writeln!(input, "header = \"Content-Type: {mime}\"")?;
-        // JSON quoting also escapes all characters that can terminate a curl option value.
-        writeln!(input, "data-binary = {}", serde_json::to_string(body)?)?;
-    }
-    drop(input);
-    let output = child.wait_with_output()?;
-    let output_text = String::from_utf8(output.stdout)?;
-    let (body, status) = output_text
-        .rsplit_once('\n')
-        .context("missing HTTP status")?;
-    ensure!(
-        status.starts_with('2'),
-        "router {method} returned HTTP {status}"
-    );
-    // FRITZ!OS may close TLS without close_notify. Callers still parse the response.
-    ensure!(
-        output.status.success() || output.status.code() == Some(56),
-        "router request failed: {}",
-        output.status
-    );
-    Ok(body.to_owned())
-}
-
-fn form(config: &Config, fields: &[(&str, &str)]) -> Result<String> {
+fn form(router: &Router, fields: &[(&str, &str)]) -> Result<String> {
     let data = form_urlencoded::Serializer::new(String::new())
         .extend_pairs(fields)
         .finish();
-    request(
-        config,
-        "POST",
+    router.request(
+        Method::POST,
         LOGIN,
         None,
         Some(("application/x-www-form-urlencoded", &data)),
@@ -128,15 +65,15 @@ fn tag<'a>(doc: &'a roxmltree::Document<'_>, name: &str) -> Result<&'a str> {
         .with_context(|| format!("missing {name} in login response"))
 }
 
-fn login(config: &Config, username: &str, password: &[u8]) -> Result<String> {
-    let xml = request(config, "GET", LOGIN, None, None)?;
+fn login(router: &Router, username: &str, password: &[u8]) -> Result<String> {
+    let xml = router.request(Method::GET, LOGIN, None, None)?;
     let doc = roxmltree::Document::parse(&xml).context("parse login challenge")?;
     ensure!(
         tag(&doc, "BlockTime")? == "0",
         "router temporarily blocked login; not retrying"
     );
     let response = challenge_response(tag(&doc, "Challenge")?, password)?;
-    let xml = form(config, &[("username", username), ("response", &response)])?;
+    let xml = form(router, &[("username", username), ("response", &response)])?;
     let doc = roxmltree::Document::parse(&xml).context("parse login result")?;
     let sid = tag(&doc, "SID")?;
     ensure!(
@@ -166,8 +103,8 @@ fn in_zone(name: &str, zone: &str) -> bool {
             .is_some_and(|prefix| prefix.ends_with('.'))
 }
 
-fn list(config: &Config, sid: &str) -> Result<Vec<Entry>> {
-    let response = request(config, "GET", API, Some(sid), None)?;
+fn list(router: &Router, sid: &str) -> Result<Vec<Entry>> {
+    let response = router.request(Method::GET, API, Some(sid), None)?;
     let mut entries: Entries =
         serde_json::from_str(&response).context("unexpected rebind list response")?;
     for entry in &mut entries.domain {
@@ -199,16 +136,15 @@ fn plan<'a>(config: &'a Config, entries: &'a [Entry]) -> (Vec<&'a str>, Vec<&'a 
     (add, remove)
 }
 
-fn sync(config: &Config, sid: &str, apply: bool) -> Result<()> {
-    let before = list(config, sid)?;
+fn sync(config: &Config, router: &Router, sid: &str, apply: bool) -> Result<()> {
+    let before = list(router, sid)?;
     let (add, remove) = plan(config, &before);
     for name in &add {
         println!("add {name}");
         if apply {
             let body = serde_json::json!({ "name": name }).to_string();
-            request(
-                config,
-                "POST",
+            router.request(
+                Method::POST,
                 &format!("{API}/domain"),
                 Some(sid),
                 Some(("application/json", &body)),
@@ -217,16 +153,15 @@ fn sync(config: &Config, sid: &str, apply: bool) -> Result<()> {
     }
     if apply && !add.is_empty() {
         ensure!(
-            plan(config, &list(config, sid)?).0.is_empty(),
+            plan(config, &list(router, sid)?).0.is_empty(),
             "router did not save all additions; not pruning"
         );
     }
     for entry in &remove {
         println!("remove {}", entry.name);
         if apply {
-            request(
-                config,
-                "DELETE",
+            router.request(
+                Method::DELETE,
                 &format!("{API}/domain/{}", entry.uid),
                 Some(sid),
                 None,
@@ -234,7 +169,7 @@ fn sync(config: &Config, sid: &str, apply: bool) -> Result<()> {
         }
     }
     if apply && !remove.is_empty() {
-        let after = list(config, sid)?;
+        let after = list(router, sid)?;
         let (add, remove) = plan(config, &after);
         ensure!(
             add.is_empty() && remove.is_empty(),
@@ -257,10 +192,7 @@ fn main() -> Result<()> {
         "invalid mode"
     );
     let config: Config = serde_json::from_slice(&fs::read(manifest)?)?;
-    ensure!(
-        config.pin.starts_with("sha256//") && config.pin.len() == 52,
-        "HTTPS public-key pin required"
-    );
+    let router = Router::new(config.address, &config.pin)?;
     ensure!(
         valid_name(&config.zone)
             && config.zone.contains('.')
@@ -281,12 +213,12 @@ fn main() -> Result<()> {
         "empty router credential"
     );
     let sid = login(
-        &config,
+        &router,
         username.trim_end_matches('\r'),
         password.as_bytes(),
     )?;
-    let result = sync(&config, &sid, mode == "--apply");
-    if form(&config, &[("logout", "1"), ("sid", &sid)]).is_err() {
+    let result = sync(&config, &router, &sid, mode == "--apply");
+    if form(&router, &[("logout", "1"), ("sid", &sid)]).is_err() {
         eprintln!("warning: could not close router session");
     }
     result
