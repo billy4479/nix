@@ -6,13 +6,13 @@ On `serverone`, `fritz-rebind-sync.service` runs after the network comes online 
 
 ## Enable and check
 
-The service skips until `/var/lib/fritz-rebind-sync/credential` exists. Provision that file on `serverone` as `root:root`, mode `0600`, with the FRITZ!Box admin username on line one and its password on line two. Use a local secret manager or `sudoedit`, not a Nix string or command-line argument. The file is passed using systemd credentials. Then switch configurations, or run `sudo systemctl start fritz-rebind-sync.service` after provisioning if the unit is already installed.
+Before switching, use `sops serverone.yaml` in the secrets repository to add the top-level `fritz-admin-password` key, then update the `secrets-repo` flake input to include that revision. The value is just the password for the router account configured in `system/hosts/serverone/fritz-rebind.nix`. `sops-nix` renders the two-line credential at activation, and systemd passes it to the service. The password is not stored in the Nix store or passed on the command line.
 
 To preview without writing, build with `nix build .#fritz-rebind-sync` and run the executable on a machine with LAN access to the router:
 
 ```sh
 sudo ./result/bin/fritz-rebind-sync --dry-run \
-  /etc/fritz-rebind-sync/manifest.json /var/lib/fritz-rebind-sync/credential
+  /etc/fritz-rebind-sync/manifest.json /run/secrets/rendered/fritz-rebind-credential
 ```
 
 Inspect `journalctl -u fritz-rebind-sync.service` for results. A router outage or an API change is reported as a unit failure; it does not change client DNS configuration. The HTTPS connection pins the router's public key, so confirm and update the pin in `system/hosts/serverone/fritz-rebind.nix` if that key changes.

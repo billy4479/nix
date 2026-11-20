@@ -7,7 +7,7 @@
 }:
 let
   cfg = config.networking.fritzRebindSync;
-  credential = "/var/lib/fritz-rebind-sync/credential";
+  credential = config.sops.templates."fritz-rebind-credential".path;
   sync = lib.getExe (pkgs.callPackage ../../../packages/fritz-rebind-sync { });
   manifest = pkgs.writeText "fritz-rebind-names.json" (
     builtins.toJSON {
@@ -35,6 +35,15 @@ in
   };
 
   config = {
+    sops.secrets.fritz-admin-password = { };
+    sops.templates."fritz-rebind-credential" = {
+      mode = "0400";
+      content = ''
+        fritz6398
+        ${config.sops.placeholder.fritz-admin-password}
+      '';
+    };
+
     environment.etc."fritz-rebind-sync/manifest.json".source = manifest;
     # Preserve the manually configured Stirling PDF exception, which is not a generated vhost.
     networking.fritzRebindSync.extraNames = [ "stirling-pdf.internal.${domain}" ];
