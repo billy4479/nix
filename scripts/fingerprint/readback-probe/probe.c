@@ -66,6 +66,12 @@ static int query(int fd, FILE *raw, enum sensor_query kind, uint16_t sequence,
       return 1;
     dump(raw, "status", status, sizeof(status));
     dump(raw, "rx", data, sizeof(data));
+    /* Each mailbox poll has a new read-command phase and can contain a new
+     * reply, not a contiguous continuation of the previous window. Do not let
+     * an incomplete old frame swallow a new ACK at the next window's start.
+     * All allowlisted responses fit in one complete 256-byte window.
+     */
+    parser->used = 0;
     if (fflush(raw) != 0 || readback_feed(parser, data, sizeof(data)) != 0)
       return 1;
     if (parser->done)

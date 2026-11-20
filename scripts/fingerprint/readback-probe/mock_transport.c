@@ -59,14 +59,23 @@ int sensor_read_mailbox(int fd, uint8_t status[4], uint8_t response[256]) {
     return -1;
   memset(status, 0, 4);
   memset(response, 0, 256);
-  if (current == QUERY_VERSION && scenario("stale_version") && window == 0) {
+  bool prefix = current == QUERY_VERSION &&
+                (scenario("stale_version") || scenario("partial_then_ack"));
+  if (prefix && window == 0) {
     window++;
-    const uint8_t name[] = "GF_ITE_EC_20066";
-    frame(response, 0xa8, name, sizeof(name));
+    if (scenario("partial_then_ack")) {
+      /* An incomplete old E4 header at the end of one window must not
+       * consume the fresh ACK at the beginning of the next poll.
+       */
+      memcpy(response + 252, (const uint8_t[]){0xa0, 45, 0, 0xcd}, 4);
+    } else {
+      const uint8_t name[] = "GF_ITE_EC_20066";
+      frame(response, 0xa8, name, sizeof(name));
+    }
     return 0;
   }
   unsigned int step = window++;
-  if (current == QUERY_VERSION && scenario("stale_version"))
+  if (prefix)
     step--;
   if (step == 0) {
     uint8_t ack[] = {current == QUERY_VERSION ? 0xa8 : 0xe4, 1};
@@ -85,7 +94,8 @@ int sensor_read_mailbox(int fd, uint8_t status[4], uint8_t response[256]) {
              (current == QUERY_WRAPPED && scenario("denied_wrapped"))) {
     frame(response, 0xe4, (const uint8_t[]){7}, 1);
   } else {
-    size_t size = current == QUERY_HASH || stale ? 32 : 102;
+    bool hash_only = current == QUERY_WRAPPED && scenario("hash_only");
+    size_t size = current == QUERY_HASH || stale || hash_only ? 32 : 102;
     if (current == QUERY_HASH && scenario("short_hash"))
       size = 31;
     if (current == QUERY_WRAPPED && scenario("empty_blob"))

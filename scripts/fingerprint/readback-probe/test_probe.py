@@ -13,9 +13,11 @@ cases = {
     "echoed_hash_tag": (0, [0, 2, 3]),
     "stale_hash": (0, [0, 2, 3]),
     "stale_version": (0, [0, 2, 3]),
+    "partial_then_ack": (0, [0, 2, 3]),
     "wrong_version": (2, [0]),
     "denied_hash": (2, [0, 2]),
     "denied_wrapped": (2, [0, 2, 3]),
+    "hash_only": (2, [0, 2, 3]),
     "wrong_tag": (2, [0, 2]),
     "corrupt_checksum": (2, [0, 2]),
     "length_mismatch": (1, [0, 2]),
@@ -51,9 +53,20 @@ for scenario, (code, queries) in cases.items():
             assert "query_3_foreign=1" in result.stdout
         if scenario == "stale_version":
             assert "query_0_foreign=1" in result.stdout
-        if scenario in ("success", "echoed_hash_tag", "stale_hash", "stale_version"):
+        if scenario in (
+            "success",
+            "echoed_hash_tag",
+            "stale_hash",
+            "stale_version",
+            "partial_then_ack",
+        ):
             assert len((path / "key-hash.bin").read_bytes()) == 32
             assert len((path / "wrapped-key.bin").read_bytes()) == 102
+        if scenario == "hash_only":
+            assert "key_hash=collected" in result.stdout
+            assert "query_3_foreign=1" in result.stdout
+            assert "result=wrapped_key_unavailable" in result.stdout
+            assert not (path / "wrapped-key.bin").exists()
         if 3 not in queries:
             assert not (path / "wrapped-key.bin").exists()
 

@@ -65,8 +65,8 @@ static void accept(struct readback_parser *p, uint8_t command,
     }
     payload += 9;
     size -= 9;
-    /* Idle mailbox reads can replay an earlier E4 reply. In particular, a
-     * canonical-tag 32-byte hash must not complete a wrapped-key request.
+    /* A canonical-tag 32-byte hash is not a wrapped key: it can be cached,
+     * or arrive again after the key-read ACK (observed on this device).
      * Conversely, a 102-byte key wrapper is not the requested hash.
      */
     if ((p->query == QUERY_WRAPPED && size == 32) ||
