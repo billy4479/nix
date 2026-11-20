@@ -21,12 +21,20 @@ static void accept(struct readback_parser *p, uint8_t command,
   uint8_t expected = p->query == QUERY_VERSION ? 0xa8
                      : p->query == QUERY_STATE ? 0xae
                                                : 0xe4;
-  if (command == 0xb0 && size == 2 && (payload[0] & 0xfe) == expected) {
+  if (command == 0xb0 && size == 2 && (payload[0] & 0xfe) == expected &&
+      (payload[1] & 1)) {
     p->ack = true;
     return;
   }
   if (p->done || command != expected)
     return;
+  /* The first full-mailbox read can still contain an old version reply.
+   * Require ACK/version ordering before accepting the firmware preflight.
+   */
+  if (expected == 0xa8 && !p->ack) {
+    p->foreign++;
+    return;
+  }
   if (expected == 0xe4) {
     if (size < 1) {
       p->done = p->malformed = true;
@@ -41,8 +49,13 @@ static void accept(struct readback_parser *p, uint8_t command,
       p->done = p->malformed = true;
       return;
     }
-    uint32_t type = p->query == QUERY_HASH ? KEY_HASH_TYPE : KEY_WRAPPED_TYPE;
-    if (le32(payload + 1) != type) {
+    uint32_t type = le32(payload + 1);
+    /* 20066 returns the stored BB01 object tag for a BB02 hash request.
+     * The OEM reader accepts this; do not require an echoed read selector.
+     * Keep the allowlist exact, rather than accepting arbitrary reply tags.
+     */
+    if (type != KEY_WRAPPED_TYPE &&
+        !(p->query == QUERY_HASH && type == KEY_HASH_TYPE)) {
       p->foreign++;
       return;
     }
@@ -52,6 +65,15 @@ static void accept(struct readback_parser *p, uint8_t command,
     }
     payload += 9;
     size -= 9;
+    /* Idle mailbox reads can replay an earlier E4 reply. In particular, a
+     * canonical-tag 32-byte hash must not complete a wrapped-key request.
+     * Conversely, a 102-byte key wrapper is not the requested hash.
+     */
+    if ((p->query == QUERY_WRAPPED && size == 32) ||
+        (p->query == QUERY_HASH && type == KEY_WRAPPED_TYPE && size == 102)) {
+      p->foreign++;
+      return;
+    }
   }
   if (size > sizeof(p->data)) {
     p->done = p->malformed = true;

@@ -44,6 +44,19 @@ class UploadTests(unittest.TestCase):
                 self.assertEqual(trace.waits, [50])
                 self.assertEqual(trace.sleeps, [15, 15])
 
+    def test_official_hash_read_accepts_key_object_reply_tag(self):
+        trace = Upload(self.driver)
+        digest = bytes(range(32))
+        # Observed on 20066: BB02 is the hash-read selector, but the reply
+        # identifies the stored BB01 object. The OEM reader accepts this.
+        trace.reply_data = struct.pack("<II", 0xBB010003, len(digest)) + digest
+        trace.machine.write(HEAP + 0x2000, struct.pack("<I", 2048))
+        self.assertEqual(
+            trace.machine.call(0x41118, 0xBB020003, HEAP + 0x1000, HEAP + 0x2000), 0
+        )
+        self.assertEqual(trace.machine.read(HEAP + 0x1000, 32), digest)
+        self.assertEqual(trace.writes, parcels(0xE4, struct.pack("<II", 0xBB020003, 0)))
+
     def test_official_full_ite_read_sequence(self):
         machine = self.driver.machine()
         reads = []

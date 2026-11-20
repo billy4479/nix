@@ -233,8 +233,9 @@ should handle key persistence more carefully rather than reproduce that behavior
   model and upload experiment. SPI writes, randomness, DPAPI, cache files,
   events, locks, and time are simulated.
 - [`scripts/fingerprint/verify_upload.py`](../scripts/fingerprint/verify_upload.py):
-  24 test methods, including the official version-only query, MCU-state and
-  wrapped-key readback requests, the full ITE read operation, both wrapper
+  25 test methods, including the official version-only query, MCU-state and
+  wrapped-key readback requests, canonical-tag hash responses, the full ITE
+  read operation, both wrapper
   branches, 19 payload sizes around
   fragmentation/padding boundaries, counter rollover, error/retry paths, the
   real reply parser, native SHA-256, and hash acceptance/rejection.
@@ -260,8 +261,10 @@ the reference machine's `20063`. The declared output line 0 must not be assumed
 usable as a reset pin.
 
 The host-side bytes and basic ITE exchange are no longer the main unknown.
-Remaining work includes determining this firmware's provisioning/readback policy,
-recovering a live key if possible, establishing TLS, and validating sensor-specific
+Live hash readback has since succeeded: a `BB020003` request returned the stored
+`BB010003` object tag with 32 digest bytes, which the OEM reader accepts.
+Remaining work includes determining wrapped-key/provisioning policy, recovering
+a live key if possible, establishing TLS, and validating sensor-specific
 configuration and imaging. Do not assume the reference machine's setup applies.
 
 The offline host path does not require knowing the old PSK to construct and

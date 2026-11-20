@@ -46,6 +46,41 @@ int main(void) {
          packet[13] == 0xff);
   assert(sensor_query_packet((enum sensor_query)99, 1, 0, packet) == 0);
 
+  /* An old A8 reply must not satisfy the new firmware preflight before ACK. */
+  {
+    uint8_t record[64];
+    const uint8_t name[] = "GF_ITE_EC_20066";
+    size_t n = frame(record, 0xa8, name, sizeof(name));
+    struct readback_parser p = {.query = QUERY_VERSION};
+    assert(readback_feed(&p, record, n) == 0 && !p.done && p.foreign == 1);
+    const uint8_t negative_ack[] = {0xa8, 0};
+    n = frame(record, 0xb0, negative_ack, sizeof(negative_ack));
+    assert(readback_feed(&p, record, n) == 0 && !p.ack);
+    const uint8_t ack[] = {0xa8, 1};
+    n = frame(record, 0xb0, ack, sizeof(ack));
+    assert(readback_feed(&p, record, n) == 0 && p.ack && !p.done);
+    n = frame(record, 0xa8, name, sizeof(name));
+    assert(readback_feed(&p, record, n) == 0 && p.done &&
+           p.length == sizeof(name));
+  }
+
+  /* Real 20066 metadata, synthetic digest bytes only: hash selector BB02,
+   * canonical BB01 object in the response, and exactly 32 data bytes.
+   */
+  {
+    uint8_t hash_payload[41] = {0, 3, 0, 1, 0xbb, 32, 0, 0, 0};
+    memset(hash_payload + 9, 0xa5, 32);
+    uint8_t hash_frame[49];
+    size_t n = frame(hash_frame, 0xe4, hash_payload, sizeof(hash_payload));
+    struct readback_parser p = {.query = QUERY_HASH};
+    assert(readback_feed(&p, hash_frame, n) == 0);
+    assert(p.done && !p.malformed && p.length == 32);
+    assert(!memcmp(p.data, hash_payload + 9, 32));
+    p = (struct readback_parser){.query = QUERY_WRAPPED};
+    assert(readback_feed(&p, hash_frame, n) == 0);
+    assert(!p.done && p.foreign == 1 && p.length == 0);
+  }
+
   uint8_t payload[READBACK_CAPACITY + 10] = {0, 3, 0, 1, 0xbb, 102, 0, 0, 0};
   for (size_t i = 0; i < 102; i++)
     payload[9 + i] = i;
@@ -60,7 +95,8 @@ int main(void) {
   }
   struct readback_parser p = {.query = QUERY_HASH};
   assert(readback_feed(&p, record, size) == 0);
-  assert(!p.done && p.foreign == 1); /* A stale other-tag reply is not a key. */
+  assert(!p.done &&
+         p.foreign == 1); /* A stale wrapper is not the requested hash. */
   payload[3] = 2;
   size = frame(record, 0xe4, payload, 111);
   assert(readback_feed(&p, record, size) == 0 && p.done);
