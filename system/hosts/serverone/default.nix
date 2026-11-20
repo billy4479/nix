@@ -24,6 +24,7 @@
     ./samba.nix
 
     ./monitoring.nix
+    ./fritz-rebind.nix
 
     ../../modules/smartd.nix
     ../../modules/zfs-scrub-notify.nix

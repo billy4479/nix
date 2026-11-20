@@ -469,6 +469,12 @@ in
         readOnly = true;
       };
 
+      rebindNames = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        readOnly = true;
+        description = "Split-DNS names generated from configured web and raw endpoints.";
+      };
+
       bind9Records = lib.mkOption {
         description = "bind9 zone records fragment for raw entries with a record.";
         type = lib.types.str;
@@ -501,6 +507,7 @@ in
       # Pure data: defined on every host importing this module (the vps
       # consumes the edge DNAT projection), even where nothing deploys it.
       nginxVhostsFile = pkgs.writeText "polpetta-services-vhosts.conf" nginxVhostsText;
+      rebindNames = webDomains ++ map (e: "${e.raw.record}.${domain}") recordEntries;
       bind9Records = bind9Records;
       rawFirewallFile = pkgs.writeText "polpetta-raw-firewall.nft" rawFirewall.ruleset;
     };

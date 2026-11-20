@@ -17,6 +17,7 @@ rec {
   tsidp = callPackage ./tsidp { };
   lunamultiplayer-server = callPackage ./lunamultiplayer-server { };
   searxng-cli = callPackage ./searxng-cli { };
+  fritz-rebind-sync = callPackage ./fritz-rebind-sync { };
   opencode = callPackage ./opencode { };
   t3code = callPackage ./t3code { };
   wa-crypt-tools = callPackage ./wa-crypt-tools { };
