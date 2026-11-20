@@ -10,7 +10,7 @@ mechanism.
 
 ## Target state
 
-- PostgreSQL 18.6 with pgvector 0.8.7 and VectorChord 1.1.1.
+- PostgreSQL 18.7 with pgvector 0.8.7 and VectorChord 1.1.1.
 - Container `postgresql` at `10.0.1.130`, running as UID/GID `5130:5000`.
 - PostgreSQL 18 data in `/mnt/SSD/apps/postgresql/18`.
 - The old PostgreSQL 14 data remains in `/mnt/SSD/apps/immich/db`.
@@ -427,7 +427,7 @@ sudo nerdctl exec -i postgresql \
   "SELECT version(); SHOW data_checksums; SHOW shared_preload_libraries;"
 ```
 
-Require PostgreSQL 18.6, enabled checksums, and `vchord.so` in
+Require PostgreSQL 18.7, enabled checksums, and `vchord.so` in
 `shared_preload_libraries`.
 
 The container's Unix socket is at `/tmp` (`unix_socket_directories` in
@@ -658,6 +658,22 @@ search, smart search, face search, a disposable upload, thumbnail generation,
 and background jobs. Review both services for permission and extension errors.
 
 Keep the PostgreSQL 14 cluster, dump, and snapshots until manual cleanup.
+
+## In-place update from 18.6 to 18.7
+
+For an existing PostgreSQL 18 cluster, keep the same data directory. Do not
+run `postgresql-init` or use the PostgreSQL 14 cutover or rollback steps.
+
+Before switching, pause Immich and Outline, verify fresh logical backups of
+both databases and their roles, then stop PostgreSQL cleanly and snapshot its
+data. Keep the previous PostgreSQL 18 generation available for rollback.
+
+After starting 18.7, the [release notes](https://www.postgresql.org/docs/release/18.7/#RELEASE-18-7-MIGRATION)
+recommend reindexing potentially affected indexes. The 18.6 production review
+found seven GIN indexes in Immich and four in Outline. Reindex those as a
+precaution before starting the apps, then verify both apps, including search.
+The pgvector and VectorChord versions are unchanged; no extension SQL upgrade
+is needed.
 
 ## Manual backups
 

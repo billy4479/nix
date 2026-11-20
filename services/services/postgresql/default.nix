@@ -15,7 +15,7 @@ let
   dataDir = "/mnt/SSD/apps/postgresql/18";
   containerDataDir = "/var/lib/postgresql/data";
 
-  postgresqlVersion = "18.6";
+  postgresqlVersion = "18.7";
   pgvectorVersion = "0.8.7";
   vectorchordVersion = "1.1.1";
   expectedExtensions = "cube:1.5,earthdistance:1.2,pg_trgm:1.6,unaccent:1.1,uuid-ossp:1.1,vchord:${vectorchordVersion},vector:${pgvectorVersion}";
@@ -160,7 +160,7 @@ in
   assertions = lib.mkIf (options ? nerdctl-containers) [
     {
       assertion = pkgs.postgresql_18.version == postgresqlVersion;
-      message = "Review the PostgreSQL migration before changing PostgreSQL ${postgresqlVersion}.";
+      message = "PostgreSQL changed from ${postgresqlVersion} to ${pkgs.postgresql_18.version}. Review the release notes and docs/deployments/postgresql-migration.md before updating the version guard.";
     }
     {
       assertion = pkgs.postgresql18Packages.pgvector.version == pgvectorVersion;
