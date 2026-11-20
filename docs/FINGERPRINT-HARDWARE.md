@@ -200,23 +200,54 @@ proof of incompatibility, but it does mean we must not assume the reference's
 sensor die, calibration/configuration frame, or provisioning policy applies.
 No exact `20066` reference was found in the already-inspected community sources.
 
-## Prepared private readback
+## First key-discovery run: hash returned, parser too strict
 
-The next [readback probe](../scripts/fingerprint/readback-probe/README.md) is
-prepared for a separate user-run step, not yet tested on the sensor. It first
-requires the observed `GF_ITE_EC_20066` version, then requests MCU state and the
-existing `BB020003` hash / `BB010003` wrapped key. Requests and the full-mailbox
-read operation were checked against the official driver's machine code offline.
-A state-query timeout is advisory, but a hash refusal or unexpected hash stops
-before wrapped-key readback. There are no command retries or write/reset/config
-fallbacks.
+The user ran readback v1 on `7.3.5-zen1`. It reported `mcu_state=no_reply` and
+`result=hash_unavailable`, then stopped before requesting the wrapped key.
+Cleanup succeeded, with no SPI errors/timeouts. SSH confirmed the sensor was
+unbound again and its driver override was empty.
 
-The result is a private mode-0600 archive, including any returned credentials
-and raw mailbox tails. No key/hash bytes are displayed. Do not publish it or
-put it in Git/Nix; return its path for private SSH retrieval. Packet tests,
-mocked SPI, fake-sensor flows, and fake-filesystem runner tests passed, including
-privacy, cleanup reporting, refusals and malformed replies. These do not prove
-that firmware `20066` grants readback permission.
+Private inspection of the archive found a successful, checksum-valid reply:
+
+```text
+request_opcode=E4
+requested_selector=BB020003
+response_opcode=E4
+response_status=0
+returned_object_tag=BB010003
+declared_data_bytes=32
+```
+
+V1 incorrectly required the returned tag to echo the hash selector. This
+firmware identifies the stored key object instead. Original-driver emulation
+confirms that the OEM production reader accepts this exact selector/tag pair.
+The returned digest is retained privately; no digest bytes or raw windows are
+committed or displayed. A digest alone does not establish the live PSK or its
+recoverability.
+
+The capture also shows a cached A8 version frame before the new A8 ACK and
+version reply, and repeated older frames during idle polling. Those are not
+new status replies. No `AE` MCU-state reply was captured; this does not establish
+TLS/lock state or justify initialization/reset/configuration writes.
+
+### Corrected v2, prepared for a separate user run
+
+The [v2 readback probe](../scripts/fingerprint/readback-probe/README.md) leaves
+MCU-state probing paused and sends only A8, E4/hash and E4/wrapped-key requests.
+It requires ACK-then-version ordering for the observed `GF_ITE_EC_20066`, accepts
+only the known hash selector/object tags, and ignores a repeated 32-byte hash
+while waiting for a key wrapper. Other tags remain rejected. The successful
+full-mailbox transport is unchanged rather than speculatively altering SPI.
+
+Offline replay of the private capture verifies both fixes: the cached version
+is ignored until ACK, and the returned 32-byte digest is recognized. Committed
+regressions use synthetic data, not the real digest. Native-driver checks,
+ASan/UBSan parser/flow tests and fake-filesystem archive/privacy/cleanup tests
+also pass. No additional live queries have been run by the agent.
+
+The result remains a private mode-0600 archive, including raw mailbox tails and
+any returned credentials. Do not publish it or put it in Git/Nix. V1 never
+attempted wrapped-key readback, so its permission and key recovery remain unknown.
 
 ## Consequences for bring-up
 
@@ -226,12 +257,12 @@ that firmware `20066` grants readback permission.
   Do not request the declared output offset 0 as a reset/control line.
 - The resource query required no kernel replacement and made no SPI transfers.
   It did not identify the MCU or inspect provisioning data.
-- The next step is narrowly scoped MCU-state and existing-key readback queries,
-  retaining bounded waits and no reset/configuration/enrollment/key-write path.
+- The next step is fixed hash/wrapped-key readback with v2; MCU-state probing
+  is paused. Retain bounded waits and no reset/configuration/enrollment/key-write path.
   Where permitted, recovering an existing wrapped key would avoid provisioning.
   Any returned device-specific data must remain private, not in Git.
 
-**Bottom line:** live communication, firmware revision and interrupt assignment
-are now confirmed. The output resource is unsafe to assume usable. Sensor-die
-identity, provisioning/readback policy, the live key, TLS and scanning remain
-unverified.
+**Bottom line:** live communication, firmware revision, key-hash readback and
+interrupt assignment are confirmed. The output resource is unsafe to assume
+usable. Sensor-die identity, wrapped-key/provisioning policy, the live key, TLS
+and scanning remain unverified.

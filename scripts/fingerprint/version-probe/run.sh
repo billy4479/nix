@@ -116,7 +116,7 @@ finish() {
     if cp -- "$work/report.txt" "$output"; then saved=1; fi
   fi
   if [[ $saved == 1 ]] && chown --no-dereference "$SUDO_UID:$SUDO_GID" "$output" && chmod 600 "$output"; then
-    grep -E '^(firmware|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests|mcu_state|mcu_tls_connected|mcu_locked|key_hash|key_hash_status|wrapped_key|wrapped_key_status)=' "$work/probe.log"
+    grep -E '^(firmware|profile|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests|mcu_state|mcu_tls_connected|mcu_locked|key_hash|key_hash_status|wrapped_key|wrapped_key_status)=' "$work/probe.log"
     printf 'Private report saved to (do not paste/upload its contents):\n%s\n' "$output"
   else
     printf 'Could not save report; scratch data remains in %s\n' "$work" >&2
@@ -136,7 +136,7 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 snapshot >"$work/before"
 if [[ $kind == readback ]]; then
-  printf 'Fixed version/state/key readback only. Sensitive replies go into a private archive.\n'
+  printf 'Fixed firmware/key readback only. Sensitive replies go into a private archive.\n'
 else
   printf 'Sending one firmware-version query.\n'
 fi

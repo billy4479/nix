@@ -13,10 +13,16 @@ A subsequent user-run probe obtained a checksum-valid ACK and firmware reply:
 changes have been made. Acceptance of a new key remains untested; no actual
 device key was obtained or generated.
 
-The next useful experiment is MCU-state and existing-key readback, not a blind
-key upload. A [fixed private readback probe](../scripts/fingerprint/readback-probe/README.md)
-is prepared for that separate user-run step; hardware readback permission is
-still unknown. Keep password authentication throughout bring-up.
+The first key-discovery run returned a valid 32-byte hash, despite its initial
+`hash_unavailable` result: the parser incorrectly required the hash selector to
+be echoed instead of accepting the stored-object tag. Original-driver emulation
+and private capture replay confirmed the fix. No wrapped-key read was attempted.
+
+The next useful experiment is existing wrapped-key recovery, not a blind key
+upload. A [corrected v2 private readback probe](../scripts/fingerprint/readback-probe/README.md)
+is prepared for a separate user-run step. It skips the unanswered MCU-state
+query and filters cached version/hash replies. Wrapped-key permission remains
+unknown. Keep password authentication throughout bring-up.
 
 **Follow-up:** [the official upload path](FINGERPRINT-UPLOAD.md) has since been
 traced through original-driver emulation down to individual SPI buffers, with

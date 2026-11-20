@@ -6,7 +6,7 @@
 }:
 stdenv.mkDerivation {
   pname = "gxfp-readback-probe";
-  version = "1";
+  version = "2";
   src = lib.fileset.toSource {
     root = ../.;
     fileset = lib.fileset.unions [
@@ -65,7 +65,7 @@ stdenv.mkDerivation {
       sha256sum --check --status SHA256SUMS
     '';
   meta = {
-    description = "Fixed private state/key-readback probe for portatilo's GXFP5120";
+    description = "Fixed private existing-key readback probe for portatilo's GXFP5120";
     platforms = [ "x86_64-linux" ];
     license = lib.licenses.mit;
   };

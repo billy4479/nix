@@ -8,7 +8,6 @@
 #include <string.h>
 #include <sys/prctl.h>
 #include <sys/stat.h>
-#include <time.h>
 #include <unistd.h>
 
 static int private_file(const char *name) {
@@ -46,18 +45,14 @@ static void dump(FILE *file, const char *name, const uint8_t *data,
 static int query(int fd, FILE *raw, enum sensor_query kind, uint16_t sequence,
                  struct readback_parser *parser) {
   *parser = (struct readback_parser){.query = kind};
-  struct timespec time;
-  if (clock_gettime(CLOCK_REALTIME, &time) != 0)
-    return 1;
-  uint16_t token = (time.tv_sec % 60) * 1000 + time.tv_nsec / 1000000;
   long start = sensor_milliseconds();
   if (start < 0)
     return 1;
   fprintf(raw, "\nquery=%u\nsequence=%u\n", kind, sequence);
   uint8_t packet[24];
-  size_t length = sensor_query_packet(kind, sequence, token, packet);
+  size_t length = sensor_query_packet(kind, sequence, 0, packet);
   dump(raw, "tx", packet, length);
-  if (sensor_send(fd, kind, sequence, token) != 0)
+  if (sensor_send(fd, kind, sequence, 0) != 0)
     return 1;
   sensor_pause(5);
   for (unsigned int window = 0; window < 128; window++) {
@@ -77,8 +72,8 @@ static int query(int fd, FILE *raw, enum sensor_query kind, uint16_t sequence,
       break;
     sensor_pause(10);
   }
-  printf("query_%u_frames=%u\nquery_%u_rejected=%u\n", kind, parser->frames,
-         kind, parser->rejected);
+  printf("query_%u_frames=%u\nquery_%u_rejected=%u\nquery_%u_foreign=%u\n",
+         kind, parser->frames, kind, parser->rejected, kind, parser->foreign);
   if (parser->malformed)
     return 1;
   return parser->done ? 0 : 2;
@@ -87,6 +82,7 @@ static int query(int fd, FILE *raw, enum sensor_query kind, uint16_t sequence,
 static int run(int fd, FILE *raw) {
   if (sensor_configure(fd) != 0)
     return 1;
+  puts("profile=ite-20066-key-readback-v2\nmcu_state=not_requested");
   struct readback_parser reply;
   int result = query(fd, raw, QUERY_VERSION, 1, &reply);
   if (result != 0) {
@@ -101,30 +97,10 @@ static int run(int fd, FILE *raw) {
   }
   puts("firmware=GF_ITE_EC_20066");
 
-  result = query(fd, raw, QUERY_STATE, 2, &reply);
-  if (result == 1) {
-    puts("result=state_io_or_format_error");
-    return 1;
-  }
-  if (result == 0) {
-    if (reply.length != 20) {
-      puts("result=unexpected_state_layout_stop");
-      return 2;
-    }
-    if (save("mcu-state.bin", reply.data, reply.length) != 0)
-      return 1;
-    /* Same bit meanings as the official driver. Not a provisioning policy test.
-     */
-    printf("mcu_state=received\nmcu_tls_connected=%u\nmcu_locked=%u\n",
-           (reply.data[1] >> 1) & 1, (reply.data[1] >> 3) & 1);
-  } else {
-    /* State is advisory. Its timeout does not trigger an alternate state/reset
-     * command; the two independently approved E4 reads remain unchanged.
-     */
-    puts("mcu_state=no_reply");
-  }
-
-  result = query(fd, raw, QUERY_HASH, 3, &reply);
+  /* Leave MCU-state probing paused: v1 obtained no AE reply on this firmware.
+   * Key discovery does not require it, so do not try alternate state requests.
+   */
+  result = query(fd, raw, QUERY_HASH, 2, &reply);
   if (result != 0) {
     puts("result=hash_unavailable");
     return result;
@@ -141,7 +117,7 @@ static int run(int fd, FILE *raw) {
   }
   puts("key_hash=collected");
 
-  result = query(fd, raw, QUERY_WRAPPED, 4, &reply);
+  result = query(fd, raw, QUERY_WRAPPED, 3, &reply);
   if (result != 0) {
     puts("result=wrapped_key_unavailable");
     return result;
@@ -166,7 +142,7 @@ static int run(int fd, FILE *raw) {
 int main(int argc, char **argv) {
   if (argc == 2 && !strcmp(argv[1], "--help")) {
     puts("Use the reviewed run.sh as sudo. Fixed "
-         "version/state/hash/wrapped-key queries only.\n"
+         "version/hash/wrapped-key queries only.\n"
          "Requires a private output directory. No GPIO requests, reset, "
          "configuration,\n"
          "TLS, scan, enrollment, key upload, arbitrary commands or fallback.");

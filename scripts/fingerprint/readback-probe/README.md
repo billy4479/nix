@@ -1,4 +1,4 @@
-# Portatilo: private, read-only MCU/key readback
+# Portatilo: private existing-key readback (v2)
 
 Prepared for a separate manual sudo run. No live queries are run during build or
 delivery. This is not an authentication driver, initialization script or key
@@ -8,22 +8,29 @@ provisioner.
 
 In order, without command retries:
 
-1. `A8`, two zero bytes: require exactly `GF_ITE_EC_20066`, the firmware already
-   observed on this machine. Stop on any different/unavailable version.
-2. `AF`, `55 <milliseconds-within-minute:LE16> 00 00`: the official driver's
-   no-ACK MCU-state request, expecting an `AE` reply with 20 bytes. The ITE
-   branch computes the inner checksum before adding the no-ACK bit. A timeout
-   is advisory: the two independent, already-approved read requests below still
-   run. I/O/malformed/unexpected-layout errors stop instead. State flags do not
-   establish permission to change keys.
-3. `E4`, `BB020003:LE32 00000000`: read existing key-wrapper hash. Require status
-   zero, the matching type, exact declared length, and 32 data bytes. Stop on
-   refusal, timeout, malformed data or an unexpected size, without attempting
-   wrapped-key readback.
-4. `E4`, `BB010003:LE32 00000000`: read the existing wrapped key. Save a
-   checksum-valid, correctly tagged response privately. Expect the previously
-   analyzed 102-byte format with header `02ff20000000` at offset 32; preserve an
-   unexpected format for inspection but report exit 2 rather than success.
+1. `A8`, two zero bytes: require a successful A8 ACK followed by exactly
+   `GF_ITE_EC_20066`. Ignore a version frame received before the ACK, because the
+   mailbox can still contain a cached reply. Stop on a different/unavailable
+   version or missing ACK.
+2. `E4`, `BB020003:LE32 00000000`: read existing key-wrapper hash. Require status
+   zero, exact declared length and 32 data bytes. Accept either the echoed
+   `BB020003` selector or the observed `BB010003` stored-object tag. The OEM
+   reader accepts the latter too. Stop on refusal, timeout, malformed data or
+   an unexpected size, without attempting wrapped-key readback.
+3. `E4`, `BB010003:LE32 00000000`: read the existing wrapped key. Save a
+   checksum-valid, correctly tagged response privately. Ignore a replayed
+   32-byte hash, rather than letting it complete this request. Expect the
+   previously analyzed 102-byte format with header `02ff20000000` at offset 32;
+   preserve other unexpected formats privately but report exit 2, not success.
+
+The first user-run v1 probe did receive a checksum-valid 32-byte hash response,
+but incorrectly reported `hash_unavailable` because it required an echoed hash
+selector. Its capture also contained a cached version followed later by the A8
+ACK and new version reply. Corrected decoding was verified against that private
+capture offline. Only synthetic digest data is used in committed regressions.
+
+MCU-state probing is paused: v1 captured no `AE` reply. V2 sends no `AF`/state
+request and does not try alternate state checksums, initialization or resets.
 
 `BB010002` (Windows host backup) is not requested. There is no arbitrary command,
 tag, payload, offset or length CLI, and no `E0` provisioning command, reset,
@@ -31,11 +38,11 @@ configuration, TLS, GPIO request, image acquisition, enrollment, key generation
 or fallback path. These reads necessarily affect volatile EC/SPI state; they
 are not a claim that the whole device remains electrically untouched.
 
-The state request, wrapped-key read and `bb f1 00 00` write/read operation were
-checked against original `gfspi.dll` machine code using simulated Windows APIs
-and SPI. The same production-read function supplies the previously verified
-`BB020003` hash request. This validates host encoding, not this firmware's
-readback permission or persistence policy.
+The wrapped-key read, canonical-tag hash response and `bb f1 00 00` write/read
+operation were checked against original `gfspi.dll` machine code with simulated
+Windows APIs and SPI. The state request remains verified offline but is not used
+by v2. Live hash readback is now confirmed, not wrapped-key permission or any
+provisioning/persistence policy.
 
 ## Transport and privacy
 
@@ -71,8 +78,8 @@ Output is archived into:
 ```
 
 The archive is mode 0600, owned by the invoking user, and includes the report,
-raw SPI log and any collected `mcu-state.bin`, `key-hash.bin`, `wrapped-key.bin`.
-Terminal output contains only fixed firmware text, state flags and result/status
+raw SPI log and any collected `key-hash.bin` and `wrapped-key.bin`.
+Terminal output contains only fixed firmware/profile text and result/status
 metadata, never key/hash bytes. Keep the archive out of Git, the Nix store and
 public uploads. Return only its path; retrieve it privately over SSH.
 
@@ -101,10 +108,13 @@ contents into a private directory on portatilo, not through a Nix derivation
 that reads live secrets. Review the source before running manually:
 
 ```sh
-sudo ~/fingerprint-readback-probe/run.sh
+sudo ~/fingerprint-readback-probe-v2/run.sh
 ```
 
-Build checks use native golden packet vectors, split/malformed/refused reply
-fixtures, mocked SPI ioctls, an entirely fake sensor for flow/privacy tests, and
-fake temporary filesystem state for runner/archive cleanup tests. None access
+Do not retry the original v1 bundle. Install v2 separately at the path above.
+
+Build checks use native golden packet vectors, canonical/echoed reply tags,
+cached-version ACK ordering, stale-hash rejection, split/malformed/refused
+fixtures, mocked SPI ioctls, a fake sensor for flow/privacy tests, and fake
+temporary filesystem state for runner/archive cleanup tests. None access
 hardware or require root. ASan/UBSan can additionally exercise the same C tests.

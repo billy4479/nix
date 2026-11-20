@@ -9,16 +9,19 @@ from pathlib import Path
 
 binary = str(Path(sys.argv[1]).resolve())
 cases = {
-    "success": (0, [0, 1, 2, 3]),
-    "missing_state": (0, [0, 1, 2, 3]),
+    "success": (0, [0, 2, 3]),
+    "echoed_hash_tag": (0, [0, 2, 3]),
+    "stale_hash": (0, [0, 2, 3]),
+    "stale_version": (0, [0, 2, 3]),
     "wrong_version": (2, [0]),
-    "denied_hash": (2, [0, 1, 2]),
-    "wrong_tag": (2, [0, 1, 2]),
-    "corrupt_checksum": (2, [0, 1, 2]),
-    "length_mismatch": (1, [0, 1, 2]),
-    "short_hash": (2, [0, 1, 2]),
-    "empty_blob": (2, [0, 1, 2, 3]),
-    "io_error": (1, [0, 1]),
+    "denied_hash": (2, [0, 2]),
+    "denied_wrapped": (2, [0, 2, 3]),
+    "wrong_tag": (2, [0, 2]),
+    "corrupt_checksum": (2, [0, 2]),
+    "length_mismatch": (1, [0, 2]),
+    "short_hash": (2, [0, 2]),
+    "empty_blob": (2, [0, 2, 3]),
+    "io_error": (1, [0, 2]),
 }
 for scenario, (code, queries) in cases.items():
     with tempfile.TemporaryDirectory() as temp:
@@ -42,7 +45,13 @@ for scenario, (code, queries) in cases.items():
         for name in ("raw-spi.txt", "mcu-state.bin", "key-hash.bin", "wrapped-key.bin"):
             if (path / name).exists():
                 assert stat.S_IMODE((path / name).stat().st_mode) == 0o600
-        if scenario in ("success", "missing_state"):
+        assert not (path / "mcu-state.bin").exists()
+        assert "mcu_state=not_requested" in result.stdout
+        if scenario == "stale_hash":
+            assert "query_3_foreign=1" in result.stdout
+        if scenario == "stale_version":
+            assert "query_0_foreign=1" in result.stdout
+        if scenario in ("success", "echoed_hash_tag", "stale_hash", "stale_version"):
             assert len((path / "key-hash.bin").read_bytes()) == 32
             assert len((path / "wrapped-key.bin").read_bytes()) == 102
         if 3 not in queries:
@@ -65,5 +74,5 @@ for name in ("raw-spi.txt", "key-hash.bin"):
         assert target.read_bytes() == b"DO NOT OVERWRITE"
         assert not (path / "wrapped-key.bin").exists()
 print(
-    "Offline flow tests passed: success, refusals, stop conditions, advisory state timeout, private files and symlinks."
+    "Offline flow tests passed: canonical/echoed tags, stale hash filtering, no state query, refusals, private files and symlinks."
 )
