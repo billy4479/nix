@@ -14,7 +14,9 @@ changes have been made. Acceptance of a new key remains untested; no actual
 device key was obtained or generated.
 
 The next useful experiment is MCU-state and existing-key readback, not a blind
-key upload. Keep password authentication throughout bring-up.
+key upload. A [fixed private readback probe](../scripts/fingerprint/readback-probe/README.md)
+is prepared for that separate user-run step; hardware readback permission is
+still unknown. Keep password authentication throughout bring-up.
 
 **Follow-up:** [the official upload path](FINGERPRINT-UPLOAD.md) has since been
 traced through original-driver emulation down to individual SPI buffers, with

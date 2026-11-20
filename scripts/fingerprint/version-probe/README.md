@@ -62,7 +62,7 @@ The probe uses the ACPI-declared mode 0, 8-bit words, and 10 MHz maximum clock.
 It then performs small polling reads, the same response-window form used by
 the reference ITE transport: `bb f1 00 00` followed by 60 zero bytes. It requests
 at most 128 windows, with a 1.5-second loop deadline and short delays. The runner
-adds a 10-second process timeout and a two-second kill grace period. These bound
+adds a 15-second process timeout and a two-second kill grace period. These bound
 userspace execution; they cannot guarantee a broken kernel I/O request is
 interruptible or eliminate hardware bring-up risk.
 
@@ -99,7 +99,12 @@ nix build --impure --no-link --print-out-paths --expr '
 '
 ```
 
-The binary is statically linked. The build runs protocol tests covering the
+The binary is statically linked. It shares guarded SPI I/O helpers in `../spi`
+with the separate readback tool, but this entrypoint still sends only one A8.
+The shared runner defaults to version-only; a checksum-manifested `probe-kind`
+file is required to select the separate readback executable.
+
+The build runs protocol tests covering the
 exact outgoing query, every frame split, bytewise delivery, malformed lengths
 and checksums, noise, ACK-only input, unrelated commands, maximum string length,
 buffer bounds, invalid/embedded-NUL text, and sanitized ACK/version frames from

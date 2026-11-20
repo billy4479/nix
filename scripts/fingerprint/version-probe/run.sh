@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# First live query: bind only GXFP5120, send A8 once, restore binding/override.
+# Shared guard/cleanup for the fixed version-only and readback probes.
 set -euo pipefail
 umask 077
 if [[ $EUID -ne 0 || -z ${SUDO_UID:-} || -z ${SUDO_GID:-} ]]; then
@@ -8,13 +8,31 @@ if [[ $EUID -ne 0 || -z ${SUDO_UID:-} || -z ${SUDO_GID:-} ]]; then
 fi
 exec 9>/run/fingerprint-version-probe.lock
 if ! /run/current-system/sw/bin/flock -n 9; then
-  printf 'Another version probe is running; refusing.\n' >&2
+  printf 'Another fingerprint probe is running; refusing.\n' >&2
   exit 1
 fi
 bundle=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 cd "$bundle"
 if ! sha256sum --check --status SHA256SUMS; then
   printf 'Bundle verification failed.\n' >&2
+  exit 1
+fi
+kind=version
+if [[ -f probe-kind ]]; then
+  if ! grep -Eq '^[0-9a-f]{64}  probe-kind$' SHA256SUMS; then
+    printf 'Probe kind is not covered by the manifest.\n' >&2
+    exit 1
+  fi
+  kind=$(<probe-kind)
+fi
+case $kind in version | readback) ;; *)
+  printf 'Unknown probe kind.\n' >&2
+  exit 1
+  ;;
+esac
+binary="$kind-probe"
+if ! grep -Eq "^[0-9a-f]{64}  $binary\$" SHA256SUMS; then
+  printf 'Probe binary is not covered by the manifest.\n' >&2
   exit 1
 fi
 release=$(<kernel-release)
@@ -41,7 +59,7 @@ if [[ -n $override && $override != '(null)' ]]; then
 fi
 account=$(getent passwd "$SUDO_UID")
 IFS=: read -r _ _ _ _ _ user_home _ <<<"$account"
-work=$(mktemp -d /tmp/fingerprint-version.XXXXXXXX)
+work=$(mktemp -d "/tmp/fingerprint-$kind.XXXXXXXX")
 : >"$work/probe.log"
 override_set=0
 binding_attempted=0
@@ -89,10 +107,17 @@ finish() {
     printf '\n--- Probe ---\n%s\n' "$(<"$work/probe.log")"
     printf '\n--- After ---\n%s\n' "$(<"$work/after")"
   } >"$work/report.txt"
-  output=$(mktemp "$user_home/fingerprint-version-report.XXXXXXXX.txt")
-  if cp -- "$work/report.txt" "$output" && chown --no-dereference "$SUDO_UID:$SUDO_GID" "$output" && chmod 600 "$output"; then
-    grep -E '^(firmware|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests)=' "$work/probe.log"
-    printf 'Private report saved to:\n%s\n' "$output"
+  local saved=0
+  if [[ $kind == readback ]]; then
+    output=$(mktemp "$user_home/fingerprint-readback-report.XXXXXXXX.tar.gz")
+    if tar -czf "$output" -C "$work" .; then saved=1; fi
+  else
+    output=$(mktemp "$user_home/fingerprint-version-report.XXXXXXXX.txt")
+    if cp -- "$work/report.txt" "$output"; then saved=1; fi
+  fi
+  if [[ $saved == 1 ]] && chown --no-dereference "$SUDO_UID:$SUDO_GID" "$output" && chmod 600 "$output"; then
+    grep -E '^(firmware|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests|mcu_state|mcu_tls_connected|mcu_locked|key_hash|key_hash_status|wrapped_key|wrapped_key_status)=' "$work/probe.log"
+    printf 'Private report saved to (do not paste/upload its contents):\n%s\n' "$output"
   else
     printf 'Could not save report; scratch data remains in %s\n' "$work" >&2
     exit 1
@@ -110,7 +135,12 @@ trap 'finish' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 snapshot >"$work/before"
-printf 'Sending one firmware-version query. No userspace GPIO requests, resets, scans, or key/config writes.\n'
+if [[ $kind == readback ]]; then
+  printf 'Fixed version/state/key readback only. Sensitive replies go into a private archive.\n'
+else
+  printf 'Sending one firmware-version query.\n'
+fi
+printf 'No userspace GPIO requests, resets, scans, or key/config writes.\n'
 if [[ ! -d /sys/module/spidev ]]; then loaded_spidev=1; fi
 /run/current-system/sw/bin/modprobe spidev 2>>"$work/probe.log"
 override_set=1
@@ -134,7 +164,10 @@ if [[ ${#candidates[@]} != 1 || ! -c $node ]]; then
   exit 1
 fi
 set +e
-/run/current-system/sw/bin/timeout --signal=TERM --kill-after=2 10 "$bundle/version-probe" "$node" >"$work/probe.log" 2>&1
+(
+  cd "$work" || exit 1
+  /run/current-system/sw/bin/timeout --signal=TERM --kill-after=2 15 "$bundle/$binary" "$node"
+) >"$work/probe.log" 2>&1
 result=$?
 set -e
 exit "$result"

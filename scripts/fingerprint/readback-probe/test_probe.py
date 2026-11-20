@@ -1,0 +1,69 @@
+"""Offline flow/privacy tests. The executable uses mock_transport.c, never SPI."""
+
+import os
+import stat
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+binary = str(Path(sys.argv[1]).resolve())
+cases = {
+    "success": (0, [0, 1, 2, 3]),
+    "missing_state": (0, [0, 1, 2, 3]),
+    "wrong_version": (2, [0]),
+    "denied_hash": (2, [0, 1, 2]),
+    "wrong_tag": (2, [0, 1, 2]),
+    "corrupt_checksum": (2, [0, 1, 2]),
+    "length_mismatch": (1, [0, 1, 2]),
+    "short_hash": (2, [0, 1, 2]),
+    "empty_blob": (2, [0, 1, 2, 3]),
+    "io_error": (1, [0, 1]),
+}
+for scenario, (code, queries) in cases.items():
+    with tempfile.TemporaryDirectory() as temp:
+        path = Path(temp)
+        result = subprocess.run(
+            [binary, "/dev/mock-not-a-real-device"],
+            cwd=path,
+            env={**os.environ, "SCENARIO": scenario},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == code, (scenario, result.stdout, result.stderr)
+        observed = list(map(int, (path / "mock-queries.txt").read_text().splitlines()))
+        assert observed == queries, (scenario, observed)
+        assert not any(
+            line.startswith(("rx=", "tx=", "status="))
+            for line in result.stdout.splitlines()
+        ), scenario
+        assert "a5" * 16 not in result.stdout + result.stderr, scenario
+        for name in ("raw-spi.txt", "mcu-state.bin", "key-hash.bin", "wrapped-key.bin"):
+            if (path / name).exists():
+                assert stat.S_IMODE((path / name).stat().st_mode) == 0o600
+        if scenario in ("success", "missing_state"):
+            assert len((path / "key-hash.bin").read_bytes()) == 32
+            assert len((path / "wrapped-key.bin").read_bytes()) == 102
+        if 3 not in queries:
+            assert not (path / "wrapped-key.bin").exists()
+
+# Pre-existing paths must not be followed or overwritten, including by root.
+for name in ("raw-spi.txt", "key-hash.bin"):
+    with tempfile.TemporaryDirectory() as temp:
+        path = Path(temp)
+        target = path / "sentinel"
+        target.write_bytes(b"DO NOT OVERWRITE")
+        (path / name).symlink_to(target)
+        result = subprocess.run(
+            [binary, "/dev/mock-not-a-real-device"],
+            cwd=path,
+            env={**os.environ, "SCENARIO": "success"},
+            capture_output=True,
+        )
+        assert result.returncode == 1
+        assert target.read_bytes() == b"DO NOT OVERWRITE"
+        assert not (path / "wrapped-key.bin").exists()
+print(
+    "Offline flow tests passed: success, refusals, stop conditions, advisory state timeout, private files and symlinks."
+)

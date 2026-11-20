@@ -200,6 +200,24 @@ proof of incompatibility, but it does mean we must not assume the reference's
 sensor die, calibration/configuration frame, or provisioning policy applies.
 No exact `20066` reference was found in the already-inspected community sources.
 
+## Prepared private readback
+
+The next [readback probe](../scripts/fingerprint/readback-probe/README.md) is
+prepared for a separate user-run step, not yet tested on the sensor. It first
+requires the observed `GF_ITE_EC_20066` version, then requests MCU state and the
+existing `BB020003` hash / `BB010003` wrapped key. Requests and the full-mailbox
+read operation were checked against the official driver's machine code offline.
+A state-query timeout is advisory, but a hash refusal or unexpected hash stops
+before wrapped-key readback. There are no command retries or write/reset/config
+fallbacks.
+
+The result is a private mode-0600 archive, including any returned credentials
+and raw mailbox tails. No key/hash bytes are displayed. Do not publish it or
+put it in Git/Nix; return its path for private SSH retrieval. Packet tests,
+mocked SPI, fake-sensor flows, and fake-filesystem runner tests passed, including
+privacy, cleanup reporting, refusals and malformed replies. These do not prove
+that firmware `20066` grants readback permission.
+
 ## Consequences for bring-up
 
 - The declared mode-0/10 MHz ITE transport now has a successful live version
