@@ -55,6 +55,7 @@ in
   systemd.services.edge-forwarding = import ./edge-forwarding.nix {
     inherit lib pkgs publicIp;
     forwards = edgeForwards;
+    egressSource = "10.0.1.${toString config.polpetta.services.qbittorrent.container.id}";
   };
 
   sops.secrets.wireguard-key = {

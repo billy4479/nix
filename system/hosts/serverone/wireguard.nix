@@ -7,6 +7,7 @@
 {
   config,
   lib,
+  pkgs,
   flakeInputs,
   ...
 }:
@@ -21,9 +22,26 @@ let
   # Packets arriving on wg0 get their conntrack entry marked; replies
   # (forwarded from the containers) restore the mark into the packet and the
   # policy rule routes them into the tunnel table. Ordinary container egress
-  # has no ctmark and keeps the main table.
+  # keeps the main table except for qBittorrent, routed by source below.
   wgTable = 51820;
   wgMark = "0x1";
+
+  qbt = config.polpetta.services.qbittorrent;
+  qbtIp = "10.0.1.${toString qbt.container.id}";
+  qbtRule = "priority 10001 from ${qbtIp}/32 table ${toString wgTable}";
+  qbtNoMasq = "-s ${qbtIp}/32 -o wg0 -j ACCEPT";
+  qbtGuard =
+    pkgs.writeText "qbittorrent-egress.nft" # nftables
+      ''
+        destroy table ip qbittorrent_egress
+        table ip qbittorrent_egress {
+          chain forward {
+            type filter hook forward priority -10; policy accept;
+            ip saddr ${qbtIp} oifname "tailscale0" ct direction reply tcp sport ${toString qbt.web.port} accept
+            ip saddr ${qbtIp} oifname != { "wg0", "nerdctl0" } counter drop
+          }
+        }
+      '';
 in
 {
   sops.secrets.wireguard-key = {
@@ -65,6 +83,41 @@ in
         ip rule show | grep -q "fwmark ${wgMark}" ||
           ip rule add fwmark ${wgMark} table ${toString wgTable} priority 10000
       '';
+  };
+
+  # Keep the kill switch installed independently of wg0 (including while
+  # its policy table has no route). Start the container only once protected.
+  systemd.services.qbittorrent-egress = {
+    description = "Route qBittorrent through WireGuard only";
+    after = [ "firewall.service" ];
+    path = [
+      pkgs.iproute2
+      pkgs.iptables
+      pkgs.nftables
+    ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = # sh
+      ''
+        nft -f ${qbtGuard}
+        # Preserve the container source through wg0 so only the VPS NATs it.
+        # Insert before the CNI bridge's source masquerade rule.
+        iptables -w -t nat -I POSTROUTING 1 ${qbtNoMasq}
+        ip rule add ${qbtRule}
+      '';
+    postStop = # sh
+      ''
+        ip rule del ${qbtRule} || true
+        iptables -w -t nat -D POSTROUTING ${qbtNoMasq} || true
+        nft destroy table ip qbittorrent_egress
+      '';
+  };
+  systemd.services.nerdctl-qbittorrent = {
+    after = [ "qbittorrent-egress.service" ];
+    bindsTo = [ "qbittorrent-egress.service" ];
+    partOf = [ "qbittorrent-egress.service" ];
   };
 
   # The tailscale rules in containers.nix follow the same idempotent

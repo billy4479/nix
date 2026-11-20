@@ -16,6 +16,7 @@ let
         publicIp
         forwards
         ;
+      egressSource = "10.0.1.6";
     };
 in
 pkgs.testers.runNixOSTest {
@@ -61,24 +62,35 @@ pkgs.testers.runNixOSTest {
       start_all()
       machine.wait_for_unit("edge-forwarding.service")
       base = machine.succeed("readlink -f /run/current-system").strip()
-      machine.succeed("ip link add edge-public type dummy; ip addr add ${publicIp}/32 dev edge-public; ip link set edge-public up")
+      machine.succeed(
+          "ip link add edge-public type dummy; ip addr add ${publicIp}/32 dev edge-public; ip link set edge-public up"
+      )
       for name, host, host_ip, peer_ip in [
           ("client", "wan", "198.51.100.1", "198.51.100.2"),
           ("backend", "wg0", "10.0.1.1", "10.0.1.6"),
       ]:
-          machine.succeed(f"ip netns add {name}; ip link add {host} type veth peer name eth0 netns {name}; ip addr add {host_ip}/24 dev {host}; ip link set {host} up; ip -n {name} link set lo up; ip -n {name} addr add {peer_ip}/24 dev eth0; ip -n {name} link set eth0 up; ip -n {name} route add default via {host_ip}")
+          machine.succeed(
+              f"ip netns add {name}; ip link add {host} type veth peer name eth0 netns {name}; ip addr add {host_ip}/24 dev {host}; ip link set {host} up; ip -n {name} link set lo up; ip -n {name} addr add {peer_ip}/24 dev eth0; ip -n {name} link set eth0 up; ip -n {name} route add default via {host_ip}"
+          )
       machine.succeed("ip link set wg0 mtu 1420")
       # Keep an unrelated NAT rule to catch accidental flushing of shared chains.
       machine.succeed("iptables -t nat -A PREROUTING -p tcp --dport 9999 -j ACCEPT")
       machine.succeed("ip netns exec backend nc -nvlk 9000 >/tmp/backend-9000.log 2>&1 &")
       machine.succeed("ip netns exec backend nc -nvlk 9001 >/tmp/backend-9001.log 2>&1 &")
 
+
       def connect(port, succeeds=True):
           command = f"ip netns exec client nc -z -w 5 ${publicIp} {port}"
           (machine.succeed if succeeds else machine.fail)(command)
 
+
       def rule_count():
-          return int(machine.succeed("iptables -t nat -S PREROUTING | grep -c -- '-j POLPETTA-EDGE'").strip())
+          return int(
+              machine.succeed(
+                  "iptables -t nat -S PREROUTING | grep -c -- '-j POLPETTA-EDGE'"
+              ).strip()
+          )
+
 
       with subtest("forwards survive firewall reload and unit restarts without duplication"):
           connect(8080)
@@ -90,6 +102,16 @@ pkgs.testers.runNixOSTest {
           connect(8080)
           assert rule_count() == 1
           machine.wait_until_succeeds("grep 198.51.100.2 /tmp/backend-9000.log")
+
+      with subtest("outbound connections use the VPS address only for the selected source"):
+          machine.succeed("ip netns exec client nc -nvlk 9010 >/tmp/client-9010.log 2>&1 &")
+          machine.wait_until_succeeds("ip netns exec client ss -ltn | grep :9010")
+          machine.succeed("ip netns exec backend nc -z -w 5 198.51.100.2 9010")
+          machine.wait_until_succeeds("grep -F ${publicIp} /tmp/client-9010.log")
+          machine.succeed("ip -n backend addr add 10.0.1.7/24 dev eth0")
+          machine.succeed("ip netns exec client ip route add 10.0.1.0/24 via 198.51.100.1")
+          machine.succeed("ip netns exec backend nc -z -w 5 -s 10.0.1.7 198.51.100.2 9010")
+          machine.wait_until_succeeds("grep -F 10.0.1.7 /tmp/client-9010.log")
 
       with subtest("switch removes a port and replaces the remaining destination"):
           machine.succeed(f"{base}/specialisation/changed/bin/switch-to-configuration test")
@@ -108,6 +130,7 @@ pkgs.testers.runNixOSTest {
           machine.fail("iptables -t nat -S POLPETTA-EDGE")
           machine.fail("iptables -t nat -S PREROUTING | grep POLPETTA-EDGE")
           machine.fail("iptables -t mangle -S FORWARD | grep TCPMSS")
+          machine.fail("iptables -t nat -S POSTROUTING | grep -- '--to-source ${publicIp}'")
           connect(8081, succeeds=False)
           machine.succeed("iptables -t nat -C PREROUTING -p tcp --dport 9999 -j ACCEPT")
     '';

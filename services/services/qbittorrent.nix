@@ -21,8 +21,8 @@ let
       fi
     '';
 
-  torrentingPort = "6881";
-  webUiPort = "8080";
+  torrentingPort = 6881;
+  webUiPort = 8080;
 in
 {
   polpetta.services.qbittorrent = {
@@ -35,8 +35,8 @@ in
         HOME = "/config";
         QBT_CONFIRM_LEGAL_NOTICE = "TRUE";
         QBT_PROFILE = "/config";
-        "QBT_TORRENTING_PORT" = torrentingPort;
-        "QBT_WEBUI_PORT" = webUiPort;
+        QBT_TORRENTING_PORT = toString torrentingPort;
+        QBT_WEBUI_PORT = toString webUiPort;
       };
 
       volumes = [
@@ -51,14 +51,25 @@ in
         }
       ];
 
-      ports = [
-        "${torrentingPort}:${torrentingPort}/tcp"
-        "${torrentingPort}:${torrentingPort}/udp"
-      ];
+      # Resolve trackers through the tunnel too, not via the shared bind9.
+      dns = "1.1.1.1";
+      extraOptions = [ "--sysctl=net.ipv6.conf.all.disable_ipv6=1" ];
     };
 
+    raw =
+      map
+        (proto: {
+          inherit proto;
+          port = torrentingPort;
+          access = "public";
+        })
+        [
+          "tcp"
+          "udp"
+        ];
+
     web = {
-      port = 8080;
+      port = webUiPort;
       access = "tailnet";
     };
   };

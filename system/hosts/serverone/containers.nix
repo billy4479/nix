@@ -195,6 +195,8 @@ in
           bridge = "nerdctl0";
           isGateway = true;
           ipMasq = true;
+          # The qBittorrent WireGuard policy bypasses this iptables MASQ.
+          ipMasqBackend = "iptables";
           hairpinMode = true;
           ipam = {
             type = "host-local";
