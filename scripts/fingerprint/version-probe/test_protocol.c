@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT */
+#include "../spi/queries.h"
 #include "protocol.h"
 #include <assert.h>
 #include <stdio.h>
@@ -25,6 +26,9 @@ int main(void) {
   const uint8_t expected[] = {0xcc, 0xf2, 1, 0, 0xa0, 6,    0, 0xa6,
                               0xa8, 3,    0, 0, 0,    0xff, 0, 0};
   assert(memcmp(version_query, expected, sizeof(expected)) == 0);
+  uint8_t packet[24];
+  assert(sensor_query_packet(QUERY_VERSION, 1, 0, packet) == sizeof(expected));
+  assert(memcmp(packet, expected, sizeof(expected)) == 0);
 
   /* Actual checksum-valid ACK/version frames from portatilo. Excludes the
    * unrelated trailing bytes in the private raw response windows.
