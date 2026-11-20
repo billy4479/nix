@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
             "Requires a private directory owned by the executing user\n");
     return 1;
   }
-  if (prctl(PR_SET_DUMPABLE, 0) != 0) {
+  if (prctl(PR_SET_DUMPABLE, 0UL, 0UL, 0UL, 0UL) != 0) {
     perror("disable process dumps");
     return 1;
   }
