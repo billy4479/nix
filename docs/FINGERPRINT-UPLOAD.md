@@ -263,7 +263,11 @@ usable as a reset pin.
 The host-side bytes and basic ITE exchange are no longer the main unknown.
 Live hash readback has since succeeded: a `BB020003` request returned the stored
 `BB010003` object tag with 32 digest bytes, which the OEM reader accepts.
-Remaining work includes determining wrapped-key/provisioning policy, recovering
+A subsequent `BB010003` key-read request received an ACK followed by the same
+digest, not a recoverable wrapper. No provisioning write has been attempted;
+trying key replacement requires separate explicit approval because the original
+key is not backed up.
+Remaining work includes determining provisioning policy, obtaining
 a live key if possible, establishing TLS, and validating sensor-specific
 configuration and imaging. Do not assume the reference machine's setup applies.
 

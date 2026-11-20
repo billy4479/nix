@@ -230,7 +230,7 @@ version reply, and repeated older frames during idle polling. Those are not
 new status replies. No `AE` MCU-state reply was captured; this does not establish
 TLS/lock state or justify initialization/reset/configuration writes.
 
-### Corrected v2, prepared for a separate user run
+### Corrected v2: hash collected, no key wrapper returned
 
 The [v2 readback probe](../scripts/fingerprint/readback-probe/README.md) leaves
 MCU-state probing paused and sends only A8, E4/hash and E4/wrapped-key requests.
@@ -245,9 +245,47 @@ regressions use synthetic data, not the real digest. Native-driver checks,
 ASan/UBSan parser/flow tests and fake-filesystem archive/privacy/cleanup tests
 also pass. No additional live queries have been run by the agent.
 
-The result remains a private mode-0600 archive, including raw mailbox tails and
-any returned credentials. Do not publish it or put it in Git/Nix. V1 never
-attempted wrapped-key readback, so its permission and key recovery remain unknown.
+The user subsequently ran v2 on the same kernel. It received ACK then version,
+collected a 32-byte hash matching v1, and attempted `BB010003` readback. That
+request received another E4 ACK followed by a status-zero `BB010003` reply with
+32 bytes identical to the hash. No 102-byte wrapper or different key material
+was found in the complete, checksum-valid captured frames. The parser correctly
+did not treat this digest as a recovered key:
+
+```text
+profile=ite-20066-key-readback-v2
+mcu_state=not_requested
+firmware=GF_ITE_EC_20066
+key_hash=collected
+result=wrapped_key_unavailable
+probe_exit=2
+cleanup_failed=0
+fingerprint_unbound=yes
+driver_override_after=empty
+```
+
+There were zero SPI errors/timeouts. SSH independently confirmed cleanup. A
+synthetic fake-sensor regression covers the same hash-only reply after ACK,
+ensuring no wrapped-key file is created and no success is reported. Offline
+replay also exposed a poll-boundary issue: carrying a trailing partial frame
+into the next mailbox window could hide its new ACK. Resetting pending bytes
+per poll preserves that ACK, but still yields no key from this capture. The
+SPI transport and transmitted requests are unchanged; no repeat run is needed.
+A synthetic partial-frame/new-ACK regression covers this correction. Checked
+public reference/default digests and SHA-256 of an empty object did not match;
+this is not an exhaustive search or proof of a particular stored-key format.
+
+This is not an explicit access refusal, nor proof that every possible recovery
+route is closed. It establishes that these reviewed selectors did not export a
+usable key. Do not keep rerunning them. No actual PSK has been recovered, and no
+persistent sensor write has been attempted. The private mode-0600 archive and
+all response data remain outside Git/Nix.
+
+A possible Linux-only next step is to provision a newly generated key using the
+already analyzed OEM upload path. That changes persistent sensor state and
+requires separate explicit approval and manual execution. The old key has not
+been backed up, so rollback cannot be promised. Firmware acceptance and
+persistence remain untested; keep password authentication.
 
 ## Consequences for bring-up
 
@@ -257,12 +295,12 @@ attempted wrapped-key readback, so its permission and key recovery remain unknow
   Do not request the declared output offset 0 as a reset/control line.
 - The resource query required no kernel replacement and made no SPI transfers.
   It did not identify the MCU or inspect provisioning data.
-- The next step is fixed hash/wrapped-key readback with v2; MCU-state probing
-  is paused. Retain bounded waits and no reset/configuration/enrollment/key-write path.
-  Where permitted, recovering an existing wrapped key would avoid provisioning.
+- V2 completed the approved hash/wrapped-key queries without recovering a key.
+  MCU-state probing stays paused. Further offline analysis is possible; persistent
+  key replacement needs its own explicit approval, not another readback retry.
   Any returned device-specific data must remain private, not in Git.
 
 **Bottom line:** live communication, firmware revision, key-hash readback and
 interrupt assignment are confirmed. The output resource is unsafe to assume
-usable. Sensor-die identity, wrapped-key/provisioning policy, the live key, TLS
-and scanning remain unverified.
+usable. The reviewed key-read query returned only the hash. Sensor-die identity,
+provisioning policy, the live key, TLS and scanning remain unverified.

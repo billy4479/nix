@@ -18,11 +18,15 @@ The first key-discovery run returned a valid 32-byte hash, despite its initial
 be echoed instead of accepting the stored-object tag. Original-driver emulation
 and private capture replay confirmed the fix. No wrapped-key read was attempted.
 
-The next useful experiment is existing wrapped-key recovery, not a blind key
-upload. A [corrected v2 private readback probe](../scripts/fingerprint/readback-probe/README.md)
-is prepared for a separate user-run step. It skips the unanswered MCU-state
-query and filters cached version/hash replies. Wrapped-key permission remains
-unknown. Keep password authentication throughout bring-up.
+The user then ran the [corrected v2 readback probe](../scripts/fingerprint/readback-probe/README.md).
+It collected the hash and attempted key readback, but the key-read ACK was
+followed by the same 32-byte digest, not a key wrapper. Cleanup succeeded; no
+usable PSK was recovered. Do not repeat these same queries hoping for a key.
+
+Linux-only replacement with a new key is a possible next route, requiring
+separate explicit approval for persistent writes. The old key has not been
+backed up, and firmware acceptance/rollback are unproven. Further offline
+analysis remains an alternative. Keep password authentication throughout.
 
 **Follow-up:** [the official upload path](FINGERPRINT-UPLOAD.md) has since been
 traced through original-driver emulation down to individual SPI buffers, with

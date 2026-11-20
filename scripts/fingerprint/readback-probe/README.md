@@ -19,7 +19,8 @@ In order, without command retries:
    an unexpected size, without attempting wrapped-key readback.
 3. `E4`, `BB010003:LE32 00000000`: read the existing wrapped key. Save a
    checksum-valid, correctly tagged response privately. Ignore a replayed
-   32-byte hash, rather than letting it complete this request. Expect the
+   32-byte hash (whether cached or repeated after a new ACK), rather than
+   letting it complete this request. Expect the
    previously analyzed 102-byte format with header `02ff20000000` at offset 32;
    preserve other unexpected formats privately but report exit 2, not success.
 
@@ -28,6 +29,15 @@ but incorrectly reported `hash_unavailable` because it required an echoed hash
 selector. Its capture also contained a cached version followed later by the A8
 ACK and new version reply. Corrected decoding was verified against that private
 capture offline. Only synthetic digest data is used in committed regressions.
+
+The user-run v2 collected the same digest as v1 and successfully enforced
+ACK/version ordering. The wrapped-key request received an E4 ACK followed by
+the same 32-byte digest, not the expected 102-byte wrapper. Exit 2 with
+`wrapped_key_unavailable` therefore means no usable key was returned, not an
+explicit MCU refusal. Cleanup succeeded with zero SPI errors/timeouts. Private
+raw replies remain available for further analysis; do not rerun v2 to repeat
+this known result. Key replacement would require separate approval because it
+writes persistent state and the old key has not been recovered.
 
 MCU-state probing is paused: v1 captured no `AE` reply. V2 sends no `AF`/state
 request and does not try alternate state checksums, initialization or resets.
@@ -54,7 +64,9 @@ A wrapped-key record cannot fit in the first probe's 60-byte response window.
 Readback instead uses a single two-transfer SPI message: four command/status
 bytes followed by the reference ITE transport's full 256-byte mailbox, with CS
 kept asserted between transfers. Both message-pack and inner checksums are
-required, including across multiple mailboxes, with at most 2048 data bytes.
+required, with at most 2048 data bytes. Pending bytes are reset per full-mailbox
+poll: its new read-command phase can start a replaced reply, not a continuation
+of the previous window's partial frame. All expected replies fit one window.
 The unchecked `88` checksum shortcut is not accepted. Unrelated reply tags and
 ACKs cannot substitute for a requested data reply.
 
@@ -111,10 +123,12 @@ that reads live secrets. Review the source before running manually:
 sudo ~/fingerprint-readback-probe-v2/run.sh
 ```
 
-Do not retry the original v1 bundle. Install v2 separately at the path above.
+These are the instructions for the completed experiment, not a request to run
+it again. Do not retry either bundle without a new reviewed scope.
 
 Build checks use native golden packet vectors, canonical/echoed reply tags,
-cached-version ACK ordering, stale-hash rejection, split/malformed/refused
+cached-version ACK ordering, independent poll boundaries, hash-only replies,
+stale-hash rejection, split/malformed/refused
 fixtures, mocked SPI ioctls, a fake sensor for flow/privacy tests, and fake
 temporary filesystem state for runner/archive cleanup tests. None access
 hardware or require root. ASan/UBSan can additionally exercise the same C tests.
