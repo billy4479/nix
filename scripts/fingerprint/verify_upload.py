@@ -44,6 +44,45 @@ class UploadTests(unittest.TestCase):
                 self.assertEqual(trace.waits, [50])
                 self.assertEqual(trace.sleeps, [15, 15])
 
+    def test_official_full_ite_read_sequence(self):
+        machine = self.driver.machine()
+        reads = []
+
+        def capture_read(m):
+            reads.append((m.read(m.arg(1), m.arg(2)), m.arg(4)))
+            return 0
+
+        machine.hooks[0x11178] = capture_read
+        self.assertEqual(machine.call(0xFDE4, 99, HEAP, 256, 1), 0)
+        self.assertEqual(reads, [(bytes.fromhex("bbf10000"), 256)])
+
+    def test_official_state_request_and_wrapped_key_read(self):
+        trace = Upload(self.driver)
+
+        def system_time(machine):
+            machine.write(
+                machine.arg(0), struct.pack("<8H", 2026, 11, 1, 17, 12, 34, 12, 345)
+            )
+            return 0
+
+        trace.machine.apis["GetLocalTime"] = system_time
+        self.assertEqual(trace.machine.call(0x5CB68, HEAP + 0x1000), 1)
+        self.assertEqual(trace.commands, [(10, 7)])
+        state = parcels(0xAE, b"\x55\x39\x30\0\0")[0]
+        # No-ACK bit is set after the checksum base is computed in this branch.
+        state = state[:8] + bytes([state[8] | 1]) + state[9:]
+        self.assertEqual(trace.writes, [state])
+
+        trace = Upload(self.driver)
+        data = bytes(range(102))
+        trace.reply_data = struct.pack("<II", 0xBB010003, len(data)) + data
+        trace.machine.write(HEAP + 0x2000, struct.pack("<I", 2048))
+        self.assertEqual(
+            trace.machine.call(0x41118, 0xBB010003, HEAP + 0x1000, HEAP + 0x2000), 0
+        )
+        self.assertEqual(trace.machine.read(HEAP + 0x1000, len(data)), data)
+        self.assertEqual(trace.writes, parcels(0xE4, struct.pack("<II", 0xBB010003, 0)))
+
     def test_official_ite_version_query_is_only_a8(self):
         trace = Upload(self.driver)
 
