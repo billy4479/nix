@@ -1,4 +1,4 @@
-# Portatilo fingerprint reader: offline investigation
+# Portatilo fingerprint reader: investigation
 
 ## Conclusion
 
@@ -7,12 +7,13 @@ GXFP5120 Windows driver generates a random 32-byte key and provisions it into th
 sensor. Its sensor-side key wrapper has been reproduced on Linux and compared
 byte for byte with the original Windows machine code.
 
-**This does not mean portatilo's reader is working yet.** No sensor commands,
-provisioning writes, firmware updates, authentication changes, or deployments were
-performed during this investigation. Acceptance of a new key by this particular
-sensor remains untested. No actual device key was obtained or generated.
+**The reader now answers Linux queries; scanning/authentication remain unverified.**
+A subsequent user-run probe obtained a checksum-valid ACK and firmware reply:
+`GF_ITE_EC_20066`. No provisioning writes, firmware updates, scans or authentication
+changes have been made. Acceptance of a new key remains untested; no actual
+device key was obtained or generated.
 
-The next useful experiment is hardware identification and readback, not a blind
+The next useful experiment is MCU-state and existing-key readback, not a blind
 key upload. Keep password authentication throughout bring-up.
 
 **Follow-up:** [the official upload path](FINGERPRINT-UPLOAD.md) has since been

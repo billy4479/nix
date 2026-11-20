@@ -163,32 +163,57 @@ writes forbidden. It supports leaving the output resource alone for the initial
 version query; it does not prove that all driver paths ignore it. The official
 version-retry routine must not be copied wholesale as a supposedly passive probe.
 
-## Prepared first sensor query
+## First live sensor query succeeded
 
-The [firmware-version probe](../scripts/fingerprint/version-probe/README.md)
-is prepared for a separate user-run sudo step. It sends one fixed `0xa8` query,
-uses bounded ITE window polling, and requests no GPIO from userspace. The runner
-temporarily binds only this device to spidev and restores the binding/override.
+After updating to kernel `7.3.5-zen1`, the user ran the rebuilt
+[firmware-version probe](../scripts/fingerprint/version-probe/README.md).
+It bound the fingerprint device temporarily at `/dev/spidev1.0`, sent one
+fixed `0xa8` query and polled two ITE response windows. The report shows:
+
+```text
+firmware=GF_ITE_EC_20066
+ack_seen=yes
+valid_frames=2
+rejected_frames=0
+probe_exit=0
+cleanup_failed=0
+driver_override_after=empty
+fingerprint_unbound=yes
+```
+
+Both the ACK and version frames passed independent message-pack and inner
+checksum validation. Only those short, non-secret frames were added as a
+parser regression fixture; the private raw windows and their unrelated trailing
+bytes are not committed.
+
+The SPI counters recorded three messages/transfers, 144 transmitted bytes and
+128 received bytes, with zero errors/timeouts. Those correspond to the 16-byte
+version command and two 64-byte polling reads. Cleanup was also verified over
+SSH: the sensor was unbound and its driver override was empty. No userspace
+GPIO request, reset, scan, sensor-configuration upload or key write occurred.
 Linux's normal SPI/ACPI core may resolve the interrupt input during binding;
-this is not a promise that all volatile controller state remains untouched.
-No reset, key write, scan or sensor-configuration upload is available. The
-query bytes were compared with the official driver in offline emulation, but
-no live sensor query has been run by the agent.
+this is not a promise that all volatile controller state remained untouched.
+
+**Firmware difference:** this unit reports `GF_ITE_EC_20066`, while the pinned
+community project's reference machine reports `GF_ITE_EC_20063`. That is not
+proof of incompatibility, but it does mean we must not assume the reference's
+sensor die, calibration/configuration frame, or provisioning policy applies.
+No exact `20066` reference was found in the already-inspected community sources.
 
 ## Consequences for bring-up
 
-- The declared SPI speed, mode and interrupt polarity agree with the ITE
-  reference transport. This is useful evidence, not a completed communication
-  test.
+- The declared mode-0/10 MHz ITE transport now has a successful live version
+  exchange. This does not yet validate TLS, image capture or authentication.
 - Use the confirmed interrupt offset 279, not the reference driver's offset 17.
   Do not request the declared output offset 0 as a reset/control line.
 - The resource query required no kernel replacement and made no SPI transfers.
   It did not identify the MCU or inspect provisioning data.
-- The next probe should identify firmware/status only, with bounded waits and
-  no reset, sensor configuration upload, enrollment, or key write. Accessing
-  SPI would be the first live sensor communication, a separate step from these
-  resource queries.
+- The next step is narrowly scoped MCU-state and existing-key readback queries,
+  retaining bounded waits and no reset/configuration/enrollment/key-write path.
+  Where permitted, recovering an existing wrapped key would avoid provisioning.
+  Any returned device-specific data must remain private, not in Git.
 
-**Bottom line:** SPI settings and the interrupt assignment are now confirmed.
-The output resource is unsafe to assume usable. MCU identity, readback
-permissions and Linux-only key acceptance remain unverified.
+**Bottom line:** live communication, firmware revision and interrupt assignment
+are now confirmed. The output resource is unsafe to assume usable. Sensor-die
+identity, provisioning/readback policy, the live key, TLS and scanning remain
+unverified.

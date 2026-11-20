@@ -80,8 +80,10 @@ Possible results:
   establish lack of support.
 - Exit 1 or a timeout: inspect the error and cleanup fields before doing more.
 
-No sensor key or persistent firmware/configuration write is performed. Actual
-firmware behavior has not been tested until the user runs this command.
+No sensor key or persistent firmware/configuration write is performed. The first
+user-run test on portatilo, kernel `7.3.5-zen1`, returned `GF_ITE_EC_20066` with a
+valid ACK, no SPI errors/timeouts, and successful binding/override cleanup. This
+validates the version exchange only, not TLS, imaging or provisioning.
 
 ## Build and tests
 
@@ -100,7 +102,8 @@ nix build --impure --no-link --print-out-paths --expr '
 The binary is statically linked. The build runs protocol tests covering the
 exact outgoing query, every frame split, bytewise delivery, malformed lengths
 and checksums, noise, ACK-only input, unrelated commands, maximum string length,
-buffer bounds, and invalid/embedded-NUL text. They do not simulate real electrical
+buffer bounds, invalid/embedded-NUL text, and sanitized ACK/version frames from
+the successful live query. They do not simulate real electrical
 SPI timing or test Linux's live driver-binding/cleanup path. The runner is
 syntax-checked and ShellCheck-checked.
 

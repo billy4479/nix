@@ -253,17 +253,18 @@ binary, real device key, real cache, or live upload utility is committed.
 ## What is still missing
 
 The subsequent [hardware inspection](FINGERPRINT-HARDWARE.md) and user-run
-resource query confirm the SPI settings and interrupt line 279. The declared
-output line 0 must not be assumed usable as a reset pin. No sensor communication
-occurred.
+resource query confirm the SPI settings and interrupt line 279. A later user-run
+version query succeeded on Linux and returned `GF_ITE_EC_20066`, different from
+the reference machine's `20063`. The declared output line 0 must not be assumed
+usable as a reset pin.
 
-The host-side bytes and checks are no longer the main unknown. Remaining work
-would be to establish the actual MCU/firmware and ACPI/GPIO resources, implement
-a safe ITE transport, and determine whether the firmware permits readback or a
-Linux-only provisioning structure in its current state.
+The host-side bytes and basic ITE exchange are no longer the main unknown.
+Remaining work includes determining this firmware's provisioning/readback policy,
+recovering a live key if possible, establishing TLS, and validating sensor-specific
+configuration and imaging. Do not assume the reference machine's setup applies.
 
 The offline host path does not require knowing the old PSK to construct and
 send the replacement. **That does not prove the sensor will authorize it.**
 Firmware acceptance, initial-state requirements, physical timing, persistence,
 and recovery after interrupted writes cannot be established by mocking success
-responses. No real hardware experiment was attempted.
+responses. The live version exchange did not test any provisioning write.

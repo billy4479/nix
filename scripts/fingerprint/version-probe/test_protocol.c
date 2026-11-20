@@ -25,6 +25,21 @@ int main(void) {
   const uint8_t expected[] = {0xcc, 0xf2, 1, 0, 0xa0, 6,    0, 0xa6,
                               0xa8, 3,    0, 0, 0,    0xff, 0, 0};
   assert(memcmp(version_query, expected, sizeof(expected)) == 0);
+
+  /* Actual checksum-valid ACK/version frames from portatilo. Excludes the
+   * unrelated trailing bytes in the private raw response windows.
+   */
+  const uint8_t live_ack[] = {0xa0, 6, 0, 0xa6, 0xb0, 3, 0, 0xa8, 1, 0x4e};
+  const uint8_t live_version[] = {
+      0xa0, 0x14, 0,   0xb4, 0xa8, 0x11, 0,   'G', 'F', '_', 'I', 'T',
+      'E',  '_',  'E', 'C',  '_',  '2',  '0', '0', '6', '6', 0,   0xdf,
+  };
+  struct version_parser live = {0};
+  assert(version_feed(&live, live_ack, sizeof(live_ack)) == 0);
+  assert(version_feed(&live, live_version, sizeof(live_version)) == 0);
+  assert(live.ack && live.frames == 2 && live.rejected == 0);
+  assert(strcmp(live.version, "GF_ITE_EC_20066") == 0);
+
   const uint8_t name[] = "GF_TEST_ONLY";
   uint8_t data[256], ack[32];
   size_t size = frame(data, 0xa8, name, sizeof(name));
