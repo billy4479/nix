@@ -3,6 +3,7 @@ stdenvNoCC.mkDerivation rec {
   pname = "bind9-hosts";
   version = "1.0.0";
 
+  # To use a custom StevenBlack build, see docs/BIND9-BLOCKLIST.md.
   src = fetchurl {
     url = "https://raw.githubusercontent.com/StevenBlack/hosts/f0c1e878685f647bac77f6ed81980379318ee7c3/hosts";
     hash = "sha256-fySXABWhkH15oyHAaBRlobmF2j5RlpxlTSWTC9sBN98=";
@@ -25,12 +26,8 @@ stdenvNoCC.mkDerivation rec {
       ; Block List
       EOF
 
-      grep "^0.0.0.0" ${src} |
-        cut -d " " -f 2 |
-        tail -n +2 |
+      awk '$1 == "0.0.0.0" && NF >= 2 && $2 != "0.0.0.0" && $2 !~ /^#/ { print $2 }' ${src} |
         sort |
-        grep -v "s.click.aliexpress.com" |
-        grep -v "click.aliexpress.com" |
-        sed -r 's/(.*)/\1 CNAME ./' >>$out
+        awk '$0 !~ /(^|\.)click\.aliexpress\.com$/ { print $0 " CNAME ." }' >>$out
     '';
 }
