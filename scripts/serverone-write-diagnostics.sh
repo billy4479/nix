@@ -61,10 +61,25 @@ if [[ ! -x $bpftrace ]]; then
   bpftrace=$(command -v bpftrace || true)
 fi
 
-date --iso-8601=seconds >"$output/measurement-start.txt"
-cat /proc/diskstats >"$output/diskstats-start.txt"
+snapshot_io() {
+  local phase=$1
+  cat /proc/diskstats >"$output/diskstats-$phase.txt"
+  # Object-set counters measure dataset activity, including intent-log writes.
+  # TXG history measures pool sync work, including pool metadata. Neither is a
+  # substitute for device counters; the three layers count different things.
+  local pool
+  for pool in hdd_pool ssd_pool zroot; do
+    capture "$pool-objsets-$phase" grep -HE \
+      '^(dataset_name|writes|nwritten|zil_commit_count|zil_itx_metaslab_(normal|slog)_write) ' \
+      /proc/spl/kstat/zfs/"$pool"/objset-*
+    capture "$pool-txgs-$phase" cat "/proc/spl/kstat/zfs/$pool/txgs"
+  done
+}
+
 capture process-names ps -eo pid,ppid,user,comm
 capture filesystem-map findmnt -rn -t zfs,tmpfs -o MAJ:MIN,SOURCE,TARGET
+date --iso-8601=seconds >"$output/measurement-start.txt"
+snapshot_io start
 
 # Capture the same one-minute workload window in parallel.
 capture process-io timeout 75 pidstat -d 5 12 &
@@ -123,6 +138,6 @@ wait "$iostat_job"
 if [[ -n $trace_job ]]; then
   wait "$trace_job"
 fi
-cat /proc/diskstats >"$output/diskstats-end.txt"
+snapshot_io end
 date --iso-8601=seconds >"$output/measurement-end.txt"
 echo "Collection complete. Check status.txt for unsupported or failed commands."
