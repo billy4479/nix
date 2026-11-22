@@ -15,6 +15,43 @@ let
         interval = "1m";
         input_series = [
           {
+            series = ''up{job="zfs"}'';
+            values = "1x6 0x6";
+          }
+          {
+            series = ''zfs_pool_health{pool="zroot"}'';
+            values = "0x6";
+          }
+          {
+            series = ''zfs_pool_health{pool="ssd_pool"}'';
+            values = "1x6";
+          }
+        ];
+        alert_rule_test = [
+          {
+            eval_time = "6m";
+            alertname = "ZfsPoolMissing";
+            exp_alerts = [
+              {
+                exp_labels = {
+                  pool = "hdd_pool";
+                  severity = "critical";
+                };
+                exp_annotations.summary = "Expected ZFS pool hdd_pool is not reported";
+              }
+            ];
+          }
+          {
+            eval_time = "13m";
+            alertname = "ZfsPoolMissing";
+            exp_alerts = [ ];
+          }
+        ];
+      }
+      {
+        interval = "1m";
+        input_series = [
+          {
             series = ''probe_success{job="blackbox-edge",service="public-edge",instance="https://87.106.25.93/health"}'';
             values = "0x5";
           }

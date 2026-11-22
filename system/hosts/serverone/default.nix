@@ -14,6 +14,7 @@
       disko.devices.disk = import "${flakeInputs.secrets-repo}/serverone-disks.nix";
     }
     ./storage.nix
+    ./data-mounts.nix
 
     ./users.nix
     ./ssh.nix

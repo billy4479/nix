@@ -185,6 +185,19 @@ let
         name = "zfs";
         rules = [
           {
+            alert = "ZfsPoolMissing";
+            expr =
+              let
+                missingPools = lib.concatMapStringsSep " or " (
+                  pool: ''absent(zfs_pool_health{pool="${pool}"})''
+                ) config.services.zfs.autoScrub.pools;
+              in
+              "(${missingPools}) and on() (up{job=\"zfs\"} == 1)";
+            for = "5m";
+            labels.severity = "critical";
+            annotations.summary = "Expected ZFS pool {{ $labels.pool }} is not reported";
+          }
+          {
             alert = "ZfsPoolUsageWarning";
             expr = "zfs_pool_allocated_bytes / zfs_pool_size_bytes > 0.80";
             for = "10m";

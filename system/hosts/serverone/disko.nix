@@ -126,7 +126,7 @@
           mountpoint = "none";
           xattr = "sa";
 
-          compression = "zfs";
+          compression = "zstd";
           "com.sun:auto-snapshot" = "false";
         };
 
@@ -161,7 +161,7 @@
         postCreateHook = "zfs list -t snapshot -H -o name | grep -E '^hdd_pool@blank$' || zfs snapshot hdd_pool@blank";
 
         datasets = {
-          HDD_generic = {
+          generic = {
             type = "zfs_fs";
             options = {
               mountpoint = "/mnt/HDD/generic";
@@ -186,7 +186,7 @@
         };
 
         datasets = {
-          SSD_generic = {
+          generic = {
             type = "zfs_fs";
             options = {
               mountpoint = "/mnt/SSD/generic";

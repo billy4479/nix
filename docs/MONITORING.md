@@ -166,6 +166,7 @@ without Alertmanager.
 | `SystemdUnitFailed` | any failed unit (excluding user sessions) for 5m | warning |
 | `ZfsPoolUsageWarning` | pool > 80% for 10m | warning |
 | `ZfsPoolUsageCritical` | pool > 90% for 10m | critical |
+| `ZfsPoolMissing` | An expected pool is absent from a reachable ZFS exporter for 5m | critical |
 | `ZfsPoolDegraded` | `zfs_pool_health == 1` for 5m | warning |
 | `ZfsPoolFailed` | `zfs_pool_health >= 2` for 1m | critical |
 | `ZfsDataErrors` | `zpool status` reports permanent errors for 5m | critical |

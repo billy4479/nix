@@ -189,7 +189,9 @@ way to recover disk space on a live development container.
 
 Container ordering is controlled by the `dependsOn`, `dns`, and `useNginx` options in `../containers/module.nix`.
 
-Use `dependsOn = [ "other-container" ];` for explicit application dependencies. This generates systemd ordering and requirement dependencies on `nerdctl-other-container.service`.
+Use `dependsOn = [ "other-container" ];` for explicit application dependencies. This generates systemd ordering and requirement dependencies on `nerdctl-other-container.service`. Headscale is an explicit dependency of Headplane and tsidp, not a prerequisite for unrelated containers.
+
+On serverone, [the ZFS mount guards](../system/hosts/serverone/data-mounts.nix) check the expected datasets before a container can create bind-mount directories. If a guard fails, check `zfs list -o name,mountpoint,mounted` and restore the expected mount before restarting the affected unit. `/mnt/SSD/agent-config` is intentionally on `zroot`, not `ssd_pool`.
 
 Containers using the default bind9 DNS server automatically start after `bind9`. This applies when `dns` points to the bind9 container IP. Set `dns = null;` only for containers that should not use container DNS.
 
