@@ -151,15 +151,7 @@ let
       ) "10.0.1.${toString config.nerdctl-containers.bind9.id}";
       inferredDependencies =
         lib.optional (name != "bind9" && bind9Dns != "" && cfg.dns == bind9Dns) "bind9"
-        ++ lib.optional (name != "nginx" && cfg.useNginx && config.nerdctl-containers ? nginx) "nginx"
-        ++ lib.optional (
-          config.nerdctl-containers ? headscale
-          && !(lib.elem name [
-            "bind9"
-            "nginx"
-            "headscale"
-          ])
-        ) "headscale";
+        ++ lib.optional (name != "nginx" && cfg.useNginx && config.nerdctl-containers ? nginx) "nginx";
       dependencies = map (x: "nerdctl-${x}.service") (lib.unique (cfg.dependsOn ++ inferredDependencies));
     in
     {

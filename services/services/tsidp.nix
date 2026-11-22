@@ -26,6 +26,7 @@ in
   polpetta.services.${name} = {
     container = {
       id = 25;
+      dependsOn = [ "headscale" ];
 
       entrypoint = [ (lib.getExe pkgs.tsidp) ];
 
