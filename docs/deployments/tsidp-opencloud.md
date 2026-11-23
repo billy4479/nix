@@ -103,6 +103,12 @@ against the IDM's LDAP `mail` attribute — see the comment block in
 
 ## Troubleshooting
 
+- **Android login redirects to `oc://android.opencloud.eu` with
+  `invalid_scope` for `offline_access`:** tsidp 0.0.18 rejects that scope
+  before issuing an authorization code. Deploy tsidp 0.0.19 or newer and
+  retry on the tailnet. The update does not require re-registering the
+  client or changing OpenCloud's settings. Restarting tsidp invalidates
+  its in-memory tokens.
 - **Web UI returns 404, but `/status.php` and `/config.json` work:** check
   that `$WEB_ASSET_CORE_PATH/index.html` exists **inside** the container.
   A store path supplied only through nerdctl's runtime environment is not

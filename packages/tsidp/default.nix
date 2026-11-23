@@ -8,13 +8,13 @@
 }:
 (buildGoModule.override { go = go_1_27; }) (finalAttrs: {
   pname = "tsidp";
-  version = "0.0.18";
+  version = "0.0.19";
 
   src = fetchFromGitHub {
     owner = "tailscale";
     repo = "tsidp";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-oL+WH5iFVRd0erh3KfJrvUMIpZraomHoRzo5sh3duu0=";
+    hash = "sha256-tDQ8t4FRAMixY9JFWBMrejKlpv68YgagbpCfQS3rBl0=";
   };
 
   patches = [
@@ -23,7 +23,7 @@
     ./browser-rp-cors.patch
   ];
 
-  vendorHash = "sha256-X3o71xgGBFJM3Sspb+223NYsDwJ3jf+9lCWQxS6JDA8=";
+  vendorHash = "sha256-bqdb0RkOxeifR/T+m93zpFcTDEEL7J+3YXuJo9sgKKE=";
 
   ldflags = [
     "-s"
