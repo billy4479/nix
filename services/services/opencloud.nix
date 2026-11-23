@@ -59,8 +59,8 @@ in
         "PROXY_CSP_CONFIG_FILE_LOCATION" = "/etc/opencloud/csp-override.yaml";
 
         "OC_PASSWORD_POLICY_DISABLED" = "true";
-        "OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD" = "true";
-        "OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD" = "true";
+        "OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD" = "false";
+        "OC_SHARING_PUBLIC_WRITEABLE_SHARE_MUST_HAVE_PASSWORD" = "false";
         "FRONTEND_ARCHIVER_MAX_SIZE" = "10000000000";
 
         # Authentication via tsidp (external OIDC, tailnet-only). The web
