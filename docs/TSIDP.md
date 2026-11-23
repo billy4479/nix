@@ -41,12 +41,16 @@ browser -> bind9 (wg/lan view wildcard) -> nginx 10.0.1.6:443 (TLS, tailnet ACL)
 WhoIs depends on seeing the browser's real tailnet IP, so serverone runs with
 `--snat-subnet-routes=false`: without it, tailnet clients traversing the
 advertised `10.0.1.0/24` route arrive at nginx source-NAT'ed and every WhoIs
-lookup fails with `peer not found`.
+lookup fails with `peer not found`. On token refresh, tsidp 0.0.21 looks
+up the original login node by its stored tailnet IP, not the address of
+the relying party making the refresh request. If that node cannot be
+re-verified, the user has to sign in again.
 
-tsidp joins the tailnet as node `idp` (tagged `tag:idp`) via `TS_CONTROL_URL`
-through nginx -> headscale. Its tailnet IP is never used for traffic; only
-the container IP behind nginx is. The tag comes baked into the preauth key
-(`TS_AUTHKEY`): headscale >= 0.29 rejects any registration that combines a
+tsidp joins the tailnet as node `idp` (tagged `tag:idp`) via upstream's
+`TS_LOGIN_SERVER` setting, through nginx -> headscale. Its tailnet IP is
+never used for traffic; only the container IP behind nginx is. The tag
+comes baked into the preauth key (`TS_AUTHKEY`): headscale >= 0.29 rejects
+any registration that combines a
 preauth key with client-advertised tags (`-advertise-tags`), so tsidp must
 not be given that flag.
 

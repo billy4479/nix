@@ -1,8 +1,8 @@
 diff --git a/server/clients.go b/server/clients.go
-index 1f82c9a..4c5d043 100644
+index 182dd47..b0da06f 100644
 --- a/server/clients.go
 +++ b/server/clients.go
-@@ -335,12 +335,22 @@ func (s *IDPServer) serveDynamicClientRegistration(w http.ResponseWriter, r *htt
+@@ -340,12 +340,22 @@ func (s *IDPServer) serveDynamicClientRegistration(w http.ResponseWriter, r *htt
  	}
  
  	clientID := generateClientID()
@@ -27,10 +27,10 @@ index 1f82c9a..4c5d043 100644
  		registrationRequest.GrantTypes = []string{"authorization_code"}
  	}
 diff --git a/server/oauth-metadata.go b/server/oauth-metadata.go
-index 5135ed2..da035fe 100644
+index 29b53cc..0276cd1 100644
 --- a/server/oauth-metadata.go
 +++ b/server/oauth-metadata.go
-@@ -73,7 +73,7 @@ var (
+@@ -78,7 +78,7 @@ var (
  
  	// OAuth 2.0 specific metadata constants
  	oauthSupportedGrantTypes               = views.SliceOf([]string{"authorization_code", "refresh_token"})
@@ -41,10 +41,10 @@ index 5135ed2..da035fe 100644
  	pkceCodeChallengeMethodsSupported = views.SliceOf([]string{"plain", "S256"})
 diff --git a/server/publicclients_test.go b/server/publicclients_test.go
 new file mode 100644
-index 0000000..fc727d5
+index 0000000..6325e01
 --- /dev/null
 +++ b/server/publicclients_test.go
-@@ -0,0 +1,620 @@
+@@ -0,0 +1,629 @@
 +// Copyright (c) Tailscale Inc & AUTHORS
 +// SPDX-License-Identifier: BSD-3-Clause
 +
@@ -352,6 +352,7 @@ index 0000000..fc727d5
 +	tests := []struct {
 +		name       string
 +		withPKCE   bool
++		whoisErr   bool
 +		wantStatus int
 +	}{
 +		{
@@ -363,6 +364,12 @@ index 0000000..fc727d5
 +			name:       "refresh without secret fails without PKCE",
 +			wantStatus: http.StatusUnauthorized,
 +		},
++		{
++			name:       "refresh with PKCE fails if the node cannot be reverified",
++			withPKCE:   true,
++			whoisErr:   true,
++			wantStatus: http.StatusBadRequest,
++		},
 +	}
 +
 +	for _, tt := range tests {
@@ -372,11 +379,13 @@ index 0000000..fc727d5
 +				ID: "test-client",
 +			}
 +
++			who := refreshRecheckWhoIs(1, "user@example.com", nil)
++			s.lc = newTestWhoIsClient(t, who, tt.whoisErr)
 +			ar := &AuthRequest{
 +				FunnelRP:   s.funnelClients["test-client"],
 +				ClientID:   "test-client",
 +				Scopes:     []string{"openid"},
-+				RemoteUser: testRemoteUser(),
++				RemoteUser: who,
 +				ValidTill:  time.Now().Add(time.Hour),
 +			}
 +			if tt.withPKCE {
@@ -666,10 +675,10 @@ index 0000000..fc727d5
 +	}
 +}
 diff --git a/server/token.go b/server/token.go
-index 3767340..6f45a8a 100644
+index 44d29d5..592ad56 100644
 --- a/server/token.go
 +++ b/server/token.go
-@@ -910,6 +910,30 @@ func (ar *AuthRequest) allowRelyingParty(r *http.Request) (int, error) {
+@@ -967,6 +967,30 @@ func (ar *AuthRequest) allowRelyingParty(r *http.Request) (int, error) {
  		clientSecret = r.FormValue("client_secret")
  	}
  

@@ -1,8 +1,8 @@
 diff --git a/README.md b/README.md
-index 6d77c03..95aecab 100644
+index e623237..4cae35e 100644
 --- a/README.md
 +++ b/README.md
-@@ -225,6 +225,7 @@ The Docker image exposes the CLI flags through environment variables. If omitted
+@@ -227,6 +227,7 @@ The Docker image exposes the CLI flags through environment variables. If omitted
  | `TS_HOSTNAME=<hostname>` _\*note prefix_ | `-hostname <hostname>`     |
  | `TSIDP_PORT=<port>`                      | `-port <port>`             |
  | `TSIDP_LOCAL_PORT=<local-port>`          | `-local-port <local-port>` |
@@ -34,10 +34,10 @@ index f0275d9..d89ded9 100644
  			writeHTTPError(w, r, http.StatusInternalServerError, ecServerError, "Error getting WhoIs", err)
  			return
 diff --git a/server/authorize.go b/server/authorize.go
-index 3cd04c2..404ca73 100644
+index eda451b..20a4fd9 100644
 --- a/server/authorize.go
 +++ b/server/authorize.go
-@@ -89,17 +89,9 @@ func (s *IDPServer) serveAuthorize(w http.ResponseWriter, r *http.Request) {
+@@ -90,17 +90,9 @@ func (s *IDPServer) serveAuthorize(w http.ResponseWriter, r *http.Request) {
  	}
  
  	// Get user information
@@ -206,7 +206,7 @@ index 0000000..1ba849f
 +	}
 +}
 diff --git a/server/server.go b/server/server.go
-index af76648..4897f7f 100644
+index 9bc8121..365066b 100644
 --- a/server/server.go
 +++ b/server/server.go
 @@ -18,6 +18,8 @@ import (
@@ -281,10 +281,10 @@ index af76648..4897f7f 100644
  func (s *IDPServer) SetLoopbackURL(url string) {
  	s.loopbackURL = url
 diff --git a/server/token.go b/server/token.go
-index ea1516f..3767340 100644
+index 2a3ea54..44d29d5 100644
 --- a/server/token.go
 +++ b/server/token.go
-@@ -675,7 +675,7 @@ func (s *IDPServer) identifyClient(r *http.Request) string {
+@@ -732,7 +732,7 @@ func (s *IDPServer) identifyClient(r *http.Request) string {
  
  	// Check node client
  	if s.lc != nil {
@@ -294,29 +294,28 @@ index ea1516f..3767340 100644
  			return fmt.Sprintf("node:%d", who.Node.ID)
  		}
 diff --git a/tsidp-server.go b/tsidp-server.go
-index 00eadc5..4f66597 100644
+index acb436d..ca8b715 100644
 --- a/tsidp-server.go
 +++ b/tsidp-server.go
-@@ -18,6 +18,8 @@ import (
+@@ -18,6 +18,7 @@ import (
  	"log/slog"
  	"net"
  	"net/http"
 +	"net/netip"
-+	"net/url"
+ 	"net/url"
  	"os"
  	"os/signal"
- 	"strings"
-@@ -46,6 +48,9 @@ var (
- 	flagEnableSTS          = flag.Bool("enable-sts", envknob.Bool("TSIDP_ENABLE_STS"), "enable OIDC STS token exchange support")
+@@ -48,6 +49,9 @@ var (
  	flagAdvertiseTags      = flag.String("advertise-tags", envknob.String("TS_ADVERTISE_TAGS"), "comma-separated advertise tags (e.g. tag:tsidp,tag:server); required when using OAuth client secrets")
  	flagAuthKeyFile        = flag.String("authkey-file", envknob.String("TS_AUTHKEY_FILE"), "read the Tailscale auth key from this file instead of TS_AUTHKEY (e.g. for Docker/Kubernetes secrets); don't set both")
+ 	flagLoginServer        = flag.String("login-server", envknob.String("TS_LOGIN_SERVER"), "base URL of the control server to use instead of the Tailscale default (e.g. a Headscale server); empty means the Tailscale default")
 +	flagListen             = flag.String("listen", envknob.String("TSIDP_LISTEN"), "plain HTTP listen address (e.g. 127.0.0.1:8080); tsnet mode only, incompatible with -funnel and -use-local-tailscaled")
 +	flagTrustedProxy       = flag.String("trusted-proxy", "", "IP address of the reverse proxy in front of tsidp whose X-Real-IP header is trusted")
 +	flagServerURL          = flag.String("server-url", "", "server URL to advertise (e.g. https://idp.example.com) instead of the one derived from the tailnet hostname")
  
  	// application logging levels
  	flagLogLevel = flag.String("log", cmp.Or(envknob.String("TSIDP_LOG"), "info"), "log levels: debug, info, warn, error")
-@@ -80,6 +85,33 @@ func main() {
+@@ -82,6 +86,33 @@ func main() {
  		os.Exit(1)
  	}
  
@@ -350,7 +349,7 @@ index 00eadc5..4f66597 100644
  	var (
  		lc          *local.Client
  		st          *ipnstate.Status
-@@ -195,7 +227,11 @@ func main() {
+@@ -210,7 +241,11 @@ func main() {
  		}
  
  		var ln net.Listener
@@ -363,7 +362,7 @@ index 00eadc5..4f66597 100644
  			if err := ipn.CheckFunnelAccess(uint16(*flagPort), st.Self); err != nil {
  				slog.Error("funnel access denied", slog.Any("error", err))
  				os.Exit(1)
-@@ -221,7 +257,18 @@ func main() {
+@@ -236,7 +271,18 @@ func main() {
  		*flagEnableSTS,
  	)
  

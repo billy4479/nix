@@ -42,7 +42,7 @@ in
       ];
 
       environment = {
-        TS_CONTROL_URL = "https://headscale.${domain}:443";
+        TS_LOGIN_SERVER = "https://headscale.${domain}:443";
         TS_HOSTNAME = "idp";
         TAILSCALE_USE_WIP_CODE = "1";
         TSIDP_LOG = "info";
