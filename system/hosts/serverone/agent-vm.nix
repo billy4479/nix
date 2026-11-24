@@ -95,10 +95,14 @@ in
     script = # sh
       ''
         if ! zfs list -H -o name ${dataset} >/dev/null 2>&1; then
-          zfs create -o mountpoint=${storage} -o quota=36G -o com.sun:auto-snapshot=false ${dataset}
+          zfs create -o mountpoint=${storage} -o quota=36G ${dataset}
         fi
         test "$(zfs get -Hp -o value quota ${dataset})" = 38654705664
         test "$(findmnt --mountpoint ${storage} -n -o SOURCE)" = ${dataset}
+        # Tune just the disposable qcow2 filesystem. In particular, do not
+        # inherit dedup from the SSD pool or cache guest data twice.
+        zfs set recordsize=16K compression=lz4 atime=off primarycache=metadata \
+          dedup=off sync=standard com.sun:auto-snapshot=false ${dataset}
         chown root:root ${storage}
         chmod 0711 ${storage}
       '';

@@ -110,7 +110,7 @@ class LibvirtVM:
   <on_poweroff>destroy</on_poweroff><on_reboot>restart</on_reboot><on_crash>destroy</on_crash>
   <devices>
     <disk type='file' device='disk'>
-      <driver name='qemu' type='qcow2'/><source file={quoteattr(str(self.disk))}/>
+      <driver name='qemu' type='qcow2' discard='unmap'/><source file={quoteattr(str(self.disk))}/>
       <target dev='vda' bus='virtio'/>
     </disk>
     <disk type='file' device='cdrom'>
