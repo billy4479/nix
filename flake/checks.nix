@@ -77,14 +77,6 @@
     inherit pkgs;
     ruleset = hosts.nixosConfigurations.serverone.config.polpetta.generated.rawFirewallFile;
     rawUnit = hosts.nixosConfigurations.serverone.config.systemd.services.polpetta-raw-firewall;
-    ingressRuleset = pkgs.writeText "test-container-ingress.nft" (
-      (import ../services/raw-firewall.nix {
-        inherit (pkgs) lib;
-        inherit (hosts.nixosConfigurations.serverone.config.polpetta) services;
-        enforce = true;
-        nginxAddress = "10.0.1.6";
-      }).ruleset
-    );
     prometheusTable =
       hosts.nixosConfigurations.serverone.config.networking.nftables.tables.serverone-prometheus;
     prometheusInputRules =

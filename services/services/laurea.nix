@@ -37,14 +37,5 @@ in
       access = "public";
     };
 
-    # Retain the pre-cutover ACL until default-deny takes over.
-    raw = [
-      {
-        inherit port;
-        proto = "tcp";
-        access = "local";
-        allowedSources = [ "10.0.1.6/32" ];
-      }
-    ];
   };
 }

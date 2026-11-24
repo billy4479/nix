@@ -125,7 +125,6 @@ let
 
   rawFirewall = import ./raw-firewall.nix {
     inherit lib services;
-    enforce = cfg.enforceContainerIngress;
     nginxAddress =
       if hasContainers && config.nerdctl-containers ? nginx then
         "10.0.1.${toString config.nerdctl-containers.nginx.id}"
@@ -423,9 +422,9 @@ in
                         type = lib.types.nullOr (lib.types.listOf cidrType);
                         default = null;
                         description = ''
-                          Optional IPv4/CIDR allowlist replacing the tier's source
-                          ranges for direct connections. The host bridge gateway
-                          remains allowed for administration and monitoring.
+                          Optional IPv4/CIDR allowlist replacing the tier's default
+                          source ranges. Host-originated traffic is exempt; public
+                          forwards arriving on wg0 are allowed independently.
                         '';
                       };
 
@@ -449,10 +448,6 @@ in
         )
       );
     };
-
-    enforceContainerIngress = lib.mkEnableOption ''
-      default-deny ingress to service containers after proxy callers are migrated
-    '';
 
     webDomains = lib.mkOption {
       type = lib.types.listOf lib.types.str;

@@ -3,7 +3,6 @@
 {
   lib,
   services,
-  enforce ? false,
   nginxAddress ? null,
 }:
 let
@@ -28,28 +27,7 @@ let
       ++ lib.optional (raw.access != "local") "100.64.0.0/10";
   matchPort = entry: "ip daddr ${entry.address} ${entry.raw.proto} dport ${toString entry.raw.port}";
   set = values: "{ ${lib.concatStringsSep ", " values} }";
-  legacyRules =
-    lib.concatMapStringsSep "\n"
-      (
-        entry:
-        let
-          sources = sourcesOf entry.raw;
-          withHost =
-            sources
-            ++ lib.optional (
-              entry.raw.allowedSources != null && !(lib.elem "10.0.1.1/32" sources)
-            ) "10.0.1.1/32";
-        in
-        "${matchPort entry} ip saddr != ${set withHost} drop"
-      )
-      (
-        lib.filter (
-          entry:
-          (entry.raw.access != "public" || entry.raw.allowedSources != null)
-          && !(lib.elem "0.0.0.0/0" (sourcesOf entry.raw))
-        ) entries
-      );
-  enforcedRules =
+  ingressRules =
     routed:
     lib.concatStringsSep "\n" (
       [ "ct state established,related return" ]
@@ -79,23 +57,17 @@ in
       destroy table bridge polpetta_raw
       table inet polpetta_raw {
         chain raw_ports {
-          ${if enforce then enforcedRules true else legacyRules}
+          ${ingressRules true}
         }
         chain forward {
           type filter hook forward priority -10; policy accept;
           jump raw_ports
         }
-        ${lib.optionalString (!enforce) ''
-          chain output {
-            type filter hook output priority -10; policy accept;
-            jump raw_ports
-          }
-        ''}
       }
       table bridge polpetta_raw {
         chain forward {
           type filter hook forward priority -10; policy accept;
-          ${if enforce then enforcedRules false else legacyRules}
+          ${ingressRules false}
         }
       }
     '';

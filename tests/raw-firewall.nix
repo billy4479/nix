@@ -3,7 +3,6 @@
   ruleset,
   rawUnit,
   cniConfig,
-  ingressRuleset,
   prometheusTable,
   prometheusInputRules,
 }:
@@ -74,7 +73,6 @@ pkgs.testers.runNixOSTest {
       pkgs.netcat-openbsd
     ];
     environment.etc."raw-firewall.nft".source = ruleset;
-    environment.etc."container-ingress.nft".source = ingressRuleset;
     networking.nftables.tables.serverone-prometheus = prometheusTable;
     networking.firewall.extraInputRules = prometheusInputRules;
   };
@@ -184,7 +182,6 @@ pkgs.testers.runNixOSTest {
       machine.succeed(
           'ip netns exec immich valkey-server --port 2283 --protected-mode no --save "" --daemonize yes; ip netns exec immich valkey-server --port 2284 --protected-mode no --save "" --daemonize yes; ip netns exec torrent valkey-server --port 6881 --protected-mode no --save "" --daemonize yes; valkey-server --port 9090 --protected-mode no --save "" --daemonize yes'
       )
-      machine.succeed("nft -f /etc/container-ingress.nft")
       machine.succeed("ip netns exec nginx nc -z -w 2 10.0.1.3 2283")
       machine.succeed("nc -z -w 2 10.0.1.3 2284")
       machine.fail("ip netns exec nginx nc -z -w 2 10.0.1.3 2284")

@@ -89,19 +89,16 @@ non-public tiers as defense in depth during migration. Reserve `10.0.1.131`
 until its compatibility entry is removed after migration and rollback needs
 have ended.
 
-For declared raw endpoints, independent nftables hooks enforce the source
-policy before CNI's iptables accept rules. Both routed and same-bridge traffic
-are covered. `allowedSources` replaces the tier's default IPv4 ranges; the host
-bridge gateway (`10.0.1.1`) always remains allowed for administration and probes.
+Independent nftables hooks deny unsolicited traffic to service container IPs,
+including routed and same-bridge traffic, unless it matches a declared native
+endpoint or comes from nginx to the declared web port. Host-originated traffic
+bypasses service ingress checks. `allowedSources` replaces the tier's default
+IPv4 ranges. Public raw endpoints allow arbitrary sources only via `wg0`; on
+other paths the endpoint's CIDRs or private tier defaults apply.
+
 The caches allow only their own application container, and PostgreSQL allows
 only Immich and Outline, in addition to the host. DNS uses `tailnet`, because
-VPN clients and service containers need it. In the initial rollout these rules
-protect only declared raw ports. Once `polpetta.enforceContainerIngress = true`
-is set on serverone, all unsolicited traffic to service container IPs is denied
-unless it matches a declared native endpoint or comes from nginx to the declared
-web port. Host-originated traffic bypasses service ingress checks. Public raw
-endpoints allow arbitrary sources only via `wg0`; on other paths the endpoint's
-CIDRs or private tier defaults apply.
+VPN clients and service containers need it.
 
 `polpetta-raw-firewall.service` loads this policy before containerd, which
 requires it. Its reload is an atomic ruleset replacement; restarting the
