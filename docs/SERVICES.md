@@ -73,21 +73,27 @@ wiring is unchanged (`dependsOn`, hardcoded IPs in environment).
 
 ## Access model
 
-Tiers are cumulative:
+The ordinary tiers are cumulative. `admin-only` is separate and applies only to `web`:
 
 | tier      | reachable from                          |
 |-----------|-----------------------------------------|
 | `local`   | LAN only (RFC1918)                      |
 | `tailnet` | LAN + tailnet (100.64.0.0/10)           |
 | `public`  | everyone (internet via the vps edge)    |
+| `admin-only` | Headscale `group:admin` over Tailscale only |
 
-Enforcement happens in nginx on the **real client IP** (restored from
-proxy_protocol), so every vhost listens uniformly on 443 and 4443; the tier
-only decides which ACL snippet is applied. Both the vps tunnel IP and the
+Ordinary vhosts use shared listeners and check the **real client IP**
+(restored from PROXY protocol for the edge listener). Both the vps tunnel IP and the
 retiring frp address are trusted for PROXY protocol and explicitly denied for
 non-public tiers as defense in depth during migration. Reserve `10.0.1.131`
 until its compatibility entry is removed after migration and rollback needs
 have ended.
+
+`admin-only` vhosts are separate from the shared listeners. A dedicated
+subnet-routed IP on TCP 443 is authorized by Headscale and DNAT'd only from
+`tailscale0`. `web.integrationClients` can allow named service containers to
+reach the backend on the bridge without granting web ingress. See the
+[admin-only deployment guide](deployments/admin-only.md) before enabling it.
 
 Independent nftables hooks deny unsolicited traffic to service container IPs,
 including routed and same-bridge traffic, unless it matches a declared native
@@ -115,20 +121,20 @@ Defaults keep the existing wildcard DNS + wildcard certificate working:
 - otherwise → `<name>.internal.polpetta.online`
 
 `web.domain` overrides the default. bind9 serves both zones as wildcards to
-LAN (→ 192.168.2.21) and tailnet (→ 10.0.1.6) clients, so no per-service DNS
-entries are needed for web endpoints. Public DNS (cloudflare) already
+LAN (→ 192.168.2.21) and tailnet (→ 10.0.1.6) clients. In the tailnet
+view, `admin-only` names override the wildcard to `10.0.2.6`. Public DNS (cloudflare) already
 wildcards `*.polpetta.online` to the vps.
 
 ## What gets generated
 
 | Target              | Generated from                                   |
 |---------------------|--------------------------------------------------|
-| nginx vhost         | `web`: one explicit server block (listen 443 + 4443 proxy_protocol, TLS/headers snippets, tier ACL, `extraConfig` in `location /`) plus the `map $host $backend` entries it proxies through |
+| nginx vhost         | `web`: listener(s) and tier ACL, TLS/headers snippets, `extraConfig` in `location /`, and a backend selected by vhost |
 | vps edge DNAT forwards | `raw` entries with `access = "public"` (`remotePort`; `<vps IP>:<remotePort> → container IP:port` over the wireguard tunnel, source addresses preserved) |
 | host and bridge raw-port firewall | non-public `raw` tiers, or any `allowedSources` override; loaded independently of the CNI filter chains |
 
 | bind9 zone records  | `raw` entries with `record` (→ container IP, wg/tailnet view) |
-| blackbox probes     | local nginx HTTPS for `web` endpoints (`probe.enable`/`probe.unauth`/`probe.path`/`probe.headers` tune it), plus direct TCP for `raw` entries with `probe.enable = true` |
+| blackbox probes     | local nginx HTTPS for ordinary `web` endpoints, direct host HTTP probes for `admin-only` backends, and direct TCP for `raw` entries with `probe.enable = true` |
 | `useNginx` ordering | presence of `web` (auto-set on the mirrored container) |
 
 Container `ports` (host publishing, e.g. LAN Minecraft) stay explicit on the

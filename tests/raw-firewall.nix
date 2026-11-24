@@ -1,6 +1,7 @@
 {
   pkgs,
   ruleset,
+  adminRuleset,
   rawUnit,
   cniConfig,
   prometheusTable,
@@ -73,6 +74,7 @@ pkgs.testers.runNixOSTest {
       pkgs.netcat-openbsd
     ];
     environment.etc."raw-firewall.nft".source = ruleset;
+    environment.etc."raw-firewall-admin.nft".source = adminRuleset;
     networking.nftables.tables.serverone-prometheus = prometheusTable;
     networking.firewall.extraInputRules = prometheusInputRules;
   };
@@ -95,6 +97,8 @@ pkgs.testers.runNixOSTest {
           ("outline-redis", 133),
           ("dns", 11),
           ("torrent", 5),
+          ("radarr", 7),
+          ("sonarr", 9),
       ]:
           machine.succeed(
               f"ip netns add {name}; ip link add v-{suffix} type veth peer name eth0 netns {name}; ip link set v-{suffix} master nerdctl0; ip link set v-{suffix} up; ip -n {name} link set lo up; ip -n {name} link set eth0 up; ip -n {name} addr add 10.0.1.{suffix}/24 dev eth0; ip -n {name} route add default via 10.0.1.1"
@@ -204,6 +208,25 @@ pkgs.testers.runNixOSTest {
       ]:
           machine.fail(f"ip netns exec {namespace} nc -z -w 2 {address} 9090")
       machine.succeed("systemctl reload polpetta-raw-firewall")
+      # The network tests stand in for the post-Headscale traffic on tailscale0.
+      machine.succeed(
+          'ip netns exec nginx valkey-server --port 8443 --protected-mode no --save "" --daemonize yes; ip netns exec torrent valkey-server --port 8080 --protected-mode no --save "" --daemonize yes'
+      )
+      machine.fail("ip netns exec vpn nc -z -w 1 10.0.2.6 443")
+      machine.succeed("nft -f /etc/raw-firewall-admin.nft")
+      machine.succeed(
+          "ip netns exec vpn valkey-cli -h 10.0.2.6 -p 443 client info | grep 'addr=100.64.0.7:'"
+      )
+      for namespace, router in [("uplink", "192.0.2.1"), ("tunnel", "10.100.0.2")]:
+          machine.succeed(f"ip -n {namespace} route add 10.0.2.6/32 via {router}")
+          machine.fail(f"ip netns exec {namespace} nc -z -w 1 10.0.2.6 443")
+      for namespace in ["vpn", "uplink", "tunnel", "peer"]:
+          machine.fail(f"ip netns exec {namespace} nc -z -w 1 10.0.1.6 8443")
+          machine.fail(f"ip netns exec {namespace} nc -z -w 1 10.0.1.5 8080")
+      for namespace in ["nginx", "radarr", "sonarr"]:
+          machine.succeed(f"ip netns exec {namespace} nc -z -w 1 10.0.1.5 8080")
+      machine.succeed("systemctl reload polpetta-raw-firewall")
+      machine.fail("ip netns exec vpn nc -z -w 1 10.0.2.6 443")
       # A broken policy must prevent the engine's startup action from running.
       machine.succeed("systemctl start containerd; test -f /tmp/containerd-started")
       machine.succeed(

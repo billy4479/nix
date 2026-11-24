@@ -35,7 +35,11 @@ in
 
     web = {
       port = 9117;
-      access = "tailnet";
+      access = "admin-only";
+      integrationClients = [
+        "radarr"
+        "sonarr"
+      ];
       probe.path = "/health";
     };
   };

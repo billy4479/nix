@@ -1,0 +1,52 @@
+{
+  "hosts": {
+    "tailnet-v6": "fd7a:115c:a1e0::/48",
+  },
+  "groups": {
+    "group:admin": ["jack@"],
+  },
+
+  // Keep access to the existing tailnet, serverone subnet and public exit
+  // traffic. Never allow *:* or a range that includes 10.0.2.6 to everyone.
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["*"],
+      "dst": ["100.64.0.0/10:*", "tailnet-v6:*", "10.0.1.0/24:*", "192.168.2.0/24:*", "autogroup:internet:*"],
+    },
+    {
+      "action": "accept",
+      "src": ["group:admin"],
+      "dst": ["10.0.2.6:443"],
+      "proto": "tcp",
+    },
+  ],
+
+  "tagOwners": {
+    "tag:idp": ["jack@"],
+  },
+  "grants": [
+    {
+      "src": ["jack@"],
+      "dst": ["tag:idp"],
+      "app": {
+        "tailscale.com/cap/tsidp": [
+          {
+            "allow_admin_ui": true,
+            "allow_dcr": true,
+            "includeInUserInfo": true,
+            "extraClaims": { "grafana_role": "Admin" },
+          },
+        ],
+      },
+    },
+  ],
+
+  "tests": [
+    { "src": "jack@", "accept": ["10.0.2.6:443"], "deny": ["10.0.2.6:8443"] },
+    { "src": "luke@", "accept": ["10.0.1.6:443", "10.0.1.11:53"], "deny": ["10.0.2.6:443"] },
+    { "src": "edo@", "deny": ["10.0.2.6:443"] },
+    { "src": "costi@", "deny": ["10.0.2.6:443"] },
+    { "src": "tag:idp", "deny": ["10.0.2.6:443"] },
+  ],
+}

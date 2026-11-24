@@ -82,7 +82,7 @@
 
     web = {
       port = 8384;
-      access = "tailnet";
+      access = "admin-only";
       probe.path = "/rest/noauth/health";
     };
   };

@@ -76,6 +76,12 @@ let
     };
 
   servicesWithWeb = lib.filterAttrs (_: svc: svc.web != null) services;
+  adminWeb = lib.filterAttrs (_: svc: svc.web.access == "admin-only") servicesWithWeb;
+  adminIngress = {
+    address = "10.0.2.6";
+    port = 8443;
+    enable = cfg.adminIngressEnabled && adminWeb != { };
+  };
 
   httpProbeTargets = lib.mapAttrsToList (
     name: svc:
@@ -89,7 +95,12 @@ let
     in
     {
       inherit name;
-      url = "https://${domainOf name svc}${web.probe.path}";
+      # Host-local probes don't use the Jack-only subnet route.
+      url =
+        if web.access == "admin-only" then
+          "http://10.0.1.${toString svc.container.id}:${toString web.port}${web.probe.path}"
+        else
+          "https://${domainOf name svc}${web.probe.path}";
       module = if custom then "http_custom_${name}" else baseModule;
     }
     // lib.optionalAttrs custom {
@@ -124,7 +135,7 @@ let
   recordEntries = lib.filter (e: e.raw.record != null) rawEntries;
 
   rawFirewall = import ./raw-firewall.nix {
-    inherit lib services;
+    inherit lib services adminIngress;
     nginxAddress =
       if hasContainers && config.nerdctl-containers ? nginx then
         "10.0.1.${toString config.nerdctl-containers.nginx.id}"
@@ -164,27 +175,42 @@ let
     name: svc:
     let
       web = svc.web;
+      admin = web.access == "admin-only";
       extraLines = lib.filter (l: l != "") (
         lib.optionals (web.nginx.extraConfig != "") (lib.splitString "\n" web.nginx.extraConfig)
       );
     in
-    [
-      "server {"
-      "  listen 443 ssl;"
-      # QUIC for HTTP/3: udp/443 is DNAT'd from the vps edge next to the tcp
-      # one. The reuseport socket lives on the default_server block; these
-      # plain listeners share it, servers are selected by SNI like on tcp.
-      "  listen 443 quic;"
-      "  listen 4443 ssl proxy_protocol;"
+    [ "server {" ]
+    ++ (
+      if admin then
+        [ "  listen ${toString adminIngress.port} ssl;" ]
+      else
+        [
+          "  listen 443 ssl;"
+          # QUIC for HTTP/3: udp/443 is DNAT'd from the vps edge next to the tcp
+          # one. The reuseport socket lives on the default_server block; these
+          # plain listeners share it, servers are selected by SNI like on tcp.
+          "  listen 443 quic;"
+          "  listen 4443 ssl proxy_protocol;"
+        ]
+    )
+    ++ [
       "  http2 on;"
       ""
       "  server_name ${domainOf name svc};"
       ""
       "  include /etc/nginx/snippets/tls.conf;"
-      "  include /etc/nginx/snippets/headers.conf;"
     ]
+    ++ lib.optional (!admin) "  include /etc/nginx/snippets/headers.conf;"
+    ++ lib.optional admin "  include /etc/nginx/snippets/security-headers.conf;"
     ++ (
-      if web.allowedSources == null then
+      if admin then
+        (map (ip: "  deny ${ip};") externalIps)
+        ++ [
+          "  allow 100.64.0.0/10;"
+          "  deny all;"
+        ]
+      else if web.allowedSources == null then
         aclLines web.access
       else
         (map (ip: "  deny ${ip};") externalIps)
@@ -219,11 +245,21 @@ let
     ]
     ++ lib.optionals (servicesWithWeb != { }) (
       [
-        "map $host $backend {"
+        # Use the selected vhost, not the untrusted Host header, to pick the
+        # backend. In particular regular listeners must never proxy admin UIs.
+        "map $server_name $backend {"
       ]
       ++ backendMapLines
       ++ [
         "  default \"\";"
+        "}"
+        ""
+      ]
+      ++ lib.optionals (adminWeb != { }) [
+        "server {"
+        "  listen ${toString adminIngress.port} ssl default_server;"
+        "  ssl_reject_handshake on;"
+        "  return 444;"
         "}"
         ""
       ]
@@ -271,6 +307,16 @@ let
       {
         assertion = lib.all (name: builtins.match nameRe name != null) (lib.attrNames services);
         message = "polpetta.services: service names must match ${nameRe}";
+      }
+      {
+        assertion = lib.all (svc: svc.web.allowedSources == null) (lib.attrValues adminWeb);
+        message = "polpetta.services: admin-only web endpoints cannot override allowedSources";
+      }
+      {
+        assertion = lib.all (svc: lib.all (name: services ? ${name}) svc.web.integrationClients) (
+          lib.attrValues servicesWithWeb
+        );
+        message = "polpetta.services: web integrationClients must name declared services";
       }
       {
         assertion = duplicates webDomains == [ ];
@@ -348,6 +394,7 @@ in
                           "public"
                           "tailnet"
                           "local"
+                          "admin-only"
                         ];
                         description = "Who can reach this endpoint.";
                       };
@@ -356,6 +403,12 @@ in
                         type = lib.types.nullOr (lib.types.listOf cidrType);
                         default = null;
                         description = "Explicit IPv4 sources for a private web route, replacing the access tier ACL.";
+                      };
+
+                      integrationClients = lib.mkOption {
+                        type = lib.types.listOf lib.types.str;
+                        default = [ ];
+                        description = "Trusted service names allowed to connect directly to this web backend on the container bridge.";
                       };
 
                       domain = lib.mkOption {
@@ -456,6 +509,8 @@ in
       description = "Generated nginx vhost names for local HTTP probes.";
     };
 
+    adminIngressEnabled = lib.mkEnableOption "Tailscale admin-only web ingress (requires the restrictive Headscale policy to be installed first)";
+
     externalTrafficFrom = lib.mkOption {
       description = "The addresses public web traffic arrives from (including retiring edges during migration); trusted for real_ip and denied for non-public tiers.";
       type = lib.types.nullOr (lib.types.listOf lib.types.str);
@@ -463,6 +518,24 @@ in
     };
 
     generated = {
+      adminIngress = lib.mkOption {
+        type = lib.types.attrs;
+        readOnly = true;
+        default = adminIngress;
+        description = "Dedicated subnet-routed admin web ingress settings.";
+      };
+
+      adminDnsRecords = lib.mkOption {
+        type = lib.types.lines;
+        readOnly = true;
+        default =
+          lib.concatStringsSep "\n" (
+            lib.mapAttrsToList (name: svc: "${domainOf name svc}. IN A ${adminIngress.address}") adminWeb
+          )
+          + "\n";
+        description = "Admin web DNS overrides for the routed internal zone.";
+      };
+
       rawFirewallFile = lib.mkOption {
         description = "nftables rules enforcing raw endpoint tiers and source allowlists.";
         type = lib.types.package;

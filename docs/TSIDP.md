@@ -56,8 +56,9 @@ not be given that flag.
 
 ## Headscale policy
 
-`policy.mode` is `database`, so policy is applied through the headplane UI.
-Two entry kinds: the static `tagOwners` entry and the per-user grants:
+`policy.mode` is `database`, so policy is applied through the Headplane UI.
+The [admin-only deployment guide](deployments/admin-only.md) links the policy
+that includes these tsidp entries. Preserve them when editing access rules:
 
 - `tagOwners`:
   ```json

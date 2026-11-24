@@ -1,6 +1,6 @@
 $TTL 60
 @       IN SOA    ns.internal.@domain@. billy. (
-                        2025102901 ; serial (YYYYMMDDnn) — bump on changes
+                        2026112401 ; serial (YYYYMMDDnn) — bump on changes
                         1h         ; refresh
                         15m        ; retry
                         1w         ; expire
@@ -11,4 +11,6 @@ $TTL 60
 ns        IN A    10.0.1.11
 
 @         IN A    10.0.1.1
-*         IN A    10.0.1.6 
+*         IN A    10.0.1.6
+
+$INCLUDE /etc/bind/admin-records.zone

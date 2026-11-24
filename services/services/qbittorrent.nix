@@ -70,7 +70,11 @@ in
 
     web = {
       port = webUiPort;
-      access = "tailnet";
+      access = "admin-only";
+      integrationClients = [
+        "radarr"
+        "sonarr"
+      ];
     };
   };
 }

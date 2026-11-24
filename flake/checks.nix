@@ -76,6 +76,10 @@
   raw-firewall = import ../tests/raw-firewall.nix {
     inherit pkgs;
     ruleset = hosts.nixosConfigurations.serverone.config.polpetta.generated.rawFirewallFile;
+    adminRuleset =
+      (hosts.nixosConfigurations.serverone.extendModules {
+        modules = [ { polpetta.adminIngressEnabled = true; } ];
+      }).config.polpetta.generated.rawFirewallFile;
     rawUnit = hosts.nixosConfigurations.serverone.config.systemd.services.polpetta-raw-firewall;
     prometheusTable =
       hosts.nixosConfigurations.serverone.config.networking.nftables.tables.serverone-prometheus;

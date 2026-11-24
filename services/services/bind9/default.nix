@@ -13,6 +13,7 @@ let
   bindConfig = pkgs.callPackage ./config.nix {
     inherit domain;
     bind9-hosts = hosts;
+    admin-records = pkgs.writeText "admin-records.zone" config.polpetta.generated.adminDnsRecords;
     generated-records = pkgs.writeText "generated-records.zone" config.polpetta.generated.bind9Records;
   };
 in

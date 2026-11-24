@@ -4,6 +4,7 @@
   domain,
   bind9-hosts,
   generated-records,
+  admin-records,
   ...
 }:
 stdenvNoCC.mkDerivation {
@@ -24,6 +25,7 @@ stdenvNoCC.mkDerivation {
       cp -r * $out
       cp ${bind9-hosts} $out/blacklist.conf
       cp ${generated-records} $out/generated-records.zone
+      cp ${admin-records} $out/admin-records.zone
       mkdir -p $out/examples
     '';
 }

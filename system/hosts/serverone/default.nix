@@ -1,4 +1,5 @@
 {
+  config,
   flakeInputs,
   lib,
   pkgs,
@@ -51,7 +52,10 @@
 
   services.tailscale = {
     extraSetFlags = [
-      "--advertise-routes=10.0.1.0/24"
+      (
+        "--advertise-routes=10.0.1.0/24"
+        + lib.optionalString config.polpetta.generated.adminIngress.enable ",${config.polpetta.generated.adminIngress.address}/32"
+      )
       "--advertise-exit-node"
       # Preserve client source IPs for subnet-routed traffic: tsidp's WhoIs
       # (X-Real-IP through nginx) needs real 100.64.0.0/10 addresses, and the
