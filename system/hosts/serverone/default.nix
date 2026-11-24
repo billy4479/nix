@@ -50,6 +50,9 @@
     interfaces.enp2s0.wakeOnLan.enable = true;
   };
 
+  # Headscale's deployed file policy limits this route to group:admin.
+  polpetta.adminIngressEnabled = true;
+
   services.tailscale = {
     extraSetFlags = [
       (
