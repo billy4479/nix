@@ -4,7 +4,7 @@ qBittorrent, Jackett and Syncthing keep their `https://<name>.internal.polpetta.
 
 ## Enable access
 
-1. Back up the active database policy from Headplane before the first deploy. Compare it with [policy.hujson](../../services/services/headscale/policy.hujson) and merge any newer rules into Git. The file replaces the unrestricted `*:*` rule with explicit destinations and keeps the tsidp grant. Never add a broader allow that would include the admin IP. Headscale ACLs are additive.
+1. Back up the active database policy from Headplane before the first deploy. Compare it with [policy.nix](../../services/services/headscale/policy.nix) and merge any newer rules into Git. The generated JSON replaces the unrestricted `*:*` rule with explicit destinations and keeps the tsidp grant. Never add a broader allow that would include the admin IP. Headscale ACLs are additive.
 2. Deploy serverone with `polpetta.adminIngressEnabled` still off. Headscale then loads the Nix-mounted file instead of its database policy. Future policy edits go through Git and a serverone deployment, not Headplane. The existing database still holds enrolled nodes and users.
 3. Once Headscale is serving the new policy, apply the `tag:serverone` tag to serverone's existing node. Verify the node ID before tagging. This changes the node from user-owned to tag-owned; it will no longer inherit Jack's admin access. No other node should get the tag.
 

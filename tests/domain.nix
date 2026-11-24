@@ -34,7 +34,8 @@ pkgs.runCommand "domain-test" { } # sh
     grep -F 'server_url: https://headscale.${domain}:443' ${volume "headscale" "/etc/headscale/config.yaml"}
     grep -F 'mode: file' ${volume "headscale" "/etc/headscale/config.yaml"}
     grep -F 'path: ${policyPath}' ${volume "headscale" "/etc/headscale/config.yaml"}
-    grep -F '"${adminAddress}/32": ["tag:serverone"]' ${volume "headscale" policyPath}
+    ${pkgs.jq}/bin/jq -e --arg route '${adminAddress}/32' \
+      '.autoApprovers.routes[$route] == ["tag:serverone"]' ${volume "headscale" policyPath}
     grep -F 'hostname: derp.${domain}' ${volume "headscale" "/etc/headscale/derp-custom.yaml"}
     grep -F 'issuer: "https://idp.internal.${domain}"' ${volume "headplane" "/etc/headplane/config.yaml"}
     grep -F 'base_url: "https://searxng.internal.${domain}/"' ${volume "searxng" "/etc/searxng/settings.yml"}

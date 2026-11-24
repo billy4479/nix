@@ -56,8 +56,8 @@ not be given that flag.
 
 ## Headscale policy
 
-Headscale loads the read-only, Nix-managed [policy.hujson](../services/services/headscale/policy.hujson).
-Edit it in Git and deploy serverone; do not edit policy in Headplane. The
+Headscale loads a read-only JSON policy generated from [policy.nix](../services/services/headscale/policy.nix).
+Edit the Nix source in Git and deploy serverone; do not edit policy in Headplane. The
 [admin-only deployment guide](deployments/admin-only.md) covers migration.
 Preserve these tsidp entries when editing access rules:
 
