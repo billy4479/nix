@@ -108,7 +108,8 @@ in
   systemd.services.polpetta-raw-firewall = {
     description = "Isolate declared container raw endpoints";
     wantedBy = [ "multi-user.target" ];
-    after = [ "firewall.service" ];
+    after = [ "nftables.service" ];
+    requires = [ "nftables.service" ];
     before = [ "containerd.service" ];
     reloadIfChanged = true;
     serviceConfig = {
@@ -121,39 +122,9 @@ in
   };
   systemd.services.containerd.requires = [ "polpetta-raw-firewall.service" ];
 
-  networking.firewall = {
-    # serverone is a Tailscale subnet router for the nerdctl bridge. Packets
-    # addressed to container IPs are forwarded, so allowedUDPPorts/allowedTCPPorts
-    # do not apply; accept tailscale0 -> nerdctl0 and allow the replies back.
-    # Loose reverse-path filtering is needed because Tailscale routes live in a
-    # policy routing table and strict rpfilter can drop these packets before FORWARD.
-    checkReversePath = "loose";
-    # --snat-subnet-routes=false (hosts/serverone/default.nix) removes
-    # tailscale's mark-matched MASQUERADE, which on Linux covers *all*
-    # tailscale0 traffic - including exit-node traffic. Re-add a scoped
-    # masquerade for tailnet sources leaving through the LAN interface so
-    # the exit node keeps working while subnet-routed traffic (which exits
-    # via nerdctl0 and never matches -o enp2s0) keeps real client IPs.
-    extraCommands = # sh
-      ''
-        iptables -w -C FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null ||
-          iptables -w -I FORWARD 1 -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT
-        iptables -w -C FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null ||
-          iptables -w -I FORWARD 1 -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-        iptables -w -t nat -C POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE 2>/dev/null ||
-          iptables -w -t nat -A POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE
-        ip6tables -w -t nat -C POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE 2>/dev/null ||
-          ip6tables -w -t nat -A POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE
-
-      '';
-    extraStopCommands = # sh
-      ''
-        iptables -w -D FORWARD -i tailscale0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null || true
-        iptables -w -D FORWARD -i nerdctl0 -o tailscale0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
-        iptables -w -t nat -D POSTROUTING -o enp2s0 -s 100.64.0.0/10 -j MASQUERADE 2>/dev/null || true
-        ip6tables -w -t nat -D POSTROUTING -o enp2s0 -s fd7a:115c:a1e0::/48 -j MASQUERADE 2>/dev/null || true
-      '';
-  };
+  # nerdctl 2.4 checks published ports via iptables even for an nft CNI
+  # network. Use the serverone-only build that finds CNI's nft mappings.
+  nixpkgs.overlays = [ (import ./nerdctl-nftables.nix) ];
 
   environment.etc = {
     "nerdctl/nerdctl.toml".text = # toml
@@ -189,14 +160,16 @@ in
     "cni/net.d/10-nerdctl.conflist".text = builtins.toJSON {
       cniVersion = "1.0.0";
       name = "nerdctl-bridge";
+      # Prevent an unqualified nerdctl run from autogenerating a second,
+      # iptables-backed default bridge.
+      nerdctlLabels."nerdctl/default-network" = "true";
       plugins = [
         {
           type = "bridge";
           bridge = "nerdctl0";
           isGateway = true;
-          ipMasq = true;
-          # The qBittorrent WireGuard policy bypasses this iptables MASQ.
-          ipMasqBackend = "iptables";
+          # firewall.nix owns egress masquerading and its WireGuard exception.
+          ipMasq = false;
           hairpinMode = true;
           ipam = {
             type = "host-local";
@@ -213,11 +186,13 @@ in
         }
         {
           type = "portmap";
+          backend = "nftables";
           capabilities = {
             portMappings = true;
           };
         }
-        { type = "firewall"; }
+        # CNI's firewall plugin has no native nft backend. NixOS handles
+        # forwarding, and polpetta_raw still enforces endpoint access tiers.
         { type = "tuning"; }
       ];
     };

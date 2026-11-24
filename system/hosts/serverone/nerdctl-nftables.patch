@@ -1,0 +1,44 @@
+diff --git a/pkg/ocihook/ocihook.go b/pkg/ocihook/ocihook.go
+index 581a8d8..7aa0aba 100644
+--- a/pkg/ocihook/ocihook.go
++++ b/pkg/ocihook/ocihook.go
+@@ -735,14 +735,6 @@ func onPostStop(opts *handlerOpts) error {
+ 			return err
+ 		}
+ 
+-		// opts.cni.Remove has trouble removing network configurations when netns is empty.
+-		// Therefore, we force the deletion of iptables rules here to prevent netns exhaustion.
+-		// This is a workaround until https://github.com/containernetworking/plugins/pull/1078 is merged.
+-		if err := cleanupIptablesRules(opts.fullID, opts.cniNames); err != nil {
+-			log.L.WithError(err).Warnf("failed to clean up iptables rules for container %s", opts.fullID)
+-			// Don't return error here, continue with the rest of the cleanup
+-		}
+-
+ 		hs, err := hostsstore.New(opts.dataStore, ns)
+ 		if err != nil {
+ 			return err
+diff --git a/pkg/portutil/port_allocate_linux.go b/pkg/portutil/port_allocate_linux.go
+index 8c0a2b1..ef5c7a0 100644
+--- a/pkg/portutil/port_allocate_linux.go
++++ b/pkg/portutil/port_allocate_linux.go
+@@ -22,7 +22,6 @@ import (
+ 	"net"
+ 	"os"
+ 
+-	"github.com/containerd/nerdctl/v2/pkg/portutil/iptable"
+ 	"github.com/containerd/nerdctl/v2/pkg/portutil/procnet"
+ )
+ 
+@@ -122,11 +121,10 @@ func getUsedPorts(ip string, protocol string) (map[uint64]bool, error) {
+ 		usedPort[value.LocalPort] = true
+ 	}
+ 
+-	ipTableItems, err := iptable.ReadIPTables("nat")
++	portRules, err := readCNIPublishedPorts(protocol)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	portRules := iptable.ParseIPTableRules(ipTableItems)
+ 
+ 	requestedIP := net.ParseIP(ip)
+ 	requestedIsWildcard := ip == "" || requestedIP.IsUnspecified()

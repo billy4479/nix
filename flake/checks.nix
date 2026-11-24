@@ -76,6 +76,9 @@
     inherit pkgs;
     ruleset = hosts.nixosConfigurations.serverone.config.polpetta.generated.rawFirewallFile;
     rawUnit = hosts.nixosConfigurations.serverone.config.systemd.services.polpetta-raw-firewall;
+    cniConfig =
+      builtins.fromJSON
+        hosts.nixosConfigurations.serverone.config.environment.etc."cni/net.d/10-nerdctl.conflist".text;
   };
   edge-forwarding = import ../tests/edge-forwarding.nix { inherit pkgs; };
   public-health-monitor = import ../tests/public-health-monitor.nix {

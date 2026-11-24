@@ -29,7 +29,6 @@ let
   qbt = config.polpetta.services.qbittorrent;
   qbtIp = "10.0.1.${toString qbt.container.id}";
   qbtRule = "priority 10001 from ${qbtIp}/32 table ${toString wgTable}";
-  qbtNoMasq = "-s ${qbtIp}/32 -o wg0 -j ACCEPT";
   qbtGuard =
     pkgs.writeText "qbittorrent-egress.nft" # nftables
       ''
@@ -44,6 +43,8 @@ let
       '';
 in
 {
+  imports = [ (import ./firewall.nix { inherit qbtIp wgMark; }) ];
+
   sops.secrets.wireguard-key = {
     # Same startup-only consumer concern as the vps side: restart the
     # interface when the key rotates or the tunnel breaks silently.
@@ -80,8 +81,8 @@ in
         ip route show table ${toString wgTable} | grep -q default ||
           ip route add default dev wg0 table ${toString wgTable}
         # Priority between tailscale's rules (52xx) and main (32766).
-        ip rule show | grep -q "fwmark ${wgMark}" ||
-          ip rule add fwmark ${wgMark} table ${toString wgTable} priority 10000
+        ip rule show | grep -Fq '10000:' ||
+          ip rule add fwmark ${wgMark}/${wgMark} table ${toString wgTable} priority 10000
       '';
   };
 
@@ -89,10 +90,10 @@ in
   # its policy table has no route). Start the container only once protected.
   systemd.services.qbittorrent-egress = {
     description = "Route qBittorrent through WireGuard only";
-    after = [ "firewall.service" ];
+    after = [ "nftables.service" ];
+    requires = [ "nftables.service" ];
     path = [
       pkgs.iproute2
-      pkgs.iptables
       pkgs.nftables
     ];
     serviceConfig = {
@@ -102,15 +103,11 @@ in
     script = # sh
       ''
         nft -f ${qbtGuard}
-        # Preserve the container source through wg0 so only the VPS NATs it.
-        # Insert before the CNI bridge's source masquerade rule.
-        iptables -w -t nat -I POSTROUTING 1 ${qbtNoMasq}
         ip rule add ${qbtRule}
       '';
     postStop = # sh
       ''
         ip rule del ${qbtRule} || true
-        iptables -w -t nat -D POSTROUTING ${qbtNoMasq} || true
         nft destroy table ip qbittorrent_egress
       '';
   };
@@ -120,26 +117,4 @@ in
     partOf = [ "qbittorrent-egress.service" ];
   };
 
-  # The tailscale rules in containers.nix follow the same idempotent
-  # pattern; types.lines concatenates both definitions.
-  networking.firewall.extraCommands =
-    lib.mkAfter # sh
-      ''
-        iptables -w -t mangle -C PREROUTING -i wg0 -j CONNMARK --set-xmark ${wgMark}/${wgMark} 2>/dev/null ||
-          iptables -w -t mangle -A PREROUTING -i wg0 -j CONNMARK --set-xmark ${wgMark}/${wgMark}
-        iptables -w -t mangle -C PREROUTING -i nerdctl0 -j CONNMARK --restore-mark --nfmask 0x1 --ctmask 0x1 2>/dev/null ||
-          iptables -w -t mangle -A PREROUTING -i nerdctl0 -j CONNMARK --restore-mark --nfmask 0x1 --ctmask 0x1
-        iptables -w -C FORWARD -i wg0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null ||
-          iptables -w -I FORWARD 1 -i wg0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT
-        iptables -w -C FORWARD -i nerdctl0 -o wg0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null ||
-          iptables -w -I FORWARD 1 -i nerdctl0 -o wg0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-      '';
-  networking.firewall.extraStopCommands =
-    lib.mkAfter # sh
-      ''
-        iptables -w -t mangle -D PREROUTING -i wg0 -j CONNMARK --set-xmark ${wgMark}/${wgMark} 2>/dev/null || true
-        iptables -w -t mangle -D PREROUTING -i nerdctl0 -j CONNMARK --restore-mark --nfmask 0x1 --ctmask 0x1 2>/dev/null || true
-        iptables -w -D FORWARD -i wg0 -o nerdctl0 -d 10.0.1.0/24 -j ACCEPT 2>/dev/null || true
-        iptables -w -D FORWARD -i nerdctl0 -o wg0 -s 10.0.1.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT 2>/dev/null || true
-      '';
 }

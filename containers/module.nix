@@ -181,7 +181,7 @@ let
         partOf = [ "all-containers.target" ];
         wantedBy = [ "all-containers.target" ];
 
-        path = [ pkgs.iptables ];
+        path = [ (if config.networking.nftables.enable then pkgs.nftables else pkgs.iptables) ];
 
         preStart =
           let

@@ -1,5 +1,6 @@
-# Independent nft hooks run before CNI's iptables ACCEPT rules. The bridge
-# family also covers peer-to-peer traffic without depending on br_netfilter.
+# The routed hooks enforce endpoint policy independently of the host firewall
+# and after portmap DNAT. The bridge hook covers peer-to-peer traffic without
+# depending on br_netfilter.
 { lib, services }:
 let
   entries = lib.concatMap (

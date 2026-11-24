@@ -55,12 +55,14 @@
       # Preserve client source IPs for subnet-routed traffic: tsidp's WhoIs
       # (X-Real-IP through nginx) needs real 100.64.0.0/10 addresses, and the
       # generated nginx ACLs rely on them to tell tailnet clients apart from
-      # LAN ones. Reply traffic flows back via conntrack and the FORWARD
-      # rules in containers.nix.
+      # LAN ones. Reply traffic flows back via conntrack and firewall.nix.
       "--snat-subnet-routes=false"
+      "--netfilter-mode=on"
     ];
     useRoutingFeatures = lib.mkForce "server";
   };
+
+  systemd.services.tailscaled.environment.TS_DEBUG_FIREWALL_MODE = "nftables";
 
   systemd.services.tailscaled-autoconnect = {
     wants = [ "nerdctl-headscale.service" ];
