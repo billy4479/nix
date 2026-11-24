@@ -42,7 +42,20 @@ pkgs.testers.runNixOSTest {
         qbtIp = "10.0.1.5";
         wgMark = "0x1";
       })
+      (import ../system/hosts/serverone/qbittorrent-egress.nix {
+        qbtIp = "10.0.1.5";
+        webPort = 8080;
+        wgTable = 51820;
+        homeInterface = "enp2s0";
+      })
     ];
+    systemd.services.nerdctl-qbittorrent = {
+      script = "true";
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+    };
     virtualisation.memorySize = 768;
     systemd.services.polpetta-raw-firewall = {
       inherit (rawUnit)
@@ -148,6 +161,40 @@ pkgs.testers.runNixOSTest {
       )
       machine.succeed("ip netns exec tunnel valkey-cli -h 10.0.1.11 -p 53 ping | grep PONG")
       machine.succeed("conntrack -L -s 10.100.0.1 -d 10.0.1.11 | grep 'mark=1'")
+      # Both uplinks can reach the same simulated internet server. Verify which
+      # path (and source NAT) the receiver actually sees after each switch.
+      with subtest("Switch qBittorrent between VPS and home"):
+          for namespace in ["uplink", "tunnel"]:
+              machine.succeed(
+                  f'ip -n {namespace} link set lo up; ip -n {namespace} addr add 203.0.113.2/32 dev lo; ip netns exec {namespace} valkey-server --bind 203.0.113.2 --protected-mode no --save "" --daemonize yes --dir /tmp --pidfile /tmp/{namespace}-internet.pid --logfile /tmp/{namespace}-internet.log'
+              )
+          machine.succeed(
+              'ip netns exec torrent valkey-server --port 6881 --protected-mode no --save "" --daemonize yes; ip netns exec torrent valkey-server --port 8080 --protected-mode no --save "" --daemonize yes'
+          )
+          machine.succeed("ip route add 203.0.113.2/32 via 192.0.2.2 dev enp2s0")
+          wg_default = "default via 10.100.0.1 dev wg0 table 51820"
+          machine.succeed(f"ip route add {wg_default}")
+          machine.succeed(
+              "systemctl start nerdctl-qbittorrent; torrent-egress status | grep -x vps"
+          )
+          internet = "ip netns exec torrent valkey-cli -h 203.0.113.2 client info"
+          machine.succeed(f"{internet} | grep 'addr=10.0.1.5:'")
+          machine.succeed(f"ip route del {wg_default}")
+          machine.fail(f"timeout 2 {internet}")
+          machine.succeed(f"ip route add {wg_default}")
+
+          machine.succeed("torrent-egress home; torrent-egress status | grep -x home")
+          machine.succeed("systemctl is-active nerdctl-qbittorrent")
+          machine.succeed('test -z "$(conntrack -L --orig-src 10.0.1.5)"')
+          machine.succeed(f"{internet} | grep 'addr=192.0.2.1:'")
+          machine.fail("ip netns exec tunnel nc -z -w 2 10.0.1.5 6881")
+          machine.succeed("ip netns exec sonarr nc -z -w 2 10.0.1.5 8080")
+          machine.succeed("torrent-egress vps; torrent-egress status | grep -x vps")
+          machine.succeed('test -z "$(conntrack -L --orig-src 10.0.1.5)"')
+          machine.succeed(f"{internet} | grep 'addr=10.0.1.5:'")
+          machine.succeed("ip netns exec tunnel nc -z -w 2 10.0.1.5 6881")
+          machine.succeed("systemctl stop nerdctl-qbittorrent qbittorrent-egress")
+          machine.succeed(f"ip route del {wg_default}; ip route del 203.0.113.2/32")
       # Exercise the real native CNI port mapper on the same nft firewall.
       machine.succeed("CNI_COMMAND=ADD ${cni}")
       machine.succeed("nft list chain ip cni_hostport hostports | grep 'tcp dport 1053'")
@@ -184,7 +231,7 @@ pkgs.testers.runNixOSTest {
       machine.fail("ip netns exec peer nc -z -w 1 10.0.1.129 6379")
       # Use previously unopened sockets so conntrack cannot mask a policy failure.
       machine.succeed(
-          'ip netns exec immich valkey-server --port 2283 --protected-mode no --save "" --daemonize yes; ip netns exec immich valkey-server --port 2284 --protected-mode no --save "" --daemonize yes; ip netns exec torrent valkey-server --port 6881 --protected-mode no --save "" --daemonize yes; valkey-server --port 9090 --protected-mode no --save "" --daemonize yes'
+          'ip netns exec immich valkey-server --port 2283 --protected-mode no --save "" --daemonize yes; ip netns exec immich valkey-server --port 2284 --protected-mode no --save "" --daemonize yes; valkey-server --port 9090 --protected-mode no --save "" --daemonize yes'
       )
       machine.succeed("ip netns exec nginx nc -z -w 2 10.0.1.3 2283")
       machine.succeed("nc -z -w 2 10.0.1.3 2284")
@@ -210,7 +257,7 @@ pkgs.testers.runNixOSTest {
       machine.succeed("systemctl reload polpetta-raw-firewall")
       # The network tests stand in for the post-Headscale traffic on tailscale0.
       machine.succeed(
-          'ip netns exec nginx valkey-server --port 8443 --protected-mode no --save "" --daemonize yes; ip netns exec torrent valkey-server --port 8080 --protected-mode no --save "" --daemonize yes'
+          'ip netns exec nginx valkey-server --port 8443 --protected-mode no --save "" --daemonize yes'
       )
       machine.fail("ip netns exec vpn nc -z -w 1 10.0.2.6 443")
       machine.succeed("nft -f /etc/raw-firewall-admin.nft")

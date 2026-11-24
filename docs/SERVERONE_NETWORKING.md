@@ -8,7 +8,7 @@ The nftables ruleset has several owners. Do not use `nft flush ruleset`:
 | CNI `portmap` | `cni_hostport` DNAT and localhost/hairpin masquerading; mappings are installed and removed with the container |
 | `tailscaled` | Native nftables input/forwarding, anti-spoofing and Tailscale marks. Subnet-route SNAT stays disabled |
 | `polpetta-raw-firewall.service` | `inet` and `bridge` `polpetta_raw` tables; endpoint ACLs apply after DNAT and also to bridge peers |
-| `qbittorrent-egress.service` | `ip qbittorrent_egress` kill switch and qBittorrent source-policy route, independent of WireGuard availability |
+| `qbittorrent-egress.service` | `ip qbittorrent_egress` uplink guard and qBittorrent source-policy route in VPS mode. See [switching egress](deployments/qbittorrent-wireguard.md). |
 
 NixOS still uses existing host port/interface declarations. It also trusts
 `tailscale0` for host input, since an accept in Tailscale's separate base chain
@@ -43,6 +43,6 @@ networks and published ports.
 After boot, inspect `nft list ruleset`, `ip rule`, and `ip route show table 51820`.
 Check LAN and tailnet name resolution and ingress, a published TCP and UDP port,
 tailnet subnet and IPv4/IPv6 exit-node connectivity, public edge return traffic,
-and that qBittorrent cannot fall back to the LAN when WireGuard is unavailable.
+and that qBittorrent in VPS mode cannot fall back to the LAN when WireGuard is unavailable.
 The `raw-firewall` VM check exercises the same nft host policy and real CNI
 portmap with simulated interfaces, not logged-in Tailscale or WireGuard peers.
