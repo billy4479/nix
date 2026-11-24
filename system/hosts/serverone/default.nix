@@ -22,6 +22,7 @@
 
     flakeInputs.nix-snapshotter.nixosModules.default
     ./containers.nix
+    ./agent-vm.nix
     ./samba.nix
 
     ./monitoring.nix

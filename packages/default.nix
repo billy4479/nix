@@ -6,6 +6,7 @@ let
   };
 in
 rec {
+  agent-vm = callPackage ./agent-vm { };
   google-sans = callPackage ./google-sans { };
   inherit (byparrPackages) byparr;
   byparr-source = byparrPackages.source;

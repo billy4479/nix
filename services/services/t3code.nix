@@ -47,6 +47,7 @@ let
       ++ [
         direnv
         (import ../mail-watch { inherit pkgs; })
+        (pkgs.callPackage ../../packages/agent-vm { })
         development.chromium
         development.agentBrowser
         development.nvimFmt
@@ -242,6 +243,17 @@ in
               chown 5021:5000 "${baseDir}/tmp"
               chmod 0700 "${baseDir}/tmp"
             '';
+        }
+        {
+          hostPath = "/run/agent-vm";
+          containerPath = "/run/agent-vm";
+          readOnly = true;
+          customPermissionScript = ":";
+        }
+        {
+          hostPath = "${../../.agents/skills/agent-vm}";
+          containerPath = "${home}/.agents/skills/agent-vm";
+          readOnly = true;
         }
         {
           hostPath = development.agentBrowserSkill;

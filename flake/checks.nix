@@ -7,6 +7,7 @@
   domain,
 }:
 {
+  agent-vm = (pkgs.callPackage ../packages/agent-vm { }).tests.broker;
   nix-settings = import ../tests/nix-settings.nix {
     inherit pkgs hosts;
   };
