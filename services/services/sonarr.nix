@@ -30,7 +30,10 @@ in
         "-nobrowser"
         "-data=/config"
       ];
-      environment.XDG_CONFIG_HOME = "/config";
+      environment = {
+        XDG_CONFIG_HOME = "/config";
+        SONARR__AUTH__METHOD = "External";
+      };
 
       dependsOn = [
         "qbittorrent"

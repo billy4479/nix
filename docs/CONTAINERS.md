@@ -211,6 +211,9 @@ byparr -> mircrewrr -> sonarr/radarr
 qbittorrent -> sonarr/radarr
 ```
 
+Radarr and Sonarr use `External` authentication mode to skip their built-in
+web login. Their web endpoints remain tailnet-only.
+
 ## Container Mapping
 
 Always keep this table in sync when adding new containers.
