@@ -35,10 +35,8 @@ in
         RADARR__AUTH__METHOD = "External";
       };
 
-      dependsOn = [
-        "qbittorrent"
-        "jackett"
-      ];
+      # Keep /ping available while torrent-egress restarts the download client.
+      dependsOn = [ "jackett" ];
 
       volumes = [
         {

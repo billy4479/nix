@@ -9,8 +9,9 @@ sudo torrent-egress vps    # Use vps-proxy through WireGuard (default)
 ```
 
 Switching briefly restarts qBittorrent so peers and trackers reconnect through
-the new path. Home mode exposes your home public IP to peers and lasts until
-you switch back or reboot. It does not add an incoming port forward on your
+the new path. Sonarr and Radarr stay up, but cannot reach the download client
+while it restarts. Home mode exposes your home public IP to peers and lasts
+until you switch back or reboot. It does not add an incoming port forward on your
 home router. The VPS peer port is blocked while home mode is active.
 
 In VPS mode, `vps-proxy` translates outbound IPv4 traffic (including tracker DNS)

@@ -110,6 +110,19 @@ assert serverone.nerdctl-containers.syncthing.uid == 5021;
 assert lib.hasSuffix (
   " exec t3code /bin/nh clean user --elevation-strategy none --keep 5 --keep-since 7d --keep-one --max 107374182400"
 ) serverone.systemd.services.t3code-nix-gc.serviceConfig.ExecStart;
+assert lib.assertMsg (lib.all
+  (
+    name:
+    let
+      service = serverone.systemd.services."nerdctl-${name}";
+    in
+    !(lib.elem "nerdctl-qbittorrent.service" (service.requires ++ service.bindsTo ++ service.partOf))
+  )
+  [
+    "sonarr"
+    "radarr"
+  ]
+) "Switching qBittorrent egress must not stop Sonarr or Radarr";
 assert lib.elem "polpetta-raw-firewall.service" serverone.systemd.services.containerd.requires;
 assert serverone.systemd.services.polpetta-raw-firewall.reloadIfChanged;
 assert vps.systemd.services.edge-forwarding.restartIfChanged;
