@@ -457,8 +457,8 @@ in
 
   services.prometheus = {
     enable = true;
-    # One listener serves localhost scrapes and Grafana on the bridge; the
-    # firewall opens it only on nerdctl0, not the LAN or tailnet interfaces.
+    # One listener serves localhost scrapes and Grafana on the bridge.
+    # A separate input hook also guards interfaces trusted by nixos-fw.
     listenAddress = "0.0.0.0";
     retentionTime = "90d";
 
@@ -693,5 +693,24 @@ in
 
   # Grafana runs in a container and reaches Prometheus through the bridge
   # gateway address (10.0.1.1), which lands on the nerdctl0 INPUT chain.
-  networking.firewall.interfaces."nerdctl0".allowedTCPPorts = [ config.services.prometheus.port ];
+  # Resolve probe names locally while retaining their TLS names and Host headers.
+  networking.hosts."10.0.1.${toString config.nerdctl-containers.nginx.id}" =
+    config.polpetta.webDomains;
+
+  networking.nftables.tables.serverone-prometheus = {
+    family = "inet";
+    content = # nftables
+      ''
+        chain input {
+          type filter hook input priority -10; policy accept;
+          tcp dport ${toString config.services.prometheus.port} iifname "lo" return
+          tcp dport ${toString config.services.prometheus.port} iifname "nerdctl0" ip saddr 10.0.1.${toString config.polpetta.services.grafana.container.id} ip daddr 10.0.1.1 return
+          tcp dport ${toString config.services.prometheus.port} drop
+        }
+      '';
+  };
+  networking.firewall.extraInputRules = # nftables
+    ''
+      iifname "nerdctl0" ip saddr 10.0.1.${toString config.polpetta.services.grafana.container.id} ip daddr 10.0.1.1 tcp dport ${toString config.services.prometheus.port} accept
+    '';
 }

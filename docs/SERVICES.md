@@ -94,9 +94,14 @@ policy before CNI's iptables accept rules. Both routed and same-bridge traffic
 are covered. `allowedSources` replaces the tier's default IPv4 ranges; the host
 bridge gateway (`10.0.1.1`) always remains allowed for administration and probes.
 The caches allow only their own application container, and PostgreSQL allows
-only Immich and Outline, in addition to the gateway. DNS uses `tailnet`, because
-VPN clients and all service containers need it. These rules protect declared
-raw ports, not every undeclared port inside each container.
+only Immich and Outline, in addition to the host. DNS uses `tailnet`, because
+VPN clients and service containers need it. In the initial rollout these rules
+protect only declared raw ports. Once `polpetta.enforceContainerIngress = true`
+is set on serverone, all unsolicited traffic to service container IPs is denied
+unless it matches a declared native endpoint or comes from nginx to the declared
+web port. Host-originated traffic bypasses service ingress checks. Public raw
+endpoints allow arbitrary sources only via `wg0`; on other paths the endpoint's
+CIDRs or private tier defaults apply.
 
 `polpetta-raw-firewall.service` loads this policy before containerd, which
 requires it. Its reload is an atomic ruleset replacement; restarting the
@@ -126,12 +131,12 @@ wildcards `*.polpetta.online` to the vps.
 | host and bridge raw-port firewall | non-public `raw` tiers, or any `allowedSources` override; loaded independently of the CNI filter chains |
 
 | bind9 zone records  | `raw` entries with `record` (→ container IP, wg/tailnet view) |
-| blackbox probes     | every `web` endpoint (URL/port inferred; `probe.enable`/`probe.unauth`/`probe.path`/`probe.headers` tune it) plus tcp probes of `raw` entries with `probe.enable = true`; consumed by serverone's monitoring.nix, which declares no targets itself |
+| blackbox probes     | local nginx HTTPS for `web` endpoints (`probe.enable`/`probe.unauth`/`probe.path`/`probe.headers` tune it), plus direct TCP for `raw` entries with `probe.enable = true` |
 | `useNginx` ordering | presence of `web` (auto-set on the mirrored container) |
 
-Container `ports` (host publishing, e.g. LAN minecraft) stay explicit on the
-container: publishing a web endpoint's port on the host would bypass the nginx
-ACLs.
+Container `ports` (host publishing, e.g. LAN Minecraft) stay explicit on the
+container. A published native port also needs a matching `raw` entry under
+strict ingress. Do not publish a web backend port.
 
 The nginx 80/443 edge, the vps DNAT plumbing and the static
 zone/SOA data stay hand-written: they are infrastructure, not per-service.

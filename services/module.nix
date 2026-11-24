@@ -14,6 +14,16 @@ let
 
   hasContainers = options ? nerdctl-containers;
 
+  cidrType = lib.types.addCheck (lib.types.strMatching "([0-9]{1,3}\\.){3}[0-9]{1,3}(/[0-9]{1,2})?") (
+    value:
+    let
+      parts = lib.splitString "/" value;
+      valid = limit: part: builtins.match "(0|[1-9][0-9]*)" part != null && lib.toInt part <= limit;
+    in
+    lib.all (valid 255) (lib.splitString "." (builtins.head parts))
+    && (builtins.length parts == 1 || valid 32 (lib.last parts))
+  );
+
   # One probe shape for both http (web endpoints) and tcp (raw ports)
   # probes; only `enable`'s default differs. `unauth`, `path`, `headers`
   # and `timeout` apply to http probes and are asserted off elsewhere.
@@ -79,7 +89,7 @@ let
     in
     {
       inherit name;
-      url = "http://10.0.1.${toString svc.container.id}:${toString web.port}${web.probe.path}";
+      url = "https://${domainOf name svc}${web.probe.path}";
       module = if custom then "http_custom_${name}" else baseModule;
     }
     // lib.optionalAttrs custom {
@@ -115,6 +125,12 @@ let
 
   rawFirewall = import ./raw-firewall.nix {
     inherit lib services;
+    enforce = cfg.enforceContainerIngress;
+    nginxAddress =
+      if hasContainers && config.nerdctl-containers ? nginx then
+        "10.0.1.${toString config.nerdctl-containers.nginx.id}"
+      else
+        null;
   };
 
   tcpProbeTargets = map (e: {
@@ -168,7 +184,14 @@ let
       "  include /etc/nginx/snippets/tls.conf;"
       "  include /etc/nginx/snippets/headers.conf;"
     ]
-    ++ aclLines web.access
+    ++ (
+      if web.allowedSources == null then
+        aclLines web.access
+      else
+        (map (ip: "  deny ${ip};") externalIps)
+        ++ (map (cidr: "  allow ${cidr};") web.allowedSources)
+        ++ [ "  deny all;" ]
+    )
     ++ [
       "  location / {"
       "    include /etc/nginx/snippets/proxy.conf;"
@@ -330,6 +353,12 @@ in
                         description = "Who can reach this endpoint.";
                       };
 
+                      allowedSources = lib.mkOption {
+                        type = lib.types.nullOr (lib.types.listOf cidrType);
+                        default = null;
+                        description = "Explicit IPv4 sources for a private web route, replacing the access tier ACL.";
+                      };
+
                       domain = lib.mkOption {
                         type = lib.types.nullOr lib.types.str;
                         default = null;
@@ -391,7 +420,7 @@ in
                       };
 
                       allowedSources = lib.mkOption {
-                        type = lib.types.nullOr (lib.types.listOf (lib.types.strMatching "[0-9./]+"));
+                        type = lib.types.nullOr (lib.types.listOf cidrType);
                         default = null;
                         description = ''
                           Optional IPv4/CIDR allowlist replacing the tier's source
@@ -419,6 +448,17 @@ in
           }
         )
       );
+    };
+
+    enforceContainerIngress = lib.mkEnableOption ''
+      default-deny ingress to service containers after proxy callers are migrated
+    '';
+
+    webDomains = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      readOnly = true;
+      default = lib.mapAttrsToList domainOf servicesWithWeb;
+      description = "Generated nginx vhost names for local HTTP probes.";
     };
 
     externalTrafficFrom = lib.mkOption {

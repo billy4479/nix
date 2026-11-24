@@ -37,7 +37,7 @@ in
       access = "public";
     };
 
-    # Only nginx and the host bridge gateway may reach Node directly.
+    # Retain the pre-cutover ACL until default-deny takes over.
     raw = [
       {
         inherit port;

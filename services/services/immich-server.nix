@@ -65,7 +65,7 @@ in
         IMMICH_PORT = "2283";
         IMMICH_MEDIA_LOCATION = "/usr/src/app/upload";
         IMMICH_BUILD_DATA = "${pkgs.immich}/lib/node_modules/immich/build";
-        IMMICH_MACHINE_LEARNING_URL = "http://10.0.1.128:3003";
+        IMMICH_MACHINE_LEARNING_URL = "https://immich-ml.internal.${domain}";
 
         PATH = lib.makeBinPath [
           pkgs.coreutils

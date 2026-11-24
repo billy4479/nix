@@ -167,6 +167,11 @@ in
         proto = "udp";
         access = "public";
       }
+      {
+        port = 19132;
+        proto = "tcp";
+        access = "tailnet"; # host-published, no VPS forward
+      }
     ];
   };
 }

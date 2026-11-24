@@ -3,12 +3,12 @@
   lib,
   config,
   options,
+  domain,
   ...
 }:
 let
   name = "mircrewrr";
   baseDir = "/mnt/SSD/apps/${name}";
-  byparrIp = "10.0.1.134";
 in
 {
   # sops keys (in secrets-repo, serverone.yaml):
@@ -47,7 +47,7 @@ in
 
       environment = {
         PROXY_PORT = "9696";
-        FLARESOLVERR_URL = "http://${byparrIp}:8191";
+        FLARESOLVERR_URL = "https://byparr.internal.${domain}";
       };
 
       environmentFiles = [ config.sops.templates."mircrewrr-env".path ];

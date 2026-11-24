@@ -59,6 +59,27 @@
       uid = 5021;
     };
 
+    # Host-published only; no VPS forward. Preserve existing peer reachability.
+    raw = [
+      {
+        port = 22000;
+        access = "local";
+        allowedSources = [ "0.0.0.0/0" ];
+      }
+      {
+        port = 22000;
+        proto = "udp";
+        access = "local";
+        allowedSources = [ "0.0.0.0/0" ];
+      }
+      {
+        port = 21027;
+        proto = "udp";
+        access = "local";
+        allowedSources = [ "0.0.0.0/0" ];
+      }
+    ];
+
     web = {
       port = 8384;
       access = "tailnet";
