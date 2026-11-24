@@ -9,6 +9,11 @@
 let
   # Lives under the historical `heascale` (sic) host path, see headscale.
   baseDir = "/mnt/SSD/apps/heascale";
+  # Headplane validates Headscale's config and needs the same file paths.
+  headscaleFiles = import ../headscale/files.nix {
+    inherit pkgs domain;
+    adminAddress = config.polpetta.generated.adminIngress.address;
+  };
 in
 {
   sops.secrets = lib.mkIf (options ? nerdctl-containers) {
@@ -42,17 +47,10 @@ in
 
       environmentFiles = [ config.sops.templates."headplane-env".path ];
 
-      volumes = [
+      volumes = headscaleFiles ++ [
         {
           hostPath = "${pkgs.replaceVars ./headplane.yaml { inherit domain; }}";
           containerPath = "/etc/headplane/config.yaml";
-          readOnly = true;
-        }
-        {
-          # headplane displays (and validates) headscale's configuration through
-          # this mount; the file itself lives with the headscale service.
-          hostPath = "${pkgs.replaceVars ../headscale/headscale.yaml { inherit domain; }}";
-          containerPath = "/etc/headscale/config.yaml";
           readOnly = true;
         }
         {

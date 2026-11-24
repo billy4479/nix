@@ -56,9 +56,10 @@ not be given that flag.
 
 ## Headscale policy
 
-`policy.mode` is `database`, so policy is applied through the Headplane UI.
-The [admin-only deployment guide](deployments/admin-only.md) links the policy
-that includes these tsidp entries. Preserve them when editing access rules:
+Headscale loads the read-only, Nix-managed [policy.hujson](../services/services/headscale/policy.hujson).
+Edit it in Git and deploy serverone; do not edit policy in Headplane. The
+[admin-only deployment guide](deployments/admin-only.md) covers migration.
+Preserve these tsidp entries when editing access rules:
 
 - `tagOwners`:
   ```json
@@ -116,7 +117,7 @@ DCR only works from the tailnet.
    sudo exec-in-container headscale headscale preauthkeys create \
      --user 1 --reusable --expiration 90d --tags tag:idp
    ```
-3. Apply the headscale policy above in headplane.
+3. Deploy the Headscale policy file with the tsidp tag and grants above.
 4. Deploy `serverone`; verify the node `idp` appears in headscale, tagged
    `tag:idp`.
 5. Open `https://idp.internal.polpetta.online`, register each client (see

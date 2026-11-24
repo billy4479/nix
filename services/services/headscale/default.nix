@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   domain,
   lib,
@@ -8,6 +9,10 @@
 let
   # The host path keeps a historical `heascale` typo; data lives there.
   baseDir = "/mnt/SSD/apps/heascale";
+  headscaleFiles = import ./files.nix {
+    inherit pkgs domain;
+    adminAddress = config.polpetta.generated.adminIngress.address;
+  };
 in
 {
   # headscale forwards tailnet traffic into the nerdctl bridge (subnet router).
@@ -25,7 +30,7 @@ in
       entrypoint = [ (lib.getExe pkgs.headscale) ];
       cmd = [ "serve" ];
 
-      volumes = [
+      volumes = headscaleFiles ++ [
         {
           hostPath = "${baseDir}/lib";
           containerPath = "/var/lib/headscale";
@@ -33,11 +38,6 @@ in
         {
           hostPath = "${baseDir}/run";
           containerPath = "/var/run/headscale";
-        }
-        {
-          hostPath = "${pkgs.replaceVars ./headscale.yaml { inherit domain; }}";
-          containerPath = "/etc/headscale/config.yaml";
-          readOnly = true;
         }
         {
           hostPath = "${pkgs.replaceVars ./derp-custom.yaml { inherit domain; }}";

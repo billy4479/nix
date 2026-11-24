@@ -7,7 +7,7 @@
   },
 
   // Keep access to the existing tailnet, serverone subnet and public exit
-  // traffic. Never allow *:* or a range that includes 10.0.2.6 to everyone.
+  // traffic. Never allow *:* or a range that includes the admin IP to everyone.
   "acls": [
     {
       "action": "accept",
@@ -17,13 +17,20 @@
     {
       "action": "accept",
       "src": ["group:admin"],
-      "dst": ["10.0.2.6:443"],
+      "dst": ["@adminAddress@:443"],
       "proto": "tcp",
     },
   ],
 
   "tagOwners": {
     "tag:idp": ["jack@"],
+    // Only a Headscale operator should assign this infrastructure tag.
+    "tag:serverone": [],
+  },
+  "autoApprovers": {
+    "routes": {
+      "@adminAddress@/32": ["tag:serverone"],
+    },
   },
   "grants": [
     {
@@ -43,10 +50,11 @@
   ],
 
   "tests": [
-    { "src": "jack@", "accept": ["10.0.2.6:443"], "deny": ["10.0.2.6:8443"] },
-    { "src": "luke@", "accept": ["10.0.1.6:443", "10.0.1.11:53"], "deny": ["10.0.2.6:443"] },
-    { "src": "edo@", "deny": ["10.0.2.6:443"] },
-    { "src": "costi@", "deny": ["10.0.2.6:443"] },
-    { "src": "tag:idp", "deny": ["10.0.2.6:443"] },
+    { "src": "jack@", "accept": ["@adminAddress@:443"], "deny": ["@adminAddress@:8443"] },
+    { "src": "luke@", "accept": ["10.0.1.6:443", "10.0.1.11:53"], "deny": ["@adminAddress@:443"] },
+    { "src": "edo@", "deny": ["@adminAddress@:443"] },
+    { "src": "costi@", "deny": ["@adminAddress@:443"] },
+    { "src": "tag:idp", "deny": ["@adminAddress@:443"] },
+    { "src": "tag:serverone", "deny": ["@adminAddress@:443"] },
   ],
 }
