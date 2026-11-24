@@ -33,6 +33,26 @@ traced through original-driver emulation down to individual SPI buffers, with
 mocked acknowledgements, completion replies, and hash readback. This adds a
 verified host-side packet specification, not evidence of real MCU acceptance.
 
+### Offline prototype checkpoint
+
+Git checkpoint `9a1e01e` (`9a1e01e:scripts/fingerprint/provision-probe/`)
+contains the unfinished one-shot provisioning prototype. It is not installed or
+part of the current checkout. In a scratch copy of that exact checkpoint, the
+native C builds passed with warnings treated as errors. The synthetic wrapper
+and payload tests, all eight mock provisioning scenarios, mocked SPI and runner
+checks, and ShellCheck passed. The full static Nix build did not finish within
+the build timeout; it was still running the mbed TLS dependency tests. No probe
+was run against hardware during this review.
+
+Before considering a live write, verify power-loss recovery of the **new** key.
+The prototype syncs the key in a scratch directory under `/tmp`, which may be
+volatile. The runner exports the copy intended for long-term storage only
+after the attempted write. A reboot between those steps could leave a replaced
+sensor key with no usable host copy. Require durable private storage before
+sending anything, and test storage failures using mocks. This would protect
+the new key, not provide rollback to the unrecovered old key. A matching digest would still not
+prove that the encrypted session or fingerprint capture works.
+
 ## Hardware actually observed
 
 Read-only inspection over SSH found:
