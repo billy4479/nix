@@ -126,6 +126,7 @@ in
     web = {
       port = 8096;
       access = "tailnet";
+      integrationClients = [ "seerr" ];
       probe.path = "/health";
       nginx.extraConfig = ''
         proxy_buffering off;

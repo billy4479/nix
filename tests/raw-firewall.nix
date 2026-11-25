@@ -112,6 +112,8 @@ pkgs.testers.runNixOSTest {
           ("torrent", 5),
           ("radarr", 7),
           ("sonarr", 9),
+          ("jellyfin", 10),
+          ("seerr", 29),
       ]:
           machine.succeed(
               f"ip netns add {name}; ip link add v-{suffix} type veth peer name eth0 netns {name}; ip link set v-{suffix} master nerdctl0; ip link set v-{suffix} up; ip -n {name} link set lo up; ip -n {name} link set eth0 up; ip -n {name} addr add 10.0.1.{suffix}/24 dev eth0; ip -n {name} route add default via 10.0.1.1"
@@ -272,6 +274,20 @@ pkgs.testers.runNixOSTest {
           machine.fail(f"ip netns exec {namespace} nc -z -w 1 10.0.1.5 8080")
       for namespace in ["nginx", "radarr", "sonarr"]:
           machine.succeed(f"ip netns exec {namespace} nc -z -w 1 10.0.1.5 8080")
+      with subtest("Seerr reaches media backends without exposing them to members"):
+          for app, address, port in [
+              ("radarr", "10.0.1.7", 7878),
+              ("sonarr", "10.0.1.9", 8989),
+              ("jellyfin", "10.0.1.10", 8096),
+          ]:
+              machine.succeed(
+                  f'ip netns exec {app} valkey-server --port {port} --protected-mode no --save "" --daemonize yes'
+              )
+              for client in ["seerr", "nginx"]:
+                  machine.succeed(f"ip netns exec {client} nc -z -w 1 {address} {port}")
+              for client in ["vpn", "uplink", "tunnel", "peer"]:
+                  machine.fail(f"ip netns exec {client} nc -z -w 1 {address} {port}")
+          machine.fail("ip netns exec seerr nc -z -w 1 10.0.1.5 8080")
       machine.succeed("systemctl reload polpetta-raw-firewall")
       machine.fail("ip netns exec vpn nc -z -w 1 10.0.2.6 443")
       # A broken policy must prevent the engine's startup action from running.

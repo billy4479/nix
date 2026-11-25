@@ -24,6 +24,7 @@
     ./mircrewrr.nix
 
     ./jellyfin.nix
+    ./seerr.nix
 
     ./bentopdf.nix
     ./opencloud.nix

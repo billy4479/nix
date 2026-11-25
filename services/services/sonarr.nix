@@ -32,7 +32,7 @@ in
       ];
       environment = {
         XDG_CONFIG_HOME = "/config";
-        SONARR__AUTH__METHOD = "External";
+        SONARR__AUTH__REQUIRED = "Enabled";
       };
 
       # Keep /ping available while torrent-egress restarts the download client.
@@ -53,7 +53,8 @@ in
 
     web = {
       port = 8989;
-      access = "tailnet";
+      access = "admin-only";
+      integrationClients = [ "seerr" ];
       probe.path = "/ping";
     };
   };

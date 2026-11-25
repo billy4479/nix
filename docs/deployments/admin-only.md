@@ -1,6 +1,6 @@
 # Admin-only dashboards on serverone
 
-qBittorrent, Jackett and Syncthing keep their `https://<name>.internal.polpetta.online` URLs on TCP 443. Tailnet DNS sends those names to `10.0.2.6`, a dedicated subnet-routed address. Headscale authorizes `group:admin` (only `jack@`); serverone only forwards connections arriving on `tailscale0` for that address and port. The ordinary LAN and public listeners do not serve the dashboards. BitTorrent and Syncthing peer traffic is unchanged.
+qBittorrent, Jackett, Syncthing, Sonarr and Radarr keep their `https://<name>.internal.polpetta.online` URLs on TCP 443. Tailnet DNS sends those names to `10.0.2.6`, a dedicated subnet-routed address. Headscale authorizes `group:admin` (only `jack@`); serverone only forwards connections arriving on `tailscale0` for that address and port. The ordinary LAN and public listeners do not serve the dashboards. BitTorrent and Syncthing peer traffic is unchanged.
 
 ## Enable access
 
@@ -15,7 +15,7 @@ qBittorrent, Jackett and Syncthing keep their `https://<name>.internal.polpetta.
    ```
 
 4. Set `polpetta.adminIngressEnabled = true;` in the serverone NixOS configuration and deploy. The file policy automatically approves `10.0.2.6/32` for `tag:serverone`; the existing subnet and exit route approvals are unchanged. Check with `sudo exec-in-container headscale headscale nodes list-routes`. Jack's client must accept subnet routes and use tailnet DNS (Linux may need `tailscale set --accept-routes=true`). No VPS deployment is needed.
-5. With passwords still in place, verify the three URLs work as Jack and fail from a non-admin tailnet node and from LAN with Tailscale off. Check direct attempts to `10.0.1.6:8443` and the app container ports also fail from those clients. Check other tailnet services, DNS, and exit-node use still work.
+5. With passwords still in place, verify the dashboard URLs work as Jack and fail from a non-admin tailnet node and from LAN with Tailscale off. Check direct attempts to `10.0.1.6:8443` and the app container ports also fail from those clients. Check other tailnet services, DNS, and exit-node use still work.
 
 ## Keep automation working
 
@@ -26,6 +26,8 @@ Radarr and Sonarr have bridge-only access to the qBittorrent and Jackett backend
 - Run the built-in download-client and indexer tests in both Arr services. Syncthing device IDs, existing peer addresses and sync authentication don't change.
 
 ## Remove browser logins
+
+Keep browser authentication enabled for Sonarr and Radarr. See [Seerr deployment](seerr.md) for their password and request-portal setup.
 
 After verifying the network restrictions, make these one-time changes in the apps' persisted UI settings:
 

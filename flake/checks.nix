@@ -73,22 +73,32 @@
     inherit pkgs;
     flakeInputs = inputs;
   };
-  raw-firewall = import ../tests/raw-firewall.nix {
-    inherit pkgs;
-    ruleset = hosts.nixosConfigurations.serverone.config.polpetta.generated.rawFirewallFile;
-    adminRuleset =
-      (hosts.nixosConfigurations.serverone.extendModules {
-        modules = [ { polpetta.adminIngressEnabled = true; } ];
-      }).config.polpetta.generated.rawFirewallFile;
-    rawUnit = hosts.nixosConfigurations.serverone.config.systemd.services.polpetta-raw-firewall;
-    prometheusTable =
-      hosts.nixosConfigurations.serverone.config.networking.nftables.tables.serverone-prometheus;
-    prometheusInputRules =
-      hosts.nixosConfigurations.serverone.config.networking.firewall.extraInputRules;
-    cniConfig =
-      builtins.fromJSON
-        hosts.nixosConfigurations.serverone.config.environment.etc."cni/net.d/10-nerdctl.conflist".text;
-  };
+  raw-firewall =
+    let
+      serverone = hosts.nixosConfigurations.serverone;
+      # Exercise both states even when the deployed host has admin ingress enabled.
+      disabled =
+        (serverone.extendModules {
+          modules = [ { polpetta.adminIngressEnabled = pkgs.lib.mkForce false; } ];
+        }).config;
+      enabled =
+        (serverone.extendModules {
+          modules = [ { polpetta.adminIngressEnabled = pkgs.lib.mkForce true; } ];
+        }).config;
+    in
+    import ../tests/raw-firewall.nix {
+      inherit pkgs;
+      ruleset = disabled.polpetta.generated.rawFirewallFile;
+      adminRuleset = enabled.polpetta.generated.rawFirewallFile;
+      rawUnit = disabled.systemd.services.polpetta-raw-firewall;
+      prometheusTable =
+        hosts.nixosConfigurations.serverone.config.networking.nftables.tables.serverone-prometheus;
+      prometheusInputRules =
+        hosts.nixosConfigurations.serverone.config.networking.firewall.extraInputRules;
+      cniConfig =
+        builtins.fromJSON
+          hosts.nixosConfigurations.serverone.config.environment.etc."cni/net.d/10-nerdctl.conflist".text;
+    };
   edge-forwarding = import ../tests/edge-forwarding.nix { inherit pkgs; };
   public-health-monitor = import ../tests/public-health-monitor.nix {
     inherit pkgs domain;
