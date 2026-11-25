@@ -6,7 +6,7 @@ Commit the changes you want to deploy in `/workspace/nix`, then run this
 **on serverone** as your normal user:
 
 ```sh
-/mnt/SSD/apps/openchamber/workspaces/nix/scripts/stage-serverone.sh --switch
+stage-serverone --switch
 ```
 
 The script builds the committed `HEAD` from the host's view of the shared
@@ -18,6 +18,13 @@ Omit `--switch` to build without activating. The script prints the activation
 command and keeps the latest successful build alive at
 `~/.local/state/serverone-deploy/result`. Use `--dry-run` to see what Nix would
 build without staging a new result.
+
+`stage-serverone` is installed by serverone's Home Manager configuration. To
+bootstrap it on the first deployment, run the same script directly on serverone:
+
+```sh
+bash /mnt/SSD/apps/openchamber/workspaces/nix/user/modules/scripts/stage-serverone.sh --switch
+```
 
 ## Build elsewhere and copy to a remote server
 

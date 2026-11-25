@@ -21,12 +21,12 @@ case "${1:-}" in
   ;;
 esac
 
-if [[ $(hostname -s) != serverone || $EUID == 0 ]]; then
+if [[ $(uname -n) != serverone || $EUID == 0 ]]; then
   printf 'Run this on serverone as your normal user, not with sudo.\n' >&2
   exit 1
 fi
 
-repo=$(cd -- "$(dirname -- "$0")/.." && pwd -P)
+repo=/mnt/SSD/apps/openchamber/workspaces/nix
 # The shared checkout belongs to the workspace container user.
 workspace_git=(git -c "safe.directory=$repo" -C "$repo")
 rev=$("${workspace_git[@]}" rev-parse --verify HEAD)
