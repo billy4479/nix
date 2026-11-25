@@ -9,11 +9,10 @@ No VPS deployment is needed.
 1. Before initializing an empty Seerr installation, set its `web.access` to
    `"admin-only"` in `services/services/seerr.nix` and deploy serverone.
    Sonarr and Radarr always use the [admin-only tailnet route](admin-only.md).
-   Open `https://sonarr.internal.polpetta.online` and
-   `https://radarr.internal.polpetta.online` from an admin node. In each app,
-   use the first-run prompt or **Settings → General → Security** to select
-   **Forms** authentication and save an admin username and password. Verify
-   both require login in a fresh browser session. Keep the existing API keys.
+   Verify that `https://sonarr.internal.polpetta.online` and
+   `https://radarr.internal.polpetta.online` work from an admin node and are
+   unreachable from a non-admin node. The dashboards rely on the admin-only
+   route, not app passwords. Keep the existing API keys.
 2. In Jellyfin's dashboard, enable **Quick Connect**. Open
    `https://seerr.internal.polpetta.online` and choose **Jellyfin**. Use
    `http://10.0.1.10:8096` as the internal server URL and

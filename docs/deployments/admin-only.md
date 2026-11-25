@@ -27,7 +27,7 @@ Radarr and Sonarr have bridge-only access to the qBittorrent and Jackett backend
 
 ## Remove browser logins
 
-Keep browser authentication enabled for Sonarr and Radarr. See [Seerr deployment](seerr.md) for their password and request-portal setup.
+Sonarr and Radarr use `External` authentication, so their dashboards rely on the admin-only route rather than app passwords. Keep their API keys for [Seerr](seerr.md). Verify the network restrictions before deploying this setting.
 
 After verifying the network restrictions, make these one-time changes in the apps' persisted UI settings:
 
@@ -35,4 +35,4 @@ After verifying the network restrictions, make these one-time changes in the app
 - **Jackett:** Clear the admin password and save. Keep the API key.
 - **Syncthing:** Under Settings → GUI, clear the GUI username and password and save. Keep the API key and device trust settings unchanged.
 
-Test again in a fresh browser session as Jack. Before restoring the old database policy, disable admin ingress and redeploy. Before reverting to an older generation that serves these dashboards on LAN or on the ordinary tailnet listener, restore app authentication (remove the qBittorrent bypass and set Jackett and Syncthing passwords). To disable access without rolling back, set `polpetta.adminIngressEnabled = false` and redeploy.
+Test again in a fresh browser session as Jack. Before restoring the old database policy, disable admin ingress and redeploy. Before reverting to an older generation that serves these dashboards on LAN or on the ordinary tailnet listener, restore app authentication (remove the qBittorrent bypass, set Jackett and Syncthing passwords, and use Forms authentication with no local bypass in Sonarr and Radarr). To disable access without rolling back, set `polpetta.adminIngressEnabled = false` and redeploy.
