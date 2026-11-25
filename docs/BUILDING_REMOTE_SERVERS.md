@@ -2,22 +2,22 @@
 
 ## Deploy serverone from the local workspace
 
-From the workspace container, commit the changes you want to deploy, then run:
+Commit the changes you want to deploy in `/workspace/nix`, then run this
+**on serverone** as your normal user:
 
 ```sh
-cd /workspace/nix
-./scripts/stage-serverone.sh
+/mnt/SSD/apps/openchamber/workspaces/nix/scripts/stage-serverone.sh --switch
 ```
 
-The script sends the current local commit over SSH and builds it on `serverone`.
-There's no need to push to GitHub. Uncommitted changes are not included.
-The host uses the committed `flake.lock` and its existing access to private inputs.
+The script builds the committed `HEAD` from the host's view of the shared
+workspace. There's no GitHub push or source upload. Nix uses the committed
+`flake.lock` and the host's existing access to private inputs. After a successful
+build, activation requires sudo authentication.
 
-On success, run the printed `ssh -t serverone activate-system /nix/store/...`
-command from an interactive terminal and authenticate with sudo. The most recent
-successful build is kept alive by `~/.local/state/serverone-deploy/result` on
-`serverone`; staging does not switch the running system. Use `--dry-run` to see
-what Nix would build without staging a new result.
+Omit `--switch` to build without activating. The script prints the activation
+command and keeps the latest successful build alive at
+`~/.local/state/serverone-deploy/result`. Use `--dry-run` to see what Nix would
+build without staging a new result.
 
 ## Build elsewhere and copy to a remote server
 
