@@ -9,5 +9,6 @@
     ./modules/applications/shell
     ./modules/applications/tmux.nix
     ./modules/applications/terminals/wezterm.nix
+    ./modules/scripts/opencloud-upload.nix
   ];
 }
