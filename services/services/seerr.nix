@@ -1,15 +1,6 @@
+{ lib, pkgs, ... }:
 {
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-{
-  options.polpetta.seerrMemberAccess = lib.mkEnableOption ''
-    member access to Seerr (enable only after completing the admin-only setup wizard)
-  '';
-
-  config.polpetta.services.seerr = {
+  polpetta.services.seerr = {
     container = {
       id = 29;
       entrypoint = [ (lib.getExe pkgs.seerr) ];
@@ -27,7 +18,7 @@
 
     web = {
       port = 5055;
-      access = if config.polpetta.seerrMemberAccess then "tailnet" else "admin-only";
+      access = "tailnet";
       probe.path = "/api/v1/status";
     };
   };

@@ -6,8 +6,9 @@ No VPS deployment is needed.
 
 ## First deployment: admin-only setup
 
-1. Deploy serverone with `polpetta.seerrMemberAccess` still false. Seerr,
-   Sonarr and Radarr now use the [admin-only tailnet route](admin-only.md).
+1. Before initializing an empty Seerr installation, set its `web.access` to
+   `"admin-only"` in `services/services/seerr.nix` and deploy serverone.
+   Sonarr and Radarr always use the [admin-only tailnet route](admin-only.md).
    Open `https://sonarr.internal.polpetta.online` and
    `https://radarr.internal.polpetta.online` from an admin node. In each app,
    use the first-run prompt or **Settings → General → Security** to select
@@ -42,13 +43,12 @@ No VPS deployment is needed.
 
 ## Second deployment: open the request portal
 
-Set `polpetta.seerrMemberAccess = true;` in
-`system/hosts/serverone/default.nix` and redeploy. Seerr keeps the same URL and
-moves to the standard private web tier (tailnet and LAN), with Jellyfin login
-still required. Re-resolve the hostname if your client cached the admin IP.
+Restore `web.access = "tailnet"` in `services/services/seerr.nix` (the
+checked-in setting) and redeploy. Seerr keeps the same URL and moves to the
+standard private web tier (tailnet and LAN), with Jellyfin login still required. Re-resolve the hostname if your client cached the admin IP.
 Sonarr and Radarr stay on the admin-only route. Verify from a non-admin tailnet
 node that Seerr works, both Arr URLs and direct backend ports are blocked,
 and an auto-approved request reaches the correct app.
 
-Before resetting Seerr's data or restoring an uninitialized backup, disable
-member access and redeploy so the setup wizard stays private.
+Before resetting Seerr's data or restoring an uninitialized backup, switch
+Seerr back to `"admin-only"` and redeploy so the setup wizard stays private.
