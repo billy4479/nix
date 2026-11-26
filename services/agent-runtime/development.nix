@@ -6,10 +6,14 @@ let
       ''
         export FONTCONFIG_FILE=${
           pkgs.makeFontsConf {
+            # The runtime container has no system conf.d with the standard font aliases.
+            includes = [ "${pkgs.fontconfig.out}/etc/fonts/conf.d" ];
             fontDirectories = [
-              "${pkgs.dejavu_fonts}/share/fonts/truetype"
-              "${pkgs.liberation_ttf}/share/fonts/truetype"
-              "${pkgs.noto-fonts-color-emoji}/share/fonts/noto"
+              "${pkgs.dejavu_fonts}/share/fonts"
+              "${pkgs.liberation_ttf}/share/fonts"
+              "${pkgs.noto-fonts}/share/fonts"
+              "${pkgs.noto-fonts-cjk-sans}/share/fonts"
+              "${pkgs.noto-fonts-color-emoji}/share/fonts"
             ];
           }
         }

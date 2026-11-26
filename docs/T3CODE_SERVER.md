@@ -72,7 +72,8 @@ Git/GitHub CLI, SSH and the existing agent utilities are available. Language
 formatters still come from project devShells. `agent-browser` is installed as a
 CLI only, with its version-matched discovery skill mounted read-only at
 `~/.agents/skills/agent-browser`. Its wrapper selects the same Nix Chromium,
-including fonts, `--no-sandbox` and `--disable-dev-shm-usage`.
+with standard Fontconfig aliases, DejaVu and Liberation fonts, Noto script and
+CJK fallbacks, color emoji, `--no-sandbox` and `--disable-dev-shm-usage`.
 No MCP server, npm install, browser download or `install --with-deps` is needed.
 Run `agent-browser skills get core` for usage, then use `agent-browser open`,
 `snapshot` and `close`. Browser sessions/state remain in the writable home/tmp;
