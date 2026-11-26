@@ -60,7 +60,7 @@ in
 
     web = {
       port = 4479;
-      access = "tailnet";
+      access = "tailnet-only";
       # The unauthenticated probe gets bounced to the OIDC login; that
       # redirect is the liveness signal (see http_unauth in monitoring).
       probe.unauth = true;

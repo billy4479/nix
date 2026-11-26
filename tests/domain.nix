@@ -13,7 +13,24 @@ let
     ) (throw "Missing ${service}:${path}") services.${service}.container.volumes;
   volume = service: path: (mount service path).hostPath;
   policyPath = "/etc/headscale/policy.hujson";
-  adminAddress = server.polpetta.generated.adminIngress.address;
+  inherit (server.polpetta.generated) adminDnsRecords adminIngress;
+  adminAddress = adminIngress.address;
+  newAdminUis = [
+    "agent-up"
+    "grafana"
+    "headplane"
+    "mircrewrr"
+    "t3code"
+  ];
+  tailnetUis = [
+    "bentopdf"
+    "ff"
+    "immich"
+    "outline"
+    "searxng"
+    "seerr"
+    "idp"
+  ];
   nginx = pkgs.callPackage ../containers/nginx/package.nix {
     inherit domain;
     inherit (server.polpetta) externalTrafficFrom;
@@ -27,10 +44,34 @@ assert vps.systemd.services.public-health-monitor.environment.PROBE_HOST == "hea
 assert home.programs.ssh.settings.serverone.data.HostName == "internal.${domain}";
 assert (mount "headscale" policyPath).readOnly;
 assert mount "headscale" policyPath == mount "headplane" policyPath;
-pkgs.runCommand "domain-test" { } # sh
+pkgs.runCommand "domain-test"
+  {
+    passAsFile = [ "adminDns" ];
+    adminDns = adminDnsRecords;
+  } # sh
   ''
     grep -F 'server_name ${domain};' ${nginx}/nginx.conf
-    grep -F 'server_name idp.internal.${domain};' ${nginx}/vhosts.conf
+    vhost() {
+      awk -v name="$1" '
+        /^server \{/ { block=""; matched=0 }
+        { block=block $0 "\n" }
+        $1 == "server_name" && $2 == name ";" { matched=1 }
+        /^}/ && matched { printf "%s", block; exit }
+      ' ${nginx}/vhosts.conf
+    }
+    for name in ${builtins.toString newAdminUis}; do
+      grep -Fx "$name.internal.${domain}. IN A ${adminAddress}" "$adminDnsPath"
+      vhost "$name.internal.${domain}" | grep -F 'listen ${toString adminIngress.port} ssl;'
+      if vhost "$name.internal.${domain}" | grep -E 'listen (443|4443) '; then exit 1; fi
+    done
+    for name in ${builtins.toString tailnetUis}; do
+      vhost "$name.internal.${domain}" | grep -F 'allow 100.64.0.0/10;'
+      vhost "$name.internal.${domain}" | grep -F 'deny all;'
+      if vhost "$name.internal.${domain}" | grep -E 'allow (10\.0\.0\.0/8|192\.168\.0\.0/16);'; then exit 1; fi
+    done
+    vhost 'jellyfin.internal.${domain}' | grep -F 'allow 192.168.0.0/16;'
+    vhost 'opencloud.${domain}' | grep -F 'listen 4443 ssl proxy_protocol;'
+    if vhost 'opencloud.${domain}' | grep -F 'deny all;'; then exit 1; fi
     grep -F 'server_url: https://headscale.${domain}:443' ${volume "headscale" "/etc/headscale/config.yaml"}
     grep -F 'mode: file' ${volume "headscale" "/etc/headscale/config.yaml"}
     grep -F 'path: ${policyPath}' ${volume "headscale" "/etc/headscale/config.yaml"}

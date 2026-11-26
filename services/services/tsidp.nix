@@ -60,7 +60,24 @@ in
 
     web = {
       port = 8080;
-      access = "tailnet";
+      access = "tailnet-only";
+      # OIDC relying parties need discovery, token exchange and userinfo
+      # over the canonical HTTPS issuer even when they run on the bridge.
+      allowedSources = [
+        "100.64.0.0/10"
+      ]
+      ++ map (client: "10.0.1.${toString config.polpetta.services.${client}.container.id}/32") [
+        "ff"
+        "game-server-runner"
+        "giuoco-del-divertimento"
+        "grafana"
+        "headplane"
+        "immich-server"
+        "jellyfin"
+        "lunamultiplayer"
+        "opencloud"
+        "outline"
+      ];
       # The service name would generate tsidp.internal...; the relying
       # parties (and the sops-seeded clients) know it as idp.
       domain = "idp.internal.${domain}";

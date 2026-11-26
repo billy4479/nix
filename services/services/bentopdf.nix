@@ -21,7 +21,7 @@ in
 
     web = {
       port = 8080;
-      access = "tailnet";
+      access = "tailnet-only";
     };
   };
 }

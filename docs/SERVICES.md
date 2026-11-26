@@ -32,7 +32,7 @@ polpetta.services.<name> = {
   # At most one proxied (HTTP) endpoint. Its presence generates the nginx vhost.
   web = {
     port = 4479;
-    access = "public";             # "public" | "tailnet" | "local"
+    access = "public";             # "public" | "tailnet" | "tailnet-only" | "local" | "admin-only"
     # domain = "...";              # optional override, see "Domains"
     # probe.enable = false;       # opt out of the blackbox probe
     # probe.unauth = true;        # accept 401/404 as alive (default false)
@@ -73,12 +73,13 @@ wiring is unchanged (`dependsOn`, hardcoded IPs in environment).
 
 ## Access model
 
-The ordinary tiers are cumulative. `admin-only` is separate and applies only to `web`:
+`local`, `tailnet`, and `public` are cumulative. `tailnet-only` and `admin-only` apply only to `web`:
 
 | tier      | reachable from                          |
 |-----------|-----------------------------------------|
 | `local`   | LAN only (RFC1918)                      |
 | `tailnet` | LAN + tailnet (100.64.0.0/10)           |
+| `tailnet-only` | Tailnet only by default; explicit service sources may be added |
 | `public`  | everyone (internet via the vps edge)    |
 | `admin-only` | Headscale `group:admin` over Tailscale only |
 
@@ -134,7 +135,7 @@ wildcards `*.polpetta.online` to the vps.
 | host and bridge raw-port firewall | non-public `raw` tiers, or any `allowedSources` override; loaded independently of the CNI filter chains |
 
 | bind9 zone records  | `raw` entries with `record` (→ container IP, wg/tailnet view) |
-| blackbox probes     | local nginx HTTPS for ordinary `web` endpoints, direct host HTTP probes for `admin-only` backends, and direct TCP for `raw` entries with `probe.enable = true` |
+| blackbox probes     | local nginx HTTPS for ordinary `web` endpoints, direct host HTTP probes for `tailnet-only` and `admin-only` backends, and direct TCP for `raw` entries with `probe.enable = true` |
 | `useNginx` ordering | presence of `web` (auto-set on the mirrored container) |
 
 Container `ports` (host publishing, e.g. LAN Minecraft) stay explicit on the
@@ -166,7 +167,7 @@ The `record` option only makes them addressable by name.
 - `probe.unauth` is false on tcp (raw) probes; it only applies to http
 - non-public domains fall under `.internal.polpetta.online`, public ones under
   `polpetta.online` (wildcard DNS + cert are the only PKI)
-- `access` is one of the three enum values
+- `access` is one of the allowed values for that endpoint type
 
 ## Host wiring
 

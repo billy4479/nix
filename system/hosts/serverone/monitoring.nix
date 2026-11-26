@@ -46,7 +46,7 @@ let
   );
 
   # Static blackbox probe modules: plain http for the container web UIs, an
-  # https module pinning the grafana internal vhost (used to watch the
+  # https module pinning the Jellyfin vhost (used to watch the
   # wildcard certificate), an http module for services whose only unauth
   # answers are 401/404 (which still prove the HTTP server is alive) and a
   # plain tcp module for non-http services. All modules allow 30s per
@@ -92,10 +92,10 @@ let
       http = {
         preferred_ip_protocol = "ip4";
         headers = {
-          Host = "grafana.internal.${domain}";
+          Host = "jellyfin.internal.${domain}";
         };
         tls_config = {
-          server_name = "grafana.internal.${domain}";
+          server_name = "jellyfin.internal.${domain}";
         };
       };
     };
@@ -609,7 +609,7 @@ in
           module = [ "https_internal" ];
         };
         static_configs = [
-          { targets = [ "https://10.0.1.6" ]; }
+          { targets = [ "https://10.0.1.6/health" ]; }
         ];
         relabel_configs = blackboxRelabelConfigs;
       }

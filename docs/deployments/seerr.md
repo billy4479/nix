@@ -42,9 +42,10 @@ No VPS deployment is needed.
 
 ## Second deployment: open the request portal
 
-Restore `web.access = "tailnet"` in `services/services/seerr.nix` (the
-checked-in setting) and redeploy. Seerr keeps the same URL and moves to the
-standard private web tier (tailnet and LAN), with Jellyfin login still required. Re-resolve the hostname if your client cached the admin IP.
+Restore `web.access = "tailnet-only"` in `services/services/seerr.nix` (the
+checked-in setting) and redeploy. Seerr keeps the same URL and becomes
+reachable from the tailnet, but not the LAN, with Jellyfin login still required.
+Re-resolve the hostname if your client cached the admin IP.
 Sonarr and Radarr stay on the admin-only route. Verify from a non-admin tailnet
 node that Seerr works, both Arr URLs and direct backend ports are blocked,
 and an auto-approved request reaches the correct app.

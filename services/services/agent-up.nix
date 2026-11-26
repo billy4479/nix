@@ -27,7 +27,8 @@ in
 
     web = {
       port = 3000;
-      access = "tailnet";
+      access = "admin-only";
+      integrationClients = [ "t3code" ];
       # Answers 404 on /; still proves the server is alive.
       probe.unauth = true;
       nginx.extraConfig = ''

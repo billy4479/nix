@@ -83,7 +83,7 @@ in
 
     web = {
       port = 2283;
-      access = "tailnet";
+      access = "tailnet-only";
       # Historical domain: the UI is served under `immich`, not the container
       # name.
       domain = "immich.internal.${domain}";

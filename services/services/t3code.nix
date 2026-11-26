@@ -16,6 +16,19 @@ let
   extensions = import ../pi/extensions { inherit pkgs; };
   development = import ../agent-runtime/development.nix { inherit pkgs flakeInputs; };
   direnv = import ../pi/direnv.nix { inherit pkgs; };
+  agentUpWeb = config.polpetta.services.agent-up.web;
+  agentUpBackend = "http://10.0.1.${toString config.polpetta.services.agent-up.container.id}:${toString agentUpWeb.port}";
+  agentUp =
+    pkgs.writeShellScriptBin "agent-up" # sh
+      ''
+        set -eu
+        # Upload over the container bridge, but print the admin HTTPS URL.
+        if [ "''${AGENTUP_URL:-}" != "https://agent-up.internal.${domain}" ]; then
+          exec ${lib.getExe pkgs.agent-up} "$@"
+        fi
+        url=$(AGENTUP_URL=${agentUpBackend} ${lib.getExe pkgs.agent-up} "$@")
+        printf '%s\n' "https://agent-up.internal.${domain}''${url#${agentUpBackend}}"
+      '';
   entrypoint =
     pkgs.writeShellScript "t3code-entrypoint" # sh
       ''
@@ -46,6 +59,7 @@ let
       ])
       ++ [
         direnv
+        (lib.hiPrio agentUp)
         (import ../mail-watch { inherit pkgs; })
         (pkgs.callPackage ../../packages/agent-vm { })
         development.chromium
@@ -289,7 +303,7 @@ in
     };
     web = {
       port = 3000;
-      access = "tailnet";
+      access = "admin-only";
       probe.path = "/.well-known/t3/environment";
       nginx.extraConfig = ''
         client_max_body_size 256M;

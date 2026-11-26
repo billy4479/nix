@@ -25,7 +25,25 @@ Radarr and Sonarr have bridge-only access to the qBittorrent and Jackett backend
 - Jackett: use `http://10.0.1.8:9117` for the existing indexer URLs, keeping their paths and API keys.
 - Run the built-in download-client and indexer tests in both Arr services. Syncthing device IDs, existing peer addresses and sync authentication don't change.
 
-## Remove browser logins
+## Additional private web UI restrictions
+
+T3 Code, Grafana, Headplane, Agent Up, and Mircrewrr also use the admin-only
+route, with their existing application auth unchanged. FF, Outline, Immich,
+Seerr, BentoPDF, SearXNG, and the tsidp issuer are tailnet-only. Jellyfin keeps
+ordinary LAN access. Public sites and non-web endpoints are unchanged.
+
+- In Sonarr and Radarr, change any Mircrewrr indexer URL to `http://10.0.1.135:9696`,
+  preserving its Torznab path and API key, and test the indexer. Those containers
+  have direct bridge access; they cannot use the admin web route.
+- Verify that an upload from T3 Code prints the Agent Up HTTPS URL, and that it
+  opens from an admin tailnet device. The upload itself uses the bridge.
+- Verify OIDC sign-in after deployment, not just that the pages load. The issuer
+  still allows the named relying-party containers to exchange tokens over HTTPS.
+- With Tailscale off, verify Jellyfin still works and a non-admin private UI such
+  as Seerr is denied. From a non-admin tailnet device, verify Seerr works but the
+  new admin-only UIs are denied.
+
+## Remove browser logins for the original dashboards
 
 Sonarr and Radarr use `External` authentication, so their dashboards rely on the admin-only route rather than app passwords. Keep their API keys for [Seerr](seerr.md). Verify the network restrictions before deploying this setting.
 

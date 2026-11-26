@@ -61,10 +61,14 @@ in
     };
 
     # Torznab for prowlarr/radarr/sonarr and the admin panel both ride on the
-    # same port; the API key guards everything, so tailnet access is enough.
+    # same port. Keep the API key and allow Arr clients over the bridge.
     web = {
       port = 9696;
-      access = "tailnet";
+      access = "admin-only";
+      integrationClients = [
+        "radarr"
+        "sonarr"
+      ];
       probe.path = "/health";
     };
   };

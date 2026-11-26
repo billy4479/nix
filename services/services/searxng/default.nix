@@ -46,7 +46,12 @@ in
 
     web = {
       port = 8888;
-      access = "tailnet";
+      access = "tailnet-only";
+      # T3 Code's search tooling uses the canonical HTTPS endpoint.
+      allowedSources = [
+        "100.64.0.0/10"
+        "10.0.1.${toString config.polpetta.services.t3code.container.id}/32"
+      ];
       probe.path = "/healthz";
     };
   };

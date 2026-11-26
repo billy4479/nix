@@ -99,7 +99,7 @@ in
 
     web = {
       port = 3000;
-      access = "tailnet";
+      access = "admin-only";
       probe.path = "/api/health";
     };
   };

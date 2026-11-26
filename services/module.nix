@@ -95,9 +95,14 @@ let
     in
     {
       inherit name;
-      # Host-local probes don't use the Jack-only subnet route.
+      # The host probe is not a tailnet client; probe restricted backends directly.
       url =
-        if web.access == "admin-only" then
+        if
+          lib.elem web.access [
+            "admin-only"
+            "tailnet-only"
+          ]
+        then
           "http://10.0.1.${toString svc.container.id}:${toString web.port}${web.probe.path}"
         else
           "https://${domainOf name svc}${web.probe.path}";
@@ -164,12 +169,15 @@ let
       [ ]
     else
       (map (ip: "  deny ${ip};") externalIps)
-      ++ lib.optionals (access == "tailnet") [ "  allow 100.64.0.0/10;" ]
-      ++ [
+      ++ lib.optional (lib.elem access [
+        "tailnet"
+        "tailnet-only"
+      ]) "  allow 100.64.0.0/10;"
+      ++ lib.optionals (access != "tailnet-only") [
         "  allow 10.0.0.0/8;"
         "  allow 192.168.0.0/16;"
-        "  deny all;"
-      ];
+      ]
+      ++ [ "  deny all;" ];
 
   vhostLines =
     name: svc:
@@ -394,6 +402,7 @@ in
                           "public"
                           "tailnet"
                           "local"
+                          "tailnet-only"
                           "admin-only"
                         ];
                         description = "Who can reach this endpoint.";

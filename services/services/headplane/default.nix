@@ -62,7 +62,7 @@ in
 
     web = {
       port = 3000;
-      access = "tailnet";
+      access = "admin-only";
       # / answers 401; /admin is the login page.
       probe.path = "/admin";
       # With OIDC enabled /admin redirects to the IdP; the redirect is the

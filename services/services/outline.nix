@@ -94,7 +94,7 @@ in
 
     web = {
       port = 3000;
-      access = "tailnet";
+      access = "tailnet-only";
       # Match FILE_STORAGE_UPLOAD_MAX_SIZE, otherwise nginx 413s large
       # attachment uploads before Outline ever sees them.
       nginx.extraConfig = ''

@@ -18,7 +18,7 @@
 
     web = {
       port = 5055;
-      access = "tailnet";
+      access = "tailnet-only";
       probe.path = "/api/v1/status";
     };
   };
