@@ -29,6 +29,7 @@
     kdePackages.kate
     kdePackages.ark
     qalculate-gtk
+    calix
     gimp3
     inkscape
 
