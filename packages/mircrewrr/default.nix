@@ -26,13 +26,13 @@ stdenvNoCC.mkDerivation {
   pname = "mircrewrr";
   # Upstream tracks the app version by hand in src/admin/routes.py and publishes
   # no tags or releases, so the version follows the newest commit.
-  version = "7.1.0-unstable-2026-10-26";
+  version = "7.1.0-unstable-2026-11-26";
 
   src = fetchFromGitHub {
     owner = "easly1989";
     repo = "mircrewrr";
-    rev = "e0f1f459571b432dce0297c5aefbe523e53a6278";
-    hash = "sha256-igADrXuKA9wsJZ4o/qd5z8WyI2GnXXY7japC3ZBC8vs=";
+    rev = "59acce043a8a4453c6b8ef7fb36f1f0a9796e0a0";
+    hash = "sha256-8lXQJChDNxgCvw4wUvaYFlwPUNYxX4cLOILdrIv9D2E=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
