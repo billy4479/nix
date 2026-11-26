@@ -6,6 +6,6 @@
 # latest build at runtime.
 fetchurl {
   name = "geoip-aio-all.mmdb";
-  url = "https://github.com/P3TERX/GeoLite.mmdb/releases/download/2026.11.19/GeoLite2-City.mmdb";
-  hash = "sha256-BgqGmdMiluJFNt0j8X5lzhK6SJqc5geSHfCrAeQfozw=";
+  url = "https://github.com/P3TERX/GeoLite.mmdb/releases/download/2026.11.25/GeoLite2-City.mmdb";
+  hash = "sha256-0xd3DDn99jxLfUkU3bId9YGovjEsBH9XU55znBJ85O8=";
 }
