@@ -28,6 +28,12 @@ let
     [web]
     type = none
   '';
+  # The image follows the entrypoint's Nix closure, not runtime args or env.
+  start = pkgs.writeShellScript "radicale-start" ''
+    export RADICALE_CONFIG=${radicaleConfig}
+    exec ${runtime}/bin/gunicorn --chdir ${./.} --bind 0.0.0.0:5232 \
+      --threads 4 --umask 0o077 'landing:create_app()' "$@"
+  '';
 in
 {
   sops.secrets = lib.mkIf (options ? nerdctl-containers) {
@@ -51,18 +57,7 @@ in
   polpetta.services.${name} = {
     container = {
       id = 30;
-      entrypoint = [ "${runtime}/bin/gunicorn" ];
-      cmd = [
-        "--chdir"
-        "${./.}"
-        "--bind"
-        "0.0.0.0:5232"
-        "--threads"
-        "4"
-        "--umask"
-        "0o077"
-        "landing:create_app()"
-      ];
+      entrypoint = [ "${start}" ];
       environment = {
         CALENDAR_ORIGIN = origin;
         CALENDAR_LEGACY_ORIGIN = "https://${name}.internal.${domain}";

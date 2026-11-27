@@ -3,6 +3,7 @@ let
   inherit (pkgs) lib;
   images = serverone.system.build.containerImages;
   containers = serverone.nerdctl-containers;
+  containerRadicaleConfig = containers.radicale.environment.RADICALE_CONFIG;
   # Exercise a copied executable, a store-only executable, and fixed arguments.
   cases =
     map
@@ -10,7 +11,12 @@ let
         inherit name;
         image = images.${name};
         entrypoint = containers.${name}.entrypoint;
-        requiredStorePaths = lib.optionals (name == "opencloud") [ pkgs.opencloud.web ];
+        requiredStorePaths =
+          lib.optionals (name == "opencloud") [ pkgs.opencloud.web ]
+          ++ lib.optionals (name == "radicale") [
+            ../services/services/radicale
+            containerRadicaleConfig
+          ];
         absentRootFiles =
           {
             nginx = [ "bin/nginx" ];
@@ -29,6 +35,7 @@ let
         "nginx"
         "bentopdf"
         "opencloud"
+        "radicale"
       ];
   roots = lib.mapAttrs (
     name: container: pkgs.callPackage ../containers/image-root.nix { inherit name container; }
