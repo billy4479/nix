@@ -10,6 +10,7 @@ from pathlib import Path
 
 NIX_ROOT = Path("/workspace/nix")
 CODE_ROOT = Path("/workspace/code")
+WORKTREE_ROOT = Path("/home/t3/.t3/worktrees")
 
 
 def trusted(path):
@@ -20,8 +21,9 @@ def trusted(path):
         return False
 
     def allowed(value):
-        return value.is_relative_to(NIX_ROOT) or (
-            value.is_relative_to(CODE_ROOT) and value != CODE_ROOT
+        return value.is_relative_to(NIX_ROOT) or any(
+            value.is_relative_to(root) and value != root
+            for root in (CODE_ROOT, WORKTREE_ROOT)
         )
 
     return allowed(path) and allowed(actual)

@@ -9,6 +9,7 @@ let
     whitelist.prefix = [
       "/workspace/code/"
       "/workspace/nix/"
+      "/home/t3/.t3/worktrees/"
     ];
   };
   configuration =

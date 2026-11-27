@@ -171,13 +171,13 @@ threads. Restart sessions after changing Pi itself. Do not use `pi update` to
 replace the Nix-managed executable or put extension code in agent-config.
 
 Direnv automatically approves `.envrc` contents in `/workspace/nix` and repo
-descendants under `/workspace/code/`. A wrapper selects native whitelist config
-only after canonical-path/boundary checks. Sibling-prefix paths,
-`/workspace/code/.envrc` and symlink escapes retain manual approval. Changes
-from Git pulls are trusted automatically in approved roots. Both scopes use
-nix-direnv and strict environment evaluation, so failed setup does not fall
-through into command execution. Pi separately auto-trusts project settings/extensions in those same
-roots, without saving a blanket `always` policy; normal trust applies elsewhere.
+checkouts below `/workspace/code/` and `/home/t3/.t3/worktrees/`. A wrapper
+selects native whitelist config only after canonical-path/boundary checks.
+Sibling-prefix paths, `.envrc` files directly in the code or worktree parent,
+and symlink escapes retain manual approval. Changes from Git pulls are trusted
+automatically in approved roots. Both scopes use nix-direnv and strict
+environment evaluation, so failed setup does not fall through into command
+execution. Pi project settings/extensions have a separate trust policy.
 
 Each Pi bash call runs `direnv exec` at its execution cwd. Changes/unsets stay
 in the child process; native Pi streaming, cancellation and timeouts remain.

@@ -7,9 +7,33 @@ import tempfile
 import tomllib
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+import direnv
 
 
 class DirenvConfigTest(unittest.TestCase):
+    def test_worktree_trust_preserves_boundaries(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary).resolve()
+            root = parent / "worktrees"
+            checkout = root / "project" / "checkout"
+            checkout.mkdir(parents=True)
+            sibling = parent / "worktrees-outside"
+            sibling.mkdir()
+            (root / ".envrc").touch()
+            outside = sibling / ".envrc"
+            outside.touch()
+            envrc = checkout / ".envrc"
+            envrc.touch()
+            with patch.object(direnv, "WORKTREE_ROOT", root):
+                self.assertEqual(direnv.config_scope(checkout), "trusted")
+                self.assertEqual(direnv.config_scope(root), "manual")
+                self.assertEqual(direnv.config_scope(sibling), "manual")
+                envrc.unlink()
+                envrc.symlink_to(outside)
+                self.assertEqual(direnv.config_scope(checkout), "manual")
+
     def test_generated_configs_load_and_reject_failed_environments(self):
         configuration = Path(os.environ["TEST_DIRENV_CONFIG"])
         binary = os.environ["TEST_DIRENV"]
@@ -22,7 +46,7 @@ class DirenvConfigTest(unittest.TestCase):
                 if scope == "trusted":
                     self.assertEqual(
                         parsed["whitelist"]["prefix"],
-                        ["/workspace/code/", "/workspace/nix/"],
+                        ["/workspace/code/", "/workspace/nix/", "/home/t3/.t3/worktrees/"],
                     )
                 else:
                     self.assertNotIn("whitelist", parsed)
