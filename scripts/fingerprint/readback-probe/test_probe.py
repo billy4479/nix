@@ -25,13 +25,16 @@ cases = {
     "empty_blob": (2, [0, 2, 3]),
     "io_error": (1, [0, 2]),
 }
+cases["hash_diagnostic"] = (0, [0, 2])
 for scenario, (code, queries) in cases.items():
+    diagnostic = scenario == "hash_diagnostic"
+    args = ["--check-hash"] if diagnostic else []
     with tempfile.TemporaryDirectory() as temp:
         path = Path(temp)
         result = subprocess.run(
-            [binary, "/dev/mock-not-a-real-device"],
+            [binary, *args, "/dev/mock-not-a-real-device"],
             cwd=path,
-            env={**os.environ, "SCENARIO": scenario},
+            env={**os.environ, "SCENARIO": "success" if diagnostic else scenario},
             capture_output=True,
             text=True,
             check=False,
@@ -67,6 +70,10 @@ for scenario, (code, queries) in cases.items():
             assert "query_3_foreign=1" in result.stdout
             assert "result=wrapped_key_unavailable" in result.stdout
             assert not (path / "wrapped-key.bin").exists()
+        if diagnostic:
+            assert "result=hash_preflight_passed" in result.stdout
+            assert len((path / "key-hash.bin").read_bytes()) == 32
+            assert "query=2" in (path / "raw-spi.txt").read_text()
         if 3 not in queries:
             assert not (path / "wrapped-key.bin").exists()
 

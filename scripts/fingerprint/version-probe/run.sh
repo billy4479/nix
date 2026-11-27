@@ -37,6 +37,8 @@ if [[ $kind == provision ]]; then
     exit 1
   fi
   probe_args=(--replace-psk)
+elif [[ $kind == readback && $# == 1 && $1 == --check-hash ]]; then
+  probe_args=(--check-hash)
 elif [[ $# != 0 ]]; then
   printf 'This read-only probe takes no arguments.\n' >&2
   exit 1
@@ -152,7 +154,11 @@ version)
   printf 'No userspace GPIO requests, resets, scans, or key/config writes.\n'
   ;;
 readback)
-  printf 'Fixed firmware/key readback only. Sensitive replies go into a private archive.\n'
+  if [[ ${#probe_args[@]} != 0 ]]; then
+    printf 'Diagnostic only: firmware and key-hash queries, no wrapped-key request.\n'
+  else
+    printf 'Fixed firmware/key readback only. Sensitive replies go into a private archive.\n'
+  fi
   printf 'No userspace GPIO requests, resets, scans, or key/config writes.\n'
   ;;
 provision)

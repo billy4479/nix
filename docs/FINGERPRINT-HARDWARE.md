@@ -287,6 +287,17 @@ requires separate explicit approval and manual execution. The old key has not
 been backed up, so rollback cannot be promised. Firmware acceptance and
 persistence remain untested; keep password authentication.
 
+### First provisioning preflight: hash timed out before any write
+
+The user ran provisioning v2 on `7.3.5-zen1`. Firmware `GF_ITE_EC_20066`
+responded, but the probe exited `existing_hash_unavailable_stop` after the
+hash poll budget. The SPI counters recorded no errors or timeouts, and cleanup
+restored the unbound state. This exit happens before key generation or upload.
+The summary did not record hash frames on timeout, so it cannot tell us whether
+an ACK or a misparsed reply was present. Use the readback bundle's new
+`--check-hash` mode to capture the same version/hash requests without any
+wrapped-key query, upload, or fallback. Keep its archive private.
+
 ## Consequences for bring-up
 
 - The declared mode-0/10 MHz ITE transport now has a successful live version

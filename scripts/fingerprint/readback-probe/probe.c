@@ -85,10 +85,12 @@ static int query(int fd, FILE *raw, enum sensor_query kind, uint16_t sequence,
   return parser->done ? 0 : 2;
 }
 
-static int run(int fd, FILE *raw) {
+static int run(int fd, FILE *raw, bool hash_only) {
   if (sensor_configure(fd) != 0)
     return 1;
-  puts("profile=ite-20066-key-readback-v2\nmcu_state=not_requested");
+  puts(hash_only ? "profile=ite-20066-hash-diagnostic-v1"
+                 : "profile=ite-20066-key-readback-v2");
+  puts("mcu_state=not_requested");
   struct readback_parser reply;
   int result = query(fd, raw, QUERY_VERSION, 1, &reply);
   if (result != 0) {
@@ -107,6 +109,7 @@ static int run(int fd, FILE *raw) {
    * Key discovery does not require it, so do not try alternate state requests.
    */
   result = query(fd, raw, QUERY_HASH, 2, &reply);
+  printf("hash_ack=%s\n", reply.ack ? "yes" : "no");
   if (result != 0) {
     puts("result=hash_unavailable");
     return result;
@@ -122,6 +125,10 @@ static int run(int fd, FILE *raw) {
     return 2;
   }
   puts("key_hash=collected");
+  if (hash_only) {
+    puts("result=hash_preflight_passed");
+    return 0;
+  }
 
   result = query(fd, raw, QUERY_WRAPPED, 3, &reply);
   if (result != 0) {
@@ -148,13 +155,15 @@ static int run(int fd, FILE *raw) {
 int main(int argc, char **argv) {
   if (argc == 2 && !strcmp(argv[1], "--help")) {
     puts("Use the reviewed run.sh as sudo. Fixed "
-         "version/hash/wrapped-key queries only.\n"
+         "version/hash/wrapped-key queries only. --check-hash skips "
+         "wrapped-key.\n"
          "Requires a private output directory. No GPIO requests, reset, "
          "configuration,\n"
          "TLS, scan, enrollment, key upload, arbitrary commands or fallback.");
     return 0;
   }
-  if (argc != 2) {
+  bool hash_only = argc == 3 && !strcmp(argv[1], "--check-hash");
+  if (argc != 2 && !hash_only) {
     fprintf(stderr, "Use the reviewed run.sh as sudo\n");
     return 1;
   }
@@ -180,8 +189,8 @@ int main(int argc, char **argv) {
     return 1;
   }
   setvbuf(stdout, NULL, _IOLBF, 0);
-  int fd = sensor_open(argv[1]);
-  int result = fd < 0 ? 1 : run(fd, raw);
+  int fd = sensor_open(argv[hash_only ? 2 : 1]);
+  int result = fd < 0 ? 1 : run(fd, raw, hash_only);
   if (fd >= 0)
     close(fd);
   if (fclose(raw) != 0)
