@@ -85,7 +85,6 @@
   derp-certificates = pkgs.callPackage ../services/derp-certificates/test.nix { };
   private-store-threshold = pkgs.callPackage ../containers/private-store-wipe/test.nix { };
   agent-containers = import ../services/pi/test.nix { inherit pkgs; };
-  mail-watch = import ../services/mail-watch/test.nix { inherit pkgs; };
   agent-browser = import ../tests/agent-browser.nix {
     inherit pkgs;
     flakeInputs = inputs;

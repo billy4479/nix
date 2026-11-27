@@ -87,13 +87,6 @@ remain in use so the existing agent identity keeps working. The daily
 direnv roots. Runtime/extensions are private-store seed roots. Do not wipe the store
 to upgrade.
 
-## Gmail review and Telegram alerts
-
-The image includes `mail-watch` for read-only Gmail retrieval and Telegram
-notifications using the existing monitoring bot. See [MAIL_WATCH.md](MAIL_WATCH.md)
-for OAuth setup, label selection, the editable agent prompt and the proposed
-09:00/18:00 Europe/Rome T3 schedules. No mail task is enabled automatically.
-
 ## Shared instruction/skill migration
 
 `agent-config-migration.service` runs as UID 5021 before T3 Code and Syncthing.
