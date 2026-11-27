@@ -51,7 +51,7 @@ Pending paths stay on their current datasets and retain existing snapshot
 coverage. The [workspace cutover](SERVERONE_WORKSPACE_CUTOVER.md) also enables
 separate storage for the T3 Code private Nix store. Create and mount both before
 activation; the private store may be rebuilt from empty. Migrate other caches
-and persistent volumes in batches. Give databases a separate maintenance window.
+and persistent volumes in batches, or use the [single-window cutover guide](SERVERONE_VOLUME_CUTOVER.md) for the entire pending list.
 Only remove a path from `pending` after migration or confirmation that it can
 be provisioned empty. New paths are enforced by default.
 
