@@ -133,6 +133,16 @@ int sensor_read_mailbox(int fd, uint8_t status[4], uint8_t response[256]) {
   return exchange(fd, requests, 2, 260);
 }
 
+int sensor_write_fragment(int fd, const uint8_t *fragment, size_t length) {
+  struct spi_ioc_transfer request = {
+      .tx_buf = (uintptr_t)fragment,
+      .len = length,
+      .speed_hz = SENSOR_SPEED,
+      .bits_per_word = 8,
+  };
+  return exchange(fd, &request, 1, length);
+}
+
 long sensor_milliseconds(void) {
   struct timespec value;
   if (clock_gettime(CLOCK_MONOTONIC, &value) != 0)

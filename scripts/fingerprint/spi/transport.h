@@ -9,6 +9,7 @@ int sensor_send(int fd, enum sensor_query query, uint16_t counter,
                 uint16_t timestamp);
 int sensor_read_small(int fd, uint8_t response[64]);
 int sensor_read_mailbox(int fd, uint8_t status[4], uint8_t response[256]);
+int sensor_write_fragment(int fd, const uint8_t *fragment, size_t length);
 long sensor_milliseconds(void);
 void sensor_pause(long milliseconds);
 #endif

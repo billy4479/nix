@@ -33,25 +33,23 @@ traced through original-driver emulation down to individual SPI buffers, with
 mocked acknowledgements, completion replies, and hash readback. This adds a
 verified host-side packet specification, not evidence of real MCU acceptance.
 
-### Offline prototype checkpoint
+### Offline provisioning prototype
 
-Git checkpoint `9a1e01e` (`9a1e01e:scripts/fingerprint/provision-probe/`)
-contains the unfinished one-shot provisioning prototype. It is not installed or
-part of the current checkout. In a scratch copy of that exact checkpoint, the
-native C builds passed with warnings treated as errors. The synthetic wrapper
-and payload tests, all eight mock provisioning scenarios, mocked SPI and runner
-checks, and ShellCheck passed. The full static Nix build did not finish within
-the build timeout; it was still running the mbed TLS dependency tests. No probe
-was run against hardware during this review.
+The one-shot prototype has been restored from Git checkpoint `9a1e01e` and
+updated in [`scripts/fingerprint/provision-probe/`](../scripts/fingerprint/provision-probe/README.md).
+It is not installed on portatilo. Read-only SSH inspection confirmed that the
+sensor is still unbound, fprintd is not installed, and `/var/lib` is on the
+laptop's encrypted ext4 volume.
 
-Before considering a live write, verify power-loss recovery of the **new** key.
-The prototype syncs the key in a scratch directory under `/tmp`, which may be
-volatile. The runner exports the copy intended for long-term storage only
-after the attempted write. A reboot between those steps could leave a replaced
-sensor key with no usable host copy. Require durable private storage before
-sending anything, and test storage failures using mocks. This would protect
-the new key, not provide rollback to the unrecovered old key. A matching digest would still not
-prove that the encrypted session or fingerprint capture works.
+The prototype no longer relies on `/tmp` or report export to retain the new
+key. It creates a root-only file under `/var/lib`, synchronizes the file and
+its directory before the upload, and refuses to overwrite an existing path or
+proceed on a storage error. Mock tests inject write and synchronization
+failures and interrupt the process at the first upload; they check that no
+upload is attempted on storage failure and that the retained key blocks a retry.
+This is not a real power-loss test or a rollback mechanism. No probe was run on
+hardware for this change. A live write still needs separate approval; a matching
+digest would not prove that the encrypted session or fingerprint capture works.
 
 ## Hardware actually observed
 
@@ -303,10 +301,8 @@ portatilo has the same firmware or key length.
    version and status with an explicit no-persistent-write command allowlist.
    Even these live protocol exchanges are a separate step from this offline
    investigation and require privileged device access.
-2. **Try readback first.** Read the existing provisioning data, if permitted by
-   this firmware, and preserve it privately. If `BB010003` is readable and uses
-   the verified wrapper, authenticated offline recovery may avoid DPAPI and any
-   provisioning write. Neither read access nor a pre-existing key is established.
+2. **Readback tried.** The reviewed query returned a digest rather than the
+   usable key wrapper. Do not repeat it; the old key is not backed up.
 3. **Provision only if needed.** Adapt the proven wrapper to the ITE transport,
    use a unique cryptographically random key, back up readable state, validate
    replies, then prove a TLS session. Do not flash firmware or use `/dev/mem`.

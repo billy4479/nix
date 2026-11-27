@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared guard/cleanup for the fixed version-only and readback probes.
+# Shared guard/cleanup for the fixed version, readback and provisioning probes.
 set -euo pipefail
 umask 077
 if [[ $EUID -ne 0 || -z ${SUDO_UID:-} || -z ${SUDO_GID:-} ]]; then
@@ -25,11 +25,22 @@ if [[ -f probe-kind ]]; then
   fi
   kind=$(<probe-kind)
 fi
-case $kind in version | readback) ;; *)
+case $kind in version | readback | provision) ;; *)
   printf 'Unknown probe kind.\n' >&2
   exit 1
   ;;
 esac
+probe_args=()
+if [[ $kind == provision ]]; then
+  if [[ $# != 1 || $1 != --replace-psk ]]; then
+    printf 'Persistent key replacement is irreversible. Requires explicit --replace-psk.\n' >&2
+    exit 1
+  fi
+  probe_args=(--replace-psk)
+elif [[ $# != 0 ]]; then
+  printf 'This read-only probe takes no arguments.\n' >&2
+  exit 1
+fi
 binary="$kind-probe"
 if ! grep -Eq "^[0-9a-f]{64}  $binary\$" SHA256SUMS; then
   printf 'Probe binary is not covered by the manifest.\n' >&2
@@ -108,15 +119,15 @@ finish() {
     printf '\n--- After ---\n%s\n' "$(<"$work/after")"
   } >"$work/report.txt"
   local saved=0
-  if [[ $kind == readback ]]; then
-    output=$(mktemp "$user_home/fingerprint-readback-report.XXXXXXXX.tar.gz")
-    if tar -czf "$output" -C "$work" .; then saved=1; fi
-  else
+  if [[ $kind == version ]]; then
     output=$(mktemp "$user_home/fingerprint-version-report.XXXXXXXX.txt")
     if cp -- "$work/report.txt" "$output"; then saved=1; fi
+  else
+    output=$(mktemp "$user_home/fingerprint-$kind-report.XXXXXXXX.tar.gz")
+    if tar -czf "$output" -C "$work" .; then saved=1; fi
   fi
   if [[ $saved == 1 ]] && chown --no-dereference "$SUDO_UID:$SUDO_GID" "$output" && chmod 600 "$output"; then
-    grep -E '^(firmware|profile|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests|mcu_state|mcu_tls_connected|mcu_locked|key_hash|key_hash_status|wrapped_key|wrapped_key_status)=' "$work/probe.log"
+    grep -E '^(firmware|profile|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests|mcu_state|mcu_tls_connected|mcu_locked|key_hash|key_hash_status|wrapped_key|wrapped_key_status|existing_hash|hash_status|observed_hash|new_key|write_ack|write_completion|write_status|write_fragments|payload_bytes)=' "$work/probe.log"
     printf 'Private report saved to (do not paste/upload its contents):\n%s\n' "$output"
   else
     printf 'Could not save report; scratch data remains in %s\n' "$work" >&2
@@ -135,12 +146,21 @@ trap 'finish' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 snapshot >"$work/before"
-if [[ $kind == readback ]]; then
-  printf 'Fixed firmware/key readback only. Sensitive replies go into a private archive.\n'
-else
+case $kind in
+version)
   printf 'Sending one firmware-version query.\n'
-fi
-printf 'No userspace GPIO requests, resets, scans, or key/config writes.\n'
+  printf 'No userspace GPIO requests, resets, scans, or key/config writes.\n'
+  ;;
+readback)
+  printf 'Fixed firmware/key readback only. Sensitive replies go into a private archive.\n'
+  printf 'No userspace GPIO requests, resets, scans, or key/config writes.\n'
+  ;;
+provision)
+  printf 'Replacing the sensor PSK once. Recovery key: /var/lib/fingerprint-gxfp5120.psk (root-only).\n'
+  printf 'The recovery key is synced before upload and never removed by cleanup. No retry.\n'
+  printf 'No userspace GPIO requests, resets, scans, TLS, enrollment or configuration writes.\n'
+  ;;
+esac
 if [[ ! -d /sys/module/spidev ]]; then loaded_spidev=1; fi
 /run/current-system/sw/bin/modprobe spidev 2>>"$work/probe.log"
 override_set=1
@@ -166,7 +186,9 @@ fi
 set +e
 (
   cd "$work" || exit 1
-  /run/current-system/sw/bin/timeout --signal=TERM --kill-after=2 15 "$bundle/$binary" "$node"
+  limit=15
+  if [[ $kind == provision ]]; then limit=20; fi
+  /run/current-system/sw/bin/timeout --signal=TERM --kill-after=2 "$limit" "$bundle/$binary" "${probe_args[@]}" "$node"
 ) >"$work/probe.log" 2>&1
 result=$?
 set -e

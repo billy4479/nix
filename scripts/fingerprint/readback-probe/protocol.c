@@ -18,9 +18,21 @@ static void consume(struct readback_parser *parser, size_t size) {
 }
 static void accept(struct readback_parser *p, uint8_t command,
                    const uint8_t *payload, size_t size) {
-  uint8_t expected = p->query == QUERY_VERSION ? 0xa8
-                     : p->query == QUERY_STATE ? 0xae
-                                               : 0xe4;
+  uint8_t expected;
+  switch (p->query) {
+  case QUERY_VERSION:
+    expected = 0xa8;
+    break;
+  case QUERY_STATE:
+    expected = 0xae;
+    break;
+  case QUERY_UPLOAD:
+    expected = 0xe0;
+    break;
+  default:
+    expected = 0xe4;
+    break;
+  }
   if (command == 0xb0 && size == 2 && (payload[0] & 0xfe) == expected &&
       (payload[1] & 1)) {
     p->ack = true;
@@ -33,6 +45,22 @@ static void accept(struct readback_parser *p, uint8_t command,
    */
   if (expected == 0xa8 && !p->ack) {
     p->foreign++;
+    return;
+  }
+  if (expected == 0xe0) {
+    /* The production completion reply is separate from its ACK. Require the
+     * ACK first so an old completion cannot satisfy this upload.
+     */
+    if (!p->ack) {
+      p->foreign++;
+      return;
+    }
+    if (size < 1) {
+      p->done = p->malformed = true;
+      return;
+    }
+    p->status = payload[0];
+    p->done = true;
     return;
   }
   if (expected == 0xe4) {

@@ -13,7 +13,7 @@ from pathlib import Path
 
 runner = Path(sys.argv[1]).read_text()
 finish = runner[runner.index("finish() {") : runner.index("trap 'finish' EXIT")]
-for kind in ("version", "readback"):
+for kind in ("version", "readback", "provision"):
     for failure in (False, True):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp)
@@ -59,7 +59,7 @@ snapshot() { printf 'messages=0\\n'; }
             assert (path / "sensor/driver_override").read_text() == "\n"
             (report,) = (path / "home").iterdir()
             assert stat.S_IMODE(report.stat().st_mode) == 0o600
-            if kind == "readback":
+            if kind != "version":
                 import tarfile
 
                 with tarfile.open(report) as archive:
@@ -72,5 +72,5 @@ snapshot() { printf 'messages=0\\n'; }
                 text = report.read_text()
             assert f"cleanup_failed={int(failure)}" in text
 print(
-    "Runner tests passed: both report formats, private data/permissions, override restoration and cleanup failure reporting (all filesystem state is fake)."
+    "Runner tests passed: all report formats, private data/permissions, override restoration and cleanup failure reporting (all filesystem state is fake)."
 )
