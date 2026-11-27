@@ -48,10 +48,10 @@ backups for important database and user data before pruning old snapshots.
 
 The initial `pending` list defers enforcement for existing unsplit volumes.
 Pending paths stay on their current datasets and retain existing snapshot
-coverage. First follow the [workspace cutover commands](SERVERONE_WORKSPACE_CUTOVER.md)
-to move the shared workspaces out of the retired OpenChamber path. Then migrate
-the T3 Code private store and caches, followed by persistent
-volumes in batches. Give databases a separate maintenance window.
+coverage. The [workspace cutover](SERVERONE_WORKSPACE_CUTOVER.md) also enables
+separate storage for the T3 Code private Nix store. Create and mount both before
+activation; the private store may be rebuilt from empty. Migrate other caches
+and persistent volumes in batches. Give databases a separate maintenance window.
 Only remove a path from `pending` after migration or confirmation that it can
 be provisioned empty. New paths are enforced by default.
 

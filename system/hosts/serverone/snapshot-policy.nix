@@ -101,7 +101,6 @@
     "/mnt/SSD/apps/sonarr"
     "/mnt/SSD/apps/syncthing"
     "/mnt/SSD/apps/t3code/home"
-    "/mnt/SSD/apps/t3code/nix-root"
     "/mnt/SSD/apps/t3code/tmp"
     "/mnt/SSD/apps/tsidp/lib"
   ];

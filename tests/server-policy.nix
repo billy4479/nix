@@ -68,6 +68,8 @@ assert lib.assertMsg (failedAssertions == [ ]) (
   lib.concatMapStringsSep "\n" (a: a.message) failedAssertions
 );
 assert volumePlan."/mnt/SSD/apps/t3code/nix-root".isCache;
+assert volumePlan."/mnt/SSD/apps/t3code/nix-root".enforce;
+assert lib.elem "/mnt/SSD/apps/t3code/nix-root" (guardedMounts "nerdctl-t3code");
 assert volumePlan."/mnt/SSD/apps/t3code/nix-root".dataset == "ssd_pool/apps/t3code-nix-root";
 assert !volumePlan."/mnt/SSD/apps/bind9/cache".isCache;
 assert volumePlan."/mnt/SSD/apps/workspaces".dataset == "ssd_pool/apps/workspaces";

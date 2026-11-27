@@ -39,11 +39,14 @@ printed store paths. Do not proceed if the build fails.
 In the same Bash session:
 
 ```bash
+snap=(zfs-snapshot-{frequent,hourly,daily,weekly,monthly})
+sudo systemctl stop "${snap[@]/%/.timer}"
+systemctl is-active "${snap[@]/%/.service}" || true
 sudo systemctl stop t3code-nix-gc.timer t3code-nix-gc.service \
   nerdctl-t3code.service nerdctl-syncthing.service
 ```
 
-Confirm the units are inactive and there are no host-side writers. Only run
+Confirm the units are inactive and there are no host-side writers. If a snapshot job is running, let it finish before copying. Only run
 this block if the target and dataset are new. If retrying with an existing
 dataset, verify its mount and skip creation.
 
@@ -65,7 +68,34 @@ print no differences. The old tree remains intact for rollback. Tags, Git
 metadata, permissions, hardlinks within the workspace, and Syncthing marker
 files are copied. If the verification reports differences, stop here.
 
-## 3. Activate and verify
+## 3. Create an empty private Nix store
+
+Do this only if you are willing to rebuild T3 Code's private store. The host
+`/nix` and T3 Code's home are untouched. Keep the old tree until verification.
+
+```bash
+(
+  set -e
+  store=/mnt/SSD/apps/t3code/nix-root
+  sudo test ! -e "$store.retired"
+  sudo test ! -L "$store.retired"
+  mounts=$(findmnt -rn -o TARGET)
+  if grep -Eq '^/mnt/SSD/apps/t3code/nix-root(/|$)' <<< "$mounts"; then
+    echo 'Unexpected mount on or under the old store' >&2
+    exit 1
+  fi
+  sudo mv -T -- "$store" "$store.retired"
+  sudo zfs create -o "mountpoint=$store" -o acltype=posix -o xattr=sa \
+    -o com.sun:auto-snapshot=false ssd_pool/apps/t3code-nix-root
+  test "$(findmnt -nro SOURCE --mountpoint "$store")" = ssd_pool/apps/t3code-nix-root
+)
+```
+
+T3 Code seeds the new store on startup. Other cached shells and builds are
+recreated as needed. Pause the snapshot timers before this operation; remove
+the retired store after verification so later parent snapshots do not capture it.
+
+## 4. Activate and verify
 
 ```bash
 activate-system "$next"
@@ -87,7 +117,7 @@ sudo systemctl start nerdctl-syncthing.service nerdctl-t3code.service t3code-nix
 
 After new writes, do not switch back to the old copy without reconciling them.
 
-## 4. Remove the retired tree after verification
+## 5. Remove the retired trees after verification
 
 First rename it out of the old path to catch any remaining consumers:
 
@@ -103,6 +133,16 @@ inspect it manually.
 findmnt -rn -o TARGET | grep -E '^/mnt/SSD/apps/openchamber\.retired(/|$)' || true
 sudo du -xsh /mnt/SSD/apps/openchamber.retired
 sudo rm -rf --one-file-system -- /mnt/SSD/apps/openchamber.retired
+findmnt -rn -o TARGET | grep -E '^/mnt/SSD/apps/t3code/nix-root\.retired(/|$)' || true
+sudo rm -rf --one-file-system -- /mnt/SSD/apps/t3code/nix-root.retired
+```
+
+Resume automatic snapshots and verify the new layout:
+
+```bash
+sudo systemctl start "${snap[@]/%/.timer}"
+zfs get com.sun:auto-snapshot ssd_pool/apps/workspaces ssd_pool/apps/t3code-nix-root
+zfs list -H -r -t snapshot -o name ssd_pool/apps | grep -E '^ssd_pool/apps/(workspaces|t3code-nix-root)@' || true
 ```
 
 Do not delete `/mnt/SSD/agent-config`. The legacy-named `openchamber-ssh-key`
