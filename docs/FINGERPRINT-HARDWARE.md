@@ -325,6 +325,13 @@ verify the peer's Finished message. The bridge passed a synthetic-key test
 with an independent OpenSSL peer, including rejection of a wrong key. It does
 not request an image or enable authentication integration.
 
+The first live `--verify-tls` run stopped at its firmware query, before loading
+or using the key. No valid A8 reply arrived; 76 of the 128 read windows held the
+exact ClientHello from the preceding probe. There were no SPI errors, and the
+driver was unbound on exit. This points to leftover sensor state, not a TLS
+key failure. Try the full handshake directly after a cold shutdown and power-on,
+without running the ClientHello-only probe first. Do not reprovision.
+
 ## Consequences for bring-up
 
 - The declared mode-0/10 MHz ITE transport now has a successful live version
