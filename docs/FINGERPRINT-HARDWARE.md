@@ -305,6 +305,13 @@ preflight timeout. It also keeps one rolling ITE transmit counter across the
 preflight, upload and verification instead of resetting it at upload. This
 corrects an offline finding, not a demonstrated cause of the v2 timeout.
 
+Provisioning v3 also stopped before key generation. It counted 108 valid
+frames during the hash wait but saw neither a matching hash ACK nor a hash
+reply; SPI again reported no errors. V4 gives the MCU a short settling interval
+after the version reply and repeats a wholly unanswered hash read at most once,
+with a fresh counter. It still requires the hash ACK and valid digest before
+attempting an upload, and it never retries an upload.
+
 ## Consequences for bring-up
 
 - The declared mode-0/10 MHz ITE transport now has a successful live version

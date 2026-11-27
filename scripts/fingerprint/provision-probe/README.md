@@ -15,7 +15,8 @@ The runtime seed is the one embedded in the public gxfp5130 Linux payload code
 
 1. Identify the sensor and require firmware `GF_ITE_EC_20066`.
 2. Require a matching ACK followed by the existing 32-byte key hash. Stop if
-   it is refused or unavailable.
+   it is refused or unavailable. Allow a 100 ms pause after the version reply,
+   and repeat the read once only if neither the hash ACK nor a hash reply arrived.
 3. Generate a 32-byte PSK and an 8-byte host-cache seed from `getrandom`.
 4. Build the 102-byte authenticated/encrypted wrapper and its SHA-256.
 5. Create `/var/lib/fingerprint-gxfp5120.psk` (32 raw bytes, root-owned and
@@ -27,7 +28,7 @@ The runtime seed is the one embedded in the public gxfp5130 Linux payload code
 7. Wait at most one second for the command ACK and zero-status completion.
 8. Read `BB020003` for up to 1.5 seconds and compare with SHA-256(wrapper).
 
-There is no retry at any layer. A missing ACK or completion does not cause a
+There is no upload retry. A missing upload ACK or completion does not cause a
 resend. The probe still performs the bounded hash check, because a write may
 have landed even when the reply was lost.
 

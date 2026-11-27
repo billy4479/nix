@@ -115,10 +115,10 @@ static int read_version(int fd, uint8_t name[24], size_t *length) {
   *length = parser.length;
   return 0;
 }
-/* Stop on the first valid 32-byte digest, for the before-image. */
-static int read_hash(int fd, uint8_t digest[32]) {
+/* Return 3 only when there was no matching ACK or E4 reply at all. */
+static int read_hash(int fd, uint16_t counter, uint8_t digest[32]) {
   long start = sensor_milliseconds();
-  if (start < 0 || sensor_send(fd, QUERY_HASH, 2, 0) != 0)
+  if (start < 0 || sensor_send(fd, QUERY_HASH, counter, 0) != 0)
     return 1;
   struct readback_parser parser = {.query = QUERY_HASH, .require_ack = true};
   sensor_pause(5);
@@ -139,6 +139,8 @@ static int read_hash(int fd, uint8_t digest[32]) {
          parser.ack ? "yes" : "no");
   if (parser.malformed)
     return 1;
+  if (!parser.ack && !parser.foreign)
+    return 3;
   if (parser.status)
     printf("hash_status=%u\n", parser.status);
   if (!parser.done || parser.status || parser.length != 32)
@@ -234,7 +236,7 @@ static int upload(int fd, const uint8_t *record, size_t length,
 static int run(int fd, int recovery) {
   if (sensor_configure(fd) != 0)
     return 1;
-  puts("profile=ite-20066-key-provision-v3");
+  puts("profile=ite-20066-key-provision-v4");
   uint8_t found[24];
   size_t found_length = 0;
   int result = read_version(fd, found, &found_length);
@@ -251,10 +253,19 @@ static int run(int fd, int recovery) {
   puts("firmware=GF_ITE_EC_20066");
 
   uint8_t before[32];
-  result = read_hash(fd, before);
+  uint16_t next_counter = 2;
+  /* Give the MCU time to finish its version response before the next TX.
+   * An unanswered read is safe to try once more. Never retry the upload. */
+  sensor_pause(100);
+  result = read_hash(fd, next_counter++, before);
+  if (result == 3) {
+    puts("hash_retry=one_read_only_retry_no_response");
+    sensor_pause(100);
+    result = read_hash(fd, next_counter++, before);
+  }
   if (result != 0) {
     puts("result=existing_hash_unavailable_stop");
-    return result;
+    return result == 3 ? 2 : result;
   }
   if (save(AT_FDCWD, "before-hash.bin", before, sizeof(before)) != 0)
     return 1;
@@ -293,9 +304,7 @@ static int run(int fd, int recovery) {
   puts("new_key=durably_saved");
   printf("payload_bytes=%zu\n", payload_size);
 
-  /* Version and baseline hash used counters 1 and 2; each fragment and
-   * the verification query must continue that same ITE sequence. */
-  uint16_t next_counter = 3;
+  /* Each fragment and the verification query continue the ITE sequence. */
   int written = upload(fd, record, record_size, &next_counter);
   if (written == 1) {
     puts("write_transport_error");
@@ -345,7 +354,7 @@ int main(int argc, char **argv) {
     puts("Use the reviewed run.sh as sudo. Replaces the fingerprint sensor's "
          "32-byte PSK once.\n"
          "Generates and saves a new key in " RECOVERY_DIR "/" RECOVERY_KEY
-         " before writing. No retries, "
+         " before writing. No upload retries, "
          "reset,\nconfiguration, TLS, scan, enrollment, GPIO requests, "
          "arbitrary commands or fallback.");
     return 0;

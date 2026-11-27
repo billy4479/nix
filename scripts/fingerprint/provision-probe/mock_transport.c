@@ -136,6 +136,7 @@ int sensor_write_fragment(int fd, const uint8_t *fragment, size_t length) {
     record_length += chunk;
   }
   assert(recovery_synced);
+  assert(hash_sends == (scenario("hash_retry") ? 2u : 1u));
   if (scenario("interrupted_upload"))
     _exit(99);
   uint8_t psk[GXFP_PSK_SIZE], expected[GXFP_WRAPPER_SIZE],
@@ -176,11 +177,20 @@ int sensor_read_mailbox(int fd, uint8_t status[4], uint8_t response[256]) {
   }
   if (current == QUERY_HASH) {
     uint8_t digest[32], wrapper[GXFP_WRAPPER_SIZE];
+    if (scenario("hash_silent") ||
+        (scenario("hash_retry") && hash_sends == 1)) {
+      assert(hash_sends <= 2);
+      static const char name[] = "GF_ITE_EC_20066";
+      frame(response, 0xa8, (const uint8_t *)name, sizeof(name));
+      return 0;
+    }
+    if (scenario("hash_without_ack") || scenario("existing_hash_refused"))
+      assert(hash_sends == 1);
     if (step == 0 && !scenario("hash_without_ack")) {
       ack(response, 0xe4);
       return 0;
     }
-    if (hash_sends == 1) {
+    if (record_length == 0) {
       if (scenario("existing_hash_refused")) {
         uint8_t data[1] = {7};
         frame(response, 0xe4, data, sizeof(data));

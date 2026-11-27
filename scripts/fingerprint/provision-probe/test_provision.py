@@ -23,6 +23,8 @@ scenarios = {
     "interrupted_upload": (99, {"new_key=durably_saved"}),
     "success": (0, {"result=key_replaced_verified", "key_hash=verified"}),
     "hash_stale": (0, {"result=key_replaced_verified", "key_hash=verified"}),
+    "hash_retry": (0, {"result=key_replaced_verified"}),
+    "hash_silent": (2, {"result=existing_hash_unavailable_stop"}),
     "no_completion": (
         2,
         {
@@ -84,6 +86,7 @@ scenarios = {
         },
     ),
 }
+no_baseline = {"existing_hash_refused", "hash_without_ack", "hash_silent"}
 for scenario, (expected_code, expected) in scenarios.items():
     with tempfile.TemporaryDirectory() as temp:
         path = Path(temp)
@@ -107,7 +110,7 @@ for scenario, (expected_code, expected) in scenarios.items():
         scratch = set(path.iterdir()) - {recovery}
         if scenario in {"volatile_fs", "existing_key", "symlink_key"}:
             assert not scratch and "profile=" not in result.stdout
-        elif scenario in {"existing_hash_refused", "hash_without_ack"}:
+        elif scenario in no_baseline:
             assert not scratch
         else:
             assert scratch == {path / "before-hash.bin"}
@@ -116,12 +119,12 @@ for scenario, (expected_code, expected) in scenarios.items():
             assert key.read_bytes() == b"known existing key"
         if scenario == "symlink_key":
             assert key.is_symlink() and not (recovery / "missing-target").exists()
-        if scenario in {"volatile_fs", "existing_hash_refused", "hash_without_ack"}:
+        if scenario == "volatile_fs" or scenario in no_baseline:
             assert not key.exists()
-        if expected_code == 1 or scenario in {
-            "existing_hash_refused",
-            "hash_without_ack",
-        }:
+        assert result.stdout.count("hash_retry=") == int(
+            scenario in {"hash_retry", "hash_silent"}
+        )
+        if expected_code == 1 or scenario in no_baseline:
             assert "write_fragments=" not in result.stdout
             assert "new_key=durably_saved" not in result.stdout
             continue
@@ -143,5 +146,5 @@ for scenario, (expected_code, expected) in scenarios.items():
         else:
             assert "write_fragments=1" in result.stdout
 print(
-    "Mock provisioning passed: durable storage ordering, fault handling, interruption, no retries, and protocol outcomes."
+    "Mock provisioning passed: durable storage ordering, fault handling, interruption, bounded hash retry, and protocol outcomes."
 )

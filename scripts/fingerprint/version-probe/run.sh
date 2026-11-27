@@ -129,7 +129,7 @@ finish() {
     if tar -czf "$output" -C "$work" .; then saved=1; fi
   fi
   if [[ $saved == 1 ]] && chown --no-dereference "$SUDO_UID:$SUDO_GID" "$output" && chmod 600 "$output"; then
-    grep -E '^(firmware|profile|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests|mcu_state|mcu_tls_connected|mcu_locked|key_hash|key_hash_status|wrapped_key|wrapped_key_status|existing_hash|hash_status|observed_hash|new_key|write_ack|write_completion|write_status|write_fragments|payload_bytes)=' "$work/probe.log"
+    grep -E '^(firmware|profile|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests|mcu_state|mcu_tls_connected|mcu_locked|key_hash|key_hash_status|wrapped_key|wrapped_key_status|existing_hash|hash_status|hash_frames|hash_rejected|hash_foreign|hash_ack|hash_retry|observed_hash|new_key|write_ack|write_completion|write_status|write_fragments|payload_bytes)=' "$work/probe.log"
     printf 'Private report saved to (do not paste/upload its contents):\n%s\n' "$output"
   else
     printf 'Could not save report; scratch data remains in %s\n' "$work" >&2
@@ -163,7 +163,7 @@ readback)
   ;;
 provision)
   printf 'Replacing the sensor PSK once. Recovery key: /var/lib/fingerprint-gxfp5120.psk (root-only).\n'
-  printf 'The recovery key is synced before upload and never removed by cleanup. No retry.\n'
+  printf 'The recovery key is synced before upload and never removed by cleanup. No upload retry.\n'
   printf 'No userspace GPIO requests, resets, scans, TLS, enrollment or configuration writes.\n'
   ;;
 esac

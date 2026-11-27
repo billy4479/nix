@@ -7,7 +7,7 @@
 }:
 stdenv.mkDerivation {
   pname = "gxfp-provision-probe";
-  version = "3";
+  version = "4";
   src = lib.fileset.toSource {
     root = ../.;
     fileset = lib.fileset.unions [
