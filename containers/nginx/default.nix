@@ -27,6 +27,20 @@ in
 {
   polpetta.externalTrafficFrom = externalTrafficFrom;
 
+  # Repair existing web keys before nginx starts, including lineages issued
+  # before the certbot deploy hook was installed. Do not grant group-wide access.
+  systemd.services.nerdctl-nginx.preStart = lib.mkBefore (
+    # sh
+    ''
+      for lineage in ${domain} agent-preview.${domain}; do
+        key="${certsDir}/live/$lineage/privkey.pem"
+        if [ -e "$key" ]; then
+          ${lib.getExe' pkgs.acl "setfacl"} --set u::rw-,u:${toString config.nerdctl-containers.nginx.uid}:r--,g::---,m::r--,o::--- "$key"
+        fi
+      done
+    ''
+  );
+
   nerdctl-containers.${name} = {
     entrypoint = [ (lib.getExe pkgs.nginx) ];
 

@@ -28,7 +28,7 @@ Browser previews have separate origins but still share the site with other `polp
      -d '*.preview.internal.polpetta.online' -d '*.preview.polpetta.online'
    ```
 
-   Confirm nginx will be able to read the new `live/agent-preview.polpetta.online` lineage using the same permissions as the main web lineage. The existing scheduled `certbot renew` and nginx reload handle subsequent renewals. Public certificate transparency may disclose the wildcard names, not the individual lease hostnames.
+   The certbot deploy hook grants nginx's UID read access to the new web private key (Certbot otherwise creates it as `0600`, masking inherited ACLs). nginx's startup also repairs access for existing web lineages. The existing scheduled `certbot renew` and nginx reload handle subsequent renewals. Public certificate transparency may disclose the wildcard names, not the individual lease hostnames.
 3. Deploy serverone after the certificate is in place. Verify `headscale policy check -f /etc/headscale/policy.hujson` inside the Headscale container. The range is granted separately for TCP and UDP, only at the admin address, never at the T3 bridge IP.
 4. Request a web, TCP, and UDP lease from T3 and exercise each from an admin tailnet device. Then verify non-admin tailnet, LAN/off-tailnet, the ordinary nginx listeners, and direct access to the T3 bridge ports all fail. Check expiry with an open WebSocket or raw connection. Disable `polpetta.agentPreview.enable` and redeploy to close the preview ingress without disabling other admin services.
 

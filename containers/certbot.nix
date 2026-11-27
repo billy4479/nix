@@ -11,6 +11,20 @@ let
   id = 132;
   derpHostname = "derp.${domain}";
   certificateTools = pkgs.callPackage ../services/derp-certificates { };
+  nginxKeyAccess = pkgs.writeShellApplication {
+    name = "certbot-nginx-key-access";
+    runtimeInputs = [ pkgs.acl ];
+    text = # sh
+      ''
+        # Certbot creates new keys as 0600, masking inherited ACLs. Grant only
+        # nginx access to web keys; the separate DERP key is not needed by it.
+        case "$RENEWED_LINEAGE" in
+          */${domain}|*/agent-preview.${domain})
+            setfacl --set u::rw-,u:${toString config.nerdctl-containers.nginx.uid}:r--,g::---,m::r--,o::--- "$RENEWED_LINEAGE/privkey.pem"
+            ;;
+        esac
+      '';
+  };
 in
 {
   sops.secrets.cloudflare-dns-token = {
@@ -104,12 +118,20 @@ in
     # The renewal timer invokes certbot by name through nerdctl exec.
     copyToRoot = [
       (pkgs.certbot.withPlugins (plugins: [ plugins.certbot-dns-cloudflare ]))
+      nginxKeyAccess
     ];
 
     volumes = [
       {
         hostPath = "${baseSSDDir}/config";
         containerPath = "/etc/letsencrypt";
+      }
+      {
+        # Directory hooks run for both certonly and renew, including commands
+        # issued manually through exec-in-container.
+        hostPath = lib.getExe nginxKeyAccess;
+        containerPath = "/etc/letsencrypt/renewal-hooks/deploy/nginx-key-access";
+        readOnly = true;
       }
       {
         hostPath = "${baseSSDDir}/logs";
