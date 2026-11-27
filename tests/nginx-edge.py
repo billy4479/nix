@@ -22,6 +22,15 @@ for edge in edges:
 # Slice at each server opening rather than attempting to parse nested braces.
 servers = re.split(r"\bserver\s*\{", infrastructure + "\n" + vhosts)[1:]
 for server in servers:
+    if re.search(
+        rf"server_name\s+\*\.preview\.(?:internal\.)?{re.escape(domain)};", server
+    ):
+        assert re.findall(r"\blisten\s+([^;]+);", server) == ["8443 ssl"]
+        assert re.findall(r"\ballow\s+([^;]+);", server) == ["100.64.0.0/10"]
+        assert "deny all;" in server
+        for edge in edges:
+            assert server.index(f"deny {edge};") < server.index("allow ")
+        continue
     name = re.search(r"server_name\s+([^;]+);", server)
     label = name.group(1) if name else "default server"
     if "listen 443 ssl" in server:
