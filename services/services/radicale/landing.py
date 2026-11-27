@@ -17,6 +17,7 @@ from werkzeug.wrappers import Request, Response
 
 def create_app():
     origin = os.environ["CALENDAR_ORIGIN"]
+    legacy_origin = os.environ.get("CALENDAR_LEGACY_ORIGIN")
     issuer = os.environ["OIDC_ISSUER"]
     store = Credentials(
         Path(os.environ["CALENDAR_STATE"]), os.environ["CREDENTIAL_KEY"]
@@ -71,7 +72,12 @@ def create_app():
     def setup():
         username = session.get("username")
         if username is None:
-            return oidc.authorize_redirect(f"{origin}/setup/callback")
+            # Keep the OAuth state cookie and callback on the same origin.
+            # Never build a redirect URI from a client-controlled Host value.
+            callback_origin = (
+                legacy_origin if f"https://{request.host}" == legacy_origin else origin
+            )
+            return oidc.authorize_redirect(f"{callback_origin}/setup/callback")
         password = store.get(username)
         ensure_calendar(origin, username, password)
         return render_template(

@@ -5,6 +5,7 @@
   bind9-hosts,
   generated-records,
   admin-records,
+  legacy-admin-records,
   ...
 }:
 stdenvNoCC.mkDerivation {
@@ -26,6 +27,7 @@ stdenvNoCC.mkDerivation {
       cp ${bind9-hosts} $out/blacklist.conf
       cp ${generated-records} $out/generated-records.zone
       cp ${admin-records} $out/admin-records.zone
+      cp ${legacy-admin-records} $out/legacy-admin-records.zone
       mkdir -p $out/examples
     '';
 }

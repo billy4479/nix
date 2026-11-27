@@ -25,7 +25,7 @@ in
         SEARXNG_SETTINGS_PATH = "/etc/searxng/settings.yml";
         SEARXNG_BIND_ADDRESS = "0.0.0.0";
         SEARXNG_PORT = "8888";
-        SEARXNG_BASE_URL = "https://searxng.internal.${domain}/";
+        SEARXNG_BASE_URL = "https://searxng.${domain}/";
         TMPDIR = "/cache";
       };
 

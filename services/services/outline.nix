@@ -49,7 +49,7 @@ in
       workingDirectory = "${pkgs.outline}/share/outline";
 
       environment = {
-        URL = "https://${name}.internal.${domain}";
+        URL = "https://${name}.${domain}";
         PORT = "3000";
         # nginx terminates TLS and forwards X-Forwarded-Proto, so Outline only
         # uses this to mark cookies secure and redirect plain http.

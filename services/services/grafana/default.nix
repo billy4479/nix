@@ -50,7 +50,7 @@ in
         GF_PATHS_PROVISIONING = "/etc/grafana/provisioning";
         ZONEINFO = "${pkgs.tzdata}/share/zoneinfo";
         GF_SECURITY_ADMIN_USER = "admin";
-        GF_SERVER_ROOT_URL = "https://${name}.internal.${domain}";
+        GF_SERVER_ROOT_URL = "https://${name}.${domain}";
         GF_USERS_ALLOW_SIGN_UP = "false";
         GF_AUTH_ANONYMOUS_ENABLED = "false";
         GF_AUTH_GENERIC_OAUTH_ENABLED = "true";

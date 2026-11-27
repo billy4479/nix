@@ -8,7 +8,7 @@
 }:
 let
   name = "radicale";
-  origin = "https://${name}.internal.${domain}";
+  origin = "https://${name}.${domain}";
   state = "/data";
   runtime = import ./runtime.nix { inherit pkgs; };
   radicaleConfig = pkgs.writeText "radicale.conf" ''
@@ -65,6 +65,7 @@ in
       ];
       environment = {
         CALENDAR_ORIGIN = origin;
+        CALENDAR_LEGACY_ORIGIN = "https://${name}.internal.${domain}";
         CALENDAR_STATE = state;
         OIDC_ISSUER = "https://idp.internal.${domain}";
         RADICALE_CONFIG = "${radicaleConfig}";

@@ -22,6 +22,7 @@ let
         *.${agentPreview.hostname}. IN A ${adminIngress.address}
       ''
     );
+    legacy-admin-records = pkgs.writeText "legacy-admin-records.zone" config.polpetta.generated.legacyAdminDnsRecords;
     generated-records = pkgs.writeText "generated-records.zone" config.polpetta.generated.bind9Records;
   };
 in

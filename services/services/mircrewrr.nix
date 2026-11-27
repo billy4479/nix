@@ -47,7 +47,7 @@ in
 
       environment = {
         PROXY_PORT = "9696";
-        FLARESOLVERR_URL = "https://byparr.internal.${domain}";
+        FLARESOLVERR_URL = "https://byparr.${domain}";
       };
 
       environmentFiles = [ config.sops.templates."mircrewrr-env".path ];

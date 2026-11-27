@@ -65,7 +65,7 @@ in
         IMMICH_PORT = "2283";
         IMMICH_MEDIA_LOCATION = "/usr/src/app/upload";
         IMMICH_BUILD_DATA = "${pkgs.immich}/lib/node_modules/immich/build";
-        IMMICH_MACHINE_LEARNING_URL = "https://immich-ml.internal.${domain}";
+        IMMICH_MACHINE_LEARNING_URL = "https://immich-ml.${domain}";
 
         PATH = lib.makeBinPath [
           pkgs.coreutils
@@ -86,7 +86,7 @@ in
       access = "tailnet-only";
       # Historical domain: the UI is served under `immich`, not the container
       # name.
-      domain = "immich.internal.${domain}";
+      domain = "immich.${domain}";
 
       # / and /health answer 200 with the SPA's HTML shell; the API ping is
       # the only unauthenticated endpoint that actually reports health.

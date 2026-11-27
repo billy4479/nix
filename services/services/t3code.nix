@@ -24,11 +24,11 @@ let
       ''
         set -eu
         # Upload over the container bridge, but print the admin HTTPS URL.
-        if [ "''${AGENTUP_URL:-}" != "https://agent-up.internal.${domain}" ]; then
+        if [ "''${AGENTUP_URL:-}" != "https://agent-up.${domain}" ]; then
           exec ${lib.getExe pkgs.agent-up} "$@"
         fi
         url=$(AGENTUP_URL=${agentUpBackend} ${lib.getExe pkgs.agent-up} "$@")
-        printf '%s\n' "https://agent-up.internal.${domain}''${url#${agentUpBackend}}"
+        printf '%s\n' "https://agent-up.${domain}''${url#${agentUpBackend}}"
       '';
   entrypoint =
     pkgs.writeShellScript "t3code-entrypoint" # sh
@@ -235,8 +235,8 @@ in
         XDG_DATA_HOME = "${home}/.local/share";
         XDG_STATE_HOME = "${home}/.local/state";
         PI_CODING_AGENT_DIR = "${home}/.pi/agent";
-        AGENTUP_URL = "https://agent-up.internal.${domain}";
-        SEARXNG_BASE_URL = "https://searxng.internal.${domain}";
+        AGENTUP_URL = "https://agent-up.${domain}";
+        SEARXNG_BASE_URL = "https://searxng.${domain}";
         SEARXNG_SAFE_SEARCH = "0";
         TMPDIR = "/tmp";
       };

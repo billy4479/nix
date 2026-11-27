@@ -77,6 +77,7 @@ in
         "lunamultiplayer"
         "opencloud"
         "outline"
+        "radicale"
       ];
       # The service name would generate tsidp.internal...; the relying
       # parties (and the sops-seeded clients) know it as idp.

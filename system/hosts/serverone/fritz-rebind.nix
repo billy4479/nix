@@ -45,8 +45,6 @@ in
     };
 
     environment.etc."fritz-rebind-sync/manifest.json".source = manifest;
-    # Preserve the manually configured Stirling PDF exception, which is not a generated vhost.
-    networking.fritzRebindSync.extraNames = [ "stirling-pdf.internal.${domain}" ];
     system.activationScripts.fritz-rebind-sync = lib.stringAfter [ "specialfs" ] (
       # sh
       ''

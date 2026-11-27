@@ -136,14 +136,47 @@ let
     }
   ) (lib.filterAttrs (_: svc: svc.web != null && svc.web.probe.enable) servicesWithWeb);
 
-  domainOf =
+  domainOf = name: svc: if svc.web.domain != null then svc.web.domain else "${name}.${domain}";
+
+  # Temporary app-origin overlap. tsidp has exactly one vhost/issuer at a time.
+  legacyDomainOf =
     name: svc:
-    if svc.web.domain != null then
-      svc.web.domain
-    else if svc.web.access == "public" then
-      "${name}.${domain}"
+    let
+      primary = domainOf name svc;
+    in
+    if svc.web.access == "public" || name == "tsidp" then
+      null
     else
-      "${name}.internal.${domain}";
+      "${lib.removeSuffix ".${domain}" primary}.internal.${domain}";
+
+  webRoutes = lib.concatLists (
+    lib.mapAttrsToList (
+      name: svc:
+      let
+        legacy = legacyDomainOf name svc;
+      in
+      [
+        {
+          inherit svc;
+          host = domainOf name svc;
+          legacyRedirect = false;
+        }
+      ]
+      ++ lib.optional (legacy != null) {
+        inherit svc;
+        host = legacy;
+        # These apps have a single configured browser origin. Retain old
+        # bookmarks via an ACL-checked, uncached redirect, not a second origin.
+        legacyRedirect = lib.elem name [
+          "ff"
+          "grafana"
+          "headplane"
+          "outline"
+        ];
+        canonical = domainOf name svc;
+      }
+    ) servicesWithWeb
+  );
 
   rawEntries = lib.concatMap (
     name:
@@ -202,9 +235,9 @@ let
       ++ [ "  deny all;" ];
 
   vhostLines =
-    name: svc:
+    route:
     let
-      web = svc.web;
+      web = route.svc.web;
       admin = web.access == "admin-only";
       extraLines = lib.filter (l: l != "") (
         lib.optionals (web.nginx.extraConfig != "") (lib.splitString "\n" web.nginx.extraConfig)
@@ -227,7 +260,7 @@ let
     ++ [
       "  http2 on;"
       ""
-      "  server_name ${domainOf name svc};"
+      "  server_name ${route.host};"
       ""
       "  include /etc/nginx/snippets/tls.conf;"
     ]
@@ -247,26 +280,34 @@ let
         ++ (map (cidr: "  allow ${cidr};") web.allowedSources)
         ++ [ "  deny all;" ]
     )
-    ++ [
-      "  location / {"
-      "    include /etc/nginx/snippets/proxy.conf;"
-    ]
-    ++ map (l: "      ${l}") extraLines
-    ++ [
-      "  }"
-      "}"
-    ];
+    ++ (
+      if route.legacyRedirect then
+        [
+          # try_files runs after the access phase; a direct return here would
+          # bypass allow/deny. Do not expose or cache a redirect on denied requests.
+          "  root /var/empty;"
+          "  location / { try_files \"\" @canonical; }"
+          "  location @canonical {"
+          "    add_header Cache-Control no-store always;"
+          "    return 307 https://${route.canonical}$request_uri;"
+          "  }"
+        ]
+      else
+        [
+          "  location / {"
+          "    include /etc/nginx/snippets/proxy.conf;"
+        ]
+        ++ map (l: "      ${l}") extraLines
+        ++ [ "  }" ]
+    )
+    ++ [ "}" ];
 
   # proxy.conf resolves its upstream through $backend, which the vhost include
   # defines; per-service vhosts are generated, nginx.conf only carries
   # infrastructure blocks.
   backendMapLines = map (
-    name:
-    let
-      svc = services.${name};
-    in
-    "  ${domainOf name svc}  10.0.1.${toString svc.container.id}:${toString svc.web.port};"
-  ) (lib.attrNames servicesWithWeb);
+    { host, svc, ... }: "  ${host}  10.0.1.${toString svc.container.id}:${toString svc.web.port};"
+  ) webRoutes;
 
   previewVhost = # nginx
     ''
@@ -319,7 +360,7 @@ let
         "}"
         ""
       ]
-      ++ lib.concatMap (name: vhostLines name services.${name} ++ [ "" ]) (lib.attrNames servicesWithWeb)
+      ++ lib.concatMap (route: vhostLines route ++ [ "" ]) webRoutes
       ++ lib.optional preview.enable previewVhost
     )
   );
@@ -348,13 +389,20 @@ let
   duplicates =
     list: lib.attrNames (lib.filterAttrs (_: v: lib.length v > 1) (lib.groupBy (x: x) list));
 
-  webDomains = lib.mapAttrsToList domainOf servicesWithWeb;
-  publicDomains = lib.mapAttrsToList domainOf (
-    lib.filterAttrs (_: svc: svc.web.access == "public") servicesWithWeb
+  webDomains = map (route: route.host) webRoutes;
+  # Owners reserved by the hand-written nginx and split-DNS configuration.
+  reservedHosts = map lib.toLower (
+    [ domain ]
+    ++ map (label: "${label}.${domain}") [
+      "www"
+      "internal"
+      "ns"
+      "quote-book"
+      "external"
+      "derp"
+    ]
   );
-  nonPublicDomains = lib.mapAttrsToList domainOf (
-    lib.filterAttrs (_: svc: svc.web.access != "public") servicesWithWeb
-  );
+  allHosts = map lib.toLower (webDomains ++ map (e: "${e.raw.record}.${domain}") recordEntries);
 
   assertionEntries =
     let
@@ -376,8 +424,10 @@ let
         message = "polpetta.services: web integrationClients must name declared services";
       }
       {
-        assertion = duplicates webDomains == [ ];
-        message = "polpetta.services: duplicate web domains: ${lib.concatStringsSep ", " (duplicates webDomains)}";
+        assertion = duplicates (reservedHosts ++ allHosts) == [ ];
+        message = "polpetta.services: duplicate web, static or raw DNS names: ${
+          lib.concatStringsSep ", " (duplicates (reservedHosts ++ allHosts))
+        }";
       }
       {
         # Only public raw entries are forwarded from the edge, so only their
@@ -389,12 +439,6 @@ let
           lib.concatStringsSep ", " (
             duplicates (map (e: "${e.raw.proto}-${toString (remotePortOf e.raw)}") publicRawEntries)
           )
-        }";
-      }
-      {
-        assertion = duplicates (map (e: e.raw.record) recordEntries) == [ ];
-        message = "polpetta.services: duplicate record names: ${
-          lib.concatStringsSep ", " (duplicates (map (e: e.raw.record) recordEntries))
         }";
       }
       {
@@ -410,13 +454,9 @@ let
       }
       {
         assertion = lib.all (
-          d: lib.hasSuffix ".${domain}" d && !lib.hasSuffix ".internal.${domain}" d
-        ) publicDomains;
-        message = "polpetta.services: public web domains must be under .${domain} and not under .internal.${domain}: ${lib.concatStringsSep ", " publicDomains}";
-      }
-      {
-        assertion = lib.all (d: lib.hasSuffix ".internal.${domain}" d) nonPublicDomains;
-        message = "polpetta.services: non-public web domains must be under .internal.${domain}: ${lib.concatStringsSep ", " nonPublicDomains}";
+          d: lib.hasSuffix ".${domain}" d && builtins.match nameRe (lib.removeSuffix ".${domain}" d) != null
+        ) (lib.mapAttrsToList domainOf (lib.filterAttrs (name: _: name != "tsidp") servicesWithWeb));
+        message = "polpetta.services: canonical app web domains must be single-label hosts under ${domain}";
       }
     ];
 in
@@ -472,10 +512,7 @@ in
                       domain = lib.mkOption {
                         type = lib.types.nullOr lib.types.str;
                         default = null;
-                        description = ''
-                          Override the default domain: <name>.${domain} for
-                          public services, <name>.internal.${domain} otherwise.
-                        '';
+                        description = "Override the default web hostname (<name>.${domain}).";
                       };
 
                       probe = lib.mkOption {
@@ -600,12 +637,19 @@ in
       adminDnsRecords = lib.mkOption {
         type = lib.types.lines;
         readOnly = true;
-        default =
-          lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (name: svc: "${domainOf name svc}. IN A ${adminIngress.address}") adminWeb
-          )
-          + "\n";
-        description = "Admin web DNS overrides for the routed internal zone.";
+        default = lib.concatMapStrings (
+          name: "${domainOf name adminWeb.${name}}. IN A ${adminIngress.address}\n"
+        ) (lib.attrNames adminWeb);
+        description = "Admin web DNS overrides for the tailnet apex zone.";
+      };
+
+      legacyAdminDnsRecords = lib.mkOption {
+        type = lib.types.lines;
+        readOnly = true;
+        default = lib.concatMapStrings (
+          name: "${legacyDomainOf name adminWeb.${name}}. IN A ${adminIngress.address}\n"
+        ) (lib.attrNames adminWeb);
+        description = "Temporary admin web DNS overrides for the tailnet internal zone.";
       };
 
       rawFirewallFile = lib.mkOption {

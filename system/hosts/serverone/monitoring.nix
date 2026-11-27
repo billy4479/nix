@@ -92,10 +92,10 @@ let
       http = {
         preferred_ip_protocol = "ip4";
         headers = {
-          Host = "jellyfin.internal.${domain}";
+          Host = "jellyfin.${domain}";
         };
         tls_config = {
-          server_name = "jellyfin.internal.${domain}";
+          server_name = "jellyfin.${domain}";
         };
       };
     };

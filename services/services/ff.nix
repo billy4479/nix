@@ -40,7 +40,7 @@ in
       environment = {
         PORT = "4479";
         ENVIRONMENT = "production";
-        ORIGIN = "https://ff.internal.${domain}";
+        ORIGIN = "https://ff.${domain}";
         FF_DATA_PATH = "/data";
       };
 

@@ -1,6 +1,6 @@
 $TTL 60
 @          IN SOA   ns.@domain@. billy. (
-                        2026103101 ; serial (YYYYMMDDnn) — bump on changes
+                        2026112701 ; serial (YYYYMMDDnn) — bump on changes
                         1h         ; refresh
                         15m        ; retry
                         1w         ; expire
@@ -28,3 +28,4 @@ derp       IN A     87.106.25.93
 ; Records for services exposing raw ports, generated from polpetta.services
 ; (polpetta.generated.bind9Records).
 $INCLUDE /etc/bind/generated-records.zone
+$INCLUDE /etc/bind/admin-records.zone

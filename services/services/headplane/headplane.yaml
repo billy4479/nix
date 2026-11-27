@@ -12,7 +12,7 @@ server:
   # `{base_url}/admin/oidc/callback` and must be registered in tsidp exactly;
   # keep the default https port implicit (an explicit `:443` is dropped during
   # redirect URI construction, so it would only cause confusion).
-  base_url: "https://headplane.internal.@domain@"
+  base_url: "https://headplane.@domain@"
 
   # The secret used to encode and decode web sessions (must be 32 characters)
   # You may also provide `cookie_secret_path` instead to read a value from disk.

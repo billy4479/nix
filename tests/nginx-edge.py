@@ -9,8 +9,28 @@ domain = sys.argv[2]
 infrastructure = (config_dir / "nginx.conf").read_text()
 vhosts = (config_dir / "vhosts.conf").read_text()
 edges = ("10.100.0.1", "10.0.1.131")
-admin_names = {
-    f"{name}.internal.{domain}" for name in ("qbittorrent", "jackett", "syncthing")
+# Explicit policy, not a deduction from DNS spelling.
+admin_labels = {
+    "agent-up",
+    "grafana",
+    "headplane",
+    "jackett",
+    "mircrewrr",
+    "qbittorrent",
+    "radarr",
+    "sonarr",
+    "syncthing",
+    "t3code",
+}
+public_labels = {
+    "calendar-proxy",
+    "giuoco-del-divertimento",
+    "headscale",
+    "laurea",
+    "lunamultiplayer",
+    "mc-runner",
+    "opencloud",
+    "quote-bot",
 }
 seen_admin_names = set()
 assert "map $server_name $backend {" in vhosts
@@ -20,7 +40,10 @@ for edge in edges:
 
 # These server blocks contain nested locations but no nested server blocks.
 # Slice at each server opening rather than attempting to parse nested braces.
-servers = re.split(r"\bserver\s*\{", infrastructure + "\n" + vhosts)[1:]
+for server in re.split(r"\bserver\s*\{", infrastructure)[1:]:
+    if "listen 443 ssl" in server:
+        assert "listen 443 quic" in server
+servers = re.split(r"\bserver\s*\{", vhosts)[1:]
 for server in servers:
     if re.search(
         rf"server_name\s+\*\.preview\.(?:internal\.)?{re.escape(domain)};", server
@@ -32,17 +55,24 @@ for server in servers:
             assert server.index(f"deny {edge};") < server.index("allow ")
         continue
     name = re.search(r"server_name\s+([^;]+);", server)
-    label = name.group(1) if name else "default server"
-    if "listen 443 ssl" in server:
-        assert "listen 443 quic" in server, f"Missing QUIC listener: {label}"
-    if label in admin_names:
-        seen_admin_names.add(label)
-        assert re.findall(r"\blisten\s+([^;]+);", server) == ["8443 ssl"], label
-        assert re.findall(r"\ballow\s+([^;]+);", server) == ["100.64.0.0/10"], label
-        assert "deny all;" in server, label
-    if name and f".internal.{domain}" in label:
+    if not name:
+        continue
+    host = name.group(1)
+    label = host.split(".")[0]
+    listeners = re.findall(r"\blisten\s+([^;]+);", server)
+    if label in admin_labels:
+        if host == f"{label}.{domain}":
+            seen_admin_names.add(label)
+        assert listeners == ["8443 ssl"], host
+        assert re.findall(r"\ballow\s+([^;]+);", server) == ["100.64.0.0/10"], host
+    else:
+        assert listeners == ["443 ssl", "443 quic", "4443 ssl proxy_protocol"], host
+    if label not in public_labels:
         allow = server.index("allow ")
         for edge in edges:
-            assert server.index(f"deny {edge};") < allow, (label, edge)
+            assert server.index(f"deny {edge};") < allow, (host, edge)
+        assert "deny all;" in server, host
+    else:
+        assert "deny all;" not in server, host
 
-assert seen_admin_names == admin_names
+assert seen_admin_names == admin_labels
