@@ -9,6 +9,10 @@
 {
   agent-vm = (pkgs.callPackage ../packages/agent-vm { }).tests.broker;
   agent-preview = pkgs.callPackage ../packages/agent-preview { };
+  agent-preview-ingress = import ../tests/agent-preview-ingress.nix {
+    inherit pkgs domain;
+    serverone = hosts.nixosConfigurations.serverone;
+  };
   radicale =
     let
       server = hosts.nixosConfigurations.serverone.config;
