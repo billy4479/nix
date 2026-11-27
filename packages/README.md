@@ -2,7 +2,7 @@
 
 This directory contains my own Nix packages, integrated into the parent
 flake. There is no separate package flake or lock file: dependencies are
-pinned in the repository's root `flake.lock`.
+pinned in the repository's `.tack/pins.lock.json`.
 
 Package outputs are available with `nix build .#<package>` from the repository
 root, and the shared overlay exposes them to NixOS and Home Manager.

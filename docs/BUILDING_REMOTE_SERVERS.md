@@ -11,7 +11,7 @@ stage-serverone --switch
 
 The script builds the committed `HEAD` from the host's view of the shared
 workspace. There's no GitHub push or source upload. Nix uses the committed
-`flake.lock` and the host's existing access to private inputs. After a successful
+`.tack/pins.lock.json` and the host's existing access to private inputs. After a successful
 build, activation requires sudo authentication.
 
 Omit `--switch` to build without activating. The script prints the activation

@@ -9,13 +9,13 @@ the same hand-rolled flow as ff — authorization code + PKCE S256,
 ## Deploy ordering (mandatory)
 
 This flake pins the app through the `giuoco-del-divertimento` input, and
-the pin in `flake.lock` can lag the app repo. Deploying this service
+the pin in `.tack/pins.lock.json` can lag the app repo. Deploying this service
 before pushing the updated app and bumping the input publishes the vhost
 — a **public** one — with **ungated anonymous card adds**, the opposite of
 the app commit's security claim. Required order:
 
 1. push the app repo,
-2. `nix flake lock --update-input giuoco-del-divertimento`,
+2. `tack update giuoco-del-divertimento`,
 3. deploy.
 
 Bump the `ff` input in the same deploy batch and include the local

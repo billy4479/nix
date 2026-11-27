@@ -1,0 +1,243 @@
+{
+  "$declared": {
+    "agent-up": "github:billy4479/agent-up",
+    "calendar-proxy": "git+ssh://git@github.com/billy4479/calendar-proxy-v2.git?ref=master&shallow=1",
+    "catppuccin": "github:catppuccin/nix",
+    "determinate": "https://flakehub.com/f/DeterminateSystems/determinate/*",
+    "disko": "github:nix-community/disko",
+    "ff": "git+ssh://git@github.com/billy4479/ff.git?ref=master&shallow=1",
+    "firefox-ui-fix": "github:black7375/Firefox-UI-Fix",
+    "flake-utils": "github:numtide/flake-utils",
+    "game-server-runner": "github:billy4479/game-server-runner",
+    "giuoco-del-divertimento": "git+ssh://git@github.com/billy4479/giuoco-del-divertimento.git?ref=master&shallow=1",
+    "home-manager": "github:nix-community/home-manager",
+    "laurea": "github:billy4479/laurea",
+    "niri": "github:myume/niri-flake/blur",
+    "nix-snapshotter": "github:billy4479/nix-snapshotter/aa15121743bc5218be8eb3e8b457d0f67a4203e6",
+    "nix-vscode-extensions": "github:nix-community/nix-vscode-extensions",
+    "nixpkgs": "github:nixos/nixpkgs/nixos-unstable",
+    "noctalia": "github:noctalia-dev/noctalia/cachix",
+    "plasma-manager": "github:pjones/plasma-manager",
+    "pyproject-build-systems": "github:pyproject-nix/build-system-pkgs",
+    "pyproject-nix": "github:pyproject-nix/pyproject.nix",
+    "quote-bot": "git+ssh://git@github.com/billy4479/quote-bot.git?ref=master&shallow=1",
+    "read-nix-docs": "github:billy4479/read-nix-docs",
+    "secrets-repo": "git+ssh://git@github.com/billy4479/nix-secrets.git?ref=master&shallow=1",
+    "sops-nix": "github:Mic92/sops-nix",
+    "spicetify-nix": "github:Gerg-L/spicetify-nix",
+    "uv2nix": "github:pyproject-nix/uv2nix"
+  },
+  "agent-up": {
+    "lastModified": 1793961660,
+    "narHash": "sha256-BYcZ427I1l2ubZH3X1h6sVeXIEWkRB3mpy5BX2WIv3k=",
+    "owner": "billy4479",
+    "repo": "agent-up",
+    "rev": "d16f8c267ed5fc0a6c0389f84800734f41a6fe69",
+    "type": "github"
+  },
+  "calendar-proxy": {
+    "lastModified": 1795477871,
+    "narHash": "sha256-A7SIX5G3b+v+T7/WbuN64UWLwhw4KyU41HWcjcamwRw=",
+    "ref": "master",
+    "rev": "1a846b517b48f1f3e764d140a3512507a6da9c0d",
+    "shallow": true,
+    "type": "git",
+    "url": "ssh://git@github.com/billy4479/calendar-proxy-v2.git"
+  },
+  "catppuccin": {
+    "lastModified": 1794788055,
+    "narHash": "sha256-ne61lharrApQ3QVpm6sjd6k5AgD0xandc69h4QbopIY=",
+    "owner": "catppuccin",
+    "repo": "nix",
+    "rev": "aa70e775fdb4e998314dd64fb4cf66aeaa87f6dd",
+    "type": "github"
+  },
+  "determinate": {
+    "lastModified": 1795047249,
+    "narHash": "sha256-cIFgw0dKxzQULB8OSVLsXSrKfPfWzfzJA17rss9dqCg=",
+    "rev": "49968eb8f0f1a3c9c8790e9ead7ce7b5196f6c0f",
+    "revCount": 458,
+    "type": "tarball",
+    "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/determinate/3.24.3/01a1f12b-29f0-7623-8ebb-9b32a98f9538/source.tar.gz"
+  },
+  "disko": {
+    "lastModified": 1795168368,
+    "narHash": "sha256-D35n2Q2v1KrlF9LS/pFl8Z3EBMJW6qvPw5q4HMbXXLg=",
+    "owner": "nix-community",
+    "repo": "disko",
+    "rev": "44761d4f745b95e037458a0e57133c5700c8e320",
+    "type": "github"
+  },
+  "ff": {
+    "lastModified": 1795720465,
+    "narHash": "sha256-g8hwHP3yYVpMbDIcFCHsOmN2IL010Pivv3hsyapzpvg=",
+    "ref": "master",
+    "rev": "03adbf9ae5de7fbb836d2044e04c08ac8f73a540",
+    "shallow": true,
+    "type": "git",
+    "url": "ssh://git@github.com/billy4479/ff.git"
+  },
+  "firefox-ui-fix": {
+    "lastModified": 1792329533,
+    "narHash": "sha256-e23M0dS3UPou1QSko4psl5DFfLgMpAydpDLQ5Bcm1Rc=",
+    "owner": "black7375",
+    "repo": "Firefox-UI-Fix",
+    "rev": "d800e21dff7fe48c326f3051acb9c932426f99c1",
+    "type": "github"
+  },
+  "flake-utils": {
+    "lastModified": 1794427683,
+    "narHash": "sha256-o7ey9gEilsxaifqJWnBDlYSKbNWYQYtKwDyXeZU2kaU=",
+    "owner": "numtide",
+    "repo": "flake-utils",
+    "rev": "cd489559845d81f673a12885576016c65cbe9363",
+    "type": "github"
+  },
+  "game-server-runner": {
+    "lastModified": 1794587468,
+    "narHash": "sha256-iMIaLNn28SR2+7Q+fcuJ6/EZMmxqT6UtMJYjjnrw5Dw=",
+    "owner": "billy4479",
+    "repo": "game-server-runner",
+    "rev": "249035baacd57bc8d5839bd1144e7d41e543a6ba",
+    "type": "github"
+  },
+  "giuoco-del-divertimento": {
+    "lastModified": 1793961660,
+    "narHash": "sha256-ou2nN5tLCg4w6Pd24FM2LtrndZ6Ansb8kMP78VzgY9s=",
+    "ref": "master",
+    "rev": "0ba3def2d75b912350e98c04e226d3b40e1ad586",
+    "shallow": true,
+    "type": "git",
+    "url": "ssh://git@github.com/billy4479/giuoco-del-divertimento.git"
+  },
+  "home-manager": {
+    "lastModified": 1794963576,
+    "narHash": "sha256-+CPrP74GDJ63f7bgEFC9Av4hbxc7K9WUNv1ZVRifRe8=",
+    "owner": "nix-community",
+    "repo": "home-manager",
+    "rev": "2b13c9cb3aa20653e6f8ee0b7f8331a53ea9b0a9",
+    "type": "github"
+  },
+  "laurea": {
+    "lastModified": 1795089028,
+    "narHash": "sha256-vxLaFjw2KLQ9vMqh7q0QMdCH5ySqKDZn0RsLZHazZ/0=",
+    "owner": "billy4479",
+    "repo": "laurea",
+    "rev": "9dbb671fb742b8fa13771da9bd5ed404291c5d50",
+    "type": "github"
+  },
+  "niri": {
+    "lastModified": 1777182467,
+    "narHash": "sha256-riAI7gTdNnLaUFuvFVc38gPoi+EXwGzNh6Z8RdlZFxg=",
+    "owner": "myume",
+    "repo": "niri-flake",
+    "rev": "a2eb6a3475ecdb110d448537efb8b2ae43786bc6",
+    "type": "github"
+  },
+  "nix-snapshotter": {
+    "lastModified": 1781726292,
+    "narHash": "sha256-kPqSXLklw8SXz1f2GBbEt7oyMvCQZALFWAr0nEF6g8A=",
+    "owner": "billy4479",
+    "repo": "nix-snapshotter",
+    "rev": "aa15121743bc5218be8eb3e8b457d0f67a4203e6",
+    "type": "github"
+  },
+  "nix-vscode-extensions": {
+    "lastModified": 1795156828,
+    "narHash": "sha256-7mQy+kZX3b2e1dmirpBtRj7Gw1PNHMpyZnMK2/2+aZ0=",
+    "owner": "nix-community",
+    "repo": "nix-vscode-extensions",
+    "rev": "d9634970941baff1235cfec35fe48ebf88f3fcdf",
+    "type": "github"
+  },
+  "nixpkgs": {
+    "lastModified": 1795085501,
+    "narHash": "sha256-S5keGWzaKpuXo9MNoIC2FfTIuTyTnx8P4NhYJMEsTLI=",
+    "owner": "nixos",
+    "repo": "nixpkgs",
+    "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+    "type": "github"
+  },
+  "noctalia": {
+    "lastModified": 1795147210,
+    "narHash": "sha256-bjgMufwdsDaLQ/AZFUBilfy+RQkZlFKNLZIwpbJMA/c=",
+    "owner": "noctalia-dev",
+    "repo": "noctalia",
+    "rev": "230768446cd5073308de92f8f8e599be2ab2e629",
+    "type": "github"
+  },
+  "plasma-manager": {
+    "lastModified": 1785762349,
+    "narHash": "sha256-jZhZkzAwc7f3exzcTDJWP2WCAchCv0iNC3UF/QsahdQ=",
+    "owner": "pjones",
+    "repo": "plasma-manager",
+    "rev": "a19a2a029fa180911bd89c554dca1616e10f4c1d",
+    "type": "github"
+  },
+  "pyproject-build-systems": {
+    "lastModified": 1794012432,
+    "narHash": "sha256-zBKFTg7tEGApNt+CEKI5+WNNomD5MZqYNBr+r6/Bmdg=",
+    "owner": "pyproject-nix",
+    "repo": "build-system-pkgs",
+    "rev": "bdbc5f8dd2ad6136bb2ccecb14f6ec343965b194",
+    "type": "github"
+  },
+  "pyproject-nix": {
+    "lastModified": 1793820880,
+    "narHash": "sha256-NUMabnvaL/0Ah9WM9pBMXEp+dQjMSYjezZ/fNjXouLQ=",
+    "owner": "pyproject-nix",
+    "repo": "pyproject.nix",
+    "rev": "d43f0e74444c1f266c640fc49ce6ce6fb69d33c3",
+    "type": "github"
+  },
+  "quote-bot": {
+    "lastModified": 1793961660,
+    "narHash": "sha256-WbQm21k5N7qwRbm0AxG9AffGbphUz3ux0zkwJSZzMkA=",
+    "ref": "master",
+    "rev": "aa0af4d4ee5ffff4b2d9803a801e8bb864375db4",
+    "shallow": true,
+    "type": "git",
+    "url": "ssh://git@github.com/billy4479/quote-bot.git"
+  },
+  "read-nix-docs": {
+    "lastModified": 1793961660,
+    "narHash": "sha256-5emKYtvud7fKM0g0mobxJzDm0wy62mIBOjzwBIfE5M4=",
+    "owner": "billy4479",
+    "repo": "read-nix-docs",
+    "rev": "eea9140b17913133f29b73082137ec3a23047c21",
+    "type": "github"
+  },
+  "secrets-repo": {
+    "lastModified": 1795780723,
+    "narHash": "sha256-x2yJLBt1ZWXENqDL3UwRCf0ZEM2ies4UbX1sTZRf7Yc=",
+    "ref": "master",
+    "rev": "6e9d07bca295ce19f6482231ac769a400fa69719",
+    "shallow": true,
+    "type": "git",
+    "url": "ssh://git@github.com/billy4479/nix-secrets.git"
+  },
+  "sops-nix": {
+    "lastModified": 1794866654,
+    "narHash": "sha256-Y28AMB8lyKjASdJ0BVsR2AqR1cUsVuo8RVVpzHoECho=",
+    "owner": "Mic92",
+    "repo": "sops-nix",
+    "rev": "7c637afdccdf9bcf35c4a2d67b58a77c1fd843a4",
+    "type": "github"
+  },
+  "spicetify-nix": {
+    "lastModified": 1794871977,
+    "narHash": "sha256-An9Qcr31Z+PmF4TlJWY6RkM4yPbBKc2vkyp6NctvMEk=",
+    "owner": "Gerg-L",
+    "repo": "spicetify-nix",
+    "rev": "cd7d88aca6db91899373d5574bb252547f4c8c2c",
+    "type": "github"
+  },
+  "uv2nix": {
+    "lastModified": 1793272761,
+    "narHash": "sha256-3CE1CEwprYlHRlRVkXDkhqec0jjF9Cti7tdk8vVDsCM=",
+    "owner": "pyproject-nix",
+    "repo": "uv2nix",
+    "rev": "c361746c7d630d98b972378290547c8d35542a7a",
+    "type": "github"
+  }
+}

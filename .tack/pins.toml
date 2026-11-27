@@ -1,0 +1,103 @@
+# Upstream resolver: manic-systems/tack@673997981720feebb3870645932b6cfe6657db9f
+
+[inputs.agent-up]
+url = "github:billy4479/agent-up"
+follows = { flake-utils = "flake-utils", nixpkgs = "nixpkgs" }
+
+[inputs.calendar-proxy]
+url = "git+ssh://git@github.com/billy4479/calendar-proxy-v2.git?ref=master&shallow=1"
+follows = { flake-utils = "flake-utils", nixpkgs = "nixpkgs" }
+
+[inputs.catppuccin]
+url = "github:catppuccin/nix"
+follows = { nixpkgs = "nixpkgs" }
+
+[inputs.determinate]
+url = "https://flakehub.com/f/DeterminateSystems/determinate/*"
+
+[inputs.disko]
+url = "github:nix-community/disko"
+follows = { nixpkgs = "nixpkgs" }
+
+[inputs.ff]
+url = "git+ssh://git@github.com/billy4479/ff.git?ref=master&shallow=1"
+follows = { flake-utils = "flake-utils", nixpkgs = "nixpkgs" }
+
+[inputs.firefox-ui-fix]
+url = "github:black7375/Firefox-UI-Fix"
+type = "fetch"
+
+[inputs.flake-utils]
+url = "github:numtide/flake-utils"
+
+[inputs.game-server-runner]
+url = "github:billy4479/game-server-runner"
+follows = { flake-utils = "flake-utils", nixpkgs = "nixpkgs" }
+
+[inputs.giuoco-del-divertimento]
+url = "git+ssh://git@github.com/billy4479/giuoco-del-divertimento.git?ref=master&shallow=1"
+follows = { flake-utils = "flake-utils", nixpkgs = "nixpkgs" }
+
+[inputs.home-manager]
+url = "github:nix-community/home-manager"
+follows = { nixpkgs = "nixpkgs" }
+
+[inputs.laurea]
+url = "github:billy4479/laurea"
+follows = { flake-utils = "flake-utils", nixpkgs = "nixpkgs" }
+
+# Blur fork: https://github.com/sodiboo/niri-flake/pull/1731
+[inputs.niri]
+url = "github:myume/niri-flake/blur"
+follows = { nixpkgs = "nixpkgs" }
+
+[inputs.nix-snapshotter]
+url = "github:billy4479/nix-snapshotter/aa15121743bc5218be8eb3e8b457d0f67a4203e6"
+follows = { nixpkgs = "nixpkgs" }
+
+[inputs.nix-vscode-extensions]
+url = "github:nix-community/nix-vscode-extensions"
+follows = { nixpkgs = "nixpkgs" }
+
+[inputs.nixpkgs]
+url = "github:nixos/nixpkgs/nixos-unstable"
+
+# Keep upstream nixpkgs for binary cache reuse.
+[inputs.noctalia]
+url = "github:noctalia-dev/noctalia/cachix"
+
+[inputs.plasma-manager]
+url = "github:pjones/plasma-manager"
+follows = { home-manager = "home-manager", nixpkgs = "nixpkgs" }
+
+[inputs.pyproject-build-systems]
+url = "github:pyproject-nix/build-system-pkgs"
+follows = { nixpkgs = "nixpkgs", pyproject-nix = "pyproject-nix", uv2nix = "uv2nix" }
+
+[inputs.pyproject-nix]
+url = "github:pyproject-nix/pyproject.nix"
+follows = { nixpkgs = "nixpkgs" }
+
+[inputs.quote-bot]
+url = "git+ssh://git@github.com/billy4479/quote-bot.git?ref=master&shallow=1"
+follows = { flake-utils = "flake-utils", nixpkgs = "nixpkgs" }
+
+[inputs.read-nix-docs]
+url = "github:billy4479/read-nix-docs"
+follows = { flake-utils = "flake-utils", home-manager = "home-manager", nixpkgs = "nixpkgs" }
+
+[inputs.secrets-repo]
+url = "git+ssh://git@github.com/billy4479/nix-secrets.git?ref=master&shallow=1"
+type = "fetch"
+
+[inputs.sops-nix]
+url = "github:Mic92/sops-nix"
+follows = { nixpkgs = "nixpkgs" }
+
+[inputs.spicetify-nix]
+url = "github:Gerg-L/spicetify-nix"
+follows = { nixpkgs = "nixpkgs" }
+
+[inputs.uv2nix]
+url = "github:pyproject-nix/uv2nix"
+follows = { nixpkgs = "nixpkgs", pyproject-nix = "pyproject-nix" }
