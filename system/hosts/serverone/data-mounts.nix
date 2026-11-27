@@ -5,8 +5,9 @@
   ...
 }:
 let
+  inherit (import ./snapshot-policy.nix) excludedMounts;
   # These are native ZFS mounts, including datasets managed outside Disko.
-  datasets = {
+  datasets = excludedMounts // {
     "/mnt/HDD/apps" = "hdd_pool/apps";
     "/mnt/HDD/generic" = "hdd_pool/generic";
     "/mnt/HDD/timemachine" = "hdd_pool/timemachine";
@@ -17,7 +18,11 @@ let
     "/mnt/SSD/vm" = "ssd_pool/vm";
   };
   isUnder = mount: path: path == mount || lib.hasPrefix "${mount}/" path;
-  mountsFor = paths: lib.filter (mount: lib.any (isUnder mount) paths) (builtins.attrNames datasets);
+  mountsFor =
+    paths:
+    lib.filter (
+      mount: lib.any (path: isUnder mount path || (excludedMounts ? ${mount} && isUnder path mount)) paths
+    ) (builtins.attrNames datasets);
   requireDatasets =
     mounts:
     lib.mkIf (mounts != [ ]) {
@@ -64,6 +69,9 @@ in
     ) containerPaths
     // {
       # Runs before t3code and syncthing and can write to OpenChamber's home.
-      agent-config-migration = requireDatasets [ "/mnt/SSD/apps" ];
+      agent-config-migration = requireDatasets (mountsFor [
+        "/mnt/SSD/apps/openchamber/home"
+        "/mnt/SSD/apps/openchamber/nix-root"
+      ]);
     };
 }

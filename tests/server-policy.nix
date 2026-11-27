@@ -20,6 +20,8 @@ let
       }) (lib.filter (secret: lib.elem secret.path paths) rendered)
     ) serverone.nerdctl-containers
   );
+  snapshotPolicy = import ../system/hosts/serverone/snapshot-policy.nix;
+  guardedMounts = unit: serverone.systemd.services.${unit}.unitConfig.RequiresMountsFor;
   localExporters = map (name: serverone.services.prometheus.exporters.${name}) [
     "node"
     "smartctl"
@@ -61,6 +63,32 @@ assert lib.all (
   && container.entrypoint != [ ]
   && lib.all lib.isDerivation container.copyToRoot
 ) (lib.attrValues serverone.nerdctl-containers);
+assert lib.all (
+  container:
+  !container.privateNixStore.enable
+  || builtins.hasAttr container.privateNixStore.hostPath snapshotPolicy.excludedMounts
+) (lib.attrValues serverone.nerdctl-containers);
+assert lib.elem "/mnt/SSD/apps/t3code/nix-root" (guardedMounts "nerdctl-t3code");
+assert lib.elem "/mnt/SSD/apps/jellyfin/cache" (guardedMounts "nerdctl-jellyfin");
+assert lib.elem "/mnt/SSD/apps/openchamber/nix-root" (guardedMounts "agent-config-migration");
+assert lib.all
+  (
+    interval:
+    let
+      unit = serverone.systemd.services."zfs-snapshot-${interval}";
+    in
+    lib.elem "zfs-mount.service" unit.after
+    && lib.hasInfix "enforce ssd_pool/apps true" unit.preStart
+    && lib.hasInfix "enforce ssd_pool/apps/t3code-nix-root false" unit.preStart
+    && lib.hasInfix "com.sun:auto-snapshot:${interval}" unit.preStart
+  )
+  [
+    "frequent"
+    "hourly"
+    "daily"
+    "weekly"
+    "monthly"
+  ];
 assert !(serverone.nerdctl-containers ? openchamber);
 assert !(serverone.systemd.services ? nerdctl-openchamber);
 assert !(serverone.systemd.timers ? openchamber-nix-gc);
