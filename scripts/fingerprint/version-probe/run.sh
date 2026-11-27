@@ -37,7 +37,7 @@ if [[ $kind == provision ]]; then
     exit 1
   fi
   probe_args=(--replace-psk)
-elif [[ $kind == readback && $# == 1 && ($1 == --check-hash || $1 == --check-clienthello) ]]; then
+elif [[ $kind == readback && $# == 1 && ($1 == --check-hash || $1 == --check-clienthello || $1 == --verify-tls) ]]; then
   probe_args=("$1")
 elif [[ $# != 0 ]]; then
   printf 'This read-only probe takes no arguments.\n' >&2
@@ -129,7 +129,7 @@ finish() {
     if tar -czf "$output" -C "$work" .; then saved=1; fi
   fi
   if [[ $saved == 1 ]] && chown --no-dereference "$SUDO_UID:$SUDO_GID" "$output" && chmod 600 "$output"; then
-    grep -E '^(firmware|profile|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests|mcu_state|mcu_tls_connected|mcu_locked|key_hash|key_hash_status|wrapped_key|wrapped_key_status|existing_hash|hash_status|hash_frames|hash_rejected|hash_foreign|hash_ack|hash_retry|tls_start_ack|observed_hash|new_key|write_ack|write_completion|write_status|write_fragments|payload_bytes)=' "$work/probe.log"
+    grep -E '^(firmware|profile|result|ack_seen|valid_frames|rejected_frames|userspace_gpio_requests|mcu_state|mcu_tls_connected|mcu_locked|key_hash|key_hash_status|wrapped_key|wrapped_key_status|existing_hash|hash_status|hash_frames|hash_rejected|hash_foreign|hash_ack|hash_retry|tls_start_ack|tls_clienthello|tls_records_sent|tls_records_received|tls_error|observed_hash|new_key|write_ack|write_completion|write_status|write_fragments|payload_bytes)=' "$work/probe.log"
     printf 'Private report saved to (do not paste/upload its contents):\n%s\n' "$output"
   else
     printf 'Could not save report; scratch data remains in %s\n' "$work" >&2
@@ -154,7 +154,9 @@ version)
   printf 'No userspace GPIO requests, resets, scans, or key/config writes.\n'
   ;;
 readback)
-  if [[ ${probe_args[0]:-} == --check-clienthello ]]; then
+  if [[ ${probe_args[0]:-} == --verify-tls ]]; then
+    printf 'Verifying a TLS handshake with the existing local key. No scan or key replacement.\n'
+  elif [[ ${probe_args[0]:-} == --check-clienthello ]]; then
     printf 'Firmware query, then one TLS start command. No key access or handshake completion.\n'
   elif [[ ${probe_args[0]:-} == --check-hash ]]; then
     printf 'Diagnostic only: firmware and key-hash queries, no wrapped-key request.\n'

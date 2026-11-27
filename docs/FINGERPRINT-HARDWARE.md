@@ -318,6 +318,12 @@ at `/var/lib/fingerprint-gxfp5120.psk`; the driver was left unbound. Do not run
 provisioning again. This verifies key storage, not an authenticated TLS session.
 The `--check-clienthello` diagnostic tries the reference TLS start command
 alone, without importing its sensor configuration or loading the key.
+It received a TLS 1.2 ClientHello offering `0x00ae` on real hardware without a
+separate D1 ACK. No other reference initialization command was needed to reach
+that stage. The `--verify-tls` follow-up uses the local key and mbed TLS to
+verify the peer's Finished message. The bridge passed a synthetic-key test
+with an independent OpenSSL peer, including rejection of a wrong key. It does
+not request an image or enable authentication integration.
 
 ## Consequences for bring-up
 

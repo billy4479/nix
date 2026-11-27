@@ -158,7 +158,9 @@ int readback_feed(struct readback_parser *p, const uint8_t *data,
       break;
     uint8_t *body = frame + 4;
     if (tls) {
-      if (client_hello(body, size)) {
+      if (!p->done && client_hello(body, size)) {
+        memcpy(p->data, body, size);
+        p->length = size;
         p->done = true;
         p->frames++;
       } else {

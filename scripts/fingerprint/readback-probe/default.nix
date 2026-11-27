@@ -3,10 +3,11 @@
   stdenv,
   buildPackages,
   kernel,
+  mbedtls,
 }:
 stdenv.mkDerivation {
   pname = "gxfp-readback-probe";
-  version = "3";
+  version = "4";
   src = lib.fileset.toSource {
     root = ../.;
     fileset = lib.fileset.unions [
@@ -16,14 +17,18 @@ stdenv.mkDerivation {
     ];
   };
   nativeCheckInputs = [
+    buildPackages.openssl
     buildPackages.python3
     buildPackages.shellcheck
   ];
   dontPatchShebangs = true;
+  buildInputs = [ mbedtls ];
+  NIX_CFLAGS_COMPILE = "-I${mbedtls}/include";
+  NIX_LDFLAGS = "-L${mbedtls}/lib";
   buildPhase = # sh
     ''
       runHook preBuild
-      $CC -std=c11 -O2 -Wall -Wextra -Werror readback-probe/protocol.c readback-probe/probe.c spi/queries.c spi/transport.c -o readback-probe-bin
+      $CC -std=c11 -O2 -Wall -Wextra -Werror readback-probe/protocol.c readback-probe/probe.c readback-probe/session.c spi/queries.c spi/transport.c -lmbedtls -lmbedx509 -lmbedcrypto -o readback-probe-bin
       runHook postBuild
     '';
   doCheck = true;
@@ -34,8 +39,10 @@ stdenv.mkDerivation {
       ./test-protocol
       $CC -std=c11 -O2 -Wall -Wextra -Werror spi/transport.c spi/queries.c spi/test_transport.c -Wl,--wrap=ioctl -o test-transport
       ./test-transport
-      $CC -std=c11 -O2 -Wall -Wextra -Werror readback-probe/protocol.c readback-probe/probe.c readback-probe/mock_transport.c spi/queries.c -o test-probe
+      $CC -std=c11 -O2 -Wall -Wextra -Werror readback-probe/protocol.c readback-probe/probe.c readback-probe/session.c readback-probe/mock_transport.c spi/queries.c -lmbedtls -lmbedx509 -lmbedcrypto -o test-probe
       python readback-probe/test_probe.py ./test-probe
+      $CC -std=c11 -O2 -Wall -Wextra -Werror -DKEY_PATH='"test-psk.bin"' readback-probe/session.c readback-probe/test_session.c -lmbedtls -lmbedx509 -lmbedcrypto -o test-session
+      python readback-probe/test_session.py ./test-session
       python readback-probe/test_runner.py version-probe/run.sh
       bash -n version-probe/run.sh
       shellcheck version-probe/run.sh

@@ -137,6 +137,13 @@ int sensor_read_mailbox(int fd, uint8_t status[4], uint8_t response[256]) {
   }
   return 0;
 }
+int sensor_write_fragment(int fd, const uint8_t *fragment, size_t length) {
+  (void)fd;
+  (void)fragment;
+  (void)length;
+  assert(!"unexpected TLS output in readback tests");
+  return -1;
+}
 long sensor_milliseconds(void) {
   milliseconds += 50;
   return milliseconds;
