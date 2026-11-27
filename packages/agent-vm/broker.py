@@ -34,6 +34,7 @@ class Request:
     owner: tuple
     mode: str
     deadline: float
+    target: str = "nixos"
     tunnels: list = field(default_factory=list)
 
     def public(self, now):
@@ -41,6 +42,7 @@ class Request:
         return {
             "id": hashlib.sha256(f"{uid}:{token}".encode()).hexdigest()[:16],
             "mode": self.mode,
+            "target": self.target,
             "seconds_left": max(0, int(self.deadline - now)),
         }
 
@@ -50,15 +52,23 @@ class Request:
 
 
 class Broker:
-    def __init__(self, vm, now=time.monotonic):
-        self.vm = vm
+    def __init__(self, vm, now=time.monotonic, android=None):
+        self.backends = {"nixos": vm}
+        if android is not None:
+            self.backends["android"] = android
+        self.target = None
         self.now = now
         self.queue = deque()
         self.active = {}
         self.lock = threading.Lock()
         self.power = "off"
         self.fault = False
-        self.vm.clean(force=True)
+        for backend in self.backends.values():
+            backend.clean(force=True)
+
+    @property
+    def vm(self):
+        return self.backends[self.target]
 
     def lifecycle(self, operation, *args):
         try:
@@ -76,8 +86,10 @@ class Broker:
     def clean(self):
         self.lifecycle(self.vm.clean)
         self.power = "off"
+        self.target = None
 
-    def start(self):
+    def start(self, target):
+        self.target = target
         self.lifecycle(self.vm.start)
         self.power = "on"
 
@@ -96,12 +108,13 @@ class Broker:
         while self.queue:
             request = self.queue[0]
             if self.active and (
-                request.mode == "exclusive"
+                request.target != self.target
+                or request.mode == "exclusive"
                 or next(iter(self.active.values())).mode == "exclusive"
             ):
                 break
             if not self.active:
-                self.start()
+                self.start(request.target)
             # Boot may outlive a stale queue entry. Don't grant an expired request.
             if request.deadline <= self.now():
                 self.queue.popleft()
@@ -112,9 +125,15 @@ class Broker:
             request.deadline = self.now() + LEASE_SECONDS
             self.active[request.owner] = request
 
-    def status(self, owner, include_queue=False):
+    def status(self, owner, target="nixos", include_queue=False):
         now = self.now()
-        result = {"state": "none", "power": self.power, "fault": self.fault}
+        result = {
+            "state": "none",
+            "power": self.power,
+            "fault": self.fault,
+            "target": target,
+            "running_target": self.target,
+        }
         if owner in self.active:
             result.update(self.active[owner].public(now), state="active")
         for position, request in enumerate(self.queue, 1):
@@ -129,10 +148,18 @@ class Broker:
         with self.lock:
             self.advance()
             action = message["op"]
+            target = message.get("target", "nixos")
+            if not isinstance(target, str) or target not in self.backends:
+                raise Rejected("guest target is unavailable")
             request = self.active.get(owner)
             queued = next((r for r in self.queue if r.owner == owner), None)
-            if action in ("status", "queue"):
-                return self.status(owner, include_queue=action == "queue")
+            existing = request or queued
+            if action == "queue":
+                return self.status(owner, target, include_queue=True)
+            if existing and existing.target != target:
+                raise Rejected(f"this profile already has a {existing.target} request")
+            if action == "status":
+                return self.status(owner, target)
             if self.fault:
                 raise Rejected(
                     "VM fault; an administrator must restart the broker and verify cleanup"
@@ -141,7 +168,8 @@ class Broker:
                 mode = message.get("mode")
                 if mode not in ("shared", "exclusive"):
                     raise Rejected("mode must be shared or exclusive")
-                existing = request or queued
+                if target == "android" and mode != "exclusive":
+                    raise Rejected("Android requires an exclusive lease")
                 if existing and existing.mode != mode:
                     raise Rejected(
                         "release or cancel before requesting a different mode"
@@ -149,7 +177,9 @@ class Broker:
                 if not existing:
                     if len(self.active) + len(self.queue) >= MAX_REQUESTS:
                         raise Rejected("too many VM requests")
-                    self.queue.append(Request(owner, mode, self.now() + QUEUE_SECONDS))
+                    self.queue.append(
+                        Request(owner, mode, self.now() + QUEUE_SECONDS, target)
+                    )
                     self.advance()
             elif action == "cancel":
                 if request:
@@ -169,11 +199,16 @@ class Broker:
                 if not request:
                     raise Rejected("no active lease")
                 request.deadline = self.now() + LEASE_SECONDS
-            elif action == "ssh-config":
-                if not request or self.power != "on":
-                    raise Rejected("an active lease and a powered-on VM are required")
+            elif action in ("ssh-config", "adb-env"):
+                expected = "android" if action == "adb-env" else "nixos"
+                if target != expected or not request or self.power != "on":
+                    raise Rejected(
+                        f"an active, powered-on {expected} lease is required"
+                    )
                 return self.vm.credentials()
             elif action in ("on", "off", "reset"):
+                if target == "android" and action != "reset":
+                    raise Rejected("Android does not support manual power control")
                 if not request or request.mode != "exclusive":
                     raise Rejected("an exclusive lease is required")
                 if action == "off" and self.power == "on":
@@ -184,43 +219,48 @@ class Broker:
                     request.revoke_connections()
                     self.clean()
                 if action != "off" and self.power == "off":
-                    self.start()
+                    self.start(target)
                 self.advance()
             else:
                 raise Rejected("unknown command")
-            return self.status(owner)
+            return self.status(owner, target)
 
-    def open_tunnel(self, owner, generation, client):
+    def open_tunnel(self, owner, generation, client, action="proxy"):
+        target = "nixos" if action == "proxy" else "android"
         with self.lock:
             self.advance()
             request = self.active.get(owner)
             if (
                 self.fault
                 or not request
+                or request.target != target
                 or self.power != "on"
                 or generation != self.vm.generation
             ):
                 raise Rejected(
-                    "SSH requires a current lease and fresh SSH configuration"
+                    f"{target} requires a current lease and fresh configuration"
                 )
             if (
-                len(request.tunnels) >= 4
+                len(request.tunnels) >= (4 if target == "nixos" else 16)
                 or sum(len(r.tunnels) for r in self.active.values()) >= 32
             ):
-                raise Rejected("too many SSH connections")
-            try:
-                guest = self.vm.connect(timeout=2)
-            except OSError as error:
-                raise Rejected("guest SSH is unavailable") from error
-            guest.settimeout(None)
-            pair = (client, guest)
+                raise Rejected("too many guest connections")
+            pair = (client,)
+            if action != "adb-watch":
+                try:
+                    guest = self.vm.connect(timeout=2)
+                except OSError as error:
+                    raise Rejected(f"{target} transport is unavailable") from error
+                guest.settimeout(None)
+                pair += (guest,)
             request.tunnels.append(pair)
             return request, pair
 
     def close_tunnel(self, request, pair):
         with self.lock:
             request.tunnels.remove(pair)
-        pair[1].close()
+        for guest in pair[1:]:
+            guest.close()
 
     def tick(self):
         while True:
@@ -233,7 +273,7 @@ class Broker:
 
 
 def read_message(sock, limit=2048):
-    # Don't buffer past the JSON header: the next bytes on a tunnel are SSH.
+    # Don't buffer past the JSON header: the next bytes belong to the tunnel.
     end = time.monotonic() + 5
     data = bytearray()
     while len(data) < limit and time.monotonic() < end:
@@ -283,13 +323,20 @@ class Handler(socketserver.BaseRequestHandler):
                 "3i", client.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12)
             )
             owner = (uid, token)
-            if action != "proxy":
+            if action not in ("proxy", "adb-proxy", "adb-watch"):
                 send_message(client, ok=True, result=broker.command(owner, message))
                 return
-            request, pair = broker.open_tunnel(owner, message.get("generation"), client)
+            request, pair = broker.open_tunnel(
+                owner, message.get("generation"), client, action
+            )
             try:
                 send_message(client, ok=True)
                 client.settimeout(None)
+                if action == "adb-watch":
+                    client.recv(
+                        1
+                    )  # The client sends nothing; either side can disconnect.
+                    return
                 outgoing = threading.Thread(target=relay, args=pair, daemon=True)
                 outgoing.start()
                 relay(*reversed(pair))

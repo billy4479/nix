@@ -49,6 +49,7 @@ let
         (lib.hiPrio coreutils)
         less
         openssh
+        android-tools
         nix
         nh
         git

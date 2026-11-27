@@ -17,9 +17,11 @@ let
   dataset = "ssd_pool/agent-vm";
   storage = "/mnt/SSD/agent-vm";
   runtime = "/run/agent-vm";
-  args = "--storage ${storage} --base-image ${image}/nixos.qcow2 --guest-ip ${ip} --bridge ${bridge}";
+  args = "--storage ${storage} --base-image ${image}/nixos.qcow2 --guest-ip ${ip} --bridge ${bridge} --with-android";
 in
 {
+  imports = [ ./agent-android.nix ];
+
   virtualisation.libvirtd = {
     enable = true;
     qemu = {
@@ -136,6 +138,7 @@ in
       xorriso
       openssh
       coreutils
+      systemd
     ];
     serviceConfig = {
       ExecStart = "${lib.getExe app} serve ${args}";

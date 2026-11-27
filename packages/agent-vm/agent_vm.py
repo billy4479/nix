@@ -16,6 +16,7 @@ import threading
 import time
 from pathlib import Path
 
+from android_vm import AndroidVM, run_emulator
 from broker import Broker, Rejected, Server, read_message, send_message
 from libvirt_vm import LibvirtVM, activated_listener
 
@@ -156,7 +157,9 @@ def serve(args):
     logging.basicConfig(level=logging.INFO)
     with activated_listener() as listener:
         vm = LibvirtVM(args.storage, args.base_image, args.guest_ip, args.bridge)
-        broker = Broker(vm)
+        broker = Broker(
+            vm, android=AndroidVM(args.storage) if args.with_android else None
+        )
         threading.Thread(target=broker.tick, daemon=True).start()
         Server(listener, broker).serve_forever()
 
@@ -170,9 +173,12 @@ def main():
         help="explicit, unique client profile",
     )
     parser.add_argument("--socket", default=os.environ.get("AGENT_VM_SOCKET", SOCKET))
+    parser.add_argument(
+        "--android", action="store_true", help="select the Android emulator"
+    )
     commands = parser.add_subparsers(dest="action", required=True)
     request = commands.add_parser("request", help="request a shared or exclusive lease")
-    request.add_argument("mode", choices=["shared", "exclusive"])
+    request.add_argument("mode", choices=["shared", "exclusive"], nargs="?")
     wait = commands.add_parser("wait", help="wait for this profile's queued request")
     wait.add_argument(
         "--timeout", type=int, default=300, help="seconds to wait (default: 300)"
@@ -187,6 +193,7 @@ def main():
         "off": "power off without resetting the disk (exclusive)",
         "reset": "discard disk state and boot clean without releasing the lease (exclusive)",
         "ssh-config": "write and print the path to a lease-scoped OpenSSH configuration",
+        "adb-env": "start a lease-scoped local ADB server and print shell exports",
     }.items():
         commands.add_parser(name, help=help_text)
     commands.add_parser("proxy").add_argument("generation")
@@ -197,20 +204,44 @@ def main():
         broker = commands.add_parser(name, help=tip)
         for arg in ("storage", "base-image", "guest-ip", "bridge"):
             broker.add_argument(f"--{arg}", required=True)
+        broker.add_argument("--with-android", action="store_true")
+    emulator = commands.add_parser("run-emulator", help="run the host Android service")
+    emulator.add_argument("--state", type=Path, required=True)
+    emulator.add_argument("--sdk", type=Path, required=True)
     args = parser.parse_args()
     if args.action == "serve":
         serve(args)
         return 0
     if args.action == "cleanup":
-        LibvirtVM(args.storage, args.base_image, args.guest_ip, args.bridge).clean(
-            force=True
-        )
+        try:
+            LibvirtVM(args.storage, args.base_image, args.guest_ip, args.bridge).clean(
+                force=True
+            )
+        finally:
+            if args.with_android:
+                AndroidVM(args.storage).clean(force=True)
         return 0
+    if args.action == "run-emulator":
+        run_emulator(args.state, args.sdk)
+        return 0
+    target = "android" if args.android else "nixos"
+    if args.action == "request" and args.mode is None:
+        if not args.android:
+            parser.error("NixOS requests require shared or exclusive")
+        args.mode = "exclusive"
     if not args.profile:
         parser.error("select a unique client using --profile or AGENT_VM_PROFILE")
     directory, token = load_profile(args.profile)
     path = os.path.abspath(args.socket)
-    if args.action == "ssh-config":
+    if args.action == "adb-env":
+        if not args.android:
+            parser.error("adb-env requires --android")
+        from android_client import adb_env
+
+        adb_env(path, token, directory)
+    elif args.action == "ssh-config":
+        if args.android:
+            parser.error("Android does not support SSH; use adb-env")
         if not shutil.which("agent-vm"):
             raise Rejected("agent-vm must be on PATH for SSH ProxyCommand")
         ssh_config(path, token, args.profile, directory)
@@ -221,7 +252,7 @@ def main():
             parser.error("--timeout cannot be negative")
         deadline = time.monotonic() + args.timeout
         while True:
-            result = rpc(path, token, "status")
+            result = rpc(path, token, "status", target=target)
             if (
                 result["fault"]
                 or result["state"] != "queued"
@@ -232,7 +263,9 @@ def main():
             time.sleep(min(1, max(0, deadline - time.monotonic())))
     else:
         fields = {"mode": args.mode} if args.action == "request" else {}
-        print(json.dumps(rpc(path, token, args.action, **fields), indent=2))
+        print(
+            json.dumps(rpc(path, token, args.action, target=target, **fields), indent=2)
+        )
     return 0
 
 

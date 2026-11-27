@@ -147,6 +147,78 @@ class BrokerTests(unittest.TestCase):
                 server.shutdown()
                 worker.join()
 
+    def test_android_waiter_drains_nixos_and_clean_precedes_next_start(self):
+        events = []
+
+        class Backend(FakeVM):
+            def __init__(self, name):
+                super().__init__()
+                self.name = name
+
+            def clean(self, force=False):
+                super().clean(force)
+                events.append((self.name, "clean"))
+
+            def start(self):
+                super().start()
+                events.append((self.name, "start"))
+
+        self.broker = Broker(Backend("nixos"), lambda: self.now, Backend("android"))
+        self.action("request", "linux", mode="shared")
+        android = {"target": "android"}
+        with self.assertRaisesRegex(Rejected, "exclusive"):
+            self.action("request", "droid", mode="shared", **android)
+        self.assertEqual(
+            self.action("request", "droid", mode="exclusive", **android)["position"], 1
+        )
+        self.assertEqual(self.action("request", "later", mode="shared")["position"], 2)
+        self.action("release", "linux")
+        with self.assertRaisesRegex(Rejected, "already has"):
+            self.action("release", "droid")
+        with self.assertRaisesRegex(Rejected, "manual power"):
+            self.action("off", "droid", **android)
+        self.now = LEASE_SECONDS
+        self.assertEqual(self.action("status", "later")["state"], "active")
+        self.assertEqual(
+            events,
+            [
+                ("nixos", "clean"),
+                ("android", "clean"),
+                ("nixos", "start"),
+                ("nixos", "clean"),
+                ("android", "start"),
+                ("android", "clean"),
+                ("nixos", "start"),
+            ],
+        )
+
+    def test_android_reset_revokes_adb_proxy_and_watch(self):
+        android = FakeVM()
+        self.broker = Broker(self.vm, lambda: self.now, android)
+        owner = (1000, "droid")
+        self.action("request", "droid", mode="exclusive", target="android")
+        old_generation = android.generation
+        for action in ("adb-watch", "adb-proxy"):
+            client, peer = socket.socketpair()
+            with client, peer:
+                generation = android.generation
+                with self.assertRaises(Rejected):
+                    self.broker.open_tunnel(owner, generation, client, "proxy")
+                request, pair = self.broker.open_tunnel(
+                    owner, generation, client, action
+                )
+                self.assertEqual(
+                    self.action("reset", "droid", target="android")["state"], "active"
+                )
+                self.assertNotEqual(android.generation, old_generation)
+                peer.settimeout(1)
+                self.assertEqual(peer.recv(1), b"")
+                with self.assertRaises(Rejected):
+                    self.broker.open_tunnel(owner, generation, client, action)
+                self.broker.close_tunnel(request, pair)
+                if action == "adb-proxy":
+                    android.guest.close()
+
     def test_profile_token_persists_and_is_private(self):
         with (
             tempfile.TemporaryDirectory() as directory,

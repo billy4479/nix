@@ -4,6 +4,27 @@
 
 `serverone` hosts one transient libvirt domain. Its minimal NixOS image has 2 vCPUs, 3 GiB RAM, and a 32 GiB virtual disk. The storage service provisions `ssd_pool/agent-vm` with a 36 GiB quota on first use. Every new group of holders starts with a fresh copy of the image and new guest SSH keys. The broker requires the dedicated dataset to be mounted before touching the disk. The guest has public IPv4 egress only through the LAN uplink; it has no inbound LAN route, private network access, IPv6 egress, host mounts, or fleet credentials. Services already exposed to the public internet remain reachable as public services. This does not change the agents' separate, existing host SSH permissions.
 
+## Android emulator
+
+`agent-vm --android` selects one headless, KVM-backed AOSP API 35 x86_64 device on `serverone`. Its exclusive requests enter the same FIFO as NixOS requests. An Android waiter blocks new shared NixOS grants; an active lease can still renew. The broker never runs both guests at once. The emulator uses two vCPUs and 2 GiB of guest RAM, with a 4 GiB service memory ceiling. Writable guest files share the VM storage quota and are removed on reset, release, expiry, and broker restart. Nothing starts until a request reaches the front of the queue.
+
+The emulator runs as an unprivileged user in a dedicated network namespace. Its app traffic can reach public IPv4 endpoints, not the host, LAN, or tailnet. The console and device TCP socket stay inside the namespace. The broker grants a revocable Unix-socket tunnel to the existing T3 container. `adb-env` starts a lease-local ADB server and exports its loopback port and device serial. SDK tools run in that same container; their local ADB forwards are not published on the host. This is not isolation between T3 processes sharing the same account or network namespace. Do not use ADB reverse forwarding to give an app access to sensitive T3 services.
+
+```sh
+export AGENT_VM_PROFILE=android-acceptance
+agent-vm --android request
+agent-vm --android wait --timeout 180
+adb_env=$(agent-vm --android adb-env) && eval "$adb_env"
+adb shell getprop sys.boot_completed
+adb install ./app.apk
+adb exec-out screencap -p >screenshot.png
+./gradlew connectedDebugAndroidTest
+agent-vm --android release
+unset ADB_SERVER_SOCKET ANDROID_ADB_SERVER_PORT ANDROID_SERIAL
+```
+
+For Appium, start it in the same environment, use the UiAutomator2 driver, and set `appium:udid` to `ANDROID_SERIAL` and numeric `appium:adbPort` to `ANDROID_ADB_SERVER_PORT`. The project's Gradle SDK and Appium driver are separate prerequisites. Prefer to put the project's `platform-tools` on `PATH` before `adb-env` so each tool uses the same ADB version. After `reset`, rerun `adb-env`; the old exports do not reconnect to the new device.
+
 ## ZFS storage policy
 
 The broker's storage service sets a 16 KiB record size for small random writes to the qcow2 image, LZ4 compression, and no access-time updates. The dataset caches only metadata in the ZFS ARC to leave more room for host services and the guest's own cache. It explicitly opts out of the SSD pool's inherited dedup and automatic snapshots, and keeps `sync=standard` so guest flushes are honored. These settings are local to `ssd_pool/agent-vm`; no pool-wide settings change.
@@ -17,6 +38,7 @@ Build the image and system on `serverone` or with a KVM-capable Nix builder. The
 ```sh
 nix build --no-link .#agent-vm .#agent-vm.tests.broker
 nix build --no-link .#nixosConfigurations.serverone.config.system.build.agentVMImage
+nix build --no-link .#nixosConfigurations.serverone.config.system.build.agentAndroidSdk
 nix build --no-link .#nixosConfigurations.serverone.config.system.build.toplevel
 ```
 
@@ -28,6 +50,8 @@ zpool get autotrim ssd_pool
 ```
 
 Before handing the VM to agents, confirm spare memory under normal load and perform a live acceptance test after activating the configuration: boot the VM, SSH in with `agent-vm ssh-config`, verify guest sudo and SCP both ways, and verify public package access but no host, LAN, or tailnet access. Create a marker file, power-cycle it with an exclusive lease and verify the marker remains, then reset and verify it is gone. With distinct profiles, check that an exclusive waiter blocks new shared grants, the first shared release does not interrupt a second holder, and the final release disconnects SSH and resets the disk.
+
+Before enabling Android, review the [Android SDK terms](https://developer.android.com/studio/terms). On the activated host, use `journalctl -u agent-android -u agent-android-network` to verify KVM acceleration and a clean boot. Run the Gradle test above and an Appium UI test that exercises ADB forwarding. Check public HTTPS from an app and failure to reach host/LAN/tailnet services, including the emulator's host alias. In separate profiles, confirm that an Android waiter drains existing NixOS holders and that no guests overlap. Leave an ADB shell and forward open across reset, release, and expiry: the shell and forward should stop, and test files should be absent on the next boot. Also check cleanup after a broker restart.
 
 Leases and queue positions survive a **client** restart if it selects the same profile. Profiles are private files, not security isolation between agents running under the same Unix account; shared guest sudo is not isolation either. A **broker** restart invalidates all requests and leases and discards the disk before accepting new ones. Queued requests expire after two hours. Renewals can keep other requests waiting; an exclusive holder can stop the VM without releasing its lease. Power-off attempts a graceful ACPI shutdown, then forces it off after 20 seconds if necessary.
 

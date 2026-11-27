@@ -10,6 +10,8 @@ let
     root = ./.;
     fileset = lib.fileset.unions [
       ./agent_vm.py
+      ./android_client.py
+      ./android_vm.py
       ./broker.py
       ./libvirt_vm.py
     ];
@@ -38,7 +40,7 @@ stdenvNoCC.mkDerivation {
   '';
 
   meta = {
-    description = "Lease and power control for a shared development VM";
+    description = "Leases for disposable NixOS VMs and Android emulators";
     mainProgram = "agent-vm";
     platforms = lib.platforms.linux;
   };
