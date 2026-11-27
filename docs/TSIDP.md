@@ -181,6 +181,7 @@ Registered clients and where the guide lives:
 | Jellyfin | no | [deployments/tsidp-jellyfin.md](deployments/tsidp-jellyfin.md) |
 | OpenCloud | **yes** (DCR) | [deployments/tsidp-opencloud.md](deployments/tsidp-opencloud.md) |
 | ff | no | [deployments/tsidp-ff.md](deployments/tsidp-ff.md) |
+| Radicale setup | no | [deployments/tsidp-radicale.md](deployments/tsidp-radicale.md) |
 | giuoco-del-divertimento | no | [deployments/tsidp-giuoco-del-divertimento.md](deployments/tsidp-giuoco-del-divertimento.md) |
 | Outline | no | [deployments/outline.md](deployments/outline.md) |
 | game-server-runner | no | [deployments/tsidp-game-server-runner.md](deployments/tsidp-game-server-runner.md) |

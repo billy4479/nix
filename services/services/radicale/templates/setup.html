@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendar setup</title>
+<style>
+  :root { color-scheme: light dark; font: 1rem system-ui; }
+  body { max-width: 32rem; margin: 3rem auto; padding: 0 1rem; }
+  label { display: block; margin: 1rem 0; }
+  input[readonly] { display: block; box-sizing: border-box; width: 100%; padding: .5rem; font: inherit; }
+  details { margin-top: 2rem; }
+</style>
+<main>
+  <h1>Calendar setup</h1>
+  <p>Add a CalDAV account in your calendar app using these fields. You can come back here to get the same credentials for another device.</p>
+  <label>Server URL <input readonly value="{{ server }}"></label>
+  <label>Username <input readonly value="{{ username }}"></label>
+  <label>Password <input readonly autocomplete="off" value="{{ password }}"></label>
+  <details>
+    <summary>Reset password</summary>
+    <form method="post" action="/setup/reset">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label><input type="checkbox" name="confirm" value="yes" required> I’ll need to update the password on every connected device.</label>
+      <button type="submit">Generate a new password</button>
+    </form>
+  </details>
+</main>
+</html>

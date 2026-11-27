@@ -247,6 +247,7 @@ The shared PostgreSQL container is initialized and migrated according to
 | Outline | 24 | 10.0.1.24 |
 | tsidp | 25 | 10.0.1.25 |
 | Quote Bot | 26 | 10.0.1.26 |
+| Radicale | 30 | 10.0.1.30 |
 | Immich (ML) | 128 | 10.0.1.128 |
 | Immich (valkey) | 129 | 10.0.1.129 |
 | PostgreSQL | 130 | 10.0.1.130 |

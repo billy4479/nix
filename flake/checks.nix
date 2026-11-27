@@ -8,6 +8,18 @@
 }:
 {
   agent-vm = (pkgs.callPackage ../packages/agent-vm { }).tests.broker;
+  radicale =
+    let
+      server = hosts.nixosConfigurations.serverone.config;
+      service = server.polpetta.services.radicale;
+      runtime = import ../services/services/radicale/runtime.nix { inherit pkgs; };
+    in
+    assert service.web.access == "tailnet-only";
+    pkgs.runCommand "radicale-test" { } # sh
+      ''
+        ${runtime}/bin/python ${../services/services/radicale}/test_landing.py ${service.container.environment.RADICALE_CONFIG}
+        touch "$out"
+      '';
   nix-settings = import ../tests/nix-settings.nix {
     inherit pkgs hosts;
   };
