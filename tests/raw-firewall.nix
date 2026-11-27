@@ -1,7 +1,7 @@
 {
   pkgs,
   ruleset,
-  adminRuleset,
+  previewRuleset,
   rawUnit,
   cniConfig,
   prometheusTable,
@@ -87,7 +87,7 @@ pkgs.testers.runNixOSTest {
       pkgs.netcat-openbsd
     ];
     environment.etc."raw-firewall.nft".source = ruleset;
-    environment.etc."raw-firewall-admin.nft".source = adminRuleset;
+    environment.etc."raw-firewall-preview.nft".source = previewRuleset;
     networking.nftables.tables.serverone-prometheus = prometheusTable;
     networking.firewall.extraInputRules = prometheusInputRules;
   };
@@ -262,8 +262,7 @@ pkgs.testers.runNixOSTest {
       machine.succeed(
           'ip netns exec nginx valkey-server --port 8443 --protected-mode no --save "" --daemonize yes'
       )
-      machine.fail("ip netns exec vpn nc -z -w 1 10.0.2.6 443")
-      machine.succeed("nft -f /etc/raw-firewall-admin.nft")
+
       machine.succeed(
           "ip netns exec vpn valkey-cli -h 10.0.2.6 -p 443 client info | grep 'addr=100.64.0.7:'"
       )
@@ -301,6 +300,8 @@ pkgs.testers.runNixOSTest {
               "assert s.recv(128) == b'preview'\n"
           )
           udp = f"${pkgs.lib.getExe pkgs.python3} -c {udp_client}"
+          machine.fail("ip netns exec vpn nc -z -w 1 10.0.2.6 20042")
+          machine.succeed("nft -f /etc/raw-firewall-preview.nft")
           machine.succeed("ip netns exec nginx nc -z -w 1 10.0.1.27 19999")
           machine.succeed(
               "ip netns exec vpn valkey-cli -h 10.0.2.6 -p 20042 ping | grep PONG"
@@ -329,7 +330,8 @@ pkgs.testers.runNixOSTest {
                   machine.fail(f"ip netns exec {client} nc -z -w 1 {address} {port}")
           machine.fail("ip netns exec seerr nc -z -w 1 10.0.1.5 8080")
       machine.succeed("systemctl reload polpetta-raw-firewall")
-      machine.fail("ip netns exec vpn nc -z -w 1 10.0.2.6 443")
+      machine.succeed("ip netns exec vpn nc -z -w 1 10.0.2.6 443")
+      machine.fail("ip netns exec vpn nc -z -w 1 10.0.2.6 20042")
       # A broken policy must prevent the engine's startup action from running.
       machine.succeed("systemctl start containerd; test -f /tmp/containerd-started")
       machine.succeed(

@@ -93,31 +93,16 @@
   raw-firewall =
     let
       serverone = hosts.nixosConfigurations.serverone;
-      # Exercise both states even when the deployed host has admin ingress enabled.
-      disabled =
+      withoutPreview =
         (serverone.extendModules {
-          modules = [
-            {
-              polpetta.adminIngressEnabled = pkgs.lib.mkForce false;
-              polpetta.agentPreview.enable = pkgs.lib.mkForce false;
-            }
-          ];
-        }).config;
-      enabled =
-        (serverone.extendModules {
-          modules = [
-            {
-              polpetta.adminIngressEnabled = pkgs.lib.mkForce true;
-              polpetta.agentPreview.enable = true;
-            }
-          ];
+          modules = [ { polpetta.agentPreview.enable = pkgs.lib.mkForce false; } ];
         }).config;
     in
     import ../tests/raw-firewall.nix {
       inherit pkgs;
-      ruleset = disabled.polpetta.generated.rawFirewallFile;
-      adminRuleset = enabled.polpetta.generated.rawFirewallFile;
-      rawUnit = disabled.systemd.services.polpetta-raw-firewall;
+      ruleset = withoutPreview.polpetta.generated.rawFirewallFile;
+      previewRuleset = serverone.config.polpetta.generated.rawFirewallFile;
+      rawUnit = withoutPreview.systemd.services.polpetta-raw-firewall;
       prometheusTable =
         hosts.nixosConfigurations.serverone.config.networking.nftables.tables.serverone-prometheus;
       prometheusInputRules =

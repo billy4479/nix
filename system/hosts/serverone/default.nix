@@ -50,14 +50,13 @@
     interfaces.enp2s0.wakeOnLan.enable = true;
   };
 
-  # Headscale's deployed file policy limits this route to group:admin.
-  polpetta.adminIngressEnabled = true;
   # Provision the wildcard lineage before deploying (docs/AGENT_PREVIEW.md).
   polpetta.agentPreview.enable = true;
 
   services.tailscale = {
     extraSetFlags = [
       (
+        # Headscale's file policy limits the generated admin route to group:admin.
         "--advertise-routes=10.0.1.0/24"
         + lib.optionalString config.polpetta.generated.adminIngress.enable ",${config.polpetta.generated.adminIngress.address}/32"
       )

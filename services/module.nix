@@ -80,7 +80,7 @@ let
   adminIngress = {
     address = "10.0.2.6";
     port = 8443;
-    enable = cfg.adminIngressEnabled && (adminWeb != { } || preview.enable);
+    enable = adminWeb != { } || preview.enable;
   };
   preview = {
     inherit (cfg.agentPreview) enable maxLeases;
@@ -567,8 +567,6 @@ in
       description = "Generated nginx vhost names for local HTTP probes.";
     };
 
-    adminIngressEnabled = lib.mkEnableOption "Tailscale admin-only web ingress (requires the restrictive Headscale policy to be installed first)";
-
     agentPreview = {
       enable = lib.mkEnableOption "admin-only agent preview forwarding (provision its TLS certificate first)";
       maxLeases = lib.mkOption {
@@ -682,8 +680,8 @@ in
       assertionEntries
       ++ lib.optionals preview.enable [
         {
-          assertion = cfg.adminIngressEnabled && services ? t3code;
-          message = "polpetta.agentPreview requires T3 Code and the dedicated admin ingress";
+          assertion = services ? t3code;
+          message = "polpetta.agentPreview requires T3 Code";
         }
         {
           assertion = lib.all (d: d != preview.hostname && !lib.hasSuffix ".${preview.hostname}" d) (
