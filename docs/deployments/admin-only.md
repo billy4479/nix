@@ -5,7 +5,7 @@ qBittorrent, Jackett, Syncthing, Sonarr and Radarr keep their `https://<name>.in
 ## Enable access
 
 1. Back up the active database policy from Headplane before the first deploy. Compare it with [policy.nix](../../services/services/headscale/policy.nix) and merge any newer rules into Git. The generated JSON replaces the unrestricted `*:*` rule with explicit destinations and keeps the tsidp grant. Never add a broader allow that would include the admin IP. Headscale ACLs are additive.
-2. Deploy serverone with `polpetta.adminIngressEnabled` still off. Headscale then loads the Nix-mounted file instead of its database policy. Future policy edits go through Git and a serverone deployment, not Headplane. The existing database still holds enrolled nodes and users.
+2. Deploy serverone with `polpetta.adminIngressEnabled` and `polpetta.agentPreview.enable` both off. Headscale then loads the Nix-mounted file instead of its database policy. Future policy edits go through Git and a serverone deployment, not Headplane. The existing database still holds enrolled nodes and users.
 3. Once Headscale is serving the new policy, apply the `tag:serverone` tag to serverone's existing node. Verify the node ID before tagging. This changes the node from user-owned to tag-owned; it will no longer inherit Jack's admin access. No other node should get the tag.
 
    ```sh
@@ -53,4 +53,4 @@ After verifying the network restrictions, make these one-time changes in the app
 - **Jackett:** Clear the admin password and save. Keep the API key.
 - **Syncthing:** Under Settings → GUI, clear the GUI username and password and save. Keep the API key and device trust settings unchanged.
 
-Test again in a fresh browser session as Jack. Before restoring the old database policy, disable admin ingress and redeploy. Before reverting to an older generation that serves these dashboards on LAN or on the ordinary tailnet listener, restore app authentication (remove the qBittorrent bypass, set Jackett and Syncthing passwords, and use Forms authentication with no local bypass in Sonarr and Radarr). To disable access without rolling back, set `polpetta.adminIngressEnabled = false` and redeploy.
+Test again in a fresh browser session as Jack. Before restoring the old database policy, disable admin ingress and redeploy. Before reverting to an older generation that serves these dashboards on LAN or on the ordinary tailnet listener, restore app authentication (remove the qBittorrent bypass, set Jackett and Syncthing passwords, and use Forms authentication with no local bypass in Sonarr and Radarr). To disable access without rolling back, set both `polpetta.adminIngressEnabled = false` and `polpetta.agentPreview.enable = false` and redeploy.

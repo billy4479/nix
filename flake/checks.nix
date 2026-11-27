@@ -96,7 +96,12 @@
       # Exercise both states even when the deployed host has admin ingress enabled.
       disabled =
         (serverone.extendModules {
-          modules = [ { polpetta.adminIngressEnabled = pkgs.lib.mkForce false; } ];
+          modules = [
+            {
+              polpetta.adminIngressEnabled = pkgs.lib.mkForce false;
+              polpetta.agentPreview.enable = pkgs.lib.mkForce false;
+            }
+          ];
         }).config;
       enabled =
         (serverone.extendModules {

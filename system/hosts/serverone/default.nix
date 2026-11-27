@@ -52,6 +52,8 @@
 
   # Headscale's deployed file policy limits this route to group:admin.
   polpetta.adminIngressEnabled = true;
+  # Provision the wildcard lineage before deploying (docs/AGENT_PREVIEW.md).
+  polpetta.agentPreview.enable = true;
 
   services.tailscale = {
     extraSetFlags = [
