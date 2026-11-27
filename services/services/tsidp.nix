@@ -38,7 +38,7 @@ in
         "-trusted-proxy"
         "10.0.1.6"
         "-server-url"
-        "https://idp.internal.${domain}"
+        "https://idp.${domain}"
       ];
 
       environment = {
@@ -79,9 +79,8 @@ in
         "outline"
         "radicale"
       ];
-      # The service name would generate tsidp.internal...; the relying
-      # parties (and the sops-seeded clients) know it as idp.
-      domain = "idp.internal.${domain}";
+      # The service name is tsidp, but relying parties know it as idp.
+      domain = "idp.${domain}";
 
       # / does WhoIs and 500s for non-tailnet peers (e.g. the blackbox
       # probe); the discovery endpoint is auth-free and proves tsidp is

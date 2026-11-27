@@ -44,6 +44,9 @@ let
   };
 in
 assert services.opencloud.container.environment.OC_URL == "https://opencloud.${domain}";
+assert services.opencloud.container.environment.OC_OIDC_ISSUER == "https://idp.${domain}";
+assert pkgs.lib.last services.tsidp.container.cmd == "https://idp.${domain}";
+assert services.radicale.container.environment.OIDC_ISSUER == "https://idp.${domain}";
 assert services.grafana.container.environment.GF_SERVER_ROOT_URL == "https://grafana.${domain}";
 assert vps.systemd.services.public-health-monitor.environment.PROBE_HOST == "headscale.${domain}";
 assert home.programs.ssh.settings.serverone.data.HostName == "internal.${domain}";
@@ -82,8 +85,8 @@ pkgs.runCommand "domain-test"
       done
     done
     vhost 'jellyfin.${domain}' | grep -F 'allow 192.168.0.0/16;'
-    vhost 'idp.internal.${domain}' | grep -F 'allow 100.64.0.0/10;'
-    test -z "$(vhost 'idp.${domain}')"
+    vhost 'idp.${domain}' | grep -F 'allow 100.64.0.0/10;'
+    test -z "$(vhost 'idp.internal.${domain}')"
     vhost 'ff.internal.${domain}' | grep -F 'try_files "" @canonical;'
     vhost 'ff.internal.${domain}' | grep -F 'return 307 https://ff.${domain}$request_uri;'
     vhost 'opencloud.${domain}' | grep -F 'listen 4443 ssl proxy_protocol;'
@@ -94,7 +97,7 @@ pkgs.runCommand "domain-test"
     ${pkgs.jq}/bin/jq -e --arg route '${adminAddress}/32' \
       '.autoApprovers.routes[$route] == ["tag:serverone"]' ${volume "headscale" policyPath}
     grep -F 'hostname: derp.${domain}' ${volume "headscale" "/etc/headscale/derp-custom.yaml"}
-    grep -F 'issuer: "https://idp.internal.${domain}"' ${volume "headplane" "/etc/headplane/config.yaml"}
+    grep -F 'issuer: "https://idp.${domain}"' ${volume "headplane" "/etc/headplane/config.yaml"}
     grep -F 'base_url: "https://searxng.${domain}/"' ${volume "searxng" "/etc/searxng/settings.yml"}
     grep -F 'zone "${domain}"' ${bind}/named.conf
     grep -F 'www        IN CNAME ${domain}.' ${bind}/wg-public.zone

@@ -67,7 +67,7 @@ in
         CALENDAR_ORIGIN = origin;
         CALENDAR_LEGACY_ORIGIN = "https://${name}.internal.${domain}";
         CALENDAR_STATE = state;
-        OIDC_ISSUER = "https://idp.internal.${domain}";
+        OIDC_ISSUER = "https://idp.${domain}";
         RADICALE_CONFIG = "${radicaleConfig}";
         PYTHONDONTWRITEBYTECODE = "1";
       };

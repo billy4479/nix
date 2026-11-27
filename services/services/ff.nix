@@ -20,7 +20,7 @@ in
   sops.templates."ff-env".content = lib.mkIf (options ? nerdctl-containers) (
     # sh
     ''
-      OIDC_ISSUER=https://idp.internal.${domain}
+      OIDC_ISSUER=https://idp.${domain}
       OIDC_CLIENT_ID=${config.sops.placeholder."ff-oauth-client-id"}
       OIDC_CLIENT_SECRET=${config.sops.placeholder."ff-oauth-client-secret"}
       SESSION_SECRET=${config.sops.placeholder."ff-session-secret"}

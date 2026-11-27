@@ -47,7 +47,7 @@ in
   sops.templates."lunamultiplayer-env".content = lib.mkIf (options ? nerdctl-containers) (
     # sh
     ''
-      OIDC_ISSUER=https://idp.internal.${domain}
+      OIDC_ISSUER=https://idp.${domain}
       OIDC_CLIENT_ID=${config.sops.placeholder."lunamultiplayer-oauth-client-id"}
       OIDC_CLIENT_SECRET=${config.sops.placeholder."lunamultiplayer-oauth-client-secret"}
       ADMIN_USERNAME=jack

@@ -65,9 +65,9 @@ in
         # Auth against tsidp (docs/deployments/outline.md): the client
         # id/secret come from the tsidp client registration, the callback
         # path is fixed by Outline (${URL}/auth/oidc.callback).
-        OIDC_AUTH_URI = "https://idp.internal.${domain}/authorize";
-        OIDC_TOKEN_URI = "https://idp.internal.${domain}/token";
-        OIDC_USERINFO_URI = "https://idp.internal.${domain}/userinfo";
+        OIDC_AUTH_URI = "https://idp.${domain}/authorize";
+        OIDC_TOKEN_URI = "https://idp.${domain}/token";
+        OIDC_USERINFO_URI = "https://idp.${domain}/userinfo";
         OIDC_DISPLAY_NAME = "tsidp";
         OIDC_SCOPES = "openid profile email";
         # tsidp's userinfo has `username` while the ID token carries the same

@@ -176,7 +176,7 @@ integration:
 oidc:
   # The OIDC issuer URL (tsidp). All endpoints are auto-discovered from
   # /.well-known/openid-configuration, they must not be hardcoded.
-  issuer: "https://idp.internal.@domain@"
+  issuer: "https://idp.@domain@"
 
   # The client id/secret of the client registered in tsidp.
   # Do NOT set them here: they are provided through the headplane-env sops

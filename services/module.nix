@@ -455,7 +455,7 @@ let
       {
         assertion = lib.all (
           d: lib.hasSuffix ".${domain}" d && builtins.match nameRe (lib.removeSuffix ".${domain}" d) != null
-        ) (lib.mapAttrsToList domainOf (lib.filterAttrs (name: _: name != "tsidp") servicesWithWeb));
+        ) (lib.mapAttrsToList domainOf servicesWithWeb);
         message = "polpetta.services: canonical app web domains must be single-label hosts under ${domain}";
       }
     ];

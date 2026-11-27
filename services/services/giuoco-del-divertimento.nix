@@ -20,7 +20,7 @@ in
   sops.templates."giuoco-env".content = lib.mkIf (options ? nerdctl-containers) (
     # sh
     ''
-      OIDC_ISSUER=https://idp.internal.${domain}
+      OIDC_ISSUER=https://idp.${domain}
       OIDC_CLIENT_ID=${config.sops.placeholder."giuoco-oauth-client-id"}
       OIDC_CLIENT_SECRET=${config.sops.placeholder."giuoco-oauth-client-secret"}
       SESSION_SECRET=${config.sops.placeholder."giuoco-session-secret"}

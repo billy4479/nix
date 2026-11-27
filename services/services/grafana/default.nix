@@ -55,9 +55,9 @@ in
         GF_AUTH_ANONYMOUS_ENABLED = "false";
         GF_AUTH_GENERIC_OAUTH_ENABLED = "true";
         GF_AUTH_GENERIC_OAUTH_NAME = "tsidp";
-        GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://idp.internal.${domain}/authorize";
-        GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://idp.internal.${domain}/token";
-        GF_AUTH_GENERIC_OAUTH_API_URL = "https://idp.internal.${domain}/userinfo";
+        GF_AUTH_GENERIC_OAUTH_AUTH_URL = "https://idp.${domain}/authorize";
+        GF_AUTH_GENERIC_OAUTH_TOKEN_URL = "https://idp.${domain}/token";
+        GF_AUTH_GENERIC_OAUTH_API_URL = "https://idp.${domain}/userinfo";
         GF_AUTH_GENERIC_OAUTH_SCOPES = "openid profile email";
         GF_AUTH_GENERIC_OAUTH_USE_PKCE = "true";
         # tsidp authenticates any tailnet member, so account creation is gated

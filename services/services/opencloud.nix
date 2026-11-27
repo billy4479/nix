@@ -17,7 +17,7 @@ let
   cspOverride = pkgs.writeText "opencloud-csp.yaml" ''
     directives:
       connect-src:
-        - https://idp.internal.${domain}
+        - https://idp.${domain}
   '';
 
   baseSSDDir = "/mnt/SSD/apps/${name}";
@@ -71,7 +71,7 @@ in
         # into the opencloud-env template. Full runbook:
         # docs/deployments/tsidp-opencloud.md.
         "OC_EXCLUDE_RUN_SERVICES" = "idp";
-        "OC_OIDC_ISSUER" = "https://idp.internal.${domain}";
+        "OC_OIDC_ISSUER" = "https://idp.${domain}";
         # tsidp access tokens are opaque strings, not JWTs, so the proxy must
         # validate them (and read claims) via the userinfo endpoint. The
         # upstream default 'jwt' would try to parse them as JWTs and fail.
