@@ -24,6 +24,7 @@ in
       volumes = [
         {
           hostPath = downloadsDir;
+          isCache = true;
           containerPath = "/downloads";
         }
         {

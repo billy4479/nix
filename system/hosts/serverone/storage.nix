@@ -5,8 +5,11 @@
   ...
 }:
 let
-  inherit (import ./snapshot-policy.nix) datasets excludedMounts;
-  excludedDatasets = lib.genAttrs (lib.attrValues excludedMounts) (_: false);
+  inherit (import ./snapshot-policy.nix) datasets;
+  activeVolumes = lib.filterAttrs (
+    _: spec: spec.enforce && !spec.existing
+  ) config.polpetta.volumeDatasetPlan;
+  cacheMounts = lib.filterAttrs (_: spec: spec.isCache) activeVolumes;
   intervals = [
     "frequent"
     "hourly"
@@ -19,7 +22,8 @@ let
   snapshotProperty = "com.sun:auto-snapshot";
   checkMounts = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (
-      path: dataset:
+      path:
+      { dataset, ... }:
       # sh
       ''
         if ! source=$(${findmnt} -nro SOURCE --mountpoint ${lib.escapeShellArg path}) \
@@ -27,13 +31,30 @@ let
           echo "Expected ${dataset} mounted at ${path}; complete the snapshot policy migration first" >&2
           exit 1
         fi
-      '') excludedMounts
+      ''
+    ) cacheMounts
   );
-  applyPolicy = lib.concatStringsSep "\n" (
-    lib.mapAttrsToList (
-      dataset: enabled: "enforce ${lib.escapeShellArg dataset} ${lib.boolToString enabled}"
-    ) (datasets // excludedDatasets)
-  );
+  applyPolicy =
+    lib.concatStringsSep "\n" (
+      lib.mapAttrsToList (
+        dataset: enabled: "enforce ${lib.escapeShellArg dataset} ${lib.boolToString enabled}"
+      ) datasets
+    )
+    + "\n"
+    + lib.concatStringsSep "\n" (
+      lib.mapAttrsToList (
+        _:
+        { dataset, isCache, ... }:
+        let
+          name = lib.escapeShellArg dataset;
+        in
+        ''
+          if ${zfs} list -H -o name ${name} >/dev/null 2>&1; then
+            enforce ${name} ${lib.boolToString (!isCache)}
+          fi
+        ''
+      ) activeVolumes
+    );
 in
 {
   # Reconcile the live properties even on existing pools where Disko's create

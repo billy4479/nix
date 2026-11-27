@@ -89,6 +89,16 @@ lib.types.submodule (
                 type = lib.types.bool;
                 default = false;
               };
+              isCache = lib.mkOption {
+                type = lib.types.bool;
+                default = false;
+                description = "Whether the entire volume is rebuildable and can be excluded from snapshots and backups.";
+              };
+              sharedDataset = lib.mkOption {
+                type = lib.types.nullOr lib.types.str;
+                default = null;
+                description = "Name of a host-managed ZFS dataset shared by one or more volumes.";
+              };
               customPermissionScript = lib.mkOption {
                 type = lib.types.nullOr lib.types.str;
                 default = null;
@@ -171,6 +181,11 @@ lib.types.submodule (
               type = lib.types.nullOr lib.types.str;
               default = null;
               description = "Host directory containing the private Nix root.";
+            };
+            isCache = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+              description = "Whether this private Nix root can be rebuilt and excluded from snapshots and backups.";
             };
             seedPackages = lib.mkOption {
               type = lib.types.listOf lib.types.package;

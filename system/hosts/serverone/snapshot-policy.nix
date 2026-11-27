@@ -17,20 +17,101 @@
     "ssd_pool/vm" = true;
   };
 
-  # Keep the existing host paths and container bind mounts. Each path below
-  # must be migrated to its own native ZFS mount before switching generations.
-  excludedMounts = {
-    "/mnt/SSD/apps/t3code/nix-root" = "ssd_pool/apps/t3code-nix-root";
-    "/mnt/SSD/apps/t3code/tmp" = "ssd_pool/apps/t3code-tmp";
-    "/mnt/SSD/apps/openchamber/nix-root" = "ssd_pool/apps/openchamber-nix-root";
-    "/mnt/SSD/apps/openchamber/tmp" = "ssd_pool/apps/openchamber-tmp";
-    "/mnt/SSD/apps/byparr/cache" = "ssd_pool/apps/byparr-cache";
-    "/mnt/SSD/apps/jellyfin/cache" = "ssd_pool/apps/jellyfin-cache";
-    "/mnt/SSD/apps/jackett/downloads" = "ssd_pool/apps/jackett-downloads";
-    "/mnt/SSD/apps/searxng/cache" = "ssd_pool/apps/searxng-cache";
-    "/mnt/SSD/apps/bind9/log" = "ssd_pool/apps/bind9-log";
-    "/mnt/SSD/apps/certbot/logs" = "ssd_pool/apps/certbot-logs";
-    "/mnt/SSD/apps/certbot/work" = "ssd_pool/apps/certbot-work";
-    "/mnt/HDD/apps/immich/model-cache" = "hdd_pool/apps/immich-model-cache";
+  mounts = {
+    "/" = "zroot/root";
+    "/mnt/HDD/apps" = "hdd_pool/apps";
+    "/mnt/HDD/generic" = "hdd_pool/generic";
+    "/mnt/HDD/timemachine" = "hdd_pool/timemachine";
+    "/mnt/HDD/torrent" = "hdd_pool/torrent";
+    "/mnt/SSD/apps" = "ssd_pool/apps";
+    "/mnt/SSD/generic" = "ssd_pool/generic";
+    "/mnt/SSD/minecraft" = "ssd_pool/minecraft";
+    "/mnt/SSD/vm" = "ssd_pool/vm";
   };
+
+  shared = {
+    torrent = {
+      path = "/mnt/HDD/torrent";
+      dataset = "hdd_pool/torrent";
+    };
+    hdd-generic = {
+      path = "/mnt/HDD/generic";
+      dataset = "hdd_pool/generic";
+    };
+    minecraft = {
+      path = "/mnt/SSD/minecraft";
+      dataset = "ssd_pool/minecraft";
+    };
+    certificates = {
+      path = "/mnt/SSD/apps/certbot/config";
+    };
+    workspaces = {
+      path = "/mnt/SSD/apps/openchamber/workspaces";
+    };
+    agent-config = {
+      path = "/mnt/SSD/agent-config";
+      dataset = "ssd_pool/agent-config";
+    };
+  };
+
+  # Retired service paths still used by migration tooling or retained on disk.
+  legacyCaches = [
+    "/mnt/SSD/apps/openchamber/nix-root"
+    "/mnt/SSD/apps/openchamber/tmp"
+  ];
+
+  # Temporary rollout inventory. Remove a path only after the operator has
+  # migrated it or confirmed that it is safe to provision empty. New paths
+  # are not added here. Existing shared datasets need no migration entry.
+  pending = [
+    "/mnt/HDD/apps/immich/model-cache"
+    "/mnt/HDD/apps/immich/upload"
+    "/mnt/HDD/apps/mc-runner/Friends-Git"
+    "/mnt/HDD/apps/opencloud"
+    "/mnt/HDD/apps/syncthing"
+    "/mnt/SSD/agent-config"
+    "/mnt/SSD/apps/agent-up"
+    "/mnt/SSD/apps/bind9/cache"
+    "/mnt/SSD/apps/bind9/lib"
+    "/mnt/SSD/apps/bind9/log"
+    "/mnt/SSD/apps/byparr/cache"
+    "/mnt/SSD/apps/certbot/config"
+    "/mnt/SSD/apps/certbot/logs"
+    "/mnt/SSD/apps/certbot/work"
+    "/mnt/SSD/apps/ff"
+    "/mnt/SSD/apps/game-server-runner"
+    "/mnt/SSD/apps/giuoco-del-divertimento"
+    "/mnt/SSD/apps/grafana/lib"
+    "/mnt/SSD/apps/heascale/headplane"
+    "/mnt/SSD/apps/heascale/lib"
+    "/mnt/SSD/apps/heascale/run"
+    "/mnt/SSD/apps/immich/valkey"
+    "/mnt/SSD/apps/jackett/config"
+    "/mnt/SSD/apps/jackett/downloads"
+    "/mnt/SSD/apps/jellyfin/cache"
+    "/mnt/SSD/apps/jellyfin/config"
+    "/mnt/SSD/apps/laurea"
+    "/mnt/SSD/apps/lunamultiplayer"
+    "/mnt/SSD/apps/mircrewrr"
+    "/mnt/SSD/apps/openchamber/nix-root"
+    "/mnt/SSD/apps/openchamber/tmp"
+    "/mnt/SSD/apps/openchamber/workspaces"
+    "/mnt/SSD/apps/opencloud/apps"
+    "/mnt/SSD/apps/opencloud/config"
+    "/mnt/SSD/apps/outline/data"
+    "/mnt/SSD/apps/outline/valkey"
+    "/mnt/SSD/apps/postgresql/18"
+    "/mnt/SSD/apps/qbittorrent"
+    "/mnt/SSD/apps/quote-bot"
+    "/mnt/SSD/apps/radarr"
+    "/mnt/SSD/apps/radicale"
+    "/mnt/SSD/apps/searxng/cache"
+    "/mnt/SSD/apps/seerr"
+    "/mnt/SSD/apps/sonarr"
+    "/mnt/SSD/apps/syncthing"
+    "/mnt/SSD/apps/t3code/home"
+    "/mnt/SSD/apps/t3code/nix-root"
+    "/mnt/SSD/apps/t3code/tmp"
+    "/mnt/SSD/apps/tsidp/lib"
+  ];
 }

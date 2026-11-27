@@ -1,12 +1,25 @@
 # serverone snapshot policy
 
-The source of truth is [`snapshot-policy.nix`](../system/hosts/serverone/snapshot-policy.nix).
-The NixOS snapshot jobs reconcile the live `com.sun:auto-snapshot` settings,
-including any conflicting per-cadence overrides. They refuse to run if an
-excluded directory is not mounted from its expected dataset. Containers that
-use those paths (including via broader bind mounts) also check the mounts before
-starting. The existing retention is unchanged: 4 frequent, 24 hourly, 7 daily,
-4 weekly and 12 monthly snapshots on opted-in datasets.
+Persistent container volumes get one dataset per host path on `serverone`.
+In the volume definition, `isCache = true` marks rebuildable data that must
+not be automatically snapshotted. The same flag works on `privateNixStore`.
+`sharedDataset = "torrent"` references a dataset declared once in
+[`snapshot-policy.nix`](../system/hosts/serverone/snapshot-policy.nix). Shared
+volumes inherit the named dataset's policy; they cannot set conflicting cache
+flags. Secrets, Nix store files, and runtime mounts are not data volumes.
+
+Nix derives dataset names from host paths and rejects collisions and
+unresolved overlaps. Inspect the full inventory and rollout status with:
+
+```sh
+nix eval --json .#nixosConfigurations.serverone.config.polpetta.volumeDatasetPlan | jq
+```
+
+Before starting a container, Nix checks the expected dataset, provisioning
+missing datasets only for absent or empty directories. Snapshot jobs reconcile
+`com.sun:auto-snapshot`, including interval overrides, and refuse to take a
+parent snapshot if an enforced cache is not mounted. Retention is unchanged:
+4 frequent, 24 hourly, 7 daily, 4 weekly and 12 monthly snapshots.
 
 ## Service audit
 
@@ -18,7 +31,7 @@ from a dataset snapshot.
 | --- | --- |
 | T3 Code, legacy OpenChamber | Keep homes and workspaces; exclude private Nix stores and tmp. OpenChamber is retired, but its home and Nix store are inputs to agent-config migration. |
 | PostgreSQL, Immich, OpenCloud, Outline | Keep database state, photos/uploads, cloud files, app data, and Valkey state. Exclude only the Immich ML model cache. The live database snapshots are crash recovery points, not a substitute for database backups. |
-| Syncthing, Radicale | Keep service state and synced data on the SSD/HDD datasets. The shared `/mnt/SSD/agent-config` directory is actually on `zroot/root`, outside these snapshots; it is shared via Syncthing, which is not itself a backup. |
+| Syncthing, Radicale | Keep service state and synced data on the SSD/HDD datasets. Until migrated, shared `/mnt/SSD/agent-config` is on `zroot/root`, outside these snapshots. Its planned dataset is `ssd_pool/agent-config`. Syncthing is not itself a backup. |
 | BIND, Headscale, Headplane, tsidp, certbot, nginx | Keep DNS state (including BIND's managed key files under `cache`), identity state and certificate account/config files. Exclude BIND logs and certbot logs/work. Nginx reads certbot's certs; its generated config does not need a snapshot. |
 | Jellyfin, Jackett, Byparr, SearXNG | Keep persistent configuration/data; exclude the separately mounted Jellyfin, Byparr and SearXNG caches and Jackett's temporary downloads. |
 | Sonarr, Radarr, qBittorrent, Seerr, mircrewrr | Keep app configuration and databases. Keep the existing shared media/torrent dataset as a unit; splitting library files from torrent paths could break hardlinks. |
@@ -33,7 +46,13 @@ backups for important database and user data before pruning old snapshots.
 
 ## Rollout on the existing host
 
-**Do not switch to this generation before migrating the paths in `excludedMounts`.**
+The initial `pending` list defers enforcement for existing unsplit volumes.
+The first deployment leaves those paths on their current datasets and retains
+existing snapshot coverage. Start with the Nix stores and caches, then migrate
+persistent volumes in batches and give databases a separate maintenance window.
+Only remove a path from `pending` after migration or confirmation that it can
+be provisioned empty. New paths are enforced by default.
+
 Do the migration as root over a separate SSH session, not from T3 Code. This is
 an operator-run maintenance step, not a Disko reformat or an activation script.
 
@@ -43,9 +62,10 @@ an operator-run maintenance step, not a Disko reformat or an activation script.
    migration), and pause the `zfs-snapshot-*` timers during the cutover. Confirm
    no snapshot job is already running. Keep a verified backup of anything that
    cannot simply be rebuilt.
-2. For each `excludedMounts` entry, create its named ZFS filesystem with a
-   temporary mountpoint, with `com.sun:auto-snapshot=false`, `acltype=posix`
-   and `xattr=sa`. Preserve other parent properties by inheritance unless
+2. For each path in the batch, use the dataset name from the resolved plan.
+   Create it with a temporary mountpoint, `acltype=posix`, `xattr=sa` and
+   `com.sun:auto-snapshot=false` for caches or `true` for persistent paths.
+   Preserve other parent properties by inheritance unless
    intentionally changing them. For paths being preserved, copy and verify the
    full contents and root directory metadata (e.g. `rsync -aHAXS --numeric-ids`
    as root). Where the SSD has insufficient space, stage on another pool first
@@ -60,11 +80,13 @@ an operator-run maintenance step, not a Disko reformat or an activation script.
    `apps`: the parent will continue snapshotting those blocks. Set the new
    dataset's `mountpoint` to its final path and verify it with
    `findmnt --mountpoint <path>`. Repeat for each exclusion.
-4. Switch to the NixOS generation, restart writers and resume the timers.
-   Verify at least one automatic snapshot run. The parent datasets should get
-   new snapshots, but the excluded datasets should get none. A new parent
+4. Remove the batch paths from `pending` and switch to the new NixOS
+   generation. Restart writers and resume the timers. Verify at least one
+   automatic snapshot run: the parent and dedicated persistent datasets
+   should get snapshots, and the cache datasets should get none. A new parent
    snapshot may have empty mountpoint directories, but should not contain
-   files from the excluded datasets.
+   files from the split datasets. Provision retired OpenChamber mounts manually
+   even if empty, since no container starts to provision them.
 
 Historical `apps` snapshots still contain the old files until those snapshots
 expire or are explicitly pruned. The split itself does not reclaim them.

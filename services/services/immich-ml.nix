@@ -22,6 +22,7 @@ in
       volumes = [
         {
           hostPath = "${baseHDDDir}/model-cache";
+          isCache = true;
           containerPath = "/cache";
         }
       ];

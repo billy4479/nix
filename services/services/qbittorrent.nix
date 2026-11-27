@@ -42,6 +42,7 @@ in
       volumes = [
         {
           hostPath = baseHDDDir;
+          sharedDataset = "torrent";
           containerPath = "/data";
           customPermissionScript = sharedPermissionScript;
         }

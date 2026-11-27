@@ -5,73 +5,97 @@
   ...
 }:
 let
-  inherit (import ./snapshot-policy.nix) excludedMounts;
-  # These are native ZFS mounts, including datasets managed outside Disko.
-  datasets = excludedMounts // {
-    "/mnt/HDD/apps" = "hdd_pool/apps";
-    "/mnt/HDD/generic" = "hdd_pool/generic";
-    "/mnt/HDD/timemachine" = "hdd_pool/timemachine";
-    "/mnt/HDD/torrent" = "hdd_pool/torrent";
-    "/mnt/SSD/apps" = "ssd_pool/apps";
-    "/mnt/SSD/generic" = "ssd_pool/generic";
-    "/mnt/SSD/minecraft" = "ssd_pool/minecraft";
-    "/mnt/SSD/vm" = "ssd_pool/vm";
+  layout = import ./volume-layout.nix {
+    inherit lib;
+    containers = config.nerdctl-containers;
   };
-  isUnder = mount: path: path == mount || lib.hasPrefix "${mount}/" path;
-  mountsFor =
-    paths:
-    lib.filter (
-      mount: lib.any (path: isUnder mount path || (excludedMounts ? ${mount} && isUnder path mount)) paths
-    ) (builtins.attrNames datasets);
-  requireDatasets =
-    mounts:
-    lib.mkIf (mounts != [ ]) {
-      # Native mounts may not have generated .mount units before ZFS runs.
+  inherit (layout)
+    active
+    mounts
+    refs
+    unique
+    ;
+  byPath = lib.listToAttrs (map (spec: lib.nameValuePair spec.path spec) unique);
+  findmnt = lib.getExe' pkgs.util-linux "findmnt";
+  args = lib.escapeShellArgs;
+  exact = path: dataset: ''
+    if [ "$(${findmnt} -nro SOURCE --mountpoint ${lib.escapeShellArg path})" != ${lib.escapeShellArg dataset} ]; then
+      echo ${lib.escapeShellArg "Expected ${dataset} mounted at ${path}"} >&2
+      exit 1
+    fi
+  '';
+  provision = pkgs.writeShellApplication {
+    name = "provision-container-dataset";
+    runtimeInputs = [
+      config.boot.zfs.package
+      pkgs.util-linux
+      pkgs.coreutils
+      pkgs.findutils
+      pkgs.acl
+    ];
+    text = builtins.readFile ./provision-container-dataset.sh;
+  };
+  guard =
+    provisionMissing:
+    { spec, hostPath }:
+    exact spec.parent mounts.${spec.parent}
+    + lib.optionalString (active spec) (
+      lib.optionalString (provisionMissing && !spec.existing) ''
+        ${lib.getExe provision} ${
+          args [
+            spec.path
+            spec.dataset
+            mounts.${spec.parent}
+            (lib.boolToString (!spec.isCache))
+          ]
+        }
+      ''
+      + exact spec.path spec.dataset
+      + lib.optionalString (hostPath != spec.path) ''
+        if [ -e ${lib.escapeShellArg hostPath} ] && \
+          [ "$(${findmnt} -nro SOURCE --target ${lib.escapeShellArg hostPath})" != ${lib.escapeShellArg spec.dataset} ]; then
+          echo ${lib.escapeShellArg "${hostPath} must be on ${spec.dataset}"} >&2
+          exit 1
+        fi
+      ''
+    );
+  require =
+    provisionMissing: rs:
+    lib.mkIf (rs != [ ]) {
       after = [ "zfs-mount.service" ];
-      unitConfig.RequiresMountsFor = mounts;
-      preStart = lib.mkBefore (lib.concatMapStringsSep "\n" checkMount mounts);
+      unitConfig.RequiresMountsFor = lib.unique (
+        lib.concatMap (
+          { spec, ... }:
+          [ spec.parent ] ++ lib.optional (active spec) spec.path
+        ) rs
+      );
+      preStart = lib.mkBefore (lib.concatMapStrings (guard provisionMissing) rs);
     };
-  checkMount =
-    mount:
-    let
-      target = lib.escapeShellArg mount;
-      expected = lib.escapeShellArg datasets.${mount};
-    in
-    # sh
-    ''
-      if ! source=$(${lib.getExe' pkgs.util-linux "findmnt"} --noheadings --raw --output SOURCE --mountpoint ${target}) || [ "$source" != ${expected} ]; then
-        echo "Expected ZFS dataset ${datasets.${mount}} at ${mount}; refusing to start" >&2
-        exit 1
-      fi
-    '';
-  containerPaths = lib.mapAttrs (
-    _: container:
-    (map (volume: volume.hostPath) container.volumes)
-    ++ lib.optional container.privateNixStore.enable container.privateNixStore.hostPath
-  ) config.nerdctl-containers;
+  at = hostPath: {
+    inherit hostPath;
+    spec = byPath.${hostPath};
+  };
 in
 {
-  assertions = lib.mapAttrsToList (name: paths: {
-    assertion = lib.all (
-      path:
-      !(isUnder "/mnt/HDD" path || isUnder "/mnt/SSD" path)
-      # Despite its name, /mnt/SSD is a directory on zroot. Agent config
-      # intentionally lives there, outside the separate SSD datasets.
-      || isUnder "/mnt/SSD/agent-config" path
-      || mountsFor [ path ] != [ ]
-    ) paths;
-    message = "Container ${name} uses a data path not covered by serverone's ZFS mount guards.";
-  }) containerPaths;
-
-  systemd.services =
-    lib.mapAttrs' (
-      name: paths: lib.nameValuePair "nerdctl-${name}" (requireDatasets (mountsFor paths))
-    ) containerPaths
-    // {
-      # Runs before t3code and syncthing and can write to OpenChamber's home.
-      agent-config-migration = requireDatasets (mountsFor [
-        "/mnt/SSD/apps/openchamber/home"
-        "/mnt/SSD/apps/openchamber/nix-root"
-      ]);
-    };
+  options.polpetta.volumeDatasetPlan = lib.mkOption {
+    type = lib.types.attrsOf lib.types.raw;
+    readOnly = true;
+    description = "Resolved serverone ZFS volumes and their rollout status.";
+  };
+  config = {
+    inherit (layout) assertions;
+    system.build.containerDatasetProvision = provision;
+    polpetta.volumeDatasetPlan = lib.mapAttrs (_: spec: spec // { enforce = active spec; }) byPath;
+    systemd.services =
+      lib.mapAttrs' (name: rs: lib.nameValuePair "nerdctl-${name}" (require true rs)) refs
+      // {
+        agent-config-migration = require false (
+          map at [
+            "/mnt/SSD/apps/openchamber/nix-root"
+            "/mnt/SSD/agent-config"
+          ]
+        );
+        postgresql-init = require false [ (at "/mnt/SSD/apps/postgresql/18") ];
+      };
+  };
 }

@@ -124,6 +124,7 @@ in
     volumes = [
       {
         hostPath = "${baseSSDDir}/config";
+        sharedDataset = "certificates";
         containerPath = "/etc/letsencrypt";
       }
       {
@@ -135,10 +136,12 @@ in
       }
       {
         hostPath = "${baseSSDDir}/logs";
+        isCache = true;
         containerPath = "/var/log/letsencrypt";
       }
       {
         hostPath = "${baseSSDDir}/work";
+        isCache = true;
         containerPath = "/var/lib/letsencrypt";
       }
       {

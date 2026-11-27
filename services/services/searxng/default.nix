@@ -39,6 +39,7 @@ in
         }
         {
           hostPath = "${baseDir}/cache";
+          isCache = true;
           containerPath = "/cache";
         }
       ];

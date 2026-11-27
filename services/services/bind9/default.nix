@@ -52,6 +52,7 @@ in
         }
         {
           hostPath = "${baseDir}/log";
+          isCache = true;
           containerPath = "/var/log";
         }
         {

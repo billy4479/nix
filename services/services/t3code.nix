@@ -179,6 +179,7 @@ in
       privateNixStore = {
         enable = true;
         hostPath = "${baseDir}/nix-root";
+        isCache = true;
         seedPackages = [
           runtime
           files
@@ -232,15 +233,18 @@ in
         }
         {
           hostPath = "/mnt/SSD/apps/openchamber/workspaces";
+          sharedDataset = "workspaces";
           containerPath = "/workspace";
         }
         {
           hostPath = "/mnt/SSD/agent-config";
+          sharedDataset = "agent-config";
           containerPath = "/agent-config";
           customPermissionScript = ":";
         }
         {
           hostPath = "${baseDir}/tmp";
+          isCache = true;
           containerPath = "/tmp";
           customPermissionScript = # sh
             ''

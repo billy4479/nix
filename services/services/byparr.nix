@@ -50,6 +50,7 @@ in
       volumes = [
         {
           hostPath = "${baseSSDDir}/cache";
+          isCache = true;
           containerPath = "/cache";
         }
       ];

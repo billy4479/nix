@@ -127,6 +127,7 @@ in
         }
         {
           hostPath = worldDir;
+          sharedDataset = "minecraft";
           containerPath = "/world";
         }
         {

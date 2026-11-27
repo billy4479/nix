@@ -95,11 +95,13 @@ in
       volumes = [
         {
           hostPath = baseHDDDir;
+          sharedDataset = "torrent";
           containerPath = "/media";
           readOnly = true;
         }
         {
           hostPath = "/mnt/HDD/generic";
+          sharedDataset = "hdd-generic";
           containerPath = "/generic-media";
           readOnly = true;
         }
@@ -109,6 +111,7 @@ in
         }
         {
           hostPath = "${baseSSDDir}/cache";
+          isCache = true;
           containerPath = "/cache";
         }
       ];

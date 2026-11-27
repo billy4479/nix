@@ -80,6 +80,7 @@ in
       }
       {
         hostPath = certsDir;
+        sharedDataset = "certificates";
         containerPath = "/certs/";
         readOnly = true;
       }

@@ -40,11 +40,13 @@ in
         }
         {
           hostPath = "/mnt/HDD/generic/Giacomo/Archive/Foto Jack";
+          sharedDataset = "hdd-generic";
           containerPath = "/mnt/media/Foto Jack Archivio";
           readOnly = true;
         }
         {
           hostPath = "/mnt/HDD/generic/Edo/foto - edo - archivio";
+          sharedDataset = "hdd-generic";
           containerPath = "/mnt/media/Foto Edo Archivio";
           readOnly = true;
         }

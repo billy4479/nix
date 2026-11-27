@@ -39,14 +39,17 @@
         }
         {
           hostPath = "/mnt/SSD/apps/openchamber/workspaces/code";
+          sharedDataset = "workspaces";
           containerPath = "/var/syncthing/Sync/code";
         }
         {
           hostPath = "/mnt/SSD/apps/openchamber/workspaces/nix";
+          sharedDataset = "workspaces";
           containerPath = "/var/syncthing/Sync/nix";
         }
         {
           hostPath = "/mnt/SSD/agent-config";
+          sharedDataset = "agent-config";
           containerPath = "/var/syncthing/Sync/agent-config";
           # Shared with T3 Code; retain the migration's ownership/ACLs.
           customPermissionScript = ":";
