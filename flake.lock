@@ -50,10 +50,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1793961660,
-        "narHash": "sha256-YJSdFEgQ3EZNy4ZgQApUM+ilHiTZBW7kzKqL3ILKug4=",
+        "lastModified": 1795477871,
+        "narHash": "sha256-A7SIX5G3b+v+T7/WbuN64UWLwhw4KyU41HWcjcamwRw=",
         "ref": "master",
-        "rev": "771bb0336186ab00c0199acca092148e3a360105",
+        "rev": "1a846b517b48f1f3e764d140a3512507a6da9c0d",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/calendar-proxy-v2.git"
@@ -172,10 +172,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1794589607,
-        "narHash": "sha256-PWRgH62aN22DENPMnGbzgQXO9Gk7FxMim0/MrP1wi40=",
+        "lastModified": 1795720465,
+        "narHash": "sha256-g8hwHP3yYVpMbDIcFCHsOmN2IL010Pivv3hsyapzpvg=",
         "ref": "master",
-        "rev": "1445b4c7bb4b77aa641190f400065eee65aab932",
+        "rev": "03adbf9ae5de7fbb836d2044e04c08ac8f73a540",
         "shallow": true,
         "type": "git",
         "url": "ssh://git@github.com/billy4479/ff.git"
