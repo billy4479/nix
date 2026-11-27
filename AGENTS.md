@@ -29,7 +29,7 @@ nix build .#homeConfigurations.USERNAME@HOSTNAME.activationPackage
 ## Local packages
 
 `packages/` contains my personal package collection, sharing the root flake
-and `flake.lock`. Keep packaging complexity low and make sure closures contain
+and its Tack pins. Keep packaging complexity low and make sure closures contain
 only what is actually needed.
 
 Before adding a package, check whether Nixpkgs already provides it. If it does,

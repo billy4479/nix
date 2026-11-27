@@ -20,7 +20,7 @@ The flake input reads `billy4479/quote-bot` (master) over ssh, so the
 self-hosting commits must be on GitHub. Then refresh the lock:
 
 ```sh
-nix flake lock --update-input quote-bot
+tack update quote-bot
 ```
 
 ## 2. Add the secrets

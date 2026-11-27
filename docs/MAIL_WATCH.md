@@ -19,7 +19,7 @@ manual download or copying of client credentials is needed. Plaintext values
 are rendered by sops at runtime, never embedded in the Nix store.
 
 Before deployment, push the secrets repository's local `serverone: add google
-api` commit, then run `nix flake update secrets-repo` in this repository and
+api` commit, then run `tack update secrets-repo` in this repository and
 commit the lock update. The current pinned secrets revision predates these keys.
 Do not deploy this integration against that older secrets revision.
 

@@ -6,7 +6,7 @@ on:
     paths:
       - packages/**
       - flake.nix
-      - flake.lock
+      - .tack/**
       - flake/overlays.nix
       - flake/pkgs.nix
       - flake/caches.nix
@@ -16,7 +16,7 @@ on:
     paths:
       - packages/**
       - flake.nix
-      - flake.lock
+      - .tack/**
       - flake/overlays.nix
       - flake/pkgs.nix
       - flake/caches.nix
