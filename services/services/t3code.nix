@@ -232,7 +232,7 @@ in
             '';
         }
         {
-          hostPath = "/mnt/SSD/apps/openchamber/workspaces";
+          hostPath = "/mnt/SSD/apps/workspaces";
           sharedDataset = "workspaces";
           containerPath = "/workspace";
         }

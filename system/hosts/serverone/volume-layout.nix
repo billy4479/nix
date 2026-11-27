@@ -3,7 +3,6 @@ let
   inherit (import ./snapshot-policy.nix)
     mounts
     shared
-    legacyCaches
     pending
     ;
   under = root: path: path == root || lib.hasPrefix (if root == "/" then root else "${root}/") path;
@@ -77,9 +76,7 @@ let
       }) vs
     )
   ) volumes;
-  entries =
-    lib.concatMap (vs: map (r: r.spec) vs) (lib.attrValues refs)
-    ++ map (path: dedicated path true) legacyCaches;
+  entries = lib.concatMap (vs: map (r: r.spec) vs) (lib.attrValues refs);
   unique = lib.unique entries;
   active = spec: !lib.elem spec.path pending;
 in

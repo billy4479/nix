@@ -55,8 +55,8 @@ the chosen Pi provider's actual callback requirements before adding any mapping.
   Pi authentication, settings and native sessions in `.pi/agent/`.
 - `/mnt/SSD/apps/t3code/tmp` mounts at `/tmp`, including scratch `/tmp/opencode`.
 - `/mnt/SSD/apps/t3code/nix-root/nix` mounts at `/nix` as its private store.
-- `/mnt/SSD/apps/openchamber/workspaces` stays at `/workspace` in T3 Code.
-  This legacy storage path and existing Syncthing folders do not change.
+- `/mnt/SSD/apps/workspaces` mounts at `/workspace` in T3 Code. Syncthing
+  retains the same in-container folder paths.
 - `/mnt/SSD/agent-config` mounts read-write at `/agent-config` in T3 Code. It contains only `AGENTS.md`, `skills/` and future repo metadata.
   Syncthing mounts the same directory at `/var/syncthing/Sync/agent-config`,
   with the same UID and without recursively changing its permissions.
@@ -87,30 +87,11 @@ remain in use so the existing agent identity keeps working. The daily
 direnv roots. Runtime/extensions are private-store seed roots. Do not wipe the store
 to upgrade.
 
-## Shared instruction/skill migration
+## Shared instructions and skills
 
-`agent-config-migration.service` runs as UID 5021 before T3 Code and Syncthing.
-It remains available for first-time migration from the retained legacy
-OpenChamber global AGENTS.md
-and `.config/opencode/skills`, `.agents/skills` and optional `.claude/skills`.
-Symlink targets, including private-store resources, become portable copies.
-Supporting files and instruction bytes are preserved; credentials are excluded.
-
-Pi consumes the shared host content; legacy discovery links are retained:
-
-- Pi's `.pi/agent/AGENTS.md` links to `/agent-config/AGENTS.md`; its resource
-  list loads `/agent-config/skills`.
-- OpenCode's `.config/opencode/AGENTS.md` and `skills` link to those shared
-  paths. Compatibility skill trees are moved outside discovery to avoid
-  duplicates. Other OpenCode config, plugins and authentication stay in place.
-
-Original files, SHA-256 inventory and the completion marker live outside the
-shared directory in
-`/mnt/SSD/apps/openchamber/home/.local/state/agent-config-migration/`.
-`original/` is the non-discovered backup. Migration never overwrites later
-edits. Duplicate names, conflicting host files and destination symlinks fail
-instead of silently discarding content. Resolve conflicts before retrying.
-Explicit custom roots/remote catalogs require separate inventory and migration.
+Pi and OpenCode consume `/agent-config/AGENTS.md` and `/agent-config/skills`
+through their compatibility links. The retired OpenChamber home is no longer
+needed to start T3 Code or Syncthing.
 
 The host directory has UID 5021/containers ownership and an inherited admin
 ACL. Host edits and edits through T3 Code affect the same source.
@@ -207,8 +188,4 @@ direnv commands, formatting, skills, both extension UIs, resume after restart,
 shared edits, terminal integration, pairing and rejection of unauthenticated
 protected operations.
 
-To undo a failed migration, stop T3 Code and Syncthing and restore discovery
-paths from `original/`, retaining newer shared files. Legacy OpenChamber
-home/store data is retained only as historical data and a migration source,
-not as a running fallback. Do not delete agent-config or workspaces. Storage
-cleanup and path renames require a separate migration.
+See [the snapshot guide](SERVERONE_SNAPSHOTS.md) for the workspace cutover.

@@ -38,12 +38,12 @@
           containerPath = "/var/syncthing/Sync";
         }
         {
-          hostPath = "/mnt/SSD/apps/openchamber/workspaces/code";
+          hostPath = "/mnt/SSD/apps/workspaces/code";
           sharedDataset = "workspaces";
           containerPath = "/var/syncthing/Sync/code";
         }
         {
-          hostPath = "/mnt/SSD/apps/openchamber/workspaces/nix";
+          hostPath = "/mnt/SSD/apps/workspaces/nix";
           sharedDataset = "workspaces";
           containerPath = "/var/syncthing/Sync/nix";
         }

@@ -70,9 +70,12 @@ assert lib.assertMsg (failedAssertions == [ ]) (
 assert volumePlan."/mnt/SSD/apps/t3code/nix-root".isCache;
 assert volumePlan."/mnt/SSD/apps/t3code/nix-root".dataset == "ssd_pool/apps/t3code-nix-root";
 assert !volumePlan."/mnt/SSD/apps/bind9/cache".isCache;
-assert volumePlan."/mnt/SSD/apps/openchamber/nix-root".isCache;
-assert
-  volumePlan."/mnt/SSD/apps/openchamber/workspaces".dataset == "ssd_pool/apps/openchamber-workspaces";
+assert volumePlan."/mnt/SSD/apps/workspaces".dataset == "ssd_pool/apps/workspaces";
+assert volumePlan."/mnt/SSD/apps/workspaces".enforce;
+assert lib.all (name: lib.elem "/mnt/SSD/apps/workspaces" (guardedMounts "nerdctl-${name}")) [
+  "t3code"
+  "syncthing"
+];
 assert lib.all
   (
     name:
@@ -88,7 +91,7 @@ assert lib.all
     "jellyfin"
   ];
 assert volumePlan."/mnt/HDD/torrent".enforce;
-assert lib.elem "/mnt/SSD/apps" (guardedMounts "agent-config-migration");
+assert !(serverone.systemd.services ? agent-config-migration);
 assert lib.all
   (
     interval:
@@ -139,7 +142,6 @@ assert lib.all
       && !volume.readOnly
       && volume.customPermissionScript == ":"
     ) serverone.nerdctl-containers.${name}.volumes
-    && lib.elem "agent-config-migration.service" serverone.systemd.services."nerdctl-${name}".requires
   )
   [
     "t3code"

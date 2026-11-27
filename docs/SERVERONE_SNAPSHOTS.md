@@ -29,7 +29,7 @@ from a dataset snapshot.
 
 | Services or storage | Policy |
 | --- | --- |
-| T3 Code, legacy OpenChamber | Keep homes and workspaces; exclude private Nix stores and tmp. OpenChamber is retired, but its home and Nix store are inputs to agent-config migration. |
+| T3 Code | Keep the home directory and shared workspaces. Exclude the private Nix store and tmp after their dataset split. |
 | PostgreSQL, Immich, OpenCloud, Outline | Keep database state, photos/uploads, cloud files, app data, and Valkey state. Exclude only the Immich ML model cache. The live database snapshots are crash recovery points, not a substitute for database backups. |
 | Syncthing, Radicale | Keep service state and synced data on the SSD/HDD datasets. Until migrated, shared `/mnt/SSD/agent-config` is on `zroot/root`, outside these snapshots. Its planned dataset is `ssd_pool/agent-config`. Syncthing is not itself a backup. |
 | BIND, Headscale, Headplane, tsidp, certbot, nginx | Keep DNS state (including BIND's managed key files under `cache`), identity state and certificate account/config files. Exclude BIND logs and certbot logs/work. Nginx reads certbot's certs; its generated config does not need a snapshot. |
@@ -47,9 +47,11 @@ backups for important database and user data before pruning old snapshots.
 ## Rollout on the existing host
 
 The initial `pending` list defers enforcement for existing unsplit volumes.
-The first deployment leaves those paths on their current datasets and retains
-existing snapshot coverage. Start with the Nix stores and caches, then migrate
-persistent volumes in batches and give databases a separate maintenance window.
+Pending paths stay on their current datasets and retain existing snapshot
+coverage. First follow the [workspace cutover commands](SERVERONE_WORKSPACE_CUTOVER.md)
+to move the shared workspaces out of the retired OpenChamber path. Then migrate
+the T3 Code private store and caches, followed by persistent
+volumes in batches. Give databases a separate maintenance window.
 Only remove a path from `pending` after migration or confirmation that it can
 be provisioned empty. New paths are enforced by default.
 
@@ -85,8 +87,7 @@ an operator-run maintenance step, not a Disko reformat or an activation script.
    automatic snapshot run: the parent and dedicated persistent datasets
    should get snapshots, and the cache datasets should get none. A new parent
    snapshot may have empty mountpoint directories, but should not contain
-   files from the split datasets. Provision retired OpenChamber mounts manually
-   even if empty, since no container starts to provision them.
+   files from the split datasets.
 
 Historical `apps` snapshots still contain the old files until those snapshots
 expire or are explicitly pruned. The split itself does not reclaim them.

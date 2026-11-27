@@ -89,12 +89,6 @@ in
     systemd.services =
       lib.mapAttrs' (name: rs: lib.nameValuePair "nerdctl-${name}" (require true rs)) refs
       // {
-        agent-config-migration = require false (
-          map at [
-            "/mnt/SSD/apps/openchamber/nix-root"
-            "/mnt/SSD/agent-config"
-          ]
-        );
         postgresql-init = require false [ (at "/mnt/SSD/apps/postgresql/18") ];
       };
   };

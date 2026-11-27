@@ -26,7 +26,7 @@ if [[ $(uname -n) != serverone || $EUID == 0 ]]; then
   exit 1
 fi
 
-repo=/mnt/SSD/apps/openchamber/workspaces/nix
+repo=/mnt/SSD/apps/workspaces/nix
 # The shared checkout belongs to the workspace container user.
 workspace_git=(git -c "safe.directory=$repo" -C "$repo")
 rev=$("${workspace_git[@]}" rev-parse --verify HEAD)

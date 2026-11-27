@@ -23,7 +23,7 @@ build without staging a new result.
 bootstrap it on the first deployment, run the same script directly on serverone:
 
 ```sh
-bash /mnt/SSD/apps/openchamber/workspaces/nix/user/modules/scripts/stage-serverone.sh --switch
+bash /mnt/SSD/apps/workspaces/nix/user/modules/scripts/stage-serverone.sh --switch
 ```
 
 ## Build elsewhere and copy to a remote server

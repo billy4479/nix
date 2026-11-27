@@ -46,19 +46,13 @@
       path = "/mnt/SSD/apps/certbot/config";
     };
     workspaces = {
-      path = "/mnt/SSD/apps/openchamber/workspaces";
+      path = "/mnt/SSD/apps/workspaces";
     };
     agent-config = {
       path = "/mnt/SSD/agent-config";
       dataset = "ssd_pool/agent-config";
     };
   };
-
-  # Retired service paths still used by migration tooling or retained on disk.
-  legacyCaches = [
-    "/mnt/SSD/apps/openchamber/nix-root"
-    "/mnt/SSD/apps/openchamber/tmp"
-  ];
 
   # Temporary rollout inventory. Remove a path only after the operator has
   # migrated it or confirmed that it is safe to provision empty. New paths
@@ -93,9 +87,6 @@
     "/mnt/SSD/apps/laurea"
     "/mnt/SSD/apps/lunamultiplayer"
     "/mnt/SSD/apps/mircrewrr"
-    "/mnt/SSD/apps/openchamber/nix-root"
-    "/mnt/SSD/apps/openchamber/tmp"
-    "/mnt/SSD/apps/openchamber/workspaces"
     "/mnt/SSD/apps/opencloud/apps"
     "/mnt/SSD/apps/opencloud/config"
     "/mnt/SSD/apps/outline/data"
