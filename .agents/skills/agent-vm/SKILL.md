@@ -43,6 +43,8 @@ unset ADB_SERVER_SOCKET ANDROID_ADB_SERVER_PORT ANDROID_SERIAL
 
 Only use ADB after `wait` and `adb-env` succeed. `adb-env` starts a local server for the lease; run it once and share its exports with any test subprocesses. For Appium, run the server in the same T3 container and shell environment, and configure `appium:udid` as `$ANDROID_SERIAL` and `appium:adbPort` as the numeric `$ANDROID_ADB_SERVER_PORT`. Set up `adb-env` again after `agent-vm --android reset`. Reset, release, and expiry erase Android data and disconnect the old ADB session; pull artifacts first. No SSH, manual power control, GUI, Google Play, or host ADB listener is provided.
 
+After a fresh boot or reset, ADB can be ready a few seconds before Android networking. Before running internet-dependent tests, retry a guest-side check against the public endpoint your test needs (for example, `adb shell 'nc -z -w 3 example.com 443'`) for up to 20 seconds. An initial DNS error or `Network is unreachable` can be normal. Host, LAN, and tailnet services are intentionally not reachable from the guest.
+
 ## NixOS guest details
 
 Shared holders have sudo and can see or modify each other's guest state. Use separate working directories and do not copy secrets, host keys, or fleet credentials into the VM. There are no host workspace mounts. Copy out changes and artifacts before release. The final release or expiry closes connections, stops the VM, and wipes the guest disk. Expiry of one shared holder closes their connection without wiping the remaining holders' work.
