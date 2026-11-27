@@ -26,9 +26,12 @@ cases = {
     "io_error": (1, [0, 2]),
 }
 cases["hash_diagnostic"] = (0, [0, 2])
+cases["hello"] = (0, [0, 5])
+cases["hello_wrong_suite"] = (2, [0, 5])
 for scenario, (code, queries) in cases.items():
     diagnostic = scenario == "hash_diagnostic"
-    args = ["--check-hash"] if diagnostic else []
+    hello = scenario.startswith("hello")
+    args = ["--check-clienthello"] if hello else ["--check-hash"] if diagnostic else []
     with tempfile.TemporaryDirectory() as temp:
         path = Path(temp)
         result = subprocess.run(
@@ -74,6 +77,14 @@ for scenario, (code, queries) in cases.items():
             assert "result=hash_preflight_passed" in result.stdout
             assert len((path / "key-hash.bin").read_bytes()) == 32
             assert "query=2" in (path / "raw-spi.txt").read_text()
+        if hello:
+            verdict = "received" if code == 0 else "unavailable"
+            assert f"result=tls_clienthello_{verdict}" in result.stdout
+            assert (
+                "tx=ccf20200a00600a6d103000000d60000"
+                in (path / "raw-spi.txt").read_text()
+            )
+            assert not (path / "key-hash.bin").exists()
         if 3 not in queries:
             assert not (path / "wrapped-key.bin").exists()
 

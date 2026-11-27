@@ -312,6 +312,13 @@ after the version reply and repeats a wholly unanswered hash read at most once,
 with a fresh counter. It still requires the hash ACK and valid digest before
 attempting an upload, and it never retries an upload.
 
+Provisioning v4 succeeded: one upload fragment, matching ACK, completion
+status 0, and readback of the expected digest. The new root-only key remains
+at `/var/lib/fingerprint-gxfp5120.psk`; the driver was left unbound. Do not run
+provisioning again. This verifies key storage, not an authenticated TLS session.
+The `--check-clienthello` diagnostic tries the reference TLS start command
+alone, without importing its sensor configuration or loading the key.
+
 ## Consequences for bring-up
 
 - The declared mode-0/10 MHz ITE transport now has a successful live version

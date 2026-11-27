@@ -11,6 +11,10 @@ size_t sensor_query_packet(enum sensor_query query, uint16_t counter,
     command = 0xa8;
     length = 2;
     break;
+  case QUERY_TLS_START:
+    command = 0xd1;
+    length = 2;
+    break;
   case QUERY_STATE:
     command = 0xaf;
     length = 5;
@@ -42,7 +46,10 @@ size_t sensor_query_packet(enum sensor_query query, uint16_t counter,
   packet[9] = length + 1;
   memcpy(packet + 11, payload, length);
   /* The official ITE branch adds the no-ACK bit AFTER calculating checksum. */
-  uint8_t checksum = 0xaa - (command & 0xfe) - packet[9];
+  /* The reference GXFP5120 D1 frame instead checksums the literal opcode. */
+  uint8_t checksum = 0xaa -
+                     (query == QUERY_TLS_START ? command : (command & 0xfe)) -
+                     packet[9];
   for (size_t i = 0; i < length; i++)
     checksum -= payload[i];
   packet[11 + length] = checksum;

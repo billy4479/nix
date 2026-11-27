@@ -6,7 +6,7 @@
 }:
 stdenv.mkDerivation {
   pname = "gxfp-readback-probe";
-  version = "2";
+  version = "3";
   src = lib.fileset.toSource {
     root = ../.;
     fileset = lib.fileset.unions [

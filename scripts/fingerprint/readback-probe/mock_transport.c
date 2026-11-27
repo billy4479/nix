@@ -77,6 +77,23 @@ int sensor_read_mailbox(int fd, uint8_t status[4], uint8_t response[256]) {
   unsigned int step = window++;
   if (prefix)
     step--;
+  if (current == QUERY_TLS_START) {
+    if (step == 0)
+      frame(response, 0xb0, (const uint8_t[]){0xd0, 1}, 2);
+    if (step == 1) {
+      /* One synthetic TLS 1.2 ClientHello with no extensions. */
+      const uint8_t hello[50] = {0x16, 3,        3,           0,       45,
+                                 1,    0,        0,           41,      3,
+                                 3,    [45] = 2, [47] = 0xae, [48] = 1};
+      response[0] = 0xb0;
+      response[1] = sizeof(hello);
+      response[3] = 0xb0 + sizeof(hello);
+      memcpy(response + 4, hello, sizeof(hello));
+      if (scenario("hello_wrong_suite"))
+        response[4 + 47] = 0x2f;
+    }
+    return 0;
+  }
   if (step == 0) {
     uint8_t ack[] = {current == QUERY_VERSION ? 0xa8 : 0xe4, 1};
     frame(response, 0xb0, ack, sizeof(ack));

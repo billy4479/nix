@@ -29,6 +29,9 @@ static void accept(struct readback_parser *p, uint8_t command,
   case QUERY_UPLOAD:
     expected = 0xe0;
     break;
+  case QUERY_TLS_START:
+    expected = 0xd0;
+    break;
   default:
     expected = 0xe4;
     break;
@@ -38,7 +41,7 @@ static void accept(struct readback_parser *p, uint8_t command,
     p->ack = true;
     return;
   }
-  if (p->done || command != expected)
+  if (p->query == QUERY_TLS_START || p->done || command != expected)
     return;
   /* The mailbox may contain an older reply. Require a matching ACK first
    * for version, upload completion, and provisioning hash checks.
@@ -104,6 +107,33 @@ static void accept(struct readback_parser *p, uint8_t command,
   p->length = size;
   p->done = true;
 }
+/* The reference ITE firmware envelopes one TLS record in a B0 frame.
+ * Recognize ClientHello only; no TLS response or key is sent here. */
+static bool client_hello(const uint8_t *b, size_t n) {
+  if (n < 45 || b[0] != 0x16 || b[1] != 3 || b[2] > 3 ||
+      ((size_t)b[3] << 8 | b[4]) != n - 5 || b[5] != 1 || b[6] != 0 ||
+      ((size_t)b[7] << 8 | b[8]) != n - 9 || b[9] != 3 || b[10] != 3)
+    return false;
+  size_t i = 44 + (size_t)b[43];
+  if (b[43] > 32 || i + 2 > n)
+    return false;
+  size_t suites = (size_t)b[i] << 8 | b[i + 1];
+  i += 2;
+  if (suites < 2 || suites % 2 || i + suites >= n)
+    return false;
+  bool offered = false;
+  for (size_t j = i; j < i + suites; j += 2)
+    if (b[j] == 0 && b[j + 1] == 0xae)
+      offered = true;
+  i += suites;
+  size_t compression = b[i++];
+  if (!offered || !compression || i + compression > n)
+    return false;
+  if (!memchr(b + i, 0, compression))
+    return false;
+  i += compression;
+  return i == n || (i + 2 <= n && ((size_t)b[i] << 8 | b[i + 1]) == n - i - 2);
+}
 int readback_feed(struct readback_parser *p, const uint8_t *data,
                   size_t length) {
   if (length > sizeof(p->pending) - p->used)
@@ -113,7 +143,8 @@ int readback_feed(struct readback_parser *p, const uint8_t *data,
   p->used += length;
   while (p->used >= 4) {
     uint8_t *frame = p->pending;
-    if (frame[0] != 0xa0 || sum(frame, 3) != frame[3]) {
+    bool tls = p->query == QUERY_TLS_START && frame[0] == 0xb0;
+    if ((frame[0] != 0xa0 && !tls) || sum(frame, 3) != frame[3]) {
       consume(p, 1);
       continue;
     }
@@ -126,6 +157,16 @@ int readback_feed(struct readback_parser *p, const uint8_t *data,
     if (p->used < size + 4)
       break;
     uint8_t *body = frame + 4;
+    if (tls) {
+      if (client_hello(body, size)) {
+        p->done = true;
+        p->frames++;
+      } else {
+        p->foreign++;
+      }
+      consume(p, size + 4);
+      continue;
+    }
     size_t declared = body[1] | ((size_t)body[2] << 8);
     if (declared + 3 != size || sum(body, size) != 0xaa) {
       p->rejected++;
