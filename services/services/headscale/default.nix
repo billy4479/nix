@@ -12,6 +12,7 @@ let
   headscaleFiles = import ./files.nix {
     inherit pkgs domain;
     adminAddress = config.polpetta.generated.adminIngress.address;
+    preview = config.polpetta.generated.agentPreview;
   };
 in
 {

@@ -80,7 +80,24 @@ let
   adminIngress = {
     address = "10.0.2.6";
     port = 8443;
-    enable = cfg.adminIngressEnabled && adminWeb != { };
+    enable = cfg.adminIngressEnabled && (adminWeb != { } || preview.enable);
+  };
+  preview = {
+    inherit (cfg.agentPreview) enable maxLeases;
+    hostname = domainOf "preview" {
+      web = {
+        domain = null;
+        access = "admin-only";
+      };
+    };
+    address = "10.0.1.${toString services.t3code.container.id}";
+    webPort = 19999;
+    rawRange = "20000-20063";
+    protocols = [
+      "tcp"
+      "udp"
+    ];
+    certName = "agent-preview.${domain}";
   };
 
   httpProbeTargets = lib.mapAttrsToList (
@@ -140,7 +157,12 @@ let
   recordEntries = lib.filter (e: e.raw.record != null) rawEntries;
 
   rawFirewall = import ./raw-firewall.nix {
-    inherit lib services adminIngress;
+    inherit
+      lib
+      services
+      adminIngress
+      preview
+      ;
     nginxAddress =
       if hasContainers && config.nerdctl-containers ? nginx then
         "10.0.1.${toString config.nerdctl-containers.nginx.id}"
@@ -246,12 +268,38 @@ let
     "  ${domainOf name svc}  10.0.1.${toString svc.container.id}:${toString svc.web.port};"
   ) (lib.attrNames servicesWithWeb);
 
+  previewVhost = # nginx
+    ''
+      server {
+        listen ${toString adminIngress.port} ssl;
+        http2 on;
+        server_name *.${preview.hostname};
+        ssl_certificate /certs/live/${preview.certName}/fullchain.pem;
+        ssl_certificate_key /certs/live/${preview.certName}/privkey.pem;
+        include /etc/nginx/snippets/security-headers.conf;
+        ${lib.concatMapStringsSep "\n" (ip: "deny ${ip};") externalIps}
+        allow 100.64.0.0/10;
+        deny all;
+        if ($ssl_server_name != $host) { return 421; }
+        add_header Cache-Control "no-store" always;
+        location / {
+          set $backend ${preview.address}:${toString preview.webPort};
+          include /etc/nginx/snippets/proxy.conf;
+          proxy_hide_header Cache-Control;
+          proxy_buffering off;
+          proxy_request_buffering off;
+          proxy_read_timeout 30m;
+          proxy_send_timeout 30m;
+        }
+      }
+    '';
+
   nginxVhostsText = lib.concatStringsSep "\n" (
     [
       "# Generated from polpetta.services. Do not edit."
       ""
     ]
-    ++ lib.optionals (servicesWithWeb != { }) (
+    ++ lib.optionals (servicesWithWeb != { } || preview.enable) (
       [
         # Use the selected vhost, not the untrusted Host header, to pick the
         # backend. In particular regular listeners must never proxy admin UIs.
@@ -263,7 +311,7 @@ let
         "}"
         ""
       ]
-      ++ lib.optionals (adminWeb != { }) [
+      ++ lib.optionals (adminWeb != { } || preview.enable) [
         "server {"
         "  listen ${toString adminIngress.port} ssl default_server;"
         "  ssl_reject_handshake on;"
@@ -272,6 +320,7 @@ let
         ""
       ]
       ++ lib.concatMap (name: vhostLines name services.${name} ++ [ "" ]) (lib.attrNames servicesWithWeb)
+      ++ lib.optional preview.enable previewVhost
     )
   );
 
@@ -520,6 +569,15 @@ in
 
     adminIngressEnabled = lib.mkEnableOption "Tailscale admin-only web ingress (requires the restrictive Headscale policy to be installed first)";
 
+    agentPreview = {
+      enable = lib.mkEnableOption "admin-only agent preview forwarding (provision its TLS certificate first)";
+      maxLeases = lib.mkOption {
+        type = lib.types.ints.between 1 64;
+        default = 16;
+        description = "Global limit for active agent preview leases.";
+      };
+    };
+
     externalTrafficFrom = lib.mkOption {
       description = "The addresses public web traffic arrives from (including retiring edges during migration); trusted for real_ip and denied for non-public tiers.";
       type = lib.types.nullOr (lib.types.listOf lib.types.str);
@@ -532,6 +590,13 @@ in
         readOnly = true;
         default = adminIngress;
         description = "Dedicated subnet-routed admin web ingress settings.";
+      };
+
+      agentPreview = lib.mkOption {
+        type = lib.types.attrs;
+        readOnly = true;
+        default = preview;
+        description = "Resolved preview ingress settings shared by the relay, firewall, DNS and Headscale.";
       };
 
       adminDnsRecords = lib.mkOption {
@@ -613,7 +678,20 @@ in
   };
 
   config = {
-    assertions = assertionEntries;
+    assertions =
+      assertionEntries
+      ++ lib.optionals preview.enable [
+        {
+          assertion = cfg.adminIngressEnabled && services ? t3code;
+          message = "polpetta.agentPreview requires T3 Code and the dedicated admin ingress";
+        }
+        {
+          assertion = lib.all (d: d != preview.hostname && !lib.hasSuffix ".${preview.hostname}" d) (
+            map lib.toLower (webDomains ++ map (e: "${e.raw.record}.${domain}") recordEntries)
+          );
+          message = "polpetta.agentPreview reserves the preview hostname and its subdomains";
+        }
+      ];
 
     polpetta.generated = {
       dnatForwards = dnatForwards;
@@ -624,7 +702,10 @@ in
       # Pure data: defined on every host importing this module (the vps
       # consumes the edge DNAT projection), even where nothing deploys it.
       nginxVhostsFile = pkgs.writeText "polpetta-services-vhosts.conf" nginxVhostsText;
-      rebindNames = webDomains ++ map (e: "${e.raw.record}.${domain}") recordEntries;
+      rebindNames =
+        webDomains
+        ++ map (e: "${e.raw.record}.${domain}") recordEntries
+        ++ lib.optional preview.enable preview.hostname;
       bind9Records = bind9Records;
       rawFirewallFile = pkgs.writeText "polpetta-raw-firewall.nft" rawFirewall.ruleset;
     };

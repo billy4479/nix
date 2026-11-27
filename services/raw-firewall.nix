@@ -5,6 +5,9 @@
   services,
   nginxAddress ? null,
   adminIngress ? null,
+  preview ? {
+    enable = false;
+  },
 }:
 let
   addressOf = svc: "10.0.1.${toString svc.container.id}";
@@ -31,6 +34,9 @@ let
   hasAdminListener = adminIngress != null && nginxAddress != null;
   adminEnabled = hasAdminListener && adminIngress.enable;
   adminListener = "ip daddr ${nginxAddress} tcp dport ${toString adminIngress.port}";
+  previewWeb = "ip daddr ${preview.address} tcp dport ${toString preview.webPort}";
+  previewRaw = proto: "ip daddr ${preview.address} ${proto} dport ${preview.rawRange}";
+  fromAdminRoute = ''iifname "tailscale0" ip saddr 100.64.0.0/10'';
   ingressRules =
     routed:
     lib.concatStringsSep "\n" (
@@ -40,6 +46,16 @@ let
         # Routed traffic passed the check above. On a plain bridge frame,
         # never trust a source IP to authorize direct use of this listener.
         ++ lib.optional routed "${adminListener} drop"
+      )
+      ++ lib.optionals (preview.enable && hasAdminListener) (
+        lib.optionals (!routed) [ "ip saddr ${nginxAddress} ${previewWeb} return" ]
+        ++ [ "${previewWeb} drop" ]
+        ++ lib.concatMap (
+          proto:
+          lib.optional (routed && adminEnabled)
+            "${fromAdminRoute} ${previewRaw proto} ct status dnat ct original ip daddr ${adminIngress.address} ct original proto-dst ${preview.rawRange} return"
+          ++ [ "${previewRaw proto} drop" ]
+        ) preview.protocols
       )
       ++ [ "ct state established,related return" ]
       ++ lib.concatMap (
@@ -79,7 +95,13 @@ in
           chain admin_prerouting {
             type nat hook prerouting priority dstnat - 5; policy accept;
             ${lib.optionalString adminEnabled ''
-              iifname "tailscale0" ip saddr 100.64.0.0/10 ip daddr ${adminIngress.address} tcp dport 443 dnat ip to ${nginxAddress}:${toString adminIngress.port}
+              ${fromAdminRoute} ip daddr ${adminIngress.address} tcp dport 443 dnat ip to ${nginxAddress}:${toString adminIngress.port}
+              ${lib.optionalString preview.enable (
+                lib.concatMapStringsSep "\n" (
+                  proto:
+                  "${fromAdminRoute} ip daddr ${adminIngress.address} ${proto} dport ${preview.rawRange} dnat ip to ${preview.address}"
+                ) preview.protocols
+              )}
             ''}
           }
           chain admin_no_fallback {

@@ -6,6 +6,7 @@ let
   };
 in
 rec {
+  agent-preview = callPackage ./agent-preview { };
   agent-vm = callPackage ./agent-vm { };
   calix = callPackage ./calix { };
   google-sans = callPackage ./google-sans { };

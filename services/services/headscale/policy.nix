@@ -1,6 +1,19 @@
-{ adminAddress }:
+{
+  adminAddress,
+  preview ? {
+    enable = false;
+  },
+}:
 let
   adminHttps = "${adminAddress}:443";
+  previewTestPorts =
+    if preview.enable then
+      [
+        "${adminAddress}:20000"
+        "${adminAddress}:20063"
+      ]
+    else
+      [ ];
   serverTag = "tag:serverone";
 in
 {
@@ -27,7 +40,18 @@ in
       dst = [ adminHttps ];
       proto = "tcp";
     }
-  ];
+  ]
+  ++ (
+    if preview.enable then
+      map (proto: {
+        action = "accept";
+        src = [ "group:admin" ];
+        dst = [ "${adminAddress}:${preview.rawRange}" ];
+        inherit proto;
+      }) preview.protocols
+    else
+      [ ]
+  );
 
   tagOwners = {
     "tag:idp" = [ "jack@" ];
@@ -54,8 +78,12 @@ in
   tests = [
     {
       src = "jack@";
-      accept = [ adminHttps ];
-      deny = [ "${adminAddress}:8443" ];
+      accept = [ adminHttps ] ++ previewTestPorts;
+      deny = [
+        "${adminAddress}:8443"
+        "${adminAddress}:19999"
+        "${adminAddress}:20064"
+      ];
     }
     {
       src = "luke@";
@@ -63,14 +91,14 @@ in
         "10.0.1.6:443"
         "10.0.1.11:53"
       ];
-      deny = [ adminHttps ];
+      deny = [ adminHttps ] ++ previewTestPorts;
     }
   ]
   ++
     map
       (src: {
         inherit src;
-        deny = [ adminHttps ];
+        deny = [ adminHttps ] ++ previewTestPorts;
       })
       [
         "edo@"

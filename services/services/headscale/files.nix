@@ -2,6 +2,7 @@
   pkgs,
   domain,
   adminAddress,
+  preview,
 }:
 [
   {
@@ -11,7 +12,7 @@
   }
   {
     hostPath = "${pkgs.writeText "policy.json" (
-      builtins.toJSON (import ./policy.nix { inherit adminAddress; })
+      builtins.toJSON (import ./policy.nix { inherit adminAddress preview; })
     )}";
     containerPath = "/etc/headscale/policy.hujson";
     readOnly = true;

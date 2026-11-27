@@ -2,7 +2,10 @@
 let
   domain = "example.test";
   hosts = mkHosts domain;
-  server = hosts.nixosConfigurations.serverone.config;
+  server =
+    (hosts.nixosConfigurations.serverone.extendModules {
+      modules = [ { polpetta.agentPreview.enable = true; } ];
+    }).config;
   vps = hosts.nixosConfigurations.vps-proxy.config;
   home = hosts.homeConfigurations."billy@portatilo".config;
   services = server.polpetta.services;
@@ -13,7 +16,7 @@ let
     ) (throw "Missing ${service}:${path}") services.${service}.container.volumes;
   volume = service: path: (mount service path).hostPath;
   policyPath = "/etc/headscale/policy.hujson";
-  inherit (server.polpetta.generated) adminDnsRecords adminIngress;
+  inherit (server.polpetta.generated) adminDnsRecords adminIngress agentPreview;
   adminAddress = adminIngress.address;
   newAdminUis = [
     "agent-up"
@@ -69,6 +72,13 @@ pkgs.runCommand "domain-test"
       vhost "$name.internal.${domain}" | grep -F 'deny all;'
       if vhost "$name.internal.${domain}" | grep -E 'allow (10\.0\.0\.0/8|192\.168\.0\.0/16);'; then exit 1; fi
     done
+    previewDns=${volume "bind9" "/etc/bind"}/admin-records.zone
+    grep -Fx '${agentPreview.hostname}. IN A ${adminAddress}' "$previewDns"
+    grep -Fx '*.${agentPreview.hostname}. IN A ${adminAddress}' "$previewDns"
+    test "$(vhost '*.${agentPreview.hostname}' | grep 'listen' | xargs)" = 'listen 8443 ssl;'
+    ${pkgs.jq}/bin/jq -e --arg dest '${adminAddress}:${agentPreview.rawRange}' \
+      '[.acls[] | select(.dst | index($dest)) | select(.src == ["group:admin"]) | .proto] | sort == ["tcp", "udp"]' \
+      ${volume "headscale" policyPath}
     vhost 'jellyfin.internal.${domain}' | grep -F 'allow 192.168.0.0/16;'
     vhost 'opencloud.${domain}' | grep -F 'listen 4443 ssl proxy_protocol;'
     if vhost 'opencloud.${domain}' | grep -F 'deny all;'; then exit 1; fi

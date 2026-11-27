@@ -56,5 +56,7 @@ runCommand "polpetta-nginx-config"
       -keyout check/certs/live/${domain}/privkey.pem \
       -out check/certs/live/${domain}/fullchain.pem \
       -subj "/CN=${domain}" 2>/dev/null
+    # The optional preview service uses a separate production lineage.
+    ln -s ${domain} check/certs/live/agent-preview.${domain}
     nginx -t -c $PWD/check/nginx.conf -p $PWD/check
   ''

@@ -13,6 +13,7 @@ let
   uid = 5021;
   baseDir = "/mnt/SSD/apps/t3code";
   home = "/home/t3";
+  preview = config.polpetta.generated.agentPreview;
   extensions = import ../pi/extensions { inherit pkgs; };
   development = import ../agent-runtime/development.nix { inherit pkgs flakeInputs; };
   direnv = import ../pi/direnv.nix { inherit pkgs; };
@@ -37,6 +38,23 @@ let
         test -d /agent-config/skills
         mkdir -p /tmp/opencode
         ${pkgs.python3}/bin/python3 ${../pi/setup.py} --home "$HOME" --extensions ${extensions}
+        ${lib.optionalString preview.enable ''
+          # Supervise the relay alongside T3. A container restart clears all leases.
+          /bin/agent-preview serve --hostname ${lib.escapeShellArg preview.hostname} \
+            --listen-address ${preview.address} --max-leases ${toString preview.maxLeases} &
+          relay=$!
+          /bin/t3 "$@" &
+          t3=$!
+          cleanup() {
+            kill "$relay" "$t3" 2>/dev/null || true
+            wait "$relay" "$t3" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          trap 'exit 143' TERM
+          trap 'exit 130' INT
+          wait -n "$relay" "$t3" || exit "$?"
+          exit 1
+        ''}
         exec /bin/t3 "$@"
       '';
   runtime = pkgs.buildEnv {
@@ -72,6 +90,7 @@ let
           ''
         )
       ]
+      ++ lib.optional preview.enable (pkgs.callPackage ../../packages/agent-preview { })
       ++ import ../agent-runtime/tools.nix { inherit pkgs; };
     pathsToLink = [
       "/bin"
@@ -300,7 +319,12 @@ in
           containerPath = "${home}/.ssh/id_ed25519";
           readOnly = true;
         }
-      ];
+      ]
+      ++ lib.optional preview.enable {
+        hostPath = "${../../.agents/skills/agent-preview}";
+        containerPath = "${home}/.agents/skills/agent-preview";
+        readOnly = true;
+      };
     };
     web = {
       port = 3000;

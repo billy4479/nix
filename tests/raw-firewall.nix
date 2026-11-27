@@ -105,6 +105,7 @@ pkgs.testers.runNixOSTest {
           ("nginx", 6),
           ("grafana", 23),
           ("peer", 21),
+          ("t3code", 27),
           ("edge", 131),
           ("redis", 129),
           ("outline-redis", 133),
@@ -274,6 +275,45 @@ pkgs.testers.runNixOSTest {
           machine.fail(f"ip netns exec {namespace} nc -z -w 1 10.0.1.5 8080")
       for namespace in ["nginx", "radarr", "sonarr"]:
           machine.succeed(f"ip netns exec {namespace} nc -z -w 1 10.0.1.5 8080")
+      with subtest("Preview ingress allows the admin route, not the backend address"):
+          for port in [19999, 20042]:
+              machine.succeed(
+                  f'ip netns exec t3code valkey-server --port {port} --protected-mode no --save "" --daemonize yes'
+              )
+          import shlex
+
+          udp_server = shlex.quote(
+              "import socket\n"
+              "s = socket.socket(type=socket.SOCK_DGRAM)\n"
+              "s.bind(('10.0.1.27', 20044))\n"
+              "while True:\n"
+              "    data, addr = s.recvfrom(128)\n"
+              "    s.sendto(data, addr)\n"
+          )
+          machine.succeed(
+              f"ip netns exec t3code ${pkgs.lib.getExe pkgs.python3} -u -c {udp_server} </dev/null >/tmp/preview-udp.log 2>&1 &"
+          )
+          udp_client = shlex.quote(
+              "import socket, sys\n"
+              "s = socket.socket(type=socket.SOCK_DGRAM)\n"
+              "s.settimeout(1)\n"
+              "s.sendto(b'preview', (sys.argv[1], 20044))\n"
+              "assert s.recv(128) == b'preview'\n"
+          )
+          udp = f"${pkgs.lib.getExe pkgs.python3} -c {udp_client}"
+          machine.succeed("ip netns exec nginx nc -z -w 1 10.0.1.27 19999")
+          machine.succeed(
+              "ip netns exec vpn valkey-cli -h 10.0.2.6 -p 20042 ping | grep PONG"
+          )
+          machine.wait_until_succeeds(f"ip netns exec vpn {udp} 10.0.2.6")
+          for namespace in ["vpn", "uplink", "tunnel", "peer"]:
+              machine.fail(f"ip netns exec {namespace} nc -z -w 1 10.0.1.27 19999")
+              machine.fail(f"ip netns exec {namespace} nc -z -w 1 10.0.1.27 20042")
+              machine.fail(f"ip netns exec {namespace} {udp} 10.0.1.27")
+          for namespace in ["uplink", "tunnel", "peer"]:
+              machine.fail(f"ip netns exec {namespace} nc -z -w 1 10.0.2.6 20042")
+              machine.fail(f"ip netns exec {namespace} {udp} 10.0.2.6")
+          machine.fail("ip netns exec vpn nc -z -w 1 10.0.2.6 19999")
       with subtest("Seerr reaches media backends without exposing them to members"):
           for app, address, port in [
               ("radarr", "10.0.1.7", 7878),

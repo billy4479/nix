@@ -8,6 +8,7 @@
 }:
 {
   agent-vm = (pkgs.callPackage ../packages/agent-vm { }).tests.broker;
+  agent-preview = pkgs.callPackage ../packages/agent-preview { };
   radicale =
     let
       server = hosts.nixosConfigurations.serverone.config;
@@ -95,7 +96,12 @@
         }).config;
       enabled =
         (serverone.extendModules {
-          modules = [ { polpetta.adminIngressEnabled = pkgs.lib.mkForce true; } ];
+          modules = [
+            {
+              polpetta.adminIngressEnabled = pkgs.lib.mkForce true;
+              polpetta.agentPreview.enable = true;
+            }
+          ];
         }).config;
     in
     import ../tests/raw-firewall.nix {

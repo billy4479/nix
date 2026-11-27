@@ -1,5 +1,6 @@
 {
   pkgs,
+  lib,
   domain,
   config,
   ...
@@ -9,11 +10,18 @@ let
   id = 11;
   baseDir = "/mnt/SSD/apps/${name}";
 
+  inherit (config.polpetta.generated) adminDnsRecords adminIngress agentPreview;
   hosts = pkgs.callPackage ./hosts.nix { };
   bindConfig = pkgs.callPackage ./config.nix {
     inherit domain;
     bind9-hosts = hosts;
-    admin-records = pkgs.writeText "admin-records.zone" config.polpetta.generated.adminDnsRecords;
+    admin-records = pkgs.writeText "admin-records.zone" (
+      adminDnsRecords
+      + lib.optionalString agentPreview.enable ''
+        ${agentPreview.hostname}. IN A ${adminIngress.address}
+        *.${agentPreview.hostname}. IN A ${adminIngress.address}
+      ''
+    );
     generated-records = pkgs.writeText "generated-records.zone" config.polpetta.generated.bind9Records;
   };
 in
