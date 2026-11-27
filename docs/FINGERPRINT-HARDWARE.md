@@ -298,6 +298,13 @@ an ACK or a misparsed reply was present. Use the readback bundle's new
 `--check-hash` mode to capture the same version/hash requests without any
 wrapped-key query, upload, or fallback. Keep its archive private.
 
+The diagnostic succeeded: the first hash window had no valid reply, the
+second had the matching ACK, and the third had a valid digest. Provisioning v3
+now preserves ACK state across windows and reports hash counters even on
+preflight timeout. It also keeps one rolling ITE transmit counter across the
+preflight, upload and verification instead of resetting it at upload. This
+corrects an offline finding, not a demonstrated cause of the v2 timeout.
+
 ## Consequences for bring-up
 
 - The declared mode-0/10 MHz ITE transport now has a successful live version

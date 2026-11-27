@@ -120,6 +120,7 @@ static int read_hash(int fd, uint8_t digest[32]) {
   long start = sensor_milliseconds();
   if (start < 0 || sensor_send(fd, QUERY_HASH, 2, 0) != 0)
     return 1;
+  struct readback_parser parser = {.query = QUERY_HASH, .require_ack = true};
   sensor_pause(5);
   for (unsigned int window = 0; window < 128; window++) {
     long now = sensor_milliseconds();
@@ -127,33 +128,33 @@ static int read_hash(int fd, uint8_t digest[32]) {
       return 1;
     if (now - start >= 1500)
       break;
-    struct readback_parser parser = {.query = QUERY_HASH};
     if (receive(fd, &parser) != 0)
       return 1;
-    if (parser.done) {
-      printf("hash_frames=%u\nhash_rejected=%u\nhash_foreign=%u\n",
-             parser.frames, parser.rejected, parser.foreign);
-      if (parser.status) {
-        printf("hash_status=%u\n", parser.status);
-        return 2;
-      }
-      if (parser.length != 32)
-        return 2;
-      memcpy(digest, parser.data, 32);
-      return 0;
-    }
+    if (parser.done)
+      break;
     sensor_pause(10);
   }
-  return 2;
+  printf("hash_frames=%u\nhash_rejected=%u\nhash_foreign=%u\nhash_ack=%s\n",
+         parser.frames, parser.rejected, parser.foreign,
+         parser.ack ? "yes" : "no");
+  if (parser.malformed)
+    return 1;
+  if (parser.status)
+    printf("hash_status=%u\n", parser.status);
+  if (!parser.done || parser.status || parser.length != 32)
+    return 2;
+  memcpy(digest, parser.data, 32);
+  return 0;
 }
 /* Keep polling after a successful upload until the new digest appears. A
  * delayed or cached old hash must not make a failed write look successful.
  */
-static int verify_hash(int fd, const uint8_t expected[32], uint8_t observed[32],
-                       bool *saw) {
+static int verify_hash(int fd, uint16_t counter, const uint8_t expected[32],
+                       uint8_t observed[32], bool *saw) {
+  struct readback_parser parser = {.query = QUERY_HASH, .require_ack = true};
   long start = sensor_milliseconds();
   *saw = false;
-  if (start < 0 || sensor_send(fd, QUERY_HASH, 3, 0) != 0)
+  if (start < 0 || sensor_send(fd, QUERY_HASH, counter, 0) != 0)
     return 1;
   sensor_pause(5);
   for (unsigned int window = 0; window < 128; window++) {
@@ -162,10 +163,10 @@ static int verify_hash(int fd, const uint8_t expected[32], uint8_t observed[32],
       return 1;
     if (now - start >= 1500)
       break;
-    struct readback_parser parser = {.query = QUERY_HASH};
-    if (receive(fd, &parser) != 0)
+    if (receive(fd, &parser) != 0 || parser.malformed)
       return 1;
     if (parser.done) {
+      parser.done = false;
       if (parser.status) {
         printf("verify_status=%u\n", parser.status);
         return 2;
@@ -185,13 +186,14 @@ static int verify_hash(int fd, const uint8_t expected[32], uint8_t observed[32],
  * There is deliberately no retry: a repeated production command after an
  * uncertain write is not assumed to be idempotent.
  */
-static int upload(int fd, const uint8_t *record, size_t length) {
-  uint16_t counter = 1;
+static int upload(int fd, const uint8_t *record, size_t length,
+                  uint16_t *next_counter) {
   unsigned int fragments = 0;
   for (size_t offset = 0; offset < length; offset += 252) {
     size_t chunk = length - offset < 252 ? length - offset : 252;
     uint8_t frame[GXFP_FRAGMENT_MAX];
-    size_t size = gxfp_fragment(frame, record + offset, chunk, counter++);
+    size_t size =
+        gxfp_fragment(frame, record + offset, chunk, (*next_counter)++);
     if (!size)
       return 1;
     if (sensor_write_fragment(fd, frame, size) != 0) {
@@ -232,7 +234,7 @@ static int upload(int fd, const uint8_t *record, size_t length) {
 static int run(int fd, int recovery) {
   if (sensor_configure(fd) != 0)
     return 1;
-  puts("profile=ite-20066-key-provision-v2");
+  puts("profile=ite-20066-key-provision-v3");
   uint8_t found[24];
   size_t found_length = 0;
   int result = read_version(fd, found, &found_length);
@@ -291,7 +293,10 @@ static int run(int fd, int recovery) {
   puts("new_key=durably_saved");
   printf("payload_bytes=%zu\n", payload_size);
 
-  int written = upload(fd, record, record_size);
+  /* Version and baseline hash used counters 1 and 2; each fragment and
+   * the verification query must continue that same ITE sequence. */
+  uint16_t next_counter = 3;
+  int written = upload(fd, record, record_size, &next_counter);
   if (written == 1) {
     puts("write_transport_error");
   }
@@ -300,7 +305,7 @@ static int run(int fd, int recovery) {
    */
   sensor_pause(100);
   bool saw = false;
-  int verified = verify_hash(fd, digest, observed, &saw);
+  int verified = verify_hash(fd, next_counter, digest, observed, &saw);
   if (verified == 0) {
     puts("key_hash=verified");
   } else if (saw) {

@@ -72,6 +72,10 @@ scenarios = {
             "result=key_replacement_unverified",
         },
     ),
+    "hash_without_ack": (
+        2,
+        {"hash_ack=no", "result=existing_hash_unavailable_stop"},
+    ),
     "existing_hash_refused": (
         2,
         {
@@ -103,7 +107,7 @@ for scenario, (expected_code, expected) in scenarios.items():
         scratch = set(path.iterdir()) - {recovery}
         if scenario in {"volatile_fs", "existing_key", "symlink_key"}:
             assert not scratch and "profile=" not in result.stdout
-        elif scenario == "existing_hash_refused":
+        elif scenario in {"existing_hash_refused", "hash_without_ack"}:
             assert not scratch
         else:
             assert scratch == {path / "before-hash.bin"}
@@ -112,9 +116,12 @@ for scenario, (expected_code, expected) in scenarios.items():
             assert key.read_bytes() == b"known existing key"
         if scenario == "symlink_key":
             assert key.is_symlink() and not (recovery / "missing-target").exists()
-        if scenario in {"volatile_fs", "existing_hash_refused"}:
+        if scenario in {"volatile_fs", "existing_hash_refused", "hash_without_ack"}:
             assert not key.exists()
-        if expected_code == 1 or scenario == "existing_hash_refused":
+        if expected_code == 1 or scenario in {
+            "existing_hash_refused",
+            "hash_without_ack",
+        }:
             assert "write_fragments=" not in result.stdout
             assert "new_key=durably_saved" not in result.stdout
             continue

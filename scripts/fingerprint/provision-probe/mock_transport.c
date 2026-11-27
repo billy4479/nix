@@ -17,7 +17,7 @@
 #include <unistd.h>
 
 static enum sensor_query current;
-static unsigned int windows;
+static unsigned int windows, sent;
 static unsigned int hash_sends, hash_windows;
 static uint8_t record[512];
 static size_t record_length;
@@ -115,7 +115,7 @@ int sensor_configure(int fd) {
 int sensor_send(int fd, enum sensor_query query, uint16_t counter,
                 uint16_t timestamp) {
   (void)fd;
-  (void)counter;
+  assert(counter == ++sent);
   (void)timestamp;
   current = query;
   windows = 0;
@@ -129,6 +129,7 @@ int sensor_write_fragment(int fd, const uint8_t *fragment, size_t length) {
   (void)fd;
   if (length < 4 || length > 256)
     return -1;
+  assert((unsigned int)(fragment[2] | fragment[3] << 8) == ++sent);
   size_t chunk = length - 4;
   if (record_length + chunk <= sizeof(record)) {
     memcpy(record + record_length, fragment + 4, chunk);
@@ -175,6 +176,10 @@ int sensor_read_mailbox(int fd, uint8_t status[4], uint8_t response[256]) {
   }
   if (current == QUERY_HASH) {
     uint8_t digest[32], wrapper[GXFP_WRAPPER_SIZE];
+    if (step == 0 && !scenario("hash_without_ack")) {
+      ack(response, 0xe4);
+      return 0;
+    }
     if (hash_sends == 1) {
       if (scenario("existing_hash_refused")) {
         uint8_t data[1] = {7};

@@ -40,21 +40,14 @@ static void accept(struct readback_parser *p, uint8_t command,
   }
   if (p->done || command != expected)
     return;
-  /* The first full-mailbox read can still contain an old version reply.
-   * Require ACK/version ordering before accepting the firmware preflight.
+  /* The mailbox may contain an older reply. Require a matching ACK first
+   * for version, upload completion, and provisioning hash checks.
    */
-  if (expected == 0xa8 && !p->ack) {
+  if ((expected == 0xa8 || expected == 0xe0 || p->require_ack) && !p->ack) {
     p->foreign++;
     return;
   }
   if (expected == 0xe0) {
-    /* The production completion reply is separate from its ACK. Require the
-     * ACK first so an old completion cannot satisfy this upload.
-     */
-    if (!p->ack) {
-      p->foreign++;
-      return;
-    }
     if (size < 1) {
       p->done = p->malformed = true;
       return;

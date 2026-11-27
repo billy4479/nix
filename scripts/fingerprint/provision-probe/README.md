@@ -14,14 +14,16 @@ The runtime seed is the one embedded in the public gxfp5130 Linux payload code
 ## What it does, in order
 
 1. Identify the sensor and require firmware `GF_ITE_EC_20066`.
-2. Read the existing 32-byte key hash. Stop if it is refused or unavailable.
+2. Require a matching ACK followed by the existing 32-byte key hash. Stop if
+   it is refused or unavailable.
 3. Generate a 32-byte PSK and an 8-byte host-cache seed from `getrandom`.
 4. Build the 102-byte authenticated/encrypted wrapper and its SHA-256.
 5. Create `/var/lib/fingerprint-gxfp5120.psk` (32 raw bytes, root-owned and
    mode 0600). Require both the file and `/var/lib` to sync successfully before
    sending the upload. Abort on any storage failure or if the path exists.
 6. Send one `E0` production command with the `BB010002` empty host-cache field
-   and `BB010003` wrapper, using the stock ITE fragmentation and counters.
+   and `BB010003` wrapper, using the stock ITE fragmentation. Continue the
+   rolling counter used by preflight and use the next value for verification.
 7. Wait at most one second for the command ACK and zero-status completion.
 8. Read `BB020003` for up to 1.5 seconds and compare with SHA-256(wrapper).
 

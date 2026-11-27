@@ -10,7 +10,7 @@ struct readback_parser {
   size_t used, length;
   unsigned int frames, rejected, foreign;
   uint8_t status;
-  bool done, malformed, ack;
+  bool done, malformed, ack, require_ack;
 };
 int readback_feed(struct readback_parser *parser, const uint8_t *data,
                   size_t length);
